@@ -1,4 +1,4 @@
-# TraversyPress UI
+# Vega City Utilities
 
 <img src="img/screen.png" alt="" />
 
