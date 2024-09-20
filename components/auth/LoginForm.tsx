@@ -62,6 +62,7 @@ const LoginForm = () => {
           console.log(res.data, "login res")
           localStorage.setItem("refreshToken", res.data.data.refreshToken);
           localStorage.setItem("accessToken", res.data.data.accessToken);
+          localStorage.setItem("userId",res.data.data.userId);
           //login success
           if (
             signIn({

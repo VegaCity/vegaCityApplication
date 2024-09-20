@@ -19,29 +19,29 @@ API.interceptors.request.use(
       return Promise.reject(error);
     }
   );
-  API.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
-      if (error?.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-        try {
-          // Thay đổi endpoint và logic để làm mới token của bạn
-          const response = await axios.post(
-            `https://vega.vinhuser.one/api/v1/auth/refresh-token`,
-            {
-              refreshToken: localStorage.getItem("refreshToken"),
-            }
-          );
-          const { accessToken } = response.data;
-          localStorage.setItem("accessToken", accessToken);
-          API.defaults.headers.Authorization = `Bearer ${accessToken}`;
-          return API(originalRequest);
-        } catch (refreshError) {
-          // Xử lý lỗi làm mới token
-          return Promise.reject(refreshError);
-        }
-      }
-      return Promise.reject(error);
-    }
-  );
+  // API.interceptors.response.use(
+  //   (response) => response,
+  //   async (error) => {
+  //     const originalRequest = error.config;
+  //     if (error?.response?.status === 401 && !originalRequest._retry) {
+  //       originalRequest._retry = true;
+  //       try {
+  //         // Thay đổi endpoint và logic để làm mới token của bạn
+  //         const response = await axios.post(
+  //           `https://vega.vinhuser.one/api/v1/auth/refresh-token`,
+  //           {
+  //             refreshToken: localStorage.getItem("refreshToken"),
+  //           }
+  //         );
+  //         const { accessToken } = response.data;
+  //         localStorage.setItem("accessToken", accessToken);
+  //         API.defaults.headers.Authorization = `Bearer ${accessToken}`;
+  //         return API(originalRequest);
+  //       } catch (refreshError) {
+  //         // Xử lý lỗi làm mới token
+  //         return Promise.reject(refreshError);
+  //       }
+  //     }
+  //     return Promise.reject(error);
+  //   }
+  // );
