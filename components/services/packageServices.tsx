@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api"
-import { Package } from "@/types/package";
+import { Packages } from "@/types/package";
 
 interface PackagePageSize {
     page?: number,
@@ -18,10 +18,10 @@ export const PackageServices = {
     getPackageById(id: String){
         return API.get(`/packages/${id}`);
     },
-    uploadPackage(packageData: Package){
+    uploadPackage(packageData: Packages){
         return API.post('/packages/', packageData);
     },
-    editPackage(packageId: String, packageData: Package){
+    editPackage(packageId: String, packageData: Packages){
         const packageEditData = {packageId, packageData};
         return API.patch(`/packages/${packageId}`, packageEditData)
     },
