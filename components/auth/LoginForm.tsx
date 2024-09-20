@@ -59,22 +59,22 @@ const LoginForm = () => {
     if (data !== null) {
       AuthServices.loginUser(data)
         .then((res) => {
+          console.log(res.data, "login res")
+          localStorage.setItem("refreshToken", res.data.data.refreshToken);
+          localStorage.setItem("accessToken", res.data.data.accessToken);
           //login success
           if (
             signIn({
               auth: {
                 // expiresIn: 3600,
-                token: res.data.accessToken,
+                token: res.data.data.accessToken,
                 type: "Bearer",
               },
               // refresh: res.data.refreshToken,
               userState: {
-                token: res.data?.accessToken,
-                username:
-                  res.data?.role ||
-                  res.data?.data,
-                uid: res.data?.userId,
-                refreshToken: res.data?.refreshToken,
+                accessToken: res.data?.data.accessToken,
+                userId: res.data?.data.userId,
+                refreshToken: res.data?.data.refreshToken,
               },
               // expiresIn: 3600,
             })

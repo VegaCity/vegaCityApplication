@@ -1,7 +1,7 @@
-export interface Package {
-    name: String;
-    description: String;
-    price: Number;
+export interface Packages {
+    name: string;
+    description: string;
+    price: number;
     startDate: Date;
     endDate: Date;
 }

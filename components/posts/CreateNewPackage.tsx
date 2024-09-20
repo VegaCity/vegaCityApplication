@@ -15,70 +15,57 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import posts from '@/data/posts';
 import { useToast } from '@/components/ui/use-toast';
 
 const formSchema = z.object({
-  title: z.string().min(1, {
-    message: 'Title is required',
-  }),
-  body: z.string().min(1, {
-    message: 'Body is required',
-  }),
-  author: z.string().min(1, {
-    message: 'Author is required',
-  }),
-  date: z.string().min(1, {
-    message: 'Date is required',
-  }),
+  name: z.string().min(1, { message: 'Name is required' }),
+  description: z.string().min(1, { message: 'Description is required' }),
+  price: z.number().min(0, { message: 'Price must be a positive number' }),
+  startDate: z.string().min(1, { message: 'Start date is required' }),
+  endDate: z.string().min(1, { message: 'End date is required' }),
 });
 
-interface PostEditPageProps {
-  params: {
-    id: string;
-  };
-}
-
-const PostEditPage = ({ params }: PostEditPageProps) => {
+const CreateNewPackage = () => {
   const { toast } = useToast();
-
-  const post = posts.find((post) => post.id === params.id);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: post?.title || '',
-      body: post?.body || '',
-      author: post?.author || '',
-      date: post?.date || '',
+      name: '',
+      description: '',
+      price: 0,
+      startDate: '',
+      endDate: '',
     },
   });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
+    // Here you would typically send this data to your API
+    console.log('New package data:', data);
     toast({
-      title: 'Post has been updated successfully',
-      description: `Updated by ${post?.author} on ${post?.date}`,
+      title: 'Package has been created successfully',
+      description: `Created package: ${data.name}`,
     });
   };
 
   return (
     <>
-      <BackButton text='Back To Posts' link='/posts' />
-      <h3 className='text-2xl mb-4'>Edit Post</h3>
+      <BackButton text='Back To Packages' link='/packages' />
+      <h3 className='text-2xl mb-4'>Create New Package</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
           <FormField
             control={form.control}
-            name='title'
+            name='name'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Title
+                  Name
                 </FormLabel>
                 <FormControl>
                   <Input
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Title'
+                    placeholder='Enter package name'
                     {...field}
                   />
                 </FormControl>
@@ -89,16 +76,16 @@ const PostEditPage = ({ params }: PostEditPageProps) => {
 
           <FormField
             control={form.control}
-            name='body'
+            name='description'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Body
+                  Description
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Body'
+                    placeholder='Enter package description'
                     {...field}
                   />
                 </FormControl>
@@ -109,16 +96,38 @@ const PostEditPage = ({ params }: PostEditPageProps) => {
 
           <FormField
             control={form.control}
-            name='author'
+            name='price'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Author
+                  Price
                 </FormLabel>
                 <FormControl>
                   <Input
+                    type="number"
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Author'
+                    placeholder='Enter price'
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='startDate'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  Start Date
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="datetime-local"
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
                     {...field}
                   />
                 </FormControl>
@@ -129,16 +138,16 @@ const PostEditPage = ({ params }: PostEditPageProps) => {
 
           <FormField
             control={form.control}
-            name='date'
+            name='endDate'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Date
+                  End Date
                 </FormLabel>
                 <FormControl>
                   <Input
+                    type="datetime-local"
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Date'
                     {...field}
                   />
                 </FormControl>
@@ -148,7 +157,7 @@ const PostEditPage = ({ params }: PostEditPageProps) => {
           />
 
           <Button className='w-full dark:bg-slate-800 dark:text-white'>
-            Update Package
+            Create Package
           </Button>
         </form>
       </Form>
@@ -156,4 +165,4 @@ const PostEditPage = ({ params }: PostEditPageProps) => {
   );
 };
 
-export default PostEditPage;
+export default CreateNewPackage;

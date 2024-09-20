@@ -1,3 +1,4 @@
+// 'use client';
 import {
   Command,
   CommandDialog,
@@ -23,57 +24,60 @@ import {
 import Link from 'next/link';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { useState } from 'react';
+import clsx from 'clsx';
 
 const Sidebar = () => {
+
   return (
     <Command className='bg-secondary rounded-none'>
-      <CommandInput placeholder='Type a command or search...' />
+      {/* <CommandInput placeholder='Type a command or search...' /> */}
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading='Suggestions'>
-          <CommandItem>
-            <LayoutDashboard className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <LayoutDashboard className='h-8 w-8 mb-3' /> 
             <Link href='/'>Dashboard</Link>
           </CommandItem>
-          <CommandItem>
-            <Newspaper className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <Newspaper className='h-8 w-8 mb-3' />
             <Link href='/posts'>Packages</Link>
           </CommandItem>
-          <CommandItem>
-            <Folders className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <Folders className='h-8 w-8 mb-3' />
             <Link href='#'>Categories</Link>
           </CommandItem>
-          <CommandItem>
-            <Tag className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <Tag className='h-8 w-8 mb-3' />
             <Link href='#'>E-Tag</Link>
           </CommandItem>
-          <CommandItem>
-            <MapPin className='mr-2 h-4 w-4' />
-            <Link href='#'>Market Zonew</Link>
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <MapPin className='h-8 w-8 mb-3' />
+            <Link href='#'>Market Zone</Link>
           </CommandItem>
-          <CommandItem>
-            <Store className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <Store className='h-8 w-8 mb-3' />
             <Link href='#'>Store</Link>
           </CommandItem>
-          <CommandItem>
-            <User className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <User className='h-8 w-8 mb-3' />
             <Link href='#'>Users</Link>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading='Settings'>
-          <CommandItem>
-            <User className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <User className='h-6 w-6 mb-3' />
             <span>Profile</span>
             <CommandShortcut><PersonIcon/></CommandShortcut>
           </CommandItem>
           {/* <CommandItem>
-            <CreditCard className='mr-2 h-4 w-4' />
+            <CreditCard className='h-8 w-8 mb-3' />
             <span>Billing</span>
             <CommandShortcut>⌘B</CommandShortcut>
           </CommandItem> */}
-          <CommandItem>
-            <Settings className='mr-2 h-4 w-4' />
+          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-start p-3'>
+            <Settings className='h-6 w-6 mb-3' />
             <span>Settings</span>
             <CommandShortcut><SettingsIcon/></CommandShortcut>
           </CommandItem>

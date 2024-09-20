@@ -1,9 +1,19 @@
 import { API } from "@/components/services/api"
 import { Package } from "@/types/package";
 
+interface PackagePageSize {
+    page?: number,
+    size?: number,
+}
+
 export const PackageServices = {
-    getPackage(){
-        return API.get('/packages')
+    getPackages({page, size}: PackagePageSize){
+        return API.get('/packages', {
+            params: {
+                page,
+                size,
+            }
+        })
     },
     getPackageById(id: String){
         return API.get(`/packages/${id}`);
