@@ -14,7 +14,7 @@ import ThemeToggler from '@/components/ThemeToggler';
 
 const Navbar = () => {
   return (
-    <div className='bg-primary dark:bg-slate-700 text-white py-2 px-5 flex justify-between'>
+    <div className='bg-hover-button dark:bg-slate-700 text-white py-2 px-5 flex justify-between'>
       <Link href='/'>
         <Image src={logo} alt='TraversyPress' width={40} />
       </Link>
@@ -25,7 +25,7 @@ const Navbar = () => {
           <DropdownMenuTrigger className='focus:outline-none'>
             <Avatar>
               <AvatarImage src='https://github.com/shadcn.png' alt='@shadcn' />
-              <AvatarFallback className='text-black'>BT</AvatarFallback>
+              <AvatarFallback className='text-white'>BT</AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

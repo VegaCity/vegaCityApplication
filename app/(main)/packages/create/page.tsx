@@ -25,7 +25,7 @@ const formSchema = z.object({
   endDate: z.string().min(1, { message: 'End date is required' }),
 });
 
-const CreateNewPackage = () => {
+const PackageCreatePage = () => {
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -165,4 +165,4 @@ const CreateNewPackage = () => {
   );
 };
 
-export default CreateNewPackage;
+export default PackageCreatePage;
