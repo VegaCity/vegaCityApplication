@@ -1,20 +1,16 @@
-// 'use client';
+'use client';
+
 import {
   Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
   CommandList,
+  CommandItem,
   CommandSeparator,
-  CommandShortcut,
+  CommandGroup,
 } from '@/components/ui/command';
 import {
   LayoutDashboard,
   Newspaper,
   Folders,
-  CreditCard,
   Settings,
   User,
   Tag,
@@ -22,64 +18,48 @@ import {
   MapPin,
 } from 'lucide-react';
 import Link from 'next/link';
-import PersonIcon from '@mui/icons-material/Person';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { useState } from 'react';
-import clsx from 'clsx';
 
 const Sidebar = () => {
-
   return (
-    <Command className='bg-secondary rounded-none'>
-      {/* <CommandInput placeholder='Type a command or search...' /> */}
+    <Command className="bg-secondary rounded-none">
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        {/* <CommandGroup heading='Suggestions'> */}
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <LayoutDashboard className='h-6 w-8 mb-3' /> 
-            <Link href='/'>Dashboard</Link>
-          </CommandItem>
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <Newspaper className='h-6 w-8 mb-3' />
-            <Link href='/posts'>Packages</Link>
-          </CommandItem>
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <Folders className='h-6 w-8 mb-3' />
-            <Link href='#'>Categories</Link>
-          </CommandItem>
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <Tag className='h-6 w-8 mb-3' />
-            <Link href='#'>E-Tag</Link>
-          </CommandItem>
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <MapPin className='h-6 w-8 mb-3' />
-            <Link href='#'>Market Zone</Link>
-          </CommandItem>
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <Store className='h-6 w-8 mb-3' />
-            <Link href='#'>Store</Link>
-          </CommandItem>
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <User className='h-6 w-8 mb-3' />
-            <Link href='#'>Users</Link>
-          </CommandItem>
-        {/* </CommandGroup> */}
+        <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+          <LayoutDashboard className="h-6 w-8 mb-3" />
+          <Link href="/">Dashboard</Link>
+        </CommandItem>
+        <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+          <Newspaper className="h-6 w-8 mb-3" />
+          <Link href="/packages">Packages</Link>
+        </CommandItem>
+        <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+          <Folders className="h-6 w-8 mb-3" />
+          <Link href="/categories">Categories</Link>
+        </CommandItem>
+        <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+          <Tag className="h-6 w-8 mb-3" />
+          <Link href="/e-tag">E-Tag</Link>
+        </CommandItem>
+        <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+          <MapPin className="h-6 w-8 mb-3" />
+          <Link href="/market-zone">Market Zone</Link>
+        </CommandItem>
+        <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+          <Store className="h-6 w-8 mb-3" />
+          <Link href="/store">Store</Link>
+        </CommandItem>
+        <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+          <User className="h-6 w-8 mb-3" />
+          <Link href="/users">Users</Link>
+        </CommandItem>
         <CommandSeparator />
-        <CommandGroup heading='Settings'>
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <User className='h-6 w-6 mb-3' />
-            <span>Profile</span>
-            {/* <CommandShortcut><PersonIcon/></CommandShortcut> */}
+        <CommandGroup heading="Settings">
+          <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+            <User className="h-6 w-6 mb-3" />
+            <Link href="/profile">Profile</Link>
           </CommandItem>
-          {/* <CommandItem>
-            <CreditCard className='h-8 w-8 mb-3' />
-            <span>Billing</span>
-            <CommandShortcut>⌘B</CommandShortcut>
-          </CommandItem> */}
-          <CommandItem className='hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3'>
-            <Settings className='h-6 w-6 mb-3' />
-            <span>Settings</span>
-            {/* <CommandShortcut><SettingsIcon/></CommandShortcut> */}
+          <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
+            <Settings className="h-6 w-6 mb-3" />
+            <Link href="/settings">Settings</Link>
           </CommandItem>
         </CommandGroup>
       </CommandList>
@@ -87,4 +67,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default Sidebar

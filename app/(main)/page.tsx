@@ -1,7 +1,8 @@
 import DashboardCard from '@/components/dashboard/DashboardCard';
-import PostsTable from '@/components/posts/PostsTable';
 import AnalyticsChart from '@/components/dashboard/AnalyticsChart';
 import { Package, Package2, Store, Tag, User } from 'lucide-react';
+import PackagesTable from '@/components/packages/PackagesTable';
+
 
 export default function Home() {
   return (
@@ -29,7 +30,7 @@ export default function Home() {
         />
       </div>
       <AnalyticsChart />
-      <PostsTable title='Latest Posts' limit={5} />
+      <PackagesTable title='Latest Posts' limit={5} />
     </>
   );
 }

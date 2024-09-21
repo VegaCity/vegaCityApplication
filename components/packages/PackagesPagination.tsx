@@ -8,7 +8,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 
-const PostsPagination = () => {
+const PackagesPagination = () => {
   return (
     <Pagination>
       <PaginationContent>
@@ -35,4 +35,4 @@ const PostsPagination = () => {
   );
 };
 
-export default PostsPagination;
+export default PackagesPagination;
