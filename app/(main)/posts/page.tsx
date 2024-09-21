@@ -1,24 +1,21 @@
-'use client';
-import PostsTable from '@/components/posts/PostsTable';
 import BackButton from '@/components/BackButton';
-import PostsPagination from '@/components/posts/PostsPagination';
+import PackagesPagination from '@/components/packages/PackagesPagination';
+import PackageTable from '@/components/packages/PackagesTable';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
-const PostsPage = () => {
-  // Ensure useRouter is used within a component context
-
+const PackagesPage = () => {
   return (
-    <>
-      <BackButton text='Go Back' link='/' />
-      <Link href="/posts">
-        Create New Package
-      </Link>
-      
-      <PostsTable />
-      <PostsPagination />
-    </>
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-4">
+        <BackButton text='Go Back' link='/' />
+        <Link href="/packages/create" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Create New Package
+        </Link>
+      </div>
+      <PackageTable />
+      <PackagesPagination />
+    </div>
   );
 };
 
-export default PostsPage;
+export default PackagesPage;
