@@ -30,7 +30,7 @@ export default function Home() {
         />
       </div>
       <AnalyticsChart />
-      <PackagesTable title='Latest Posts' limit={5} />
+      <PackagesTable title='Latest Packages' limit={5} />
     </>
   );
 }

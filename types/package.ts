@@ -5,6 +5,5 @@ export interface Packages {
     price: number;
     startDate: string;
     endDate: string;
-    
   }
   
