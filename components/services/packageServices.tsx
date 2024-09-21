@@ -16,16 +16,16 @@ export const PackageServices = {
         })
     },
     getPackageById(id: String){
-        return API.get(`/packages/${id}`);
+        return API.get(`/package/${id}`);
     },
     uploadPackage(packageData: Packages){
-        return API.post('/packages/', packageData);
+        return API.post('/package/', packageData);
     },
     editPackage(packageId: String, packageData: Packages){
         const packageEditData = {packageId, packageData};
-        return API.patch(`/packages/${packageId}`, packageEditData)
+        return API.patch(`/package/${packageId}`, packageEditData)
     },
     deletePackageById(id: String){
-        return API.delete(`/packages/${id}`);
+        return API.delete(`/package/${id}`);
     },
 }

@@ -9,7 +9,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         <div className='hidden md:block h-[127vh] w-1/8'>
           <Sidebar />
         </div>
-        <div className='p-5 w-full md:max-w-[1140px]'>{children}</div>
+        <div className='p-10 w-full md:max-w-[1300px]'>{children}</div>
       </div>
     </>
   );
