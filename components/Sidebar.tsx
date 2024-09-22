@@ -1,70 +1,70 @@
 'use client';
 
-import {
-  Command,
-  CommandList,
-  CommandItem,
-  CommandSeparator,
-  CommandGroup,
+import { 
+  Command, 
+  CommandList, 
+  CommandItem 
 } from '@/components/ui/command';
-import {
-  LayoutDashboard,
-  Newspaper,
-  Folders,
-  Settings,
-  User,
-  Tag,
-  Store,
-  MapPin,
+
+import { 
+  LayoutDashboard, 
+  Newspaper, 
+  Tag, 
+  Store, 
+  MapPin, 
+  User 
 } from 'lucide-react';
+
 import Link from 'next/link';
 
 const Sidebar = () => {
   return (
     <Command className="bg-secondary rounded-none">
       <CommandList>
-        <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-          <LayoutDashboard className="h-6 w-8 mb-3" />
-          <Link href="/">Dashboard</Link>
-        </CommandItem>
-        <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-          <Newspaper className="h-6 w-8 mb-3" />
-          <Link href="/packages">Packages</Link>
-        </CommandItem>
-        {/* <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-          <Folders className="h-6 w-8 mb-3" />
-          <Link href="/categories">Categories</Link>
-        </CommandItem> */}
-        <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-          <Tag className="h-6 w-8 mb-3" />
-          <Link href="/e-tag">E-Tag</Link>
-        </CommandItem>
-        <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-          <MapPin className="h-6 w-8 mb-3" />
-          <Link href="/market-zone">Market Zone</Link>
-        </CommandItem>
-        <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-          <Store className="h-6 w-8 mb-3" />
-          <Link href="/store">Store</Link>
-        </CommandItem>
-        <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-          <User className="h-6 w-8 mb-3" />
-          <Link href="/users">Users</Link>
-        </CommandItem>
-        {/* <CommandSeparator />
-        <CommandGroup heading="Settings">
-          <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-            <User className="h-6 w-6 mb-3" />
-            <Link href="/profile">Profile</Link>
+        <Link href="/" className="block">
+          <CommandItem className="hover:hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+            <LayoutDashboard className="h-6 w-8 mb-3" />
+            Dashboard
           </CommandItem>
-          <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3">
-            <Settings className="h-6 w-6 mb-3" />
-            <Link href="/settings">Settings</Link>
+        </Link>
+
+        <Link href="/packages" className="block">
+          <CommandItem className="hover:hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+            <Newspaper className="h-6 w-8 mb-3" />
+            Packages
           </CommandItem>
-        </CommandGroup> */}
+        </Link>
+
+        <Link href="/etagtypes" className="block">
+          <CommandItem className="hover:hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+            <Tag className="h-6 w-8 mb-3" />
+            E-Tag
+          </CommandItem>
+        </Link>
+
+        <Link href="/market-zone" className="block">
+          <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+            <MapPin className="h-6 w-8 mb-3" />
+            Market Zone
+          </CommandItem>
+        </Link>
+
+        <Link href="/store" className="block">
+          <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+            <Store className="h-6 w-8 mb-3" />
+            Store
+          </CommandItem>
+        </Link>
+
+        <Link href="/users" className="block">
+          <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+            <User className="h-6 w-8 mb-3" />
+            Users
+          </CommandItem>
+        </Link>
       </CommandList>
     </Command>
   );
 };
 
-export default Sidebar
+export default Sidebar;
