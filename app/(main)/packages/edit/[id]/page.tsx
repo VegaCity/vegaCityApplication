@@ -20,6 +20,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useEffect, useState } from 'react';
 import { PackageServices } from '@/components/services/packageServices';
 import { Packages } from '@/types/package';
+import { register } from 'module';
 
 const formSchema = z.object({
   id: z.string().min(1, {
@@ -31,8 +32,9 @@ const formSchema = z.object({
   description: z.string().min(1, {
     message: 'Description is required',
   }),
-  price: z.number().min(1, {
-    message: 'Price is required',
+  price: z.coerce.number({
+    required_error: "Price is required!",
+    invalid_type_error: "Price must be a number!"
   }),
   startDate: z.string().min(1, {
     message: 'Date is required',
@@ -189,6 +191,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
                 </FormLabel>
                 <FormControl>
                   <Input
+                    type='number'
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
                     placeholder='Enter Price'
                     {...field}
