@@ -3,7 +3,7 @@ export interface Packages {
     name: string;
     description: string;
     price: number;
-    startDate: string;
-    endDate: string;
+    startDate: Date;
+    endDate: Date;
   }
   
