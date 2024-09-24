@@ -1,4 +1,4 @@
-import AuthUser from '@/components/auth/AuthUser';
+
 import ThemeToggler from '@/components/ThemeToggler';
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
