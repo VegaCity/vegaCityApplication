@@ -21,10 +21,11 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { AuthServices } from '@/components/services/authServices';
 import { LoginAccount } from '@/types/loginAccount';
+import { useEffect, useState } from 'react';
 
 
 const formSchema = z.object({
@@ -44,6 +45,7 @@ const formSchema = z.object({
 const LoginForm = () => {
   const router = useRouter();
   const signIn = useSignIn();
+  const [accessToken, setAccessToken] = useState<string>('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,15 +56,17 @@ const LoginForm = () => {
   });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
+    const {email, password} = data;
     console.log(data, "data");
-    // router.push("/")
     if (data !== null) {
       AuthServices.loginUser(data)
-        .then((res) => {
+      .then((res) => {
+          router.push("/")
           console.log(res.data, "login res")
           localStorage.setItem("refreshToken", res.data.data.refreshToken);
           localStorage.setItem("accessToken", res.data.data.accessToken);
           localStorage.setItem("userId",res.data.data.userId);
+          setAccessToken(res.data.data.accessToken);
           //login success
           if (
             signIn({
@@ -91,6 +95,18 @@ const LoginForm = () => {
           // setIsLoading(false);
           // console.log(isLoading);
           console.log(err);
+          // if(err.status === 401){
+          //   AuthServices.fetchUser(email, 'eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyM2EwZjhkNS00MjhjLTQ2ODItOTEzZS0zNTkzOTVlYmZlZjAiLCJlbWFpbCI6ImNza2gudmVnYWNpdHkudm5AZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJNYXJrZXRab25lSWQiOiI1ZjcyOGRlYi1iMmMzLTRiYWMtOWQ5Yy00MWExMWUwYWNjY2MiLCJuYmYiOjE3MjcwNzk3OTQsImV4cCI6MTcyNzE2NjE5NCwiaXNzIjoiVmVnYUNpdHlBcHAifQ.KmymhFKvDwl-6JJ3QWnDXaoYO2v-uSlB1cHNd7pdUf0')
+          //   .then((res) => {
+          //     console.log(res.data.refreshToken, "fetch user res");
+          //     const newRefreshToken = res.data.refreshToken;
+          //     localStorage.setItem('refreshToken', newRefreshToken);
+          //     AuthServices.fetchUser(email, newRefreshToken).then((res) => {
+          //       const refreshToken2 = res.data.refreshToken;
+          //       localStorage.setItem('refreshToken', refreshToken2);
+          //     })
+          //   })
+          // }
         })
         .finally(() => {
           // setIsLoading(false);
@@ -98,6 +114,7 @@ const LoginForm = () => {
     }
   };
 
+  
 
   return (
     <Card>

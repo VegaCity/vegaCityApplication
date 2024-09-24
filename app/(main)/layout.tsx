@@ -1,7 +1,13 @@
 import Navbar from '@/components/Navbar';
 import Sidebar from '@/components/Sidebar';
+import { redirect } from 'next/navigation';
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
+  // const auth = false;
+  // if(!auth){
+  //   redirect('/auth');
+  // }
+  
   return (
     <>
       <Navbar />

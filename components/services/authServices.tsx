@@ -6,7 +6,7 @@ export const AuthServices = {
     loginUser(data: LoginAccount) {
       return API.post('/auth/login', data);
     },
-    fetchUser(email: String, refreshToken: String) {
+    fetchUser(email: string, refreshToken: string) {
       const fetchData = { email, refreshToken };
       return API.post('/auth/refresh-token', fetchData);
     },

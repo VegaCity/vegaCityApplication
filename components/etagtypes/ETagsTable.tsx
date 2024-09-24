@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -87,7 +87,7 @@ const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
                 <TableCell className='hidden md:table-cell'>{formatBonusRate(etag.bonusRate)}</TableCell>
                 <TableCell className='hidden md:table-cell'>{etag.amount}</TableCell>
                 <TableCell>
-                  <Link href={`/etagtypes/edit/${etag.id}`}>
+                  <Link href={`/user/etagtypes/edit/${etag.id}`}>
                     <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2'>
                       Edit
                     </button>
