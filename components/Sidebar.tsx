@@ -35,7 +35,7 @@ const Sidebar = () => {
     <Command className="bg-secondary rounded-none">
       <CommandList>
         <Link href="/" className="block">
-          <CommandItem className="hover:hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+          <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
             <LayoutDashboard className="h-6 w-8 mb-3" />
             Dashboard
           </CommandItem>
@@ -44,14 +44,14 @@ const Sidebar = () => {
         {userRole && (userRole.name === 'Admin' || userRole.name === 'CashierWeb') && (
           <>
             <Link href={navigatePage('packages')} className="block">
-              <CommandItem className="hover:hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <Package className="h-6 w-8 mb-3" />
                 Packages
               </CommandItem>
             </Link>
 
             <Link href={navigatePage('etagtypes')} className="block">
-              <CommandItem className="hover:hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <Tag className="h-6 w-8 mb-3" />
                 E-Tag
               </CommandItem>
@@ -62,14 +62,14 @@ const Sidebar = () => {
         {userRole && userRole.name === 'Admin' && (
           <>
             <Link href="/store" className="block">
-              <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <Store className="h-6 w-8 mb-3" />
                 Store
               </CommandItem>
             </Link>
 
             <Link href="/users" className="block">
-              <CommandItem className="hover:bg-hover-button hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <User className="h-6 w-8 mb-3" />
                 Users
               </CommandItem>

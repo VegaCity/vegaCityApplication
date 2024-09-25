@@ -3,6 +3,7 @@ import { EtagType } from "@/types/etagtype";
 import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface ETagCardProps {
   etag: EtagType;
@@ -32,7 +33,10 @@ const ETagCard: React.FC<ETagCardProps> = ({ etag, onGenerateETag }) => {
           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all"
           onClick={() => onGenerateETag(etag.id)}
         >
-          Generate E-Tag
+          <Link href={`/user/etagtypes/generate/${etag.id}`}>
+            Generate E-Tag
+          </Link>
+          
         </Button>
       </CardFooter>
     </Card>

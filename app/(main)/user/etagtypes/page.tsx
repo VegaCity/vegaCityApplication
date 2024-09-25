@@ -26,7 +26,7 @@ const ETagsPage = () => {
 
   const handleGenerateETag = (id: string) => {
     console.log('Generate E-Tag for:', id);
-   
+    
   };
 
   if (loading) {
