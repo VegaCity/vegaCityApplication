@@ -26,6 +26,7 @@ import useSignIn from 'react-auth-kit/hooks/useSignIn';
 import { AuthServices } from '@/components/services/authServices';
 import { LoginAccount } from '@/types/loginAccount';
 import { useEffect, useState } from 'react';
+import { toast } from '../ui/use-toast';
 
 
 const formSchema = z.object({
@@ -88,6 +89,7 @@ const LoginForm = () => {
             // Redirect or do-something
           } else {
             console.log("Đăng nhập thất bại!");
+            
             //Throw error
           }
         })
@@ -117,65 +119,60 @@ const LoginForm = () => {
   
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
-        <CardDescription>
-          Log into your account with your credentials
-        </CardDescription>
-      </CardHeader>
-      <CardContent className='space-y-2'>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className='space-y-6'
-          >
-            <FormField
-              control={form.control}
-              name='email'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                    Email
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0'
-                      placeholder='Enter Email'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name='password'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                    Password
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type='password'
-                      className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0'
-                      placeholder='Enter Password'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button className='w-full'>Sign In</Button>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+    <Card className="max-w-lg mx-auto p-6">
+    <CardHeader>
+      <CardTitle className="text-center text-xl">Login</CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-sm font-bold text-zinc-500 dark:text-white">
+                  Email
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
+                    placeholder="Enter Email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+  
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-sm font-bold text-zinc-500 dark:text-white">
+                  Password
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
+                    placeholder="Enter Password"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+  
+          <Button className="w-full bg-sky-600 text-lg ">Sign In</Button>
+        </form>
+      </Form>
+    </CardContent>
+  </Card>
+  
   );
 };
 
