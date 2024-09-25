@@ -1,24 +1,36 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://vega.vinhuser.one/api/v1'
+const BASE_URL = 'https://vega.vinhuser.one/api/v1';
 
 export const API = axios.create({
-    baseURL: BASE_URL
-})
+    baseURL: BASE_URL,
+});
 
 
 API.interceptors.request.use(
-    (config) => {
+  (config) => {
       const token = localStorage.getItem("accessToken");
+      console.log("Authorization Header:", token); 
       if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+          config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
+  },
+  (error) => {
+      return Promise.reject(error);
+  }
+);
+
+API.interceptors.response.use(
+    (response) => {
+        return response;
     },
     (error) => {
-      return Promise.reject(error);
+        console.error('API Error:', error.response ? error.response.data : error.message);
+        return Promise.reject(error);
     }
-  );
+);
+
   // API.interceptors.response.use(
   //   (response) => response,
   //   async (error) => {

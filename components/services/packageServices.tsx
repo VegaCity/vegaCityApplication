@@ -2,8 +2,8 @@ import { API } from "@/components/services/api";
 import { Packages } from "@/types/package";
 
 interface PackagePageSize {
-    page?: number,
-    size?: number,
+    page?: number;
+    size?: number;
 }
 
 export const PackageServices = {
@@ -27,4 +27,4 @@ export const PackageServices = {
     deletePackageById(id: string) {
         return API.delete(`/package/${id}`);
     },
-}
+};
