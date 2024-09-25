@@ -11,9 +11,9 @@ export const AuthServices = {
       return API.post('/auth/refresh-token', fetchData);
     },
     logoutUser() {
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("userId");
-      
+      localStorage.removeItem("refreshToken");
     }
   }
   

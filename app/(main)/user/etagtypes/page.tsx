@@ -1,33 +1,62 @@
 'use client';
 
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import BackButton from '@/components/BackButton';
-import EtagTypeTable from '@/components/etagtypes/ETagsTable';
-import ETagsPagination from '@/components/etagtypes/ETagsPagination';
 import { useUserRole } from '@/components/hooks/useUserRole';
+import { ETagTypeServices } from '@/components/services/etagtypeServices';
+import { EtagType } from "@/types/etagtype";
+import ETagCard from '@/components/card/etagcard';
 
 const ETagsPage = () => {
+  const { userRole, loading } = useUserRole();
+  const [etagTypes, setEtagTypes] = useState<EtagType[]>([]);
 
-  const {userRole, loading } = useUserRole(); //userRole is an object so that u should . to value like userRole.name, userRole.id
-  console.log(userRole?.name, 'userRole');
+  useEffect(() => {
+    const fetchETagTypes = async () => {
+      try {
+        const response = await ETagTypeServices.getETagTypes({ page: 1, size: 10 });
+        setEtagTypes(response.data.items); 
+      } catch (error) {
+        console.error('Error fetching etag types:', error);
+      }
+    };
 
-  if(userRole && userRole.name !== 'CashierWeb'){
-    return <div>You have denined to access this Page!</div>
+    fetchETagTypes();
+  }, []);
+
+  const handleGenerateETag = (id: string) => {
+    console.log('Generate E-Tag for:', id);
+   
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-    return (
-      <div className="container mx-auto p-4">
-        <div className="flex justify-between items-center mb-4">
-          <div>Cashier Web Nè</div>
-          <BackButton text='Go Back' link='/' />
-          <Link href="/admin/etagtypes/create" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Create New ETag
-          </Link>
-        </div>
-        <EtagTypeTable />
-        <ETagsPagination />
+  if (userRole && userRole.name !== 'CashierWeb') {
+    return <div>You are denied access to this page!</div>;
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <div className="flex justify-between items-center mb-4">
+        <BackButton text='Go Back' link='/' />
       </div>
-    );
-  };
-  
-  export default ETagsPage;
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {etagTypes.length > 0 ? (
+          etagTypes.map((etag) => (
+            <ETagCard 
+              key={etag.id} 
+              etag={etag} 
+              onGenerateETag={handleGenerateETag} 
+            />
+          ))
+        ) : (
+          <div>No E-Tags available</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ETagsPage;
