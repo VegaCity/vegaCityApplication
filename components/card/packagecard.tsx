@@ -74,7 +74,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
         <p className="text-sm text-gray-600">End Date: {formatDate(pkg.endDate)}</p>
       </CardContent>
       <CardFooter>
-        <Link href={`/packages/generate/${pkg.id}`} passHref>
+        <Link href={`/user/packages/generate/${pkg.id}`} passHref>
           <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md">
             Generate
           </Button>
