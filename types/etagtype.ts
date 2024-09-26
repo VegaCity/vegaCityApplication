@@ -1,7 +1,7 @@
 export interface EtagType {
     id: string;                 
     name: string;                    
-    imageUrl: string;            
+    etags: string;            
     bonusRate: number;                      
     amount: number;              
   }
