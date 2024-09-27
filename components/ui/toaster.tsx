@@ -23,7 +23,6 @@ export function Toaster() {
               {description && (
                 <ToastDescription>{description}</ToastDescription>
               )}
-              hello
             </div>
             {action}
             <ToastClose />

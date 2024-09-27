@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { PackageServices } from '@/components/services/packageServices';
+import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
@@ -27,7 +29,7 @@ const formSchema = z.object({
 
 const PackageCreatePage = () => {
   const { toast } = useToast();
-
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -42,15 +44,23 @@ const PackageCreatePage = () => {
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     // Here you would typically send this data to your API
     console.log('New package data:', data);
-    toast({
-      title: 'Package has been created successfully',
-      description: `Created package: ${data.name}`,
-    });
+    if(data){
+      PackageServices.uploadPackage(data).then((res) => {
+        console.log(res.data, 'Upload Package')
+        toast({
+          title: 'Package has been created successfully',
+          description: `Created package: ${data.name}`,
+        });
+        router.push('/admin/packages');
+      })
+    }
+
+    
   };
 
   return (
     <>
-      <BackButton text='Back To Packages' link='/packages' />
+      <BackButton text='Back To Packages' link='/admin/packages' />
       <h3 className='text-2xl mb-4'>Create New Package</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>

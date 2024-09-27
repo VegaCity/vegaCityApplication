@@ -42,7 +42,7 @@ const EtagTypeCreatePage = () => {
     try {
       const etagTypeData: EtagType = {
         name: data.name,
-        imageUrl: data.imageUrl,
+        etags: data.etags,
         bonusRate: data.bonusRate,
         amount: data.amount,
         id: ''
@@ -64,7 +64,7 @@ const EtagTypeCreatePage = () => {
 
   return (
     <>
-      <BackButton text='Back To Etag Types' link='/etagtypes' />
+      <BackButton text='Back To Etag Types' link='/admin/etagtypes' />
       <h3 className='text-2xl mb-4'>Create New Etag Type</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
