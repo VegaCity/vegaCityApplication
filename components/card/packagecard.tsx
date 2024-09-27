@@ -17,7 +17,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // Đánh dấu rằng component đã được mount
+    setIsClient(true); // Mark that the component has been mounted
   }, []);
 
   useEffect(() => {
@@ -52,7 +52,15 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
   const formatDate = (date: Date | string | undefined) => {
     if (!date) return 'N/A';
     const parsedDate = typeof date === 'string' ? new Date(date) : date;
-    return isNaN(parsedDate.getTime()) ? 'Invalid Date' : parsedDate.toLocaleDateString();
+    return isNaN(parsedDate.getTime()) ? 'Invalid Date' : parsedDate.toLocaleDateString('vi-VN');
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      currencyDisplay: 'symbol',
+    }).format(amount).replace('₫', 'đ'); 
   };
 
   return (
@@ -68,14 +76,14 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
       </div>
       <CardContent className="p-4">
         <h3 className="text-lg font-semibold mb-2 text-center">{pkg.name}</h3>
-        <p className="text-sm text-gray-600">Description: {pkg.description}</p>
-        <p className="text-sm text-gray-600">Price: {typeof pkg.price === 'number' ? `$${pkg.price.toFixed(0)}` : 'N/A'}</p>
-        <p className="text-sm text-gray-600">Start Date: {formatDate(pkg.startDate)}</p>
-        <p className="text-sm text-gray-600">End Date: {formatDate(pkg.endDate)}</p>
+        <p className="text-sm text-gray-600 mb-1">Description: {pkg.description}</p>
+        <p className="text-sm text-gray-600 mb-1">Amount: {typeof pkg.price === 'number' ? formatCurrency(pkg.price) : 'N/A'}</p>
+        <p className="text-sm text-gray-600 mb-1">Start Date: <span className="font-medium">{formatDate(pkg.startDate)}</span></p>
+        <p className="text-sm text-gray-600 mb-1">End Date: <span className="font-medium">{formatDate(pkg.endDate)}</span></p>
       </CardContent>
-      <CardFooter>
-        <Link href={`/user/packages/generate/${pkg.id}`} passHref>
-          <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md">
+      <CardFooter className="flex justify-center">
+        <Link href={`/user/packages/generate/${pkg.id}`}>
+          <Button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-4 px-4 rounded-md">
             Generate
           </Button>
         </Link>
