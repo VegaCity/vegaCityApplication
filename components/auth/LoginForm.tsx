@@ -68,15 +68,15 @@ const LoginForm = () => {
           localStorage.setItem("accessToken", res.data.data.accessToken);
           localStorage.setItem("userId",res.data.data.userId);
           setAccessToken(res.data.data.accessToken);
-          //login success
+         
           if (
             signIn({
               auth: {
-                // expiresIn: 3600,
+               
                 token: res.data.data.accessToken,
                 type: "Bearer",
               },
-              // refresh: res.data.refreshToken,
+              
               userState: {
                 accessToken: res.data?.data.accessToken,
                 userId: res.data?.data.userId,
@@ -86,32 +86,19 @@ const LoginForm = () => {
             })
           ) {
             router.push("/");
-            // Redirect or do-something
+            
           } else {
             console.log("Đăng nhập thất bại!");
             
-            //Throw error
+          
           }
         })
         .catch((err) => {
-          // setIsLoading(false);
-          // console.log(isLoading);
+
           console.log(err);
-          // if(err.status === 401){
-          //   AuthServices.fetchUser(email, 'eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyM2EwZjhkNS00MjhjLTQ2ODItOTEzZS0zNTkzOTVlYmZlZjAiLCJlbWFpbCI6ImNza2gudmVnYWNpdHkudm5AZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJNYXJrZXRab25lSWQiOiI1ZjcyOGRlYi1iMmMzLTRiYWMtOWQ5Yy00MWExMWUwYWNjY2MiLCJuYmYiOjE3MjcwNzk3OTQsImV4cCI6MTcyNzE2NjE5NCwiaXNzIjoiVmVnYUNpdHlBcHAifQ.KmymhFKvDwl-6JJ3QWnDXaoYO2v-uSlB1cHNd7pdUf0')
-          //   .then((res) => {
-          //     console.log(res.data.refreshToken, "fetch user res");
-          //     const newRefreshToken = res.data.refreshToken;
-          //     localStorage.setItem('refreshToken', newRefreshToken);
-          //     AuthServices.fetchUser(email, newRefreshToken).then((res) => {
-          //       const refreshToken2 = res.data.refreshToken;
-          //       localStorage.setItem('refreshToken', refreshToken2);
-          //     })
-          //   })
-          // }
         })
         .finally(() => {
-          // setIsLoading(false);
+          
         });
     }
   };

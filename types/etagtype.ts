@@ -4,5 +4,6 @@ export interface EtagType {
     etags: string;            
     bonusRate: number;                      
     amount: number;              
+    imageUrl?: string;
   }
   

@@ -65,30 +65,31 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
 
   return (
     <Card className="w-full h-auto flex flex-col justify-between">
-      <div className="relative w-full h-40">
-        <Image
-          src={pkg.imageUrl || '/path/to/placeholder-image.jpg'}
-          alt={pkg.name || 'Package Image'}
-          layout="fill"
-          objectFit="cover"
-          className="rounded-t-lg"
-        />
-      </div>
-      <CardContent className="p-4">
-        <h3 className="text-lg font-semibold mb-2 text-center">{pkg.name}</h3>
-        <p className="text-sm text-gray-600 mb-1">Description: {pkg.description}</p>
-        <p className="text-sm text-gray-600 mb-1">Amount: {typeof pkg.price === 'number' ? formatCurrency(pkg.price) : 'N/A'}</p>
-        <p className="text-sm text-gray-600 mb-1">Start Date: <span className="font-medium">{formatDate(pkg.startDate)}</span></p>
-        <p className="text-sm text-gray-600 mb-1">End Date: <span className="font-medium">{formatDate(pkg.endDate)}</span></p>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <Link href={`/user/packages/generate/${pkg.id}`}>
-          <Button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-4 px-4 rounded-md">
-            Generate
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+  <div className="relative w-48 h-48">
+    <Image
+      src={pkg.imageUrl || '/path/to/placeholder-image.jpg'}
+      alt={pkg.name || 'Package Image'}
+      layout="fill"
+      objectFit="cover"
+      className="rounded-t-lg"
+    />
+  </div>
+  <CardContent className="p-4">
+    <h3 className="text-lg font-semibold mb-2">{pkg.name}</h3>
+    <p className="text-red-600 mb-1 text-lg">
+      {typeof pkg.price === 'number' ? formatCurrency(pkg.price) : 'N/A'}
+    </p>
+  </CardContent>
+  <CardFooter className="p-4">
+  <Button  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all">
+        
+      <Link href={`/user/packages/generate/${pkg.id}`}>
+      Generate
+    </Link>
+    </Button>
+  </CardFooter>
+</Card>
+
   );
 };
 

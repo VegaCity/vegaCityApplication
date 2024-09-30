@@ -29,8 +29,7 @@ const ETagCard: React.FC<ETagCardProps> = ({ etag, onGenerateETag }) => {
         <p className="text-sm text-gray-600 mt-4">Amount: {etag.amount}</p>
       </CardContent>
       <CardFooter className="p-4">
-        <Button 
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all"
+        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all"
           onClick={() => onGenerateETag(etag.id)}
         >
           <Link href={`/user/etagtypes/generate/${etag.id}`}>
