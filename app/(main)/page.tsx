@@ -14,6 +14,11 @@ export default function Home() {
           icon={<Package2 className='text-slate-500' size={72} />}
         />
         <DashboardCard
+          title='E-Tag Types'
+          count={12}
+          icon={<Tag className='text-slate-500' size={72} />}
+        />
+         <DashboardCard
           title='E-Tags'
           count={12}
           icon={<Tag className='text-slate-500' size={72} />}
