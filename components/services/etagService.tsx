@@ -5,9 +5,18 @@ interface ETagPageSize {
     page?: number,
     size?: number,
 }
-
+export interface GenerateEtag {
+    quantity?: number,
+    etagTypeId?: string,
+    generateEtagRequest: {
+      startDate: string,
+      endDate: string,
+      day: number,
+      
+    }
+  }
 export const ETagServices = {
-    getETagTypes({ page, size }: ETagPageSize) {
+    getETags({ page, size }: ETagPageSize) {
         return API.get('/etags', {
             params: {
                 page,
@@ -15,16 +24,25 @@ export const ETagServices = {
             }
         });
     },
-    getETagTypeById(id: string) {
+    getETagById(id: string) {
         return API.get(`/etag/${id}`);
     },
-    uploadEtagType(etagData: ETag) {
+    uploadEtag(etagData: ETag) {
         return API.post('/etag/', etagData);
     },
-    editEtagType(id: string, etagData: ETag) {
+    editEtag(id: string, etagData: ETag) {
         return API.patch(`/etag/${id}`, etagData); 
     },
-    deleteEtagTypeById(id: string) {
+    deleteEtagById(id: string) {
         return API.delete(`/etag/${id}`);
     },
-}
+    generateEtag({ quantity, etagTypeId, generateEtagRequest }: GenerateEtag) {
+      console.log('Sending generateEtag request with:', { quantity, etagTypeId, generateEtagRequest });
+      return API.post('/generate-etag', generateEtagRequest, {
+        params: {
+          quantity,
+          etagTypeId
+        }
+      })
+    }
+  };

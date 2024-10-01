@@ -1,5 +1,5 @@
 
-import { API } from './api';  
+import { API } from '@/components/services/api';   
 import { OrderData, ConfirmOrderData } from '@/types/orderUser';  
 
 

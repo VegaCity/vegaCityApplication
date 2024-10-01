@@ -61,8 +61,8 @@ const Sidebar = () => {
         {userRole && userRole.name === 'CashierWeb' && (
           <Link href={navigatePage('etags')} className="block">
             <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
-              <Store className="h-6 w-8 mb-3" />
-              Store
+              <Tag className="h-6 w-8 mb-3" />
+              ETag
             </CommandItem>
           </Link>
 

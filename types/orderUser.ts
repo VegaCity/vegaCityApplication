@@ -27,7 +27,7 @@ export interface ProductData {
     startDate: Date;
     endDate: Date;
     day: number;
-    moneyStart: number;
+    
   }
   
   export interface ConfirmOrderData {
