@@ -53,12 +53,20 @@ const Sidebar = () => {
             <Link href={navigatePage('etagtypes')} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <Tag className="h-6 w-8 mb-3" />
-                E-Tag
+                ETagTypes
               </CommandItem>
             </Link>
           </>
         )}
+        {userRole && userRole.name === 'CashierWeb' && (
+          <Link href={navigatePage('etags')} className="block">
+            <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+              <Store className="h-6 w-8 mb-3" />
+              Store
+            </CommandItem>
+          </Link>
 
+        )}
         {userRole && userRole.name === 'Admin' && (
           <>
             <Link href="/store" className="block">

@@ -1,72 +1,204 @@
-'use client'
+'use client';
 import React, { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { ETagTypeServices } from '@/components/services/etagtypeServices';
 import BackButton from '@/components/BackButton';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-
-const formSchema = z.object({
-  id: z.string().min(1, { message: 'E-Tag Id is required' }),
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createOrder, confirmOrder } from '@/components/services/orderuserServices';
+const customerFormSchema = z.object({
   customerName: z.string().min(1, { message: 'Customer Name is required' }),
   phoneNumber: z.string().min(1, { message: 'Phone Number is required' }),
   address: z.string().min(1, { message: 'Address is required' }),
-  idNumber: z.string().min(1, { message: 'ID Number is required' }),
+  cccd: z.string().min(1, { message: 'CCCD Number is required' }),
   paymentMethod: z.enum(['cash', 'momo', 'vnpay'], { required_error: 'Payment method is required' }),
+  gender: z.enum(['male', 'female', 'other'], { required_error: 'Gender is required' }),
+  quantity: z.coerce.number().min(1, { message: 'Quantity is required and must be at least 1' }),
+  price: z.coerce.number().min(0, { message: 'Price must be a positive number' }),
 });
-
+const etagFormSchema = z.object({
+  etagStartDate: z.string().min(1, { message: 'E-Tag Start Date is required' }),
+  etagEndDate: z.string().min(1, { message: 'E-Tag End Date is required' }),
+  etagDuration: z.coerce.number().min(1, { message: 'E-Tag Duration is required' }),
+  etagMoney: z.coerce.number().min(0, { message: 'E-Tag Money must be a positive number' }),
+  etagQuantity: z.coerce.number().min(1, { message: 'E-Tag Quantity must be at least 1' }),
+});
 interface GenerateEtagProps {
-  params: {
-    id: string;
-  };
+  params: { id: string; };
 }
-
-type FormValues = z.infer<typeof formSchema>;
+type CustomerFormValues = z.infer<typeof customerFormSchema>;
+type EtagFormValues = z.infer<typeof etagFormSchema>;
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    currencyDisplay: 'symbol',
+  }).format(amount).replace('₫', 'đ');
+};
 
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [etagInfo, setEtagInfo] = useState({ name: '', bonusRate: 0, amount: 0 });
-
-  const methods = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const [isCustomerInfoConfirmed, setIsCustomerInfoConfirmed] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [etagData, setEtagData] = useState<{
+    startDate: string;
+    endDate: string;
+    day: number;
+    moneyStart: number;
+  
+  } | null>(null);
+  const handleCustomerInfoSubmit = async (data: CustomerFormValues) => {
+    setIsCustomerInfoConfirmed(true);
+    try {
+      const orderData = {
+        saleType: 'retail',
+        paymentType: data.paymentMethod,
+        totalAmount: data.price * data.quantity, 
+        productData: [{
+          id: etagInfo.id,
+          name: etagInfo.name,
+          price: data.price, 
+          imgUrl: etagInfo.imageUrl,
+          quantity: data.quantity, 
+        }],
+        customerInfo: {
+          fullName: data.customerName,
+          phoneNumber: data.phoneNumber,
+          address: data.address,
+          gender: data.gender,
+          cccd: data.cccd
+        }
+      };
+      const response = await createOrder(orderData);
+      
+      // Save orderId and invoiceId to local storage
+      localStorage.setItem('orderId', response.data.orderId);
+      localStorage.setItem('invoiceId', response.data.invoiceId);
+      
+      setOrderId(response.data.invoiceId);
+      toast({
+        title: 'Order Created',
+        description: 'Customer information confirmed and order created.',
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred while creating the order');
+      toast({
+        title: 'Error',
+        description: 'Failed to create order. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+  const handleEtagSubmit = async (data: EtagFormValues) => {
+    console.log('handleEtagSubmit started');
+    console.log('handleEtagSubmit called with data:', data);
+    try {
+      const invoiceId = localStorage.getItem('invoiceId');
+      console.log('Retrieved invoiceId from localStorage:', invoiceId);
+      
+      if (!invoiceId) {
+        console.error('No invoice ID found in localStorage');
+        throw new Error('No invoice ID found. Please create an order first.');
+      }
+  
+      const confirmData = {
+        invoiceId: invoiceId,
+        generateEtagRequest: {
+          startDate: new Date(data.etagStartDate),
+          endDate: new Date(data.etagEndDate),
+          day: data.etagDuration,
+          moneyStart: data.etagMoney,
+        }
+      };
+      console.log('Confirm Data:', confirmData);
+      
+      const response = await confirmOrder(confirmData);
+      console.log('confirmOrder response:', response);
+  
+      setEtagData({
+        startDate: data.etagStartDate,
+        endDate: data.etagEndDate,
+        day: data.etagDuration,
+        moneyStart: data.etagMoney,
+      });
+  
+      toast({
+        title: 'E-Tag generated successfully',
+        description: `E-Tag for package ${etagInfo.name} has been generated and order confirmed.`,
+      });
+    } catch (err) {
+      console.error('Error in handleEtagSubmit:', err);
+      let errorMessage = 'Failed to generate E-Tag and confirm order. Please try again.';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('status code 500')) {
+          errorMessage = 'Server error occurred. Please try again later or contact support.';
+        }
+        console.error('Detailed error:', err.message);
+      }
+      
+      setError(errorMessage);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  };
+  const customerForm = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerFormSchema),
     defaultValues: {
-      id: params.id,
       customerName: '',
       phoneNumber: '',
       address: '',
-      idNumber: '',
+      cccd: '',
       paymentMethod: 'cash',
+      gender: 'male',
+      quantity: 1,  // Default quantity can be 1
+      price: 0,     // Default price can be 0 or any other value
     },
   });
-
+  
+  const etagForm = useForm<EtagFormValues>({
+    resolver: zodResolver(etagFormSchema),
+    defaultValues: {
+      etagStartDate: '',
+      etagEndDate: '',
+      etagDuration: 0,
+      etagMoney: 0,
+    },
+  });
+  useEffect(() => {
+    const { etagStartDate, etagEndDate } = etagForm.watch();
+    if (etagStartDate && etagEndDate) {
+      const start = new Date(etagStartDate);
+      const end = new Date(etagEndDate);
+      const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+      etagForm.setValue('etagDuration', duration);
+    }
+  }, [etagForm.watch('etagStartDate'), etagForm.watch('etagEndDate')]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [etagInfo, setEtagInfo] = useState({ id:'',name: '', bonusRate: 0, amount: 0, imageUrl: '' });
   useEffect(() => {
     const fetchEtagData = async () => {
       try {
         const response = await ETagTypeServices.getETagTypeById(params.id);
         const etagData = response.data.data.etagType;
         console.log('E-Tag Data:', etagData);
-
         if (etagData) {
           setEtagInfo({
+            id: etagData.id,
             name: etagData.name,
             bonusRate: etagData.bonusRate,
             amount: etagData.amount,
+            imageUrl: etagData.imageUrl || '/path/to/placeholder-image.jpg',
           });
-          setImageUrl(etagData.imageUrl || null);
         } else {
           setError('No E-Tag data found');
         }
@@ -77,157 +209,288 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         setIsLoading(false);
       }
     };
-
     fetchEtagData();
   }, [params.id]);
 
-  const handleSubmit = async (data: FormValues) => {
-    try {
-      console.log('Generating E-Tag with data:', data);
-      // Implement your E-Tag generation logic here
-      
-      toast({
-        title: 'E-Tag generated successfully',
-        description: `E-Tag for ${etagInfo.name} has been generated.`,
-      });
-    } catch (err) {
-      console.error('Error generating E-Tag:', err);
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      toast({
-        title: 'Error',
-        description: 'Failed to generate E-Tag. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
+ 
 
   if (isLoading) return <div className="text-center p-4">Loading...</div>;
   if (error) return <div className="text-center p-4 text-red-500">Error: {error}</div>;
 
   return (
-    <FormProvider {...methods}>
+
       <div className="container mx-auto p-4">
         <BackButton text="Back To E-Tag Types" link="/" />
         <h3 className="text-2xl font-bold mb-6">Generate E-Tag for {etagInfo.name}</h3>
-
-        <div className="flex mb-6">
-          {/* Left side - Image */}
-          <div className="w-1/2 pr-4">
-            {imageUrl ? (
-              <>
-                <h4 className="text-lg font-semibold mb-2">E-Tag Image</h4>
-                <img src={imageUrl} alt="E-Tag" className="max-w-xs h-auto rounded-md shadow-md" />
-              </>
-            ) : (
-              <>
-                <h4 className="text-lg font-semibold mb-2">E-Tag Image (Default)</h4>
-                <img src="/path/to/placeholder-image.jpg" alt="Default E-Tag" className="max-w-xs h-auto rounded-md shadow-md" />
-              </>
-            )}
+        <div className="flex flex-col md:flex-row gap-8 mb-8 mt-4">
+          <div className="md:w-1/2">
+            <img src={etagInfo.imageUrl} alt={etagInfo.name} className="w-48 h-48 rounded-lg shadow-lg" />
           </div>
-
-          {/* Right side - E-Tag Info */}
-          <div className="w-1/2">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
-              <h4 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">E-Tag Information</h4>
-              <div className="space-y-4">
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Name:</span>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{etagInfo.name}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Bonus Rate:</span>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{etagInfo.bonusRate}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Amount:</span>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">{etagInfo.amount}</p>
-                </div>
-              </div>
+          <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{etagInfo.name}</h2>
+              <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">{formatCurrency(etagInfo.amount)}</p>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Bonus Rate</h3>
+              <p className="text-red-400">{etagInfo.bonusRate}%</p>
             </div>
           </div>
         </div>
-
+        
         {/* Customer Information Section */}
-        <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Customer Information</h3>
-          <FormField
-            control={methods.control}
-            name="customerName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</FormLabel>
-                <FormControl>
-                  <Input className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" placeholder="Enter Full Name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={methods.control}
-            name="phoneNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</FormLabel>
-                <FormControl>
-                  <Input className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" placeholder="Enter Phone Number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={methods.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Address</FormLabel>
-                <FormControl>
-                  <Input className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" placeholder="Enter Address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={methods.control}
-            name="idNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">ID Number</FormLabel>
-                <FormControl>
-                  <Input className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" placeholder="Enter ID Number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={methods.control}
-            name="paymentMethod"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Payment Method</FormLabel>
-                <FormControl>
-                  <select {...field} className="w-full bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white rounded-md p-2">
-                    <option value="cash">Cash</option>
-                    <option value="momo">Momo</option>
-                    <option value="vnpay">VNPay</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <Form {...customerForm}>
+        <form onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)} className="space-y-6">
+          <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Customer Information</h3>
+            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+              <FormField
+                control={customerForm.control}
+                name="customerName"
+                render={({ field }) => (
+                  <FormItem className="md:w-1/2">
+                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" 
+                        placeholder="Enter Full Name" 
+                        {...field} 
+                        disabled={isCustomerInfoConfirmed}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={customerForm.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem className="md:w-1/2">
+                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</FormLabel>
+                    <FormControl>
+                      <Input 
+                        className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" 
+                        placeholder="Enter Phone Number" 
+                        {...field} 
+                        disabled={isCustomerInfoConfirmed}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormField
+              control={customerForm.control}
+              name="cccd"
+              render={({ field }) => (
+                <FormItem className="md:w-1/2">
+                  <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">CCCD:</FormLabel>
+                  <FormControl>
+                    <Input 
+                      className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" 
+                      placeholder="Enter ID Number" 
+                      {...field} 
+                      disabled={isCustomerInfoConfirmed}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+              <FormField
+                control={customerForm.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem className="md:w-1/2">
+                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Gender</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isCustomerInfoConfirmed}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="male">Male</SelectItem>
+                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <div className="mt-6">
-          <Button type="submit" onClick={methods.handleSubmit(handleSubmit)} className="w-full">Generate E-Tag</Button>
-        </div>
-      </div>
-    </FormProvider>
+            </div>
+            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+  <FormField
+    control={customerForm.control}
+    name="quantity"
+    render={({ field }) => (
+      <FormItem className="md:w-1/2">
+        <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Quantity</FormLabel>
+        <FormControl>
+          <Input
+            type="number"
+            {...field}
+            className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+            disabled={isCustomerInfoConfirmed}
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+  
+  <FormField
+    control={customerForm.control}
+    name="price"
+    render={({ field }) => (
+      <FormItem className="md:w-1/2">
+        <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Price</FormLabel>
+        <FormControl>
+          <Input
+            type="number"
+            {...field}
+            className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+            disabled={isCustomerInfoConfirmed}
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+</div>
+<div className="md:flex md:space-x-4 space-y-4 md:space-y-0"></div>
+              <FormField
+              control={customerForm.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Address</FormLabel>
+                  <FormControl>
+                    <Input 
+                      className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" 
+                      placeholder="Enter Address" 
+                      {...field} 
+                      disabled={isCustomerInfoConfirmed}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        
+            <FormField
+                control={customerForm.control}
+                name="paymentMethod"
+                render={({ field }) => (
+                  <FormItem >
+                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Payment Method</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isCustomerInfoConfirmed}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select payment method" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="cash">Cash</SelectItem>
+                        <SelectItem value="momo">Momo</SelectItem>
+                        <SelectItem value="vnpay">VNPay</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+          </div>
+          {!isCustomerInfoConfirmed && (
+            <div className="flex justify-end">
+               <Button type="submit" className="w-full sm:w-auto" >
+                Confirm Information
+              </Button>
+            </div>
+          )}
+        </form>
+      </Form>
+      {isCustomerInfoConfirmed && (
+       <Form {...etagForm}>
+       <form onSubmit={(e) => {
+         console.log('Form submitted');
+         console.log('Form is valid:', etagForm.formState.isValid);
+         console.log('Form errors:', etagForm.formState.errors);
+         etagForm.handleSubmit(handleEtagSubmit)(e);
+       }} className="space-y-6 mt-8">
+            <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">E-Tag Information</h3>
+              <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+                <FormField
+                  control={etagForm.control}
+                  name="etagStartDate"
+                  render={({ field }) => (
+                    <FormItem className="md:w-1/2">
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag Start Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              <FormField
+                  control={etagForm.control}
+                  name="etagEndDate"
+                  render={({ field }) => (
+                    <FormItem className="md:w-1/2">
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag End Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+                <FormField
+                  control={etagForm.control}
+                  name="etagDuration"
+                  render={({ field }) => (
+                    <FormItem className="md:w-1/2">
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag Duration (Days)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} readOnly className="bg-gray-200 dark:bg-gray-600 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={etagForm.control}
+                  name="etagMoney"
+                  render={({ field }) => (
+                    <FormItem className="md:w-1/2">
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag Money</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" className="w-full sm:w-auto">
+                Generate E-Tag
+              </Button>
+            </div>
+          </form>
+        </Form>
+      )}    
+    </div>
   );
 };
-
 export default GenerateEtagById;
