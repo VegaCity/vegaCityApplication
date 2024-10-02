@@ -1,7 +1,5 @@
-
-import { API } from '@/components/services/api';   
-import { OrderData, ConfirmOrderData } from '@/types/orderUser';  
-
+import { API } from '@/components/services/api';
+import { OrderData, ConfirmOrderData } from '@/types/orderUser';
 
 export const createOrder = async (orderData: OrderData) => {
   try {
@@ -9,10 +7,9 @@ export const createOrder = async (orderData: OrderData) => {
     return response.data;
   } catch (error) {
     console.error('Error creating order:', error);
-    throw error; 
+    throw error;
   }
 };
-
 
 export const confirmOrder = async (confirmData: ConfirmOrderData) => {
   try {
@@ -20,6 +17,16 @@ export const confirmOrder = async (confirmData: ConfirmOrderData) => {
     return response.data;
   } catch (error) {
     console.error('Error confirming order:', error);
-    throw error; 
+    throw error;
+  }
+};
+
+export const deleteOrder = async (id: string) => {
+  try {
+    const response = await API.delete(`/order/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    throw error;
   }
 };
