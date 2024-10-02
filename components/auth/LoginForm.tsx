@@ -27,7 +27,6 @@ import { AuthServices } from '@/components/services/authServices';
 import { LoginAccount } from '@/types/loginAccount';
 import { useEffect, useState } from 'react';
 import { toast } from '../ui/use-toast';
-import { AxiosError } from 'axios';
 
 
 const formSchema = z.object({
@@ -57,54 +56,54 @@ const LoginForm = () => {
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = (data: z.infer<typeof formSchema>) => {
     const {email, password} = data;
-    try {
-      const res = await AuthServices.loginUser(data);
-      console.log(res.data, "login res");
-      
-      // Store tokens and user ID
-      localStorage.setItem("refreshToken", res.data.data.refreshToken);
-      localStorage.setItem("accessToken", res.data.data.accessToken);
-      localStorage.setItem("userId", res.data.data.userId);
-      
-      // Update access token in your state or context
-      setAccessToken(res.data.data.accessToken);
-      
-      // Redirect to home page
-      router.push("/");
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        if (error.response?.status === 401) {
-          await handleUnauthorizedError(data.email);
-        } else {
-          console.error("Login error:", error.response?.data || error.message);
-          // Handle other types of errors (e.g., network issues, server errors)
-        }
-      } else {
-        console.error("Unexpected error:", error);
-      }
+    console.log(data, "data");
+    if (data !== null) {
+      AuthServices.loginUser(data)
+      .then((res) => {
+          router.push("/")
+          console.log(res.data, "login res")
+          localStorage.setItem("refreshToken", res.data.data.refreshToken);
+          localStorage.setItem("accessToken", res.data.data.accessToken);
+          localStorage.setItem("userId",res.data.data.userId);
+          setAccessToken(res.data.data.accessToken);
+         
+          if (
+            signIn({
+              auth: {
+               
+                token: res.data.data.accessToken,
+                type: "Bearer",
+              },
+              
+              userState: {
+                accessToken: res.data?.data.accessToken,
+                userId: res.data?.data.userId,
+                refreshToken: res.data?.data.refreshToken,
+              },
+              // expiresIn: 3600,
+            })
+          ) {
+            router.push("/");
+            
+          } else {
+            console.log("Đăng nhập thất bại!");
+            
+          
+          }
+        })
+        .catch((err) => {
+
+          console.log(err);
+        })
+        .finally(() => {
+          
+        });
     }
   };
 
-  const handleUnauthorizedError = async (email: string) => {
-    const storedRefreshToken = localStorage.getItem('refreshToken');
-    const refreshToken = storedRefreshToken || 'eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyM2EwZjhkNS00MjhjLTQ2ODItOTEzZS0zNTkzOTVlYmZlZjAiLCJlbWFpbCI6ImNza2gudmVnYWNpdHkudm5AZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJNYXJrZXRab25lSWQiOiI1ZjcyOGRlYi1iMmMzLTRiYWMtOWQ5Yy00MWExMWUwYWNjY2MiLCJuYmYiOjE3MjcwNzk3OTQsImV4cCI6MTcyNzE2NjE5NCwiaXNzIjoiVmVnYUNpdHlBcHAifQ.KmymhFKvDwl-6JJ3QWnDXaoYO2v-uSlB1cHNd7pdUf0';
   
-    try {
-      const res = await AuthServices.fetchUser(email, refreshToken);
-      console.log(res.data.data.refreshToken, "Fetch user Ref Token");
-      localStorage.setItem('refreshToken', res.data.data.refreshToken);
-  
-      // Fetch user again with the new refresh token
-      const secondRes = await AuthServices.fetchUser(email, res.data.data.refreshToken);
-      localStorage.setItem('refreshToken', secondRes.data.refreshToken);
-    } catch (error) {
-      console.error("Failed to fetch user refresh token:", error);
-      // Handle the error (e.g., redirect to login page, show error message)
-    }
-  };
-
 
   return (
     <Card className="max-w-lg mx-auto p-6">
