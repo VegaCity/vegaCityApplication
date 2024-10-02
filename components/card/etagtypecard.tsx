@@ -11,32 +11,41 @@ interface ETagTypeCardProps {
 }
 
 const ETagTypeCard: React.FC<ETagTypeCardProps> = ({ etagtype, onGenerateETag }) => {
-  const validImageUrl = etagtype.imageUrl && etagtype.imageUrl.startsWith('http') ? etagtype.imageUrl : '/default-image.png'; 
-
+  const validImageUrl = etagtype.imageUrl && etagtype.imageUrl.startsWith('http') ? etagtype.imageUrl : '/default-image.png';
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      currencyDisplay: 'symbol',
+    }).format(amount).replace('₫', 'đ'); 
+  };
   return (
     <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
-      <CardContent className="p-4 flex flex-col items-center">
-        <div className="w-48 h-48 relative mb-4 rounded-lg overflow-hidden shadow-sm">
+
+<div className="w-full flex justify-center p-4">
+        <div className="w-48 h-48 relative rounded-lg overflow-hidden shadow-sm">
           <Image
             src={validImageUrl}
-            alt={etagtype.name}
+            alt={etagtype.name || 'Package Image'}
             layout="fill"
             objectFit="cover"
-            className="rounded-md"
+            className="rounded-lg"
           />
         </div>
-        <h3 className="text-lg font-semibold mb-2 text-center text-gray-900">{etagtype.name}</h3>
-        <p className="text-sm text-gray-600 mt-4">Amount: {etagtype.amount}</p>
+      </div>
+      <CardContent className="p-4">
+        <h3 className="text-lg font-semibold mb-2 text-start text-gray-900">{etagtype.name}</h3>
+        <p className="text-red-600 mb-1 text-lg">{typeof etagtype.amount === 'number' ? formatCurrency(etagtype.amount) : ''}</p>
       </CardContent>
       <CardFooter className="p-4">
-        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all"
-          onClick={() => onGenerateETag(etagtype.id)}
-        >
-          <Link href={`/user/etagtypes/generate/${etagtype.id}`}>
+        <Link href={`/user/etagtypes/generate/${etagtype.id}`} className='w-full'>
+          <Button
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all"
+            onClick={() => onGenerateETag(etagtype.id)}
+          >
             Generate E-Tag
-          </Link>
-          
-        </Button>
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );

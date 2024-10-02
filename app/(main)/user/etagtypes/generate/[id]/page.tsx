@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createOrder, confirmOrder } from '@/components/services/orderuserServices';
+import { createOrder, confirmOrder, deleteOrder } from '@/components/services/orderuserServices';
 import paymentService from '@/components/services/paymentService';
 import { API } from '@/components/services/api';
 import axios, { AxiosError } from 'axios';
@@ -57,6 +57,36 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     moneyStart: number;
   
   } | null>(null);
+  const deleteExistingOrder = async () => {
+    const storedOrderId = localStorage.getItem('orderId');
+    if (storedOrderId) {
+      try {
+        await deleteOrder(storedOrderId);
+        localStorage.removeItem('orderId');
+        localStorage.removeItem('invoiceId');
+        toast({
+          title: 'Order Deleted',
+          description: 'The existing order has been successfully deleted.',
+        });
+      } catch (err) {
+        console.error('Error deleting order:', err);
+        toast({
+          title: 'Error',
+          description: 'Failed to delete the existing order. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
+  const handleCancel = async () => {
+    await deleteExistingOrder();
+    setIsCustomerInfoConfirmed(false);
+    customerForm.reset();
+    etagForm.reset();
+    setOrderId(null);
+    setEtagData(null);
+  };
   const handleCustomerInfoSubmit = async (data: CustomerFormValues) => {
     setIsCustomerInfoConfirmed(true);
     try {
@@ -310,7 +340,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   return (
 
       <div className="container mx-auto p-4">
-        <BackButton text="Back To E-Tag Types" link="/" />
+        <BackButton text="Back To E-Tag Types" link="/user/etagtypes" />
         <h3 className="text-2xl font-bold mb-6">Generate E-Tag for {etagInfo.name}</h3>
         <div className="flex flex-col md:flex-row gap-8 mb-8 mt-4">
           <div className="md:w-1/2">
@@ -560,8 +590,11 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                
               </div>
             </div>
-            <div className="flex justify-end">
-              <Button type="submit" className="w-full sm:w-auto">
+            <div className="flex justify-end space-x-4">
+              <Button type="button" variant="outline" onClick={handleCancel}>
+                Cancel
+              </Button>
+              <Button type="submit">
                 Generate E-Tag
               </Button>
             </div>
