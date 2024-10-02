@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createOrder, deleteOrder } from '@/components/services/orderuserServices';
+import { createOrder } from '@/components/services/orderuserServices';
 import { GenerateEtag } from '@/components/services/etagService';
 import { ETagServices } from '@/components/services/etagService';
 import paymentService from '@/components/services/paymentService';
@@ -107,36 +107,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     };
     fetchPackageData();
   }, [params.id, toast]);
-  const deleteExistingOrder = async () => {
-    const storedOrderId = localStorage.getItem('orderId');
-    if (storedOrderId) {
-      try {
-        await deleteOrder(storedOrderId);
-        localStorage.removeItem('orderId');
-        localStorage.removeItem('invoiceId');
-        toast({
-          title: 'Order Deleted',
-          description: 'The existing order has been successfully deleted.',
-        });
-      } catch (err) {
-        console.error('Error deleting order:', err);
-        toast({
-          title: 'Error',
-          description: 'Failed to delete the existing order. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    }
-  };
-
-  const handleCancel = async () => {
-    await deleteExistingOrder();
-    setIsCustomerInfoConfirmed(false);
-    customerForm.reset();
-    etagForm.reset();
-    setOrderId(null);
-    setEtagData(null);
-  };
 
   const handleCustomerInfoSubmit = async (data: CustomerFormValues) => {
     setIsCustomerInfoConfirmed(true);
@@ -338,12 +308,12 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   if (error) return <div>Error: {error}</div>;
   return (
     <div className="container mx-auto p-4">
-      <BackButton text="Back To Packages" link="/user/packages" />
+      <BackButton text="Back To Packages" link="/" />
       <h3 className="text-2xl mb-4">Generate E-Tag</h3>
       {packageData && (
         <div className="flex flex-col md:flex-row gap-8 mb-6">
           <div className="md:w-1/2">
-            <img src={packageData.imageUrl} alt={packageData.name} className="w-80 h-100 rounded-lg shadow-lg" />
+            <img src={packageData.imageUrl} alt={packageData.name} className="w-full h-auto rounded-lg shadow-lg" />
           </div>
           <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
             <div>
@@ -362,7 +332,11 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 </p>
                 <p className="text-gray-600 dark:text-gray-400 mt-4">
                   {packageData.packageETagTypeMappings[0]?.etagType?.amount}
-                </p>  
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mt-4">
+                  {packageData.packageETagTypeMappings[0]?.etagType?.id}
+                </p>
+                
               </div>
             )}
           </div>
@@ -536,11 +510,11 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               />
           </div>
           {!isCustomerInfoConfirmed && (
-          <div className="flex justify-end space-x-4">
-          <Button type="submit">
-            Confirm Information
-          </Button>
-        </div>
+            <div className="flex justify-end">
+               <Button type="submit" className="w-full sm:w-auto" >
+                Confirm Information
+              </Button>
+            </div>
           )}
         </form>
       </Form>
@@ -599,11 +573,8 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               
               </div>
             </div>
-            <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button type="submit">
+            <div className="flex justify-end">
+              <Button type="submit" className="w-full sm:w-auto">
                 Generate E-Tag
               </Button>
             </div>

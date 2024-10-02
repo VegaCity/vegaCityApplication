@@ -52,18 +52,15 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
   };
 
   return (
-    <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
-
-<div className="w-full flex justify-center p-4">
-        <div className="w-48 h-48 relative rounded-lg overflow-hidden shadow-sm">
-          <Image
-            src={pkg.imageUrl || '/placeholder-image.jpg'}
-            alt={pkg.name || 'Package Image'}
-            layout="fill"
-            objectFit="cover"
-            className="rounded-lg"
-          />
-        </div>
+    <Card className="w-full h-auto flex flex-col justify-between">
+      <div className="relative w-full h-48">
+        <Image
+          src={pkg.imageUrl || '/placeholder-image.jpg'}
+          alt={pkg.name || 'Package Image'}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-t-lg"
+        />
       </div>
       <CardContent className="p-4">
         <h3 className="text-lg font-semibold mb-2">{pkg.name}</h3>
@@ -72,11 +69,11 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
         </p>
       </CardContent>
       <CardFooter className="p-4">
-      <Link href={`/user/packages/generate/${pkg.id}`} className="w-full">
-          <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all">
+        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all">
+          <Link href={`/user/packages/generate/${pkg.id}`}>
             Generate
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </CardFooter>
     </Card>
   );
