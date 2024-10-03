@@ -46,6 +46,7 @@ const formSchema = z.object({
 
 const LoginForm = () => {
   const [accessToken, setAccessToken] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -57,7 +58,14 @@ const LoginForm = () => {
   });
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-    
+    if(!isLoading){
+      toast({
+        title: "Loading",
+        description: "Please wait while we log you in...",
+        duration: 3000,
+      })
+      setIsLoading(true);
+    }
     try {
       const res = await AuthServices.loginUser(data);
       console.log(res.data, "login res");
@@ -70,8 +78,16 @@ const LoginForm = () => {
       // Update access token in your state or context
       setAccessToken(res.data.data.accessToken);
       
+      // Show success toast
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+
       // Redirect to home page
-      router.push("/");
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.response?.status === 401) {
@@ -79,10 +95,18 @@ const LoginForm = () => {
         } else {
           console.error("Login error:", error.response?.data || error.message);
           // Handle other types of errors (e.g., network issues, server errors)
+          console.log(error.response?.status)
+          // // Show fail toast
+          // toast({
+          //   title: "Login Fail",
+          //   description: error.response?.data || error.message,
+          // });
         }
       } else {
         console.error("Unexpected error:", error);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
   
