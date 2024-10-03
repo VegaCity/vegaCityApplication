@@ -11,7 +11,8 @@ import {
   Package,
   Tag,
   Store,
-  User
+  User,
+  WarehouseIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useUserRole } from '@/components/hooks/useUserRole';
@@ -67,12 +68,18 @@ const Sidebar = () => {
           </Link>
 
         )}
-        {userRole && userRole.name === 'Admin' && (
+        {/* {userRole && userRole.name === 'Admin' && ( */}
           <>
-            <Link href="/store" className="block">
+            <Link href={('/admin/zones')} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <Store className="h-6 w-8 mb-3" />
-                Store
+                Zones
+              </CommandItem>
+            </Link>
+            <Link href={('/admin/houses')} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <WarehouseIcon className="h-6 w-8 mb-3" />
+                Houses
               </CommandItem>
             </Link>
 
@@ -83,7 +90,7 @@ const Sidebar = () => {
               </CommandItem>
             </Link>
           </>
-        )}
+        {/* )} */}
       </CommandList>
     </Command>
   );
