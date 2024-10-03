@@ -30,3 +30,12 @@ export const deleteOrder = async (id: string) => {
     throw error;
   }
 };
+export const detailOrder = async (id: string) => {
+  try {
+    const response = await API.get(`/order/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting order:', error);
+    throw error;
+  }
+};

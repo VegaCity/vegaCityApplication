@@ -50,6 +50,10 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isCustomerInfoConfirmed, setIsCustomerInfoConfirmed] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [isEtagInfoConfirmed, setIsEtagInfoConfirmed] = useState(false);
+  const [cachedEtagFormData, setCachedEtagFormData] = useState({});
+  const [isCashPaymentConfirmed, setIsCashPaymentConfirmed] = useState(false);
+  const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [etagData, setEtagData] = useState<{
     startDate: string;
     endDate: string;
@@ -78,14 +82,31 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       }
     }
   };
-
-  const handleCancel = async () => {
+  const handleCancelEtag = () => {
+    setIsEtagInfoConfirmed(false);
+    setIsCustomerInfoConfirmed(false);
+    Object.entries(cachedEtagFormData).forEach(([key, value]) => {
+      if (typeof value === 'string' || typeof value === 'number') {
+        etagForm.setValue(key as keyof EtagFormValues, value);
+      }
+    });
+    toast({
+      title: 'Information Editing Enabled',
+      description: 'You can now edit both customer and E-tag information.',
+    });
+  };
+  const handleCancelOrder = async () => {
     await deleteExistingOrder();
     setIsCustomerInfoConfirmed(false);
+    setIsEtagInfoConfirmed(false);
+    setIsCashPaymentConfirmed(false);
     customerForm.reset();
     etagForm.reset();
     setOrderId(null);
-    setEtagData(null);
+    toast({
+      title: 'Order Cancelled',
+      description: 'Your order has been cancelled and deleted.',
+    });
   };
   const handleCustomerInfoSubmit = async (data: CustomerFormValues) => {
     setIsCustomerInfoConfirmed(true);
@@ -130,44 +151,28 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     }
   };
   const handleEtagSubmit = async (data: EtagFormValues) => {
-    console.log('handleEtagSubmit started');
-    
-    const storedEtagTypeId = localStorage.getItem('etagTypeId');
-    if (!storedEtagTypeId) {
-      console.error('EtagType ID is missing in localStorage');
+    if (!isOrderConfirmed) {
       toast({
         title: 'Error',
-        description: 'EtagType ID is missing. Please reload the page and try again.',
+        description: 'Please confirm your order before generating E-Tag.',
         variant: 'destructive',
       });
       return;
     }
-  
+
     try {
       const generateEtagData: GenerateEtag = {
         quantity: Number(customerForm.getValues('quantity')),
-        etagTypeId: storedEtagTypeId,
+        etagTypeId: localStorage.getItem('etagTypeId') || '',
         generateEtagRequest: {
           startDate: new Date(data.etagStartDate).toISOString(),
           endDate: new Date(data.etagEndDate).toISOString(),
           day: data.etagDuration,
-          
         }
       };
-  
-      if (!isValidEtagData(generateEtagData)) {
-        console.error('Invalid generateEtagData:', generateEtagData);
-        toast({
-          title: 'Error',
-          description: 'Invalid E-Tag data. Please check your inputs and try again.',
-          variant: 'destructive',
-        });
-        return;
-      }
-  
+
       const response = await ETagServices.generateEtag(generateEtagData);
-      console.log('generateEtag API response:', response);
-  
+
       if (response.data) {
         setEtagData({
           startDate: data.etagStartDate,
@@ -175,58 +180,99 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           day: data.etagDuration,
           moneyStart: data.etagMoney,
         });
-  
+
         toast({
           title: 'E-Tag generated successfully',
-          description: `E-Tag for package ${etagInfo.name} has been generated.`,
+          description: `E-Tag for ${etagInfo.name} has been generated.`,
         });
-  
-        const paymentMethod = customerForm.getValues('paymentMethod');
-        const invoiceId = localStorage.getItem('invoiceId');
-        
-        if (paymentMethod === 'cash' && invoiceId) {
-          // For cash payments, use the confirm order API with the complete request body
-          const confirmData = {
-            invoiceId: invoiceId,
-            generateEtagRequest: {
-              startDate: new Date(data.etagStartDate).toISOString(),
-              endDate: new Date(data.etagEndDate).toISOString(),
-              day: data.etagDuration,
-              moneyStart: data.etagMoney
-            }
-          };
-          const confirmResponse = await API.post('/order/cashier/confirm', confirmData);
-          console.log('Confirm order response:', confirmResponse);
-          toast({
-            title: 'Order Confirmed',
-            description: 'Your cash order has been successfully confirmed.',
-          });
-        } else if (paymentMethod !== 'cash' && invoiceId) {
-          await initiatePayment(paymentMethod, invoiceId);
-        } else {
-          throw new Error('Missing payment information');
-        }
       } else {
         throw new Error('Failed to generate E-Tag');
       }
     } catch (err) {
       console.error('Error in handleEtagSubmit:', err);
-      let errorMessage = 'Failed to generate E-Tag or process payment. Please try again.';
-      if (err instanceof Error) {
-        errorMessage += ` Error: ${err.message}`;
-      }
-     
-      setError(errorMessage);
       toast({
         title: 'Error',
-        description: errorMessage,
+        description: 'Failed to generate E-Tag. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+  const handleConfirmEtag = () => {
+    if (etagForm.formState.isValid) {
+      setIsEtagInfoConfirmed(true);
+      setCachedEtagFormData(etagForm.getValues());
+      toast({
+        title: 'E-tag Information Confirmed',
+        description: 'You can now generate the E-tag.',
+      });
+    } else {
+      toast({
+        title: 'Error',
+        description: 'Please fill in all required E-tag information fields correctly.',
+        variant: 'destructive',
+      });
+    }
+  };
+  const handleConfirmOrder = async () => {
+    const invoiceId = localStorage.getItem('invoiceId');
+    if (!invoiceId) {
+      toast({
+        title: 'Error',
+        description: 'Invoice ID not found. Please try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+  
+    const paymentMethod = customerForm.getValues('paymentMethod');
+  
+    try {
+      const confirmData = {
+        invoiceId: invoiceId,
+        generateEtagRequest: {
+          startDate: new Date(etagForm.getValues('etagStartDate')),
+          endDate: new Date(etagForm.getValues('etagEndDate')),
+          day: etagForm.getValues('etagDuration'),
+          moneyStart: etagForm.getValues('etagMoney')
+        }
+      };
+  
+      if (paymentMethod === 'cash') {
+        await confirmOrder(confirmData);
+        setIsOrderConfirmed(true);
+        toast({
+          title: 'Order Confirmed',
+          description: 'Your cash order has been successfully confirmed.',
+        });
+      } else if (paymentMethod === 'momo' || paymentMethod === 'vnpay') {
+        try {
+          await initiatePayment(paymentMethod, invoiceId);
+        } catch (paymentError) {
+          console.error('Payment initiation error:', paymentError);
+          toast({
+            title: 'Payment Error',
+            description: `Failed to initiate ${paymentMethod} payment. Please try again.`,
+            variant: 'destructive',
+          });
+        }
+      } else {
+        throw new Error('Invalid payment method');
+      }
+    } catch (err) {
+      console.error('Error confirming order:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to confirm order. Please try again.',
         variant: 'destructive',
       });
     }
   };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
+      console.log(`Initiating ${paymentMethod} payment for invoice ${invoiceId}`);
+      
       let paymentResponse;
+      
       if (paymentMethod === 'momo') {
         paymentResponse = await paymentService.momo({ invoiceId });
       } else if (paymentMethod === 'vnpay') {
@@ -235,17 +281,34 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         throw new Error('Invalid payment method');
       }
       
-      console.log('Payment response:', paymentResponse);
-  
+      console.log('Raw payment response:', JSON.stringify(paymentResponse, null, 2));
+      
       if (paymentResponse && paymentResponse.data) {
-        if (paymentMethod === 'vnpay' && paymentResponse.data.vnPayResponse) {
-          window.location.href = paymentResponse.data.vnPayResponse;
-        } else if (paymentResponse.data.urlDirect) {
-          window.location.href = paymentResponse.data.urlDirect;
-        } else {
-          throw new Error('Payment URL not found in the response');
+        if (paymentMethod === 'momo') {
+          console.log('Handling MoMo response');
+          const momoData = paymentResponse.data;
+          if (momoData.payUrl) {
+            console.log('Redirecting to payUrl:', momoData.payUrl);
+            window.location.href = momoData.payUrl;
+          } else if (momoData.shortLink) {
+            console.log('Redirecting to shortLink:', momoData.shortLink);
+            window.location.href = momoData.shortLink;
+          } else {
+            console.error('MoMo payment URL not found in the response');
+            throw new Error('MoMo payment URL not found in the response');
+          }
+        } else if (paymentMethod === 'vnpay') {
+          console.log('Handling VNPay response');
+          if (paymentResponse.data.vnPayResponse) {
+            console.log('Redirecting to VNPay URL:', paymentResponse.data.vnPayResponse);
+            window.location.href = paymentResponse.data.vnPayResponse;
+          } else {
+            console.error('VNPay payment URL not found in the response');
+            throw new Error('VNPay payment URL not found in the response');
+          }
         }
       } else {
+        console.error('Invalid payment response structure');
         throw new Error('Invalid payment response structure');
       }
     } catch (error) {
@@ -282,18 +345,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       etagMoney: 0,
     },
   });
-  const isValidEtagData = (data: GenerateEtag): boolean => {
-    return (
-      typeof data.quantity === 'number' &&
-      !isNaN(data.quantity) &&
-      typeof data.etagTypeId === 'string' &&
-      data.etagTypeId.length > 0 &&
-      typeof data.generateEtagRequest.startDate === 'string' &&
-      typeof data.generateEtagRequest.endDate === 'string' &&
-      typeof data.generateEtagRequest.day === 'number' &&
-      !isNaN(data.generateEtagRequest.day) 
-    );
-  };
+ 
   useEffect(() => {
     const { etagStartDate, etagEndDate } = etagForm.watch();
     if (etagStartDate && etagEndDate) {
@@ -591,12 +643,31 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               </div>
             </div>
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                Generate E-Tag
-              </Button>
+              {!isEtagInfoConfirmed ? (
+                <>
+                  <Button type="button" onClick={handleCancelEtag}>
+                    Cancel
+                  </Button>
+                  <Button type="button" onClick={handleConfirmEtag}>
+                    Confirm E-tag Information
+                  </Button>
+                </>
+              ) : !isOrderConfirmed ? (
+                <>
+                  <Button type="button" onClick={handleCancelOrder}>
+                    Cancel Order
+                  </Button>
+                  <Button type="button" onClick={handleConfirmOrder}>
+                    Confirm Order
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button type="submit">
+                    Generate E-Tag
+                  </Button>
+                </>
+              )}
             </div>
           </form>
         </Form>
