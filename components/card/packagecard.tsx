@@ -50,14 +50,14 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
       currencyDisplay: 'symbol',
     }).format(amount).replace('₫', 'đ'); 
   };
-
+  const validImageUrl = pkg.imageUrl && pkg.imageUrl.startsWith('http') ? pkg.imageUrl : '/default-image.png';
   return (
     <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
 
 <div className="w-full flex justify-center p-4">
         <div className="w-48 h-48 relative rounded-lg overflow-hidden shadow-sm">
           <Image
-            src={pkg.imageUrl || '/placeholder-image.jpg'}
+            src={validImageUrl}
             alt={pkg.name || 'Package Image'}
             layout="fill"
             objectFit="cover"

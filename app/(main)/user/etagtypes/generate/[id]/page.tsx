@@ -344,6 +344,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       etagDuration: 0,
       etagMoney: 0,
     },
+    mode: 'onChange', 
   });
  
   useEffect(() => {
@@ -351,8 +352,10 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     if (etagStartDate && etagEndDate) {
       const start = new Date(etagStartDate);
       const end = new Date(etagEndDate);
-      const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
-      etagForm.setValue('etagDuration', duration);
+      if (end > start) {
+        const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+        etagForm.setValue('etagDuration', duration, { shouldValidate: true });
+      }
     }
   }, [etagForm.watch('etagStartDate'), etagForm.watch('etagEndDate')]);
   const [isLoading, setIsLoading] = useState(true);
