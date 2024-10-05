@@ -6,7 +6,11 @@ export interface EtagType {
   amount: number;              
 }
 
-export interface EtagTypePost extends EtagType {
+export interface EtagTypePost {
+  name: string;                       
+  imageUrl?: string;
+  bonusRate: number;                      
+  amount: number;  
   walletTypeId: string;
 }
   

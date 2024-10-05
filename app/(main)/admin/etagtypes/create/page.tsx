@@ -13,26 +13,25 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { ETagTypeServices } from '@/components/services/etagtypeServices'; 
-import { EtagTypePost } from '@/types/etagtype'; 
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
+import { ETagTypeServices } from '@/components/services/etagtypeServices';
 
-const etagTypesSchema = z.object({
+const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),       
   imageUrl: z.string().min(1, { message: 'Image URL is required' }),
   bonusRate: z.number().min(0, { message: 'Bonus rate must be a non-negative number' }),
   amount: z.number().min(1, { message: 'Amount must be a non-negative number' }),
-  walletTypeId: z.string().min(1, { message: 'Wallet Type Id is required' }),           
+  walletTypeId: z.string().min(1, { message: 'Wallet Type Id is required' }),
 });
 
 const EtagTypeCreatePage = () => {
-  const router = useRouter();
   const { toast } = useToast();
-
-  const form = useForm<z.infer<typeof etagTypesSchema>>({
-    resolver: zodResolver(etagTypesSchema),
+  const router = useRouter();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       imageUrl: '',
@@ -42,29 +41,23 @@ const EtagTypeCreatePage = () => {
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof etagTypesSchema>) => {
-    try {
-      const etagTypeData: EtagTypePost = {
-        name: data.name,
-        imageUrl: data.imageUrl,
-        bonusRate: data.bonusRate,
-        amount: data.amount,
-        walletTypeId: 'b8e2cba6-e282-4149-bd2f-449e3280365e',
-      };
-      
-      await ETagTypeServices.uploadEtagType(etagTypeData); 
-      toast({
-        title: 'Etag type has been created successfully',
-        description: `Created Etag type: ${data.name}`,
-      });
-      
-      //back to previous page
-      router.push('/admin/etagtypes');
-    } catch (error) {
-      toast({
-        title: 'Error creating Etag type',
-        description:  'Something went wrong.',
-        variant: 'destructive',
+  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+    console.log('New etag type data:', data);
+    if(data){
+      ETagTypeServices.uploadEtagType(data).then((res) => {
+        console.log(res.data, 'Upload etag type')
+        toast({
+          title: 'Etag type has been created successfully',
+          description: `Created etag type: ${data.name}`,
+        });
+        router.push('/admin/etagtypes');
+      }).catch((error) => {
+        console.error('Error creating etag type: ', error);
+        toast({
+          title: 'Error creating etag type',
+          description: 'An error occurred while creating the etag type. Please try again!',
+          variant: 'destructive',
+        });
       });
     }
   };
@@ -86,7 +79,7 @@ const EtagTypeCreatePage = () => {
                 <FormControl>
                   <Input
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter name'
+                    placeholder='Enter Etag type name'
                     {...field}
                   />
                 </FormControl>
@@ -95,7 +88,7 @@ const EtagTypeCreatePage = () => {
             )}
           />
 
-          <FormField
+<FormField
             control={form.control}
             name='imageUrl'
             render={({ field }) => (
