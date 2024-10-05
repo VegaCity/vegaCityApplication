@@ -1,11 +1,10 @@
 
-export interface HouseType {
-    id: string,
+export interface HouseTypePatch {
     houseName: string,
     location: string,
-    address: string,
+    address: string
+}
+
+export interface HouseType extends HouseTypePatch{
     zoneId: string,
-    deflag: boolean,
-    crDate: string,
-    upsDate: string
 }

@@ -18,12 +18,9 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useEffect, useState } from 'react';
 import { HouseServices } from '@/components/services/houseServices';
-import { HouseType } from '@/types/house';
+import { HouseTypePatch } from '@/types/house';
 
-const formSchema = z.object({
-  id: z.string().min(1, {
-    message: 'House Id is required',
-  }),
+const houseSchema = z.object({
   houseName: z.string().min(1, {
     message: 'House Name is required',
   }),
@@ -33,9 +30,6 @@ const formSchema = z.object({
   address: z.string().min(1, {
     message: 'Address is required',
   }),
-  zoneId: z.string().min(1, {
-    message: 'Zone ID is required',
-  }),
 });
 
 interface HouseEditPageProps {
@@ -44,7 +38,7 @@ interface HouseEditPageProps {
   };
 }
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof houseSchema>;
 
 const HouseEditPage = ({ params }: HouseEditPageProps) => {
   const { toast } = useToast();
@@ -52,13 +46,11 @@ const HouseEditPage = ({ params }: HouseEditPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(houseSchema),
     defaultValues: {
-      id: '',
       houseName: '',
       location: '',
       address: '',
-      zoneId: '',
     },
   });
 
@@ -72,11 +64,9 @@ const HouseEditPage = ({ params }: HouseEditPageProps) => {
         console.log(houseData, 'Get house by Id'); // Log the response for debugging
         if(houseData){
           form.reset({
-            id: houseData.id,
             houseName: houseData.houseName,
             location: houseData.location,
             address: houseData.address,
-            zoneId: houseData.zoneId,
           })
         }
       } catch (err) {
@@ -110,26 +100,6 @@ const HouseEditPage = ({ params }: HouseEditPageProps) => {
       <h3 className='text-2xl mb-4'>Edit House</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
-          <FormField
-            control={form.control}
-            name='id'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Id House
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Id'
-                    disabled
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <FormField
             control={form.control}
@@ -191,25 +161,6 @@ const HouseEditPage = ({ params }: HouseEditPageProps) => {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name='zoneId'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Zone ID
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Zone ID'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <Button className='w-full dark:bg-slate-800 dark:text-white'>
             Update House
