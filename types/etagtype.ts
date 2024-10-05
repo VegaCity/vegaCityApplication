@@ -1,9 +1,11 @@
-export interface EtagType {
-    id: string;                 
-    name: string;                    
-    etags: string;            
-    bonusRate: number;                      
-    amount: number;              
-    imageUrl?: string;
-  }
+export interface EtagType {                
+  name: string;                       
+  imageUrl?: string;
+  bonusRate: number;                      
+  amount: number;              
+}
+
+export interface EtagTypePost extends EtagType {
+  walletTypeId: string;
+}
   

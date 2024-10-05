@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { ETagTypeServices } from '@/components/services/etagtypeServices';
 import { EtagType } from '@/types/etagtype';
 
-const formSchema = z.object({
+const etagTypesSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
   imageUrl: z.string().url({ message: 'Image URL must be a valid URL' }),
   bonusRate: z.coerce.number({
@@ -29,7 +29,7 @@ interface EtagTypeEditPageProps {
   params: { id: string; };
 }
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof etagTypesSchema>;
 
 const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
   const { toast } = useToast();
@@ -37,7 +37,7 @@ const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(etagTypesSchema),
     defaultValues: { name: '', imageUrl: '', bonusRate: 0, amount: 0 },
   });
 
@@ -50,8 +50,8 @@ const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
         console.log(etagData, 'etagDataaaaaa')
         if (etagData) {
           form.reset({ 
-            name: etagData.name, 
-            imageUrl: etagData.etags || '',
+            name: etagData.name,  
+            imageUrl: etagData.imageUrl || '',
             bonusRate: Number(etagData.bonusRate), 
             amount: Number(etagData.amount) 
           });
@@ -68,7 +68,7 @@ const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
 
   const handleSubmit = async (data: FormValues) => {
     try {
-      await ETagTypeServices.editEtagType(params.id, { ...data, id: params.id });
+      await ETagTypeServices.editEtagType(params.id, data);
       toast({ title: 'Etag Type updated successfully', description: `Etag Type ${data.name} was updated.` });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');

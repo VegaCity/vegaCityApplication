@@ -16,15 +16,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { ETagTypeServices } from '@/components/services/etagtypeServices'; 
-import { EtagType } from '@/types/etagtype'; 
+import { EtagTypePost } from '@/types/etagtype'; 
 
 const etagTypesSchema = z.object({
-  name: z.string().min(1, { message: 'Name is required' }),
-  etags: z.string().min(1, { message: 'Etags is required' }),           
+  name: z.string().min(1, { message: 'Name is required' }),       
   imageUrl: z.string().min(1, { message: 'Image URL is required' }),
   bonusRate: z.number().min(0, { message: 'Bonus rate must be a non-negative number' }),
-  amount: z.number().min(0, { message: 'Amount must be a non-negative number' }),
-
+  amount: z.number().min(1, { message: 'Amount must be a non-negative number' }),
+  walletTypeId: z.string().min(1, { message: 'Wallet Type Id is required' }),           
 });
 
 const EtagTypeCreatePage = () => {
@@ -34,23 +33,21 @@ const EtagTypeCreatePage = () => {
     resolver: zodResolver(etagTypesSchema),
     defaultValues: {
       name: '',
-      etags: '',
       imageUrl: '',
-      bonusRate: 0,
+      bonusRate: 1,
       amount: 0,
-      
+      walletTypeId: '',
     },
   });
 
   const handleSubmit = async (data: z.infer<typeof etagTypesSchema>) => {
     try {
-      const etagTypeData: EtagType = {
+      const etagTypeData: EtagTypePost = {
         name: data.name,
-        etags: data.etags,
         imageUrl: data.imageUrl,
         bonusRate: data.bonusRate,
         amount: data.amount,
-        id: '',
+        walletTypeId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
       };
       
       await ETagTypeServices.uploadEtagType(etagTypeData); 
