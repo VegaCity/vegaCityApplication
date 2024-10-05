@@ -6,5 +6,6 @@ export interface ZoneType {
     crDate: string,
     upsDate: string,
     deflag: boolean,
+    houses: Array,
   }
   

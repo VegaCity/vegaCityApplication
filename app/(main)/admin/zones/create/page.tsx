@@ -60,7 +60,7 @@ const ZoneCreatePage = () => {
 
   return (
     <>
-      <BackButton text='Back To Packages' link='/admin/packages' />
+      <BackButton text='Back To Zones' link='/admin/zones' />
       <h3 className='text-2xl mb-4'>Create New Package</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>

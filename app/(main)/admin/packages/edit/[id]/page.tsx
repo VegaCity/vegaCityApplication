@@ -34,7 +34,9 @@ const formSchema = z.object({
   }),
   price: z.coerce.number({
     required_error: "Price is required!",
-    invalid_type_error: "Price must be a number!"
+    invalid_type_error: "Price must be a number!",
+  }).refine(value => value > 0 && value <= 10000000, {
+    message: "Price must be above zero and less than 10.000.000VND!",
   }),
   startDate: z.string().min(1, {
     message: 'Date is required',
@@ -116,7 +118,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
 
   return (
     <>
-      <BackButton text='Back To Packages' link='/packages' />
+      <BackButton text='Back To Packages' link='/admin/packages' />
       <h3 className='text-2xl mb-4'>Edit Package</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>

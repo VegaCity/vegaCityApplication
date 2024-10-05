@@ -106,7 +106,7 @@ const HouseEditPage = ({ params }: HouseEditPageProps) => {
 
   return (
     <>
-      <BackButton text='Back To Houses' link='/houses' />
+      <BackButton text='Back To Houses' link='/admin/houses' />
       <h3 className='text-2xl mb-4'>Edit House</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>

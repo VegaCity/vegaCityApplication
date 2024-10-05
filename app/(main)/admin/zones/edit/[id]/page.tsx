@@ -18,74 +18,76 @@ import { Button } from '@/components/ui/button';
 import posts from '@/data/posts';
 import { useToast } from '@/components/ui/use-toast';
 import { useEffect, useState } from 'react';
-import { PackageServices } from '@/components/services/packageServices';
 import { Packages } from '@/types/package';
 import { register } from 'module';
+import { ZoneServices } from '@/components/services/zoneServices';
 
-const formSchema = z.object({
+const zoneSchema = z.object({
   id: z.string().min(1, {
-    message: 'Package Id is required',
+    message: 'Zone Id is required',
+  }),
+  marketZoneId: z.string().min(1, {
+    message: 'Market Zone Id is required',
   }),
   name: z.string().min(1, {
     message: 'Name is required',
   }),
-  description: z.string().min(1, {
-    message: 'Description is required',
+  location: z.string().min(1, {
+    message: 'Location is required',
   }),
-  price: z.coerce.number({
-    required_error: "Price is required!",
-    invalid_type_error: "Price must be a number!"
+  crDate: z.string().min(1, {
+    message: 'Creation date is required',
   }),
-  startDate: z.string().min(1, {
-    message: 'Date is required',
+  upsDate: z.string().min(1, {
+    message: 'Update date is required',
   }),
-  endDate: z.string().min(1, {
-    message: 'Date is required',
-  }),
+  deflag: z.boolean().optional(), // Assuming deflag is optional
 });
 
-interface PackageEditPageProps {
+interface ZoneEditPageProps {
   params: {
     id: string;
   };
 }
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof zoneSchema>;
 
-const ZoneEditPage = ({ params }: PackageEditPageProps) => {
+const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
   // const pkg = packageList.find((pkg) => pkg.id === params.id);
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(zoneSchema),
     defaultValues: {
       id: '',
+      marketZoneId: '',
       name: '',
-      description: '',
-      price: 1,
-      startDate: '',
-      endDate: '',
+      location: '',
+      crDate: '',
+      upsDate: '',
+      deflag: false,
     },
   });
 
   useEffect(() => {
     setIsLoading(true);
-    const fetchPackages = async () => {
+    const fetchZones = async () => {
       try {
         setIsLoading(true);
-        const response = await PackageServices.getPackageById(params.id);
-        const pkgData = response.data.data.package;
-        console.log(pkgData, 'Get package by Id'); // Log the response for debugging
-        if(pkgData){
+        const response = await ZoneServices.getZoneById(params.id);
+        const zoneData = response.data.data.zone;
+        console.log(zoneData, 'Get package by Id'); // Log the response for debugging
+        if(zoneData){
           form.reset({
-            id: pkgData.id,
-            name: pkgData.name,
-            description: pkgData.description,
-            price: pkgData.price,
-            startDate: pkgData.startDate,
-            endDate: pkgData.endDate,
+            id: zoneData.id,
+            marketZoneId: zoneData.marketZoneId,
+            name: zoneData.name,
+            location: zoneData.location,
+            crDate: zoneData.crDate,
+            upsDate: zoneData.upsDate,
+            deflag: zoneData.deflag,
           })
         }
       } catch (err) {
@@ -95,16 +97,16 @@ const ZoneEditPage = ({ params }: PackageEditPageProps) => {
       }
     };
   
-    fetchPackages();
+    fetchZones();
   }, [params.id, form]);
 
   const handleSubmit = async (data: FormValues) => {
     try {
-      // Assuming you have an update method in PackageServices
-      await PackageServices.editPackage(params.id, data);
+      // Assuming you have an update method in ZoneServices
+      await ZoneServices.editZone(params.id, data);
       toast({
-        title: 'Package has been updated successfully',
-        description: `Package ${data.name} was updated with price ${data.price} VND`,
+        title: 'Zone has been updated successfully',
+        description: `Zone ${data.name} was updated!`,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -116,22 +118,45 @@ const ZoneEditPage = ({ params }: PackageEditPageProps) => {
 
   return (
     <>
-      <BackButton text='Back To Packages' link='/packages' />
-      <h3 className='text-2xl mb-4'>Edit Package</h3>
+      <BackButton text='Back To Zones' link='/admin/zones' />
+      <h3 className='text-2xl mb-4'>Edit Zone</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
           <FormField
             control={form.control}
+            disabled
             name='id'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Id Package
+                  Id Zone
                 </FormLabel>
                 <FormControl>
                   <Input
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
                     placeholder='Id'
+                    disabled
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+        <FormField
+            control={form.control}
+            disabled
+            name='marketZoneId'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  Id MarketZone
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    placeholder='MarketZone Id'
                     disabled
                     {...field}
                   />
@@ -147,12 +172,12 @@ const ZoneEditPage = ({ params }: PackageEditPageProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Package Name
+                  Zone Name
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Package Name'
+                    placeholder='Enter Zone Name'
                     {...field}
                   />
                 </FormControl>
@@ -163,16 +188,37 @@ const ZoneEditPage = ({ params }: PackageEditPageProps) => {
 
           <FormField
             control={form.control}
-            name='description'
+            name='location'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Description
+                  Location
                 </FormLabel>
                 <FormControl>
                   <Input
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Description'
+                    placeholder='Enter Location'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* <FormField
+            control={form.control}
+            disabled
+            name='crDate'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  Create Date
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    placeholder='Create Date'
                     {...field}
                   />
                 </FormControl>
@@ -183,68 +229,28 @@ const ZoneEditPage = ({ params }: PackageEditPageProps) => {
 
           <FormField
             control={form.control}
-            name='price'
+            disabled
+            name='upsDate'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Price
+                  Update Date
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type='number'
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Price'
+                    placeholder='Update Date'
                     {...field}
                   />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
-          />
-
-<FormField
-            control={form.control}
-            name='startDate'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Start Date
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Date'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-<FormField
-            control={form.control}
-            name='endDate'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  End Date
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter Date'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          /> */}
 
 
           <Button className='w-full dark:bg-slate-800 dark:text-white'>
-            Update Package
+            Update Zone
           </Button>
         </form>
       </Form>

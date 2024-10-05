@@ -18,12 +18,12 @@ import {
 import { ZoneType } from '@/types/zone';
 import { ZoneServices } from '@/components/services/zoneServices';
 
-interface PackageTableProps {
+interface ZoneTableProps {
   limit?: number;
   title?: string;
 }
 
-const ZoneTable = ({ limit, title }: PackageTableProps) => {
+const ZoneTable = ({ limit, title }: ZoneTableProps) => {
   const [zoneList, setZoneList] = useState<ZoneType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -86,17 +86,25 @@ const ZoneTable = ({ limit, title }: PackageTableProps) => {
           <TableCaption>A list of recent Zones</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead className='hidden md:table-cell'>MarketZoneId</TableHead>
+              <TableHead className='hidden md:table-cell'>NO</TableHead>
+              <TableHead className='hidden md:table-cell'>Name</TableHead>
               <TableHead className='hidden md:table-cell'>Location</TableHead>
+              <TableHead className='hidden md:table-cell'>Functions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredZones.map((zns) => (
+            {filteredZones.map((zns, i) => (
               <TableRow key={zns.id}>
+                <TableCell>{i+1}</TableCell>
                 <TableCell>{zns.name}</TableCell>
-                <TableCell className='hidden md:table-cell'>{zns.marketZoneId}</TableCell>
                 <TableCell className='hidden md:table-cell'>{zns.location}</TableCell>
+                {/* {zns.houses.map((house) => (
+                  <React.Fragment key={house.id}>
+                    <TableCell className='hidden md:table-cell'>{house.id}</TableCell>
+                    <TableCell className='hidden md:table-cell'>{house.houseName}</TableCell>
+                    <TableCell className='hidden md:table-cell'>{house.location}</TableCell>
+                  </React.Fragment>
+                ))} */}
                 <TableCell>
                   <Link href={`/admin/zones/edit/${zns.id}`}>
                     <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2'>

@@ -68,7 +68,7 @@ const Sidebar = () => {
           </Link>
 
         )}
-        {/* {userRole && userRole.name === 'Admin' && ( */}
+        {userRole && userRole.name === 'Admin' && (
           <>
             <Link href={('/admin/zones')} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
@@ -90,7 +90,7 @@ const Sidebar = () => {
               </CommandItem>
             </Link>
           </>
-        {/* )} */}
+        )}
       </CommandList>
     </Command>
   );
