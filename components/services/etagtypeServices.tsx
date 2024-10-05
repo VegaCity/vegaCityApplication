@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { EtagType } from "@/types/etagtype";
+import { EtagType, EtagTypePost } from "@/types/etagtype";
 
 interface ETagPageSize {
     page?: number,
@@ -18,7 +18,7 @@ export const ETagTypeServices = {
     getETagTypeById(id: string) {
         return API.get(`/etag-type/${id}`);
     },
-    uploadEtagType(etagtypeData: EtagType) {
+    uploadEtagType(etagtypeData: EtagTypePost) {
         return API.post('/etag-type/', etagtypeData);
     },
     editEtagType(etagtypeId: string, etagtypeData: EtagType) {
