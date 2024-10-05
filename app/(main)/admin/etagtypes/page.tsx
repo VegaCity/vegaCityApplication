@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import BackButton from '@/components/BackButton';
-import EtagTypeTable from '@/components/etagtypes/ETagsTable';
-import ETagsPagination from '@/components/etagtypes/ETagsPagination';
 import { useUserRole } from '@/components/hooks/useUserRole';
+import EtagTypeTable from '@/components/etagtypes/ETagTypesTable';
+import ETagTypesPagination from '@/components/etagtypes/ETagTypesPagination';
 
 const ETagsPage = () => {
 
-  // const {userRole, loading } = useUserRole(); //userRole is an object so that u should . to value like userRole.name, userRole.id
-  // console.log(userRole?.name, 'userRole');
+  const {userRole, loading } = useUserRole(); //userRole is an object so that u should . to value like userRole.name, userRole.id
+  console.log(userRole?.name, 'userRole');
 
 
   // if(userRole && userRole.name !== 'CashierWeb'){
@@ -26,8 +26,9 @@ const ETagsPage = () => {
             Create New ETag
           </Link>
         </div>
+        {/* <EtagTypeTable /> */}
         <EtagTypeTable />
-        <ETagsPagination />
+        <ETagTypesPagination />
       </div>
     );
   };

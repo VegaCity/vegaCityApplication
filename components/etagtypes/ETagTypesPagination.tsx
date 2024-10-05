@@ -8,7 +8,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination';
 
-const ETagsPagination = () => {
+const ETagTypesPagination = () => {
   return (
     <Pagination>
       <PaginationContent>
@@ -35,4 +35,4 @@ const ETagsPagination = () => {
   );
 };
 
-export default ETagsPagination;
+export default ETagTypesPagination;

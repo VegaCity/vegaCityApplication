@@ -52,8 +52,8 @@ const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
           form.reset({ 
             name: etagData.name,  
             imageUrl: etagData.imageUrl || '',
-            bonusRate: Number(etagData.bonusRate), 
-            amount: Number(etagData.amount) 
+            bonusRate: etagData.bonusRate, 
+            amount: etagData.amount 
           });
         }
       } catch (err) {

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import BackButton from '@/components/BackButton';
 import EtagTypeTable from '@/components/etagtypes/ETagsTable';
-import ETagsPagination from '@/components/etagtypes/ETagsPagination';
+import ETagsPagination from '@/components/etagtypes/ETagTypesPagination';
 
 const ETagsPage = () => {
     return (

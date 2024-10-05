@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { ETagTypeServices } from '@/components/services/etagtypeServices'; 
 import { EtagTypePost } from '@/types/etagtype'; 
+import { useRouter } from 'next/navigation'; 
 
 const etagTypesSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),       
@@ -27,6 +28,7 @@ const etagTypesSchema = z.object({
 });
 
 const EtagTypeCreatePage = () => {
+  const router = useRouter();
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof etagTypesSchema>>({
@@ -34,8 +36,8 @@ const EtagTypeCreatePage = () => {
     defaultValues: {
       name: '',
       imageUrl: '',
-      bonusRate: 1,
-      amount: 0,
+      bonusRate: 0,
+      amount: 1,
       walletTypeId: '',
     },
   });
@@ -47,7 +49,7 @@ const EtagTypeCreatePage = () => {
         imageUrl: data.imageUrl,
         bonusRate: data.bonusRate,
         amount: data.amount,
-        walletTypeId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        walletTypeId: 'b8e2cba6-e282-4149-bd2f-449e3280365e',
       };
       
       await ETagTypeServices.uploadEtagType(etagTypeData); 
@@ -55,6 +57,9 @@ const EtagTypeCreatePage = () => {
         title: 'Etag type has been created successfully',
         description: `Created Etag type: ${data.name}`,
       });
+      
+      //back to previous page
+      router.push('/admin/etagtypes');
     } catch (error) {
       toast({
         title: 'Error creating Etag type',
@@ -76,7 +81,7 @@ const EtagTypeCreatePage = () => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Name
+                  Etag Type Name
                 </FormLabel>
                 <FormControl>
                   <Input

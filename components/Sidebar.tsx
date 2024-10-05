@@ -21,6 +21,7 @@ const Sidebar = () => {
   const { userRole, loading } = useUserRole();
 
   const navigatePage = (routeName: string) => {
+    console.log(userRole, "userRole");
     if (userRole && userRole.name === 'Admin') {
       return `/admin/${routeName}`;
     } else {
