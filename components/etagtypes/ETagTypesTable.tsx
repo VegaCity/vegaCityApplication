@@ -23,8 +23,12 @@ interface EtagTypeTableProps {
   title?: string;
 }
 
+interface GetEtagType extends EtagType {
+  id: string;
+}
+
 const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
-  const [etagTypeList, setEtagTypeList] = useState<EtagType[]>([]);
+  const [etagTypeList, setEtagTypeList] = useState<GetEtagType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +53,7 @@ const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
     fetchEtagTypes();
   }, [isLoading, deleteLoading]);
 
-  const handleDeleteEtagType = (etagType: EtagType) => {
+  const handleDeleteEtagType = (etagType: GetEtagType) => {
     setDeleteLoading(true);
     if(etagType.id){
       ETagTypeServices.deleteEtagTypeById(etagType.id).then((res) => {

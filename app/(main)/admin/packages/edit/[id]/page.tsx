@@ -19,16 +19,16 @@ import posts from '@/data/posts';
 import { useToast } from '@/components/ui/use-toast';
 import { useEffect, useState } from 'react';
 import { PackageServices } from '@/components/services/packageServices';
-import { Packages } from '@/types/package';
+import { Package } from '@/types/package';
 import { register } from 'module';
 
 const formSchema = z.object({
-  id: z.string().min(1, {
-    message: 'Package Id is required',
-  }),
   name: z.string().min(1, {
     message: 'Name is required',
   }),
+  imageUrl: z.string().min(1, {
+    message: 'Image Url is required',
+  }), 
   description: z.string().min(1, {
     message: 'Description is required',
   }),
@@ -63,8 +63,8 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: '',
       name: '',
+      imageUrl: '',
       description: '',
       price: 1,
       startDate: '',
@@ -82,8 +82,8 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
         console.log(pkgData, 'Get package by Id'); // Log the response for debugging
         if(pkgData){
           form.reset({
-            id: pkgData.id,
             name: pkgData.name,
+            imageUrl: pkgData.imageUrl,
             description: pkgData.description,
             price: pkgData.price,
             startDate: pkgData.startDate,
@@ -122,26 +122,6 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
       <h3 className='text-2xl mb-4'>Edit Package</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
-          <FormField
-            control={form.control}
-            name='id'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Id Package
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Id'
-                    disabled
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
           <FormField
             control={form.control}
@@ -162,6 +142,41 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name='imageUrl'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  Uploade Image
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="file" // Change the input type to file
+                    accept="image/*" // Accept only image files          
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    placeholder='Uploade image'
+                    {...field}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]; // Get the uploaded file
+                      if (file) {
+                        // Handle the file upload here (you could use a service or API to upload the file)
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          // Once the file is read, update the form field with the image URL or base64 string
+                          field.onChange(reader.result); // Update the form with the uploaded image (can be a URL or base64)
+                        };
+                        reader.readAsDataURL(file); // Read the file as a data URL (base64)
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
 
           <FormField
             control={form.control}
@@ -204,7 +219,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
             )}
           />
 
-<FormField
+        <FormField
             control={form.control}
             name='startDate'
             render={({ field }) => (
@@ -214,6 +229,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
                 </FormLabel>
                 <FormControl>
                   <Input
+                    type="datetime-local"
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
                     placeholder='Enter Date'
                     {...field}
@@ -224,7 +240,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
             )}
           />
 
-<FormField
+          <FormField
             control={form.control}
             name='endDate'
             render={({ field }) => (
@@ -234,6 +250,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
                 </FormLabel>
                 <FormControl>
                   <Input
+                    type="datetime-local"
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
                     placeholder='Enter Date'
                     {...field}

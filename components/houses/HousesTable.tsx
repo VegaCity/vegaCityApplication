@@ -23,8 +23,12 @@ interface HouseTableProps {
   title?: string;
 }
 
+interface GetHouse extends HouseType{
+  id: string;
+}
+
 const HouseTable = ({ limit, title }: HouseTableProps) => {
-  const [houseList, setHouseList] = useState<HouseType[]>([]);
+  const [houseList, setHouseList] = useState<GetHouse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +52,7 @@ const HouseTable = ({ limit, title }: HouseTableProps) => {
     fetchHouses();
   }, [isLoading, deleteLoading]);
 
-  const handleDeleteHouse = (house: HouseType) => {
+  const handleDeleteHouse = (house: GetHouse) => {
     setDeleteLoading(true);
     if(house.id){
       HouseServices.deleteHouseById(house.id).then((res) => {

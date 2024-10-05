@@ -1,9 +1,8 @@
 'use client';
 
 import BackButton from '@/components/BackButton';
-import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { ZoneServices } from '@/components/services/zoneServices';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -14,44 +13,41 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { PackageServices } from '@/components/services/packageServices';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
-const formSchema = z.object({
+const zoneSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
-  description: z.string().min(1, { message: 'Description is required' }),
-  price: z.number().min(0, { message: 'Price must be a positive number' }),
-  startDate: z.string().min(1, { message: 'Start date is required' }),
-  endDate: z.string().min(1, { message: 'End date is required' }),
+  location: z.string().min(1, { message: 'Location is required' }),
 });
 
 const ZoneCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof zoneSchema>>({
+    resolver: zodResolver(zoneSchema),
     defaultValues: {
       name: '',
-      description: '',
-      price: 0,
-      startDate: '',
-      endDate: '',
+      location: '',
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+  type FormValues = z.infer<typeof zoneSchema>
+
+  const handleSubmit = (data: FormValues) => {
     // Here you would typically send this data to your API
-    console.log('New package data:', data);
+    console.log('New Zone data:', data);
     if(data){
-      PackageServices.uploadPackage(data).then((res) => {
-        console.log(res.data, 'Upload Package')
+      ZoneServices.uploadZone(data).then((res) => {
+        console.log(res.data, 'Upload Zone')
         toast({
-          title: 'Package has been created successfully',
-          description: `Created package: ${data.name}`,
+          title: 'Zone has been created successfully',
+          description: `Created Zone: ${data.name}`,
         });
-        router.push('/admin/packages');
+        router.push('/admin/zones');
       })
     }
 
@@ -61,7 +57,7 @@ const ZoneCreatePage = () => {
   return (
     <>
       <BackButton text='Back To Zones' link='/admin/zones' />
-      <h3 className='text-2xl mb-4'>Create New Package</h3>
+      <h3 className='text-2xl mb-4'>Create New Zone</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
           <FormField
@@ -75,7 +71,7 @@ const ZoneCreatePage = () => {
                 <FormControl>
                   <Input
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter package name'
+                    placeholder='Enter Zone name'
                     {...field}
                   />
                 </FormControl>
@@ -86,78 +82,16 @@ const ZoneCreatePage = () => {
 
           <FormField
             control={form.control}
-            name='description'
+            name='location'
             render={({ field }) => (
               <FormItem>
                 <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Description
+                  Location
                 </FormLabel>
                 <FormControl>
                   <Textarea
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter package description'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='price'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Price
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter price'
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='startDate'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Start Date
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="datetime-local"
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='endDate'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  End Date
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="datetime-local"
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    placeholder='Enter zone location'
                     {...field}
                   />
                 </FormControl>
@@ -167,7 +101,7 @@ const ZoneCreatePage = () => {
           />
 
           <Button className='w-full dark:bg-slate-800 dark:text-white'>
-            Create Package
+            Create Zone
           </Button>
         </form>
       </Form>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
 import { PackageServices } from '@/components/services/packageServices';
-import { Packages } from '@/types/package';
+import { Package } from '@/types/package';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
@@ -23,8 +23,12 @@ interface PackageTableProps {
   title?: string;
 }
 
+interface GetPackage extends Package{
+  id: string;
+}
+
 const PackageTable = ({ limit, title }: PackageTableProps) => {
-  const [packageList, setPackageList] = useState<Packages[]>([]);
+  const [packageList, setPackageList] = useState<GetPackage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +53,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
     fetchPackages();
   }, [isLoading, deleteLoading]);
 
-  const handleDeletePackage = (pkg: Packages) => {
+  const handleDeletePackage = (pkg: GetPackage) => {
     setDeleteLoading(true);
     if(pkg.id){
       PackageServices.deletePackageById(pkg.id).then((res) => {

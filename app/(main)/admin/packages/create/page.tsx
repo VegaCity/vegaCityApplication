@@ -21,19 +21,29 @@ import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
+  imageUrl: z.string().min(1, { message: 'Image URL is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
   price: z.number().min(0, { message: 'Price must be a positive number' }),
-  startDate: z.string().min(1, { message: 'Start date is required' }),
-  endDate: z.string().min(1, { message: 'End date is required' }),
+  startDate: z
+    .string()
+    .min(1, { message: 'Start date is required' })
+    .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid start date' }),
+  endDate: z
+    .string()
+    .min(1, { message: 'End date is required' })
+    .refine((val) => !isNaN(Date.parse(val)), { message: 'Invalid end date' }),
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 const PackageCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      imageUrl: '',
       description: '',
       price: 0,
       startDate: '',
@@ -41,7 +51,7 @@ const PackageCreatePage = () => {
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = (data: FormValues) => {
     // Here you would typically send this data to your API
     console.log('New package data:', data);
     if(data){
@@ -76,6 +86,26 @@ const PackageCreatePage = () => {
                   <Input
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
                     placeholder='Enter package name'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='imageUrl'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  Image Url
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    placeholder='Upload image'
                     {...field}
                   />
                 </FormControl>
