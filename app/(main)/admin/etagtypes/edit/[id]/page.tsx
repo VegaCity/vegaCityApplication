@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useEffect, useState } from 'react';
 import { ETagTypeServices } from '@/components/services/etagtypeServices';
 import { EtagType } from '@/types/etagtype';
+import { useRouter } from 'next/navigation';
 
 const etagTypesSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
@@ -32,6 +33,7 @@ interface EtagTypeEditPageProps {
 type FormValues = z.infer<typeof etagTypesSchema>;
 
 const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
+  const router = useRouter();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,6 +72,7 @@ const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
     try {
       await ETagTypeServices.editEtagType(params.id, data);
       toast({ title: 'Etag Type updated successfully', description: `Etag Type ${data.name} was updated.` });
+      router.push('/admin/etagtypes');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }

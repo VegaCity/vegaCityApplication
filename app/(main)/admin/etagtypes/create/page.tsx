@@ -19,7 +19,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useRouter } from 'next/navigation';
 import { ETagTypeServices } from '@/components/services/etagtypeServices';
 
-const formSchema = z.object({
+const etagTypeSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),       
   imageUrl: z.string().min(1, { message: 'Image URL is required' }),
   bonusRate: z.number().min(0, { message: 'Bonus rate must be a non-negative number' }),
@@ -27,21 +27,25 @@ const formSchema = z.object({
   walletTypeId: z.string().min(1, { message: 'Wallet Type Id is required' }),
 });
 
+type FormValues = z.infer<typeof etagTypeSchema>;
+
+
 const EtagTypeCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(etagTypeSchema),
     defaultValues: {
       name: '',
       imageUrl: '',
       bonusRate: 0,
       amount: 1,
-      walletTypeId: '',
+      walletTypeId: '33cc7de6-80f6-4448-8e33-9a0b61ab2c8f',
     },
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+
+  const handleSubmit = (data: FormValues) => {
     console.log('New etag type data:', data);
     if(data){
       ETagTypeServices.uploadEtagType(data).then((res) => {
@@ -88,7 +92,7 @@ const EtagTypeCreatePage = () => {
             )}
           />
 
-<FormField
+          <FormField
             control={form.control}
             name='imageUrl'
             render={({ field }) => (
