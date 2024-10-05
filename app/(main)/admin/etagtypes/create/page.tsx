@@ -18,34 +18,39 @@ import { useToast } from '@/components/ui/use-toast';
 import { ETagTypeServices } from '@/components/services/etagtypeServices'; 
 import { EtagType } from '@/types/etagtype'; 
 
-const formSchema = z.object({
+const etagTypesSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
+  etags: z.string().min(1, { message: 'Etags is required' }),           
   imageUrl: z.string().min(1, { message: 'Image URL is required' }),
   bonusRate: z.number().min(0, { message: 'Bonus rate must be a non-negative number' }),
   amount: z.number().min(0, { message: 'Amount must be a non-negative number' }),
+
 });
 
 const EtagTypeCreatePage = () => {
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof etagTypesSchema>>({
+    resolver: zodResolver(etagTypesSchema),
     defaultValues: {
       name: '',
+      etags: '',
       imageUrl: '',
       bonusRate: 0,
       amount: 0,
+      
     },
   });
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (data: z.infer<typeof etagTypesSchema>) => {
     try {
       const etagTypeData: EtagType = {
         name: data.name,
         etags: data.etags,
+        imageUrl: data.imageUrl,
         bonusRate: data.bonusRate,
         amount: data.amount,
-        id: ''
+        id: '',
       };
       
       await ETagTypeServices.uploadEtagType(etagTypeData); 
@@ -80,6 +85,26 @@ const EtagTypeCreatePage = () => {
                   <Input
                     className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
                     placeholder='Enter name'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='etags'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  Etags
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    placeholder='Enter etags'
                     {...field}
                   />
                 </FormControl>
