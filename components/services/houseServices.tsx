@@ -1,6 +1,6 @@
 import { API } from "@/components/services/api";
 
-import { HouseType } from "@/types/house";
+import { HouseType, HouseTypePatch } from "@/types/house";
 
 interface HousePageSize {
     page?: number;
@@ -22,7 +22,7 @@ export const HouseServices = {
     uploadHouse(houseData: HouseType) {
         return API.post('/house/', houseData);
     },
-    editHouse(houseId: string, houseData: HouseType) {
+    editHouse(houseId: string, houseData: HouseTypePatch) {
         return API.patch(`/house/${houseId}`, houseData); 
     },
     deleteHouseById(id: string) {

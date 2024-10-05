@@ -35,7 +35,7 @@ const HouseCreatePage = () => {
       houseName: '',
       location: '',
       address: '',
-      zoneId: '',
+      zoneId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     },
   });
 
@@ -126,7 +126,7 @@ const HouseCreatePage = () => {
             )}
           />
 
-          <FormField
+          {/* <FormField
             control={form.control}
             name='zoneId'
             render={({ field }) => (
@@ -144,7 +144,7 @@ const HouseCreatePage = () => {
                 <FormMessage />
               </FormItem>
             )}
-          />
+          /> */}
 
           <Button className='w-full dark:bg-slate-800 dark:text-white'>
             Create House
