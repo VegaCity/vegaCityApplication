@@ -1,5 +1,4 @@
-export interface EtagType {   
-  id: string;             
+export interface EtagType {              
   name: string;                       
   imageUrl?: string;
   bonusRate: number;                      
