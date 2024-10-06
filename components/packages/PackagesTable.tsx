@@ -1,11 +1,19 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableCaption } from '@/components/ui/table';
-import { PackageServices } from '@/components/services/packageServices';
-import { Package } from '@/types/package';
-import { useToast } from '@/components/ui/use-toast';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableCaption,
+} from "@/components/ui/table";
+import { PackageServices } from "@/components/services/packageServices";
+import { Package } from "@/types/package";
+import { useToast } from "@/components/ui/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +31,7 @@ interface PackageTableProps {
   title?: string;
 }
 
-interface GetPackage extends Package{
+interface GetPackage extends Package {
   id: string;
 }
 
@@ -38,13 +46,20 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
     // setIsLoading(true);
     const fetchPackages = async () => {
       try {
-        const response = await PackageServices.getPackages({ page: 1, size: 10 });
-        console.log(response); // Log the response for debugging
+        const response = await PackageServices.getPackages({
+          page: 1,
+          size: 10,
+        });
+        console.log(response.data); // Log the response for debugging
 
-        const packages = Array.isArray(response.data.items) ? response.data.items : [];
+        const packages = Array.isArray(response.data.data)
+          ? response.data.data
+          : [];
         setPackageList(packages);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
       } finally {
         setIsLoading(false);
       }
@@ -53,24 +68,28 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
     fetchPackages();
   }, [isLoading, deleteLoading]);
 
+  console.log(packageList, "packages");
+
   const handleDeletePackage = (pkg: GetPackage) => {
     setDeleteLoading(true);
-    if(pkg.id){
-      PackageServices.deletePackageById(pkg.id).then((res) => {
-        setDeleteLoading(false);
-        toast({
-          title: res.data.messageResponse,
-          description: `Package name: ${pkg.name}`,
+    if (pkg.id) {
+      PackageServices.deletePackageById(pkg.id)
+        .then((res) => {
+          setDeleteLoading(false);
+          toast({
+            title: res.data.messageResponse,
+            description: `Package name: ${pkg.name}`,
+          });
         })
-      }).catch((err) => {
-        setDeleteLoading(false);
-        toast({
-          title: err.data.messageResponse,
-          description: 'Some errors have been occured!',
-        })
-      })
+        .catch((err) => {
+          setDeleteLoading(false);
+          toast({
+            title: err.data.messageResponse,
+            description: "Some errors have been occured!",
+          });
+        });
     }
-  }
+  };
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -79,58 +98,80 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
 
   // Function to format price
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(price);
   };
 
   return (
-    <div className='mt-10'>
-      <h3 className='text-2xl mb-4 font-semibold'>{title || 'Packages'}</h3>
+    <div className="mt-10">
+      <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
       {filteredPackages.length > 0 ? (
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
           <TableHeader>
             <TableRow>
+              <TableHead>NO</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead className='hidden md:table-cell'>Description</TableHead>
-              <TableHead className='hidden md:table-cell'>Price</TableHead>
-              <TableHead className='hidden md:table-cell'>Start Date</TableHead>
-              <TableHead className='hidden md:table-cell'>End Date</TableHead>
-              <TableHead className='hidden md:table-cell'>Actions</TableHead>
+              <TableHead className="hidden md:table-cell">
+                Description
+              </TableHead>
+              <TableHead className="hidden md:table-cell">Price</TableHead>
+              <TableHead className="hidden md:table-cell">Start Date</TableHead>
+              <TableHead className="hidden md:table-cell">End Date</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredPackages.map((pkg) => (
+            {filteredPackages.map((pkg, i) => (
               <TableRow key={pkg.id}>
+                <TableCell>{i + 1}</TableCell>
                 <TableCell>{pkg.name}</TableCell>
-                <TableCell className='hidden md:table-cell'>{pkg.description}</TableCell>
-                <TableCell className='hidden md:table-cell'>{formatPrice(pkg.price)}</TableCell>
-                <TableCell className='hidden md:table-cell'>{new Date(pkg.startDate).toLocaleDateString()}</TableCell>
-                <TableCell className='hidden md:table-cell'>{new Date(pkg.endDate).toLocaleDateString()}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {pkg.description}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {formatPrice(pkg.price)}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {new Date(pkg.startDate).toLocaleDateString()}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {new Date(pkg.endDate).toLocaleDateString()}
+                </TableCell>
                 <TableCell>
                   <Link href={`/admin/packages/edit/${pkg.id}`}>
-                    <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2'>
+                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2">
                       Edit
                     </button>
                   </Link>
-                    <AlertDialog>
-                      <AlertDialogTrigger>
-                        <button className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs'>
-                          Delete
-                        </button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are sure for delete this -{pkg?.name}- PACKAGE?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will deflag package in your package list!
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeletePackage(pkg)}>Confirm</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                  <AlertDialog>
+                    <AlertDialogTrigger>
+                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
+                        Delete
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are sure for delete this -{pkg?.name}- PACKAGE?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will deflag package
+                          in your package list!
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeletePackage(pkg)}
+                        >
+                          Confirm
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </TableCell>
               </TableRow>
             ))}
