@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import BackButton from '@/components/BackButton';
 import { useUserRole } from '@/components/hooks/useUserRole';
 import { PackageServices } from '@/components/services/packageServices';
-import { Packages } from "@/types/package";
+import { Package } from "@/types/package";
 import PackageCard from '@/components/card/packagecard';
 
 const PackagesPage = () => {
@@ -15,7 +15,7 @@ const PackagesPage = () => {
     const fetchPackageIds = async () => {
       try {
         const response = await PackageServices.getPackages({ page: 1, size: 10 });
-        const ids = response.data.items.map((pkg: Packages) => pkg.id); 
+        const ids = response.data.items.map((pkg: Package) => pkg.id); 
         setPackageIds(ids);
       } catch (error) {
         console.error('Error fetching packages:', error);
@@ -24,11 +24,6 @@ const PackagesPage = () => {
 
     fetchPackageIds();
   }, []);
-
-  const handlePackageAction = (id: string) => {
-    console.log('Action for package:', id);
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }

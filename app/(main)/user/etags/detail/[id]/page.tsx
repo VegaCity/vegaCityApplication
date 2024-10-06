@@ -136,11 +136,11 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const getStatusString = (status: number) => {
     switch (status) {
       case 0:
-        return 'Active';
-      case 1:
         return 'Inactive';
+      case 1:
+        return 'Active';
       default:
-        return 'Unknown';
+        return 'Blocked';
     }
   };
 
@@ -166,7 +166,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
           <div className="relative w-full h-48">
             <Image
               src={validImageUrl}
-              alt={etag.fullName || 'Image'}
+              alt={etag.fullname || 'Image'}
               layout="fill"
               objectFit="cover"
               className="rounded-lg"

@@ -16,6 +16,7 @@ import { createOrder, confirmOrder, deleteOrder } from '@/components/services/or
 import paymentService from '@/components/services/paymentService';
 import { API } from '@/components/services/api';
 import axios, { AxiosError } from 'axios';
+import { Card } from '@/components/ui/card';
 const customerFormSchema = z.object({
   customerName: z.string().min(1, { message: 'Customer Name is required' }),
   phoneNumber: z.string().min(1, { message: 'Phone Number is required' }),
@@ -397,22 +398,20 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       <div className="container mx-auto p-4">
         <BackButton text="Back To E-Tag Types" link="/user/etagtypes" />
         <h3 className="text-2xl font-bold mb-6">Generate E-Tag for {etagInfo.name}</h3>
-        <div className="flex flex-col md:flex-row gap-8 mb-8 mt-4">
-          <div className="md:w-1/2">
-            <img src={etagInfo.imageUrl} alt={etagInfo.name} className="w-48 h-48 rounded-lg shadow-lg" />
-          </div>
-          <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{etagInfo.name}</h2>
-              <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">{formatCurrency(etagInfo.amount)}</p>
+        <div className="mb-8 flex justify-center">
+        <Card className="overflow-hidden w-full max-w-4xl">
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/2">
+              <img src={etagInfo.imageUrl} alt={etagInfo.name} className="w-full h-full object-cover" />
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Bonus Rate</h3>
-              <p className="text-red-400">{etagInfo.bonusRate}%</p>
+            <div className="md:w-1/2 p-8 flex flex-col justify-center">
+              <h2 className="text-2xl font-semibold mb-2">{etagInfo.name}</h2>
+              <p className="text-xl font-bold text-green-600 mb-2">{formatCurrency(etagInfo.amount)}</p>
+              <p className="text-sm text-gray-600">Bonus Rate: <span className="font-semibold text-red-500">{etagInfo.bonusRate}%</span></p>
             </div>
           </div>
-        </div>
-        
+        </Card>
+      </div>
         {/* Customer Information Section */}
         <Form {...customerForm}>
         <form onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)} className="space-y-6">

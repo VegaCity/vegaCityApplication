@@ -14,6 +14,7 @@ import { createOrder, deleteOrder, confirmOrder } from '@/components/services/or
 import { GenerateEtag } from '@/components/services/etagService';
 import { ETagServices } from '@/components/services/etagService';
 import paymentService from '@/components/services/paymentService';
+import { Card } from '@/components/ui/card';
 const customerFormSchema = z.object({
   customerName: z.string().min(1, { message: 'Customer Name is required' }),
   phoneNumber: z.string().min(1, { message: 'Phone Number is required' }),
@@ -390,11 +391,13 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-8">
       <BackButton text="Back To Packages" link="/user/packages" />
       <h3 className="text-2xl mb-4">Generate E-Tag</h3>
       {packageData && (
-        <div className="flex flex-col md:flex-row gap-8 mb-6">
+        <div className="mb-8 flex justify-center">
+          <Card className="overflow-hidden w-full max-w-4xl">
+          <div className="flex flex-col md:flex-row">
           <div className="md:w-1/2">
             <img src={packageData.imageUrl} alt={packageData.name} className="w-80 h-100 rounded-lg shadow-lg" />
           </div>
@@ -413,12 +416,14 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 <p className="text-gray-600 dark:text-gray-400">
                   {packageData.packageETagTypeMappings[0]?.etagType?.name}
                 </p>
-                <p className="text-gray-600 dark:text-gray-400 mt-4">
+                {/* <p className="text-gray-600 dark:text-gray-400 mt-4">
                   {packageData.packageETagTypeMappings[0]?.etagType?.amount}
-                </p>
+                </p> */}
               </div>
             )}
+            </div>
           </div>
+          </Card>
         </div>
       )}
       <Form {...customerForm}>

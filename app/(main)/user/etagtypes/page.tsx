@@ -8,16 +8,24 @@ import { EtagType } from "@/types/etagtype";
 import ETagTypeCard from '@/components/card/etagtypecard';
 
 const ETagsPage = () => {
-  const { userRole, loading } = useUserRole();
-  const [etagTypes, setEtagTypes] = useState<EtagType[]>([]);
+  const { userRole, loading: userRoleLoading } = useUserRole();
+  const [etagTypes, setEtagTypes] = useState<EtagType[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchETagTypes = async () => {
       try {
+        setLoading(true);
         const response = await ETagTypeServices.getETagTypes({ page: 1, size: 10 });
-        setEtagTypes(response.data.items); 
+        setEtagTypes(response.data.items);
+        setError(null);
       } catch (error) {
         console.error('Error fetching etag types:', error);
+        setError('Failed to fetch E-Tag types. Please try again later.');
+        setEtagTypes(null);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -28,11 +36,14 @@ const ETagsPage = () => {
     try {
       const response = await ETagTypeServices.getETagTypeById(id);
       console.log('E-Tag details:', response.data);
+      // You might want to do something with the response data here
     } catch (error) {
       console.error('Error generating E-Tag:', error);
+      // Consider showing an error message to the user
     }
   };
-  if (loading) {
+
+  if (userRoleLoading || loading) {
     return <div>Loading...</div>;
   }
 
@@ -45,19 +56,23 @@ const ETagsPage = () => {
       <div className="flex justify-between items-center mb-4">
         <BackButton text='Go Back' link='/' />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {etagTypes.length > 0 ? (
-          etagTypes.map((etag) => (
-            <ETagTypeCard 
-              key={etag.id} 
-              etagtype={etag} 
-              onGenerateETag={handleGenerateETag} 
-            />
-          ))
-        ) : (
-          <div>No E-Tags available</div>
-        )}
-      </div>
+      {error ? (
+        <div className="text-red-500">{error}</div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {etagTypes && etagTypes.length > 0 ? (
+            etagTypes.map((etag) => (
+              <ETagTypeCard 
+                key={etag.id} 
+                etagtype={etag} 
+                onGenerateETag={handleGenerateETag} 
+              />
+            ))
+          ) : (
+            <div>No E-Tags available</div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

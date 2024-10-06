@@ -76,9 +76,9 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
 
   const getStatusString = (status: number) => {
     switch (status) {
-      case 0: return { text: 'Active', color: 'bg-green-500' };
-      case 1: return { text: 'Inactive', color: 'bg-red-500' };
-      default: return { text: 'Unknown', color: 'bg-gray-500' };
+      case 1: return { text: 'Active', color: 'bg-green-500' };
+      case 0: return { text: 'Inactive', color: 'bg-red-500' };
+      default: return { text: 'Block', color: 'bg-gray-500' };
     }
   };
 

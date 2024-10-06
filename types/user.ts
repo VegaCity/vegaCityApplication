@@ -11,6 +11,7 @@ export interface Users {
     imageUrl: string | null; 
     email: string;
     roleId: string;
+    roleName : string;
     description: string;
     address: string;
     status: number; 
