@@ -12,30 +12,29 @@ interface ETagTypeCardProps {
 
 const ETagTypeCard: React.FC<ETagTypeCardProps> = ({ etagtype, onGenerateETag }) => {
   const validImageUrl = etagtype.imageUrl && etagtype.imageUrl.startsWith('http') ? etagtype.imageUrl : '/default-image.png';
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
       currencyDisplay: 'symbol',
-    }).format(amount).replace('₫', 'đ'); 
+    }).format(amount).replace('₫', 'đ');
   };
-  return (
-    <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
 
-<div className="w-full flex justify-center p-4">
-        <div className="w-48 h-48 relative rounded-lg overflow-hidden shadow-sm">
-          <Image
-            src={validImageUrl}
-            alt={etagtype.name || 'Package Image'}
-            layout="fill"
-            objectFit="cover"
-            className="rounded-lg"
-          />
-        </div>
+  return (
+    <Card className="flex flex-col justify-between h-full shadow-lg rounded-lg overflow-hidden">
+      <div className="w-full aspect-square relative">
+        <Image
+          src={validImageUrl}
+          alt={etagtype.name || 'Package Image'}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-t-lg"
+        />
       </div>
-      <CardContent className="p-4">
-        <h3 className="text-lg font-semibold mb-2 text-start text-gray-900">{etagtype.name}</h3>
-        <p className="text-red-600 mb-1 text-lg">{typeof etagtype.amount === 'number' ? formatCurrency(etagtype.amount) : ''}</p>
+      <CardContent className="p-4 flex-grow flex flex-col justify-between">
+        <h3 className="text-lg font-semibold mb-2 text-gray-900 line-clamp-2 h-14">{etagtype.name}</h3>
+        <p className="text-red-600 text-lg font-medium">{typeof etagtype.amount === 'number' ? formatCurrency(etagtype.amount) : ''}</p>
       </CardContent>
       <CardFooter className="p-4">
         <Link href={`/user/etagtypes/generate/${etagtype.id}`} className='w-full'>
