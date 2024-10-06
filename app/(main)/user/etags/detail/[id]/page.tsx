@@ -14,16 +14,29 @@ import { ETag } from '@/types/etag';
 import Image from 'next/image';
 // Define validation schema with zod (optional for detail view)
 const formSchema = z.object({
-  fullname: z.string(),
+  fullName: z.string(),
   etagCode: z.string(),
   phoneNumber: z.string(),
   cccd: z.string(),
-  birthday: z.string(),
+  birthday: z.string().nullable(),
   gender: z.number(),
   startDate: z.string(),
   endDate: z.string(),
   status: z.number(),
   imageUrl: z.string(),
+  etagType: z.object({
+    name: z.string(),
+    bonusRate: z.number(),
+    amount: z.number(),
+  }),
+  marketZone: z.object({
+    name: z.string(),
+    shortName: z.string(),
+  }),
+  wallet: z.object({
+    balance: z.number(),
+    balanceHistory: z.number(),
+  }),
 });
 
 interface EtagDetailPageProps {
@@ -42,7 +55,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullname: '',
+      fullName: '',
       etagCode: '',
       phoneNumber: '',
       cccd: '',
@@ -52,8 +65,22 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       endDate: '',
       status: 0,
       imageUrl: '',
+      etagType: {
+        name: '',
+        bonusRate: 0,
+        amount: 0,
+      },
+      marketZone: {
+        name: '',
+        shortName: '',
+      },
+      wallet: {
+        balance: 0,
+        balanceHistory: 0,
+      },
     },
   });
+
 
   useEffect(() => {
     const fetchEtag = async () => {
@@ -63,16 +90,29 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         const etagData = response.data.data.etag;
         setEtag(etagData);
         form.reset({
-          fullname: etagData.fullname,
+          fullName: etagData.fullName,
           etagCode: etagData.etagCode,
           phoneNumber: etagData.phoneNumber,
           cccd: etagData.cccd,
           birthday: etagData.birthday,
-          gender: etagData.gender, // Gender được lưu dưới dạng số (0, 1, 2)
+          gender: etagData.gender,
           startDate: etagData.startDate,
           endDate: etagData.endDate,
           status: etagData.status,
-          imageUrl: etagData.imageUrl, // Thêm trường imageUrl
+          imageUrl: etagData.imageUrl,
+          etagType: {
+            name: etagData.etagType?.name || 'N/A',
+            bonusRate: etagData.etagType?.bonusRate || 0,
+            amount: etagData.etagType?.amount || 0,
+          },
+          marketZone: {
+            name: etagData.marketZone?.name || 'N/A',
+            shortName: etagData.marketZone?.shortName || 'N/A',
+          },
+          wallet: {
+            balance: etagData.wallet?.balance || 0,
+            balanceHistory: etagData.wallet?.balanceHistory || 0,
+          },
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
@@ -88,7 +128,8 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   if (error) return <div>Error: {error}</div>;
   if (!etag) return <div>No Etag found</div>;
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString();
   };
 
@@ -125,146 +166,209 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
           <div className="relative w-full h-48">
             <Image
               src={validImageUrl}
-              alt={etag.fullname || 'Image'}
+              alt={etag.fullName || 'Image'}
               layout="fill"
               objectFit="cover"
               className="rounded-lg"
             />
           </div>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              Full Name
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder=''
-                {...form.register('fullname')}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          {/* Customer Information */}
+          <h4 className="text-xl font-semibold mt-6 mb-4">Customer Information</h4>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Full Name
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('fullName')}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              Etag Code
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder='Enter Etag Code'
-                {...form.register('etagCode')}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Etag Code
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('etagCode')}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </div>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              Phone Number
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder='Enter Phone Number'
-                {...form.register('phoneNumber')}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Phone Number
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('phoneNumber')}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              CCCD
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder='Enter CCCD'
-                {...form.register('cccd')}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                CCCD
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('cccd')}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </div>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              Birthday
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder='Enter Birthday'
-                value={formatDate(etag.birthday)}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0 mb-11">
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Birthday
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  value={formatDate(etag.birthday)}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              Gender
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder='Enter Gender'
-                value={getGenderString(etag.gender)}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Gender
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  value={getGenderString(etag.gender)}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </div>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              Start Date
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder='Enter Start Date'
-                value={formatDate(etag.startDate)}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+          {/* ETag Information */}
+          <div className='mt-10'>
+            <h4 className="text-xl font-semibold mt-24 mb-4">ETag Information</h4>
+            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0 mt-6">
+              <FormItem className="md:w-1/2">
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  Start Date
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    value={formatDate(etag.startDate)}
+                    readOnly
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              End Date
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                placeholder='Enter End Date'
-                value={formatDate(etag.endDate)}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+              <FormItem className="md:w-1/2">
+                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                  End Date
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                    value={formatDate(etag.endDate)}
+                    readOnly
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            </div>
 
-          <FormItem>
-            <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-              Status
-            </FormLabel>
-            <FormControl>
-              <Input
-                className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                value={getStatusString(etag.status)}
-                readOnly
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
+            <FormItem className='md:w-1/3'>
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Status
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  value={getStatusString(etag.status)}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </div>
+          {/* ETag Type Information */}
+          <h4 className="text-xl font-semibold mt-6 mb-4">ETag Type Information</h4>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                ETag Type Name
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('etagType.name')}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Amount
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('etagType.amount')}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+          </div>
+          {/* Wallet Information */}
+          <h4 className="text-xl font-semibold mt-6 mb-4">Wallet Information</h4>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Balance
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('wallet.balance')}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+            <FormItem className="md:w-1/2">
+              <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                Balance History
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+                  {...form.register('wallet.balanceHistory')}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+          </div>
         </form>
       </Form>
     </>
