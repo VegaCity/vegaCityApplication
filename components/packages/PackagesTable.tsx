@@ -111,7 +111,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-slate-300 hover:bg-slate-300">
               <TableHead>NO</TableHead>
               <TableHead>Name</TableHead>
               <TableHead className="hidden md:table-cell">

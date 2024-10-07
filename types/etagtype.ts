@@ -13,4 +13,13 @@ export interface EtagTypePost {
   amount: number;  
   walletTypeId: string;
 }
+
+export interface EtagTypePatch {    
+  name: string;                       
+  imageUrl?: string;
+  bonusRate: number;                      
+  amount: number;              
+}
+
+
   

@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { EtagType, EtagTypePost } from "@/types/etagtype";
+import { EtagTypePatch, EtagTypePost } from "@/types/etagtype";
 
 interface ETagPageSize {
   page?: number;
@@ -21,7 +21,7 @@ export const ETagTypeServices = {
   uploadEtagType(etagtypeData: EtagTypePost) {
     return API.post("/etag-type/", etagtypeData);
   },
-  editEtagType(etagtypeId: string, etagtypeData: EtagType) {
+  editEtagType(etagtypeId: string, etagtypeData: EtagTypePatch) {
     return API.patch(`/etag-type/${etagtypeId}`, etagtypeData);
   },
   deleteEtagTypeById(id: string) {
