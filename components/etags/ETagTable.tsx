@@ -29,7 +29,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
     setIsLoading(true);
     try {
       const response = await ETagServices.getETags({ page: 1, size: 10 });
-      const etagtypes = Array.isArray(response.data.items) ? response.data.items : [];
+      const etagtypes = Array.isArray(response.data.data) ? response.data.data : [];
       setEtagList(etagtypes);
       setFilteredEtags(etagtypes);
     } catch (err) {
@@ -38,6 +38,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       setIsLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchEtag();
@@ -76,9 +77,9 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
 
   const getStatusString = (status: number) => {
     switch (status) {
-      case 0: return { text: 'Active', color: 'bg-green-500' };
-      case 1: return { text: 'Inactive', color: 'bg-red-500' };
-      default: return { text: 'Unknown', color: 'bg-gray-500' };
+      case 0: return { text: 'Inactive', color: 'bg-red-500' };
+      case 1: return { text: 'Active', color: 'bg-green-500' };
+      default: return { text: 'Block', color: 'bg-gray-500' };
     }
   };
 
