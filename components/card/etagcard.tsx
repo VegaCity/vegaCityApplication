@@ -1,9 +1,9 @@
-import React from 'react';
+import React from "react";
 import { ETag } from "@/types/etag";
-import Image from 'next/image';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import Image from "next/image";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface ETagCardProps {
   etag: ETag;
@@ -11,7 +11,10 @@ interface ETagCardProps {
 }
 
 const ETagCard: React.FC<ETagCardProps> = ({ etag, onGenerateETag }) => {
-  const validImageUrl = etag.imageUrl && etag.imageUrl.startsWith('http') ? etag.imageUrl : '/default-image.png'; 
+  const validImageUrl =
+    etag.imageUrl && etag.imageUrl.startsWith("http")
+      ? etag.imageUrl
+      : "/default-image.png";
 
   return (
     <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
@@ -25,17 +28,19 @@ const ETagCard: React.FC<ETagCardProps> = ({ etag, onGenerateETag }) => {
             className="rounded-md"
           />
         </div>
-        <h3 className="text-lg font-semibold mb-2 text-center text-gray-900">{etag.fullname}</h3>
+        <h3 className="text-lg font-semibold mb-2 text-center text-gray-900">
+          {etag.fullName}
+        </h3>
         <p className="text-sm text-gray-600 mt-4">Phone: {etag.phoneNumber}</p>
       </CardContent>
       <CardFooter className="p-4">
-        <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all"
+        <Button
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all"
           onClick={() => onGenerateETag(etag.id)}
         >
           <Link href={`/user/etagtypes/generate/${etag.id}`}>
             Generate E-Tag
           </Link>
-          
         </Button>
       </CardFooter>
     </Card>

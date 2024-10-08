@@ -1,11 +1,27 @@
-'use client';
+"use client";
 
-import { useOrderStatus } from '@/components/hooks/useOrderStatus';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { useOrderStatus } from "@/components/hooks/useOrderStatus";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CheckCircle, XCircle } from "lucide-react";
+import { Suspense } from "react";
 
 export default function OrderStatusPage() {
+  //if useSearchParams in useOrderStatus hooks is not working, redirect to Loading div
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <OrderStatusContent />
+    </Suspense>
+  );
+}
+
+function OrderStatusContent() {
   const { isSuccess, orderDetails, goToHomePage } = useOrderStatus();
 
   return (
@@ -13,7 +29,7 @@ export default function OrderStatusPage() {
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle className="text-center">
-            {isSuccess ? 'Giao dịch thành công!' : 'Giao dịch thất bại'}
+            {isSuccess ? "Giao dịch thành công!" : "Giao dịch thất bại"}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
@@ -25,7 +41,7 @@ export default function OrderStatusPage() {
           <p className="text-gray-600 mb-4">
             {isSuccess
               ? `Cảm ơn bạn đã đặt hàng. Đơn hàng #${orderDetails.orderId} của bạn đã được xác nhận.`
-              : 'Rất tiếc, đã xảy ra lỗi trong quá trình xử lý đơn hàng của bạn.'}
+              : "Rất tiếc, đã xảy ra lỗi trong quá trình xử lý đơn hàng của bạn."}
           </p>
           {isSuccess && (
             <p className="text-sm text-gray-500">
