@@ -10,7 +10,7 @@ const ETagsPage = () => {
           <BackButton text='Go Back' link='/' />
         </div>
         <ETagTable />
-        <ETagPagination />
+
       </div>
     );
   };

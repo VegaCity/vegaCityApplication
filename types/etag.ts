@@ -39,7 +39,7 @@ export interface Wallet {
 export interface ETag {
   id: string;
   etagCode: string;
-  fullname: string;
+  fullName: string;
   phoneNumber: string;
   cccd: string;
   imageUrl: string;

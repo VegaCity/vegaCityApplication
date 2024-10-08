@@ -340,7 +340,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
           <div className="relative w-full h-48">
             <Image
               src={validImageUrl}
-              alt={etag.fullname || 'Image'}
+              alt={etag.fullName || 'Image'}
               layout="fill"
               objectFit="cover"
               className="rounded-lg"
