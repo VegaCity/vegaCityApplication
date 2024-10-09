@@ -43,7 +43,7 @@ export interface ETag {
   phoneNumber: string;
   cccd: string;
   imageUrl: string;
-  gender: number;
+  gender: string;
   birthday: string | null;
   qrcode: string;
   deflag: boolean;

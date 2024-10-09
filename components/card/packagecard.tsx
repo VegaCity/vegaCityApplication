@@ -10,24 +10,26 @@ interface PackageCardProps {
   id: string;
 }
 
-interface Package_Id extends Package {
-  id: string;
-}
-
 const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
-  const [pkg, setPkg] = useState<Package_Id | null>(null);
+  const [pkg, setPkg] = useState<Package | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPackage = async () => {
       try {
+        setLoading(true);
         const response = await PackageServices.getPackageById(id);
-        setPkg(response.data.data.package);
-        setLoading(false);
+        console.log("Package response:", response);
+        if (response.data?.data?.package) {
+          setPkg(response.data.data.package);
+        } else {
+          throw new Error("Package data not found in response");
+        }
       } catch (err) {
         console.error("Error fetching package:", err);
         setError("Failed to load package");
+      } finally {
         setLoading(false);
       }
     };
@@ -36,15 +38,17 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
   }, [id]);
 
   if (loading) {
-    return <div className="text-center">Loading...</div>;
+    return <Card className="p-4 text-center">Loading package {id}...</Card>;
   }
 
   if (error) {
-    return <div className="text-red-500 text-center">{error}</div>;
+    return <Card className="p-4 text-red-500 text-center">{error}</Card>;
   }
 
   if (!pkg) {
-    return <div className="text-center">No package found</div>;
+    return (
+      <Card className="p-4 text-center">No package found for ID: {id}</Card>
+    );
   }
 
   const formatCurrency = (amount: number) => {
@@ -56,6 +60,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ id }) => {
       .format(amount)
       .replace("₫", "đ");
   };
+
   const validImageUrl =
     pkg.imageUrl && pkg.imageUrl.startsWith("http")
       ? pkg.imageUrl

@@ -5,6 +5,7 @@ interface ETagPageSize {
   page?: number;
   size?: number;
 }
+
 export interface GenerateEtag {
   quantity?: number;
   etagTypeId?: string;
@@ -12,6 +13,33 @@ export interface GenerateEtag {
     startDate: string;
     endDate: string;
     day: number;
+  };
+}
+
+interface ActivateEtagRequest {
+  cccd: string;
+  name: string;
+  phone: string;
+  gender: string;
+  birthday: string;
+  startDate: string;
+  endDate: string;
+}
+interface ChargeMoneyRequest {
+  etagCode: string;
+  chargeAmount: number;
+  cccd: string;
+  paymentType: string;
+}
+interface ChargeMoneyResponse {
+  statusCode: number;
+  messageResponse: string;
+  data: {
+    invoiceId: string;
+    balance: number;
+    key: string;
+    urlDirect: string;
+    urlIpn: string;
   };
 }
 export const ETagServices = {
@@ -47,5 +75,29 @@ export const ETagServices = {
         etagTypeId,
       },
     });
+  },
+  activateEtag(id: string, activateData: ActivateEtagRequest) {
+    return API.patch(`/etag/${id}/activate`, activateData);
+  },
+  chargeMoney({
+    etagCode,
+    chargeAmount,
+    cccd,
+    paymentType,
+  }: ChargeMoneyRequest) {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      throw new Error("User ID not found in localStorage");
+    }
+
+    const chargeData = {
+      userId,
+      etagCode,
+      chargeAmount,
+      cccd,
+      paymentType,
+    };
+
+    return API.post("/etag/charge-money", chargeData);
   },
 };

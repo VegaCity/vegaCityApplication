@@ -16,6 +16,11 @@ const ETagsPage = () => {
       try {
         const response = await ETagTypeServices.getETagTypes({ page: 1, size: 10 });
         setEtagTypes(response.data.items); 
+        if (response.data && Array.isArray(response.data.data)) {
+          setEtagTypes(response.data.data);
+        } else {
+          console.error('Unexpected response format:', response);
+        }
       } catch (error) {
         console.error('Error fetching etag types:', error);
       }

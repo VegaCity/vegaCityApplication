@@ -9,32 +9,32 @@ import PackageCard from "@/components/card/packagecard";
 
 const PackagesPage = () => {
   const { userRole, loading } = useUserRole();
-  const [packageIds, setPackageIds] = useState<string[]>([]);
+  const [packages, setPackages] = useState<Package[]>([]);
 
   interface Package_Id extends Package {
     id: string;
   }
 
   useEffect(() => {
-    const fetchPackageIds = async () => {
+    const fetchPackages = async () => {
       try {
         const response = await PackageServices.getPackages({
           page: 1,
           size: 10,
         });
-        const ids = response.data.items.map((pkg: Package_Id) => pkg.id);
-        setPackageIds(ids);
+        console.log("API response:", response.data);
+        if (response.data && Array.isArray(response.data.data)) {
+          setPackages(response.data.data);
+        } else {
+          console.error("Unexpected response format:", response);
+        }
       } catch (error) {
         console.error("Error fetching packages:", error);
       }
     };
 
-    fetchPackageIds();
+    fetchPackages();
   }, []);
-
-  const handlePackageAction = (id: string) => {
-    console.log("Action for package:", id);
-  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -50,13 +50,9 @@ const PackagesPage = () => {
         <BackButton text="Go Back" link="/" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {packageIds.length > 0 ? (
-          packageIds.map((packageId) => (
-            <PackageCard key={packageId} id={packageId} />
-          ))
-        ) : (
-          <div>No packages available</div>
-        )}
+        {packages.map((pkg) => (
+          <PackageCard key={pkg.id} id={pkg.id} />
+        ))}
       </div>
     </div>
   );

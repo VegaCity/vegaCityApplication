@@ -14,6 +14,7 @@ import { createOrder, deleteOrder, confirmOrder } from '@/components/services/or
 import { GenerateEtag } from '@/components/services/etagService';
 import { ETagServices } from '@/components/services/etagService';
 import paymentService from '@/components/services/paymentService';
+import { Card } from '@/components/ui/card';
 const customerFormSchema = z.object({
   customerName: z.string().min(1, { message: 'Customer Name is required' }),
   phoneNumber: z.string().min(1, { message: 'Phone Number is required' }),
@@ -390,37 +391,38 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   return (
-    <div className="container mx-auto p-4">
-      <BackButton text="Back To Packages" link="/user/packages" />
-      <h3 className="text-2xl mb-4">Generate E-Tag</h3>
-      {packageData && (
-        <div className="flex flex-col md:flex-row gap-8 mb-6">
-          <div className="md:w-1/2">
-            <img src={packageData.imageUrl} alt={packageData.name} className="w-80 h-100 rounded-lg shadow-lg" />
+    <div className="container mx-auto p-8">
+    <BackButton text="Back To Packages" link="/user/packages" />
+    <h3 className="text-2xl mb-4">Generate E-Tag</h3>
+    {packageData && (
+      <div className="mb-8 flex justify-center">
+        <Card className="overflow-hidden w-full max-w-4xl">
+        <div className="flex flex-col md:flex-row">
+        <div className="md:w-1/2">
+          <img src={packageData.imageUrl} alt={packageData.name} className="w-80 h-100 rounded-lg shadow-lg" />
+        </div>
+        <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{packageData.name}</h2>
+            <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">{packageData.price}</p>
           </div>
-          <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</h3>
+            <p className="text-gray-600 dark:text-gray-400">{packageData.description}</p>
+          </div>
+          {packageData.packageETagTypeMappings.length > 0 && (
             <div>
-              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{packageData.name}</h2>
-              <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">{packageData.price}</p>
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Bao gồm E-Tag Type</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                {packageData.packageETagTypeMappings[0]?.etagType?.name}
+              </p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</h3>
-              <p className="text-gray-600 dark:text-gray-400">{packageData.description}</p>
-            </div>
-            {packageData.packageETagTypeMappings.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Bao gồm E-Tag Type</h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {packageData.packageETagTypeMappings[0]?.etagType?.name}
-                </p>
-                <p className="text-gray-600 dark:text-gray-400 mt-4">
-                  {packageData.packageETagTypeMappings[0]?.etagType?.amount}
-                </p>
-              </div>
-            )}
+          )}
           </div>
         </div>
-      )}
+        </Card>
+      </div>
+    )}
       <Form {...customerForm}>
         <form onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)} className="space-y-6">
           <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
