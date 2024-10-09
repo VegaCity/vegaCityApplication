@@ -45,8 +45,6 @@ const formSchema = z.object({
 interface EtagDetailPageProps {
   params: { id: string };
 }
-
-// Type for form values inferred from the schema
 type FormValues = z.infer<typeof formSchema>;
 
 const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
@@ -60,6 +58,17 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   
   const handleChargeMoney = async (data: { etagCode: string, chargeAmount: number, cccd: string, paymentType: string }) => {
     try {
+      // Kiểm tra các tham số đầu vào
+      if (!data.etagCode || data.chargeAmount <= 0 || !data.cccd || !data.paymentType) {
+        toast({
+          title: 'Error',
+          description: 'Please provide all required fields and a valid charge amount.',
+          variant: 'destructive',
+        });
+        return;
+      }
+  
+      // Gọi API nạp tiền
       const response = await ETagServices.chargeMoney({
         etagCode: data.etagCode,
         chargeAmount: data.chargeAmount,
@@ -67,67 +76,57 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         paymentType: data.paymentType,
       });
   
-      console.log('Complete response:', JSON.stringify(response, null, 2));
-  
+      // Kiểm tra phản hồi từ API nạp tiền
       if (response.status === 200) {
-        const { data: responseData } = response;
+        const responseData = response.data;
   
         if (responseData && responseData.data) {
-          const { urlDirect, key, invoiceId } = responseData.data; 
+          const { urlDirect, key, invoiceId, urlIpn } = responseData.data;
   
-          if (urlDirect) {
-            console.log('Redirecting to payment URL:', urlDirect);
-  
-            
-            const paymentData = {
-              invoiceId: invoiceId,
-              key: key,
-              urlDirect: urlDirect,
-              urlIpn: responseData.data.urlIpn, 
-            };
-  
-            let paymentResponse;
-            if (data.paymentType === 'momo') {
-              paymentResponse = await paymentService.momo(paymentData);
-            } else if (data.paymentType === 'vnpay') {
-              paymentResponse = await paymentService.vnpay(paymentData);
-            } else {
-              throw new Error('Invalid payment method');
-            }
-  
-            
-            if (paymentResponse && paymentResponse.data) {
-              
-              console.log('Payment processed successfully:', paymentResponse);
-            } else {
-              console.error('Payment response is invalid.');
-              toast({
-                title: 'Error',
-                description: 'Payment response is invalid. Please try again.',
-                variant: 'destructive',
-              });
-            }
-  
-            // Redirect to the initial payment URL if needed
-            window.location.href = urlDirect; 
-          } else {
-            console.error('Payment URL not found in the response data.');
+          // Kiểm tra dữ liệu quan trọng
+          if (!urlDirect || !invoiceId) {
             toast({
               title: 'Error',
-              description: 'Payment URL not found. Please try again later.',
+              description: 'Critical data missing from response. Please try again later.',
+              variant: 'destructive',
+            });
+            return;
+          }
+  
+          // Gọi API thanh toán
+          let paymentResponse;
+          if (data.paymentType === 'momo') {
+            paymentResponse = await paymentService.momo({ invoiceId, key, urlDirect, urlIpn });
+          } else if (data.paymentType === 'vnpay') {
+            paymentResponse = await paymentService.vnpay({ invoiceId, key, urlDirect, urlIpn });
+          } else {
+            toast({
+              title: 'Error',
+              description: 'Invalid payment method selected. Please try again.',
+              variant: 'destructive',
+            });
+            return;
+          }
+  
+          // Kiểm tra phản hồi từ API thanh toán
+          if (paymentResponse && paymentResponse.data) {
+            // Chuyển hướng người dùng đến URL thanh toán
+            window.location.href = urlDirect;
+          } else {
+            toast({
+              title: 'Error',
+              description: 'Payment response is invalid. Please try again.',
               variant: 'destructive',
             });
           }
         } else {
-          console.error('Invalid response data structure.');
           toast({
             title: 'Error',
-            description: 'Invalid response data structure.',
+            description: 'Invalid response structure from chargeMoney API. Please try again later.',
             variant: 'destructive',
           });
         }
       } else {
-        console.error('Unexpected response status:', response.status);
         toast({
           title: 'Error',
           description: `Failed to charge money. Status code: ${response.status}`,
