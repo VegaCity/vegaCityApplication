@@ -10,9 +10,9 @@ export interface GenerateEtag {
   quantity?: number;
   etagTypeId?: string;
   generateEtagRequest: {
-    startDate: string;
-    endDate: string;
-    day: number;
+    startDate: Date;
+    endDate: Date;
+    // day: number;
   };
 }
 

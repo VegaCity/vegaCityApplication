@@ -14,23 +14,23 @@ import { createOrder, deleteOrder, confirmOrder } from '@/components/services/or
 import { GenerateEtag } from '@/components/services/etagService';
 import { ETagServices } from '@/components/services/etagService';
 import paymentService from '@/components/services/paymentService';
-import { Card } from '@/components/ui/card';
 const customerFormSchema = z.object({
   customerName: z.string().min(1, { message: 'Customer Name is required' }),
   phoneNumber: z.string().min(1, { message: 'Phone Number is required' }),
   address: z.string().min(1, { message: 'Address is required' }),
   cccd: z.string().min(1, { message: 'CCCD Number is required' }),
-  paymentMethod: z.enum(['cash', 'momo', 'vnpay'], { required_error: 'Payment method is required' }),
+  paymentMethod: z.enum(['cash', 'momo', 'vnpay','payos'], { required_error: 'Payment method is required' }),
   gender: z.enum(['male', 'female', 'other'], { required_error: 'Gender is required' }),
   quantity: z.coerce.number().min(1, { message: 'Quantity is required and must be at least 1' }),
   price: z.coerce.number().min(0, { message: 'Price must be a positive number' }),
 });
 
 const etagFormSchema = z.object({
-  etagStartDate: z.string().min(1, { message: 'E-Tag Start Date is required' }),
-  etagEndDate: z.string().min(1, { message: 'E-Tag End Date is required' }),
-  etagDuration: z.coerce.number().min(1, { message: 'E-Tag Duration is required' }),
-  etagMoney: z.coerce.number().min(0, { message: 'E-Tag Money must be a positive number' }),
+  etagStartDate: z.string().nonempty("Start date is required"),
+  etagEndDate: z.string().nonempty("End date is required"),
+}).refine(data => new Date(data.etagEndDate) > new Date(data.etagStartDate), {
+  message: "End date must be after start date",
+  path: ["etagEndDate"],
 });
 
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
@@ -41,6 +41,7 @@ interface GenerateEtagProps {
 }
 
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
+  const [endDate, setEndDate] = useState('');
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,10 +53,8 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const [isCashPaymentConfirmed, setIsCashPaymentConfirmed] = useState(false);
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [etagData, setEtagData] = useState<{
-    startDate: string;
-    endDate: string;
-    day: number;
-    moneyStart: number;
+    startDate: Date;
+    endDate: Date;
   } | null>(null);
 
   const customerForm = useForm<CustomerFormValues>({
@@ -75,14 +74,17 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const etagForm = useForm<EtagFormValues>({
     resolver: zodResolver(etagFormSchema),
     defaultValues: {
-      etagStartDate: '',
-      etagEndDate: '',
-      etagDuration: 0,
-      etagMoney: 0,
+      etagStartDate: new Date().toISOString().split('T')[0],
+      etagEndDate: new Date().toISOString().split('T')[0],
     },
-    mode: 'onChange',
+    mode: 'all',
   });
-
+  useEffect(() => {
+    const validateForm = async () => {
+      await etagForm.trigger();
+    };
+    validateForm();
+  }, [endDate, etagForm]);
   useEffect(() => {
     const fetchPackageData = async () => {
       setIsLoading(true);
@@ -91,16 +93,26 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         const pkgData = response.data.data.package;
         if (pkgData) {
           setPackageData(pkgData);
-          const etagId = pkgData.packageETagTypeMappings[0]?.etagType?.id;
-          if (etagId) {
-            localStorage.setItem('etagTypeId', etagId);
-            console.log('EtagTypeId stored in localStorage:', etagId);
+          if (pkgData.packageETagTypeMappings && pkgData.packageETagTypeMappings.length > 0) {
+            const etagTypeMapping = pkgData.packageETagTypeMappings[0];
+            if (etagTypeMapping && etagTypeMapping.etagType && etagTypeMapping.etagType.id) {
+              const etagId = etagTypeMapping.etagType.id;
+              localStorage.setItem('etagTypeId', etagId);
+              console.log('EtagTypeId stored in localStorage:', etagId);
+            } else {
+              console.warn('EtagType or its ID is missing in the package data');
+              setError('EtagType information is incomplete. Please check the package configuration.');
+            }
           } else {
-            throw new Error('EtagType ID is missing in the package data');
+            console.warn('No packageETagTypeMappings found in the package data');
+            setError('No E-Tag type information found for this package. Please check the package configuration.');
           }
+        } else {
+          throw new Error('Package data is missing in the response');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        console.error('Error fetching package data:', err);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred while fetching package data');
         toast({
           title: 'Error',
           description: 'Failed to load package data. Please try again.',
@@ -133,19 +145,19 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       }
     }
   };
-  const handleCancelEtag = () => {
-    setIsEtagInfoConfirmed(false);
-    setIsCustomerInfoConfirmed(false);
-    Object.entries(cachedEtagFormData).forEach(([key, value]) => {
-      if (typeof value === 'string' || typeof value === 'number') {
-        etagForm.setValue(key as keyof EtagFormValues, value);
-      }
-    });
-    toast({
-      title: 'Information Editing Enabled',
-      description: 'You can now edit both customer and E-tag information.',
-    });
-  };
+  // const handleCancelEtag = () => {
+  //   setIsEtagInfoConfirmed(false);
+  //   setIsCustomerInfoConfirmed(false);
+  //   Object.entries(cachedEtagFormData).forEach(([key, value]) => {
+  //     if (typeof value === 'string' || typeof value === 'number') {
+  //       etagForm.setValue(key as keyof EtagFormValues, value);
+  //     }
+  //   });
+  //   toast({
+  //     title: 'Information Editing Enabled',
+  //     description: 'You can now edit both customer and E-tag information.',
+  //   });
+  // };
 
   const handleCancelOrder = async () => {
     await deleteExistingOrder();
@@ -205,20 +217,22 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
       console.log(`Initiating ${paymentMethod} payment for invoice ${invoiceId}`);
-      
+  
       let paymentResponse;
-      
+  
       if (paymentMethod === 'momo') {
         paymentResponse = await paymentService.momo({ invoiceId });
       } else if (paymentMethod === 'vnpay') {
         paymentResponse = await paymentService.vnpay({ invoiceId });
+      } else if (paymentMethod === 'payos') {
+        paymentResponse = await paymentService.payos({ invoiceId });
       } else {
         throw new Error('Invalid payment method');
       }
-      
+  
       console.log('Raw payment response:', JSON.stringify(paymentResponse, null, 2));
-      
-      if (paymentResponse && paymentResponse.data) {
+  
+      if (paymentResponse && paymentResponse.statusCode === 200) {
         if (paymentMethod === 'momo') {
           console.log('Handling MoMo response');
           const momoData = paymentResponse.data;
@@ -241,10 +255,20 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
             console.error('VNPay payment URL not found in the response');
             throw new Error('VNPay payment URL not found in the response');
           }
+        } else if (paymentMethod === 'payos') {
+          console.log('Handling PayOS response');
+          const payosData = paymentResponse.data;
+          if (payosData.checkoutUrl) {
+            console.log('Redirecting to PayOS checkout URL:', payosData.checkoutUrl);
+            window.location.href = payosData.checkoutUrl;
+          } else {
+            console.error('PayOS checkout URL not found in the response');
+            throw new Error('PayOS checkout URL not found in the response');
+          }
         }
       } else {
-        console.error('Invalid payment response structure');
-        throw new Error('Invalid payment response structure');
+        console.error('Invalid payment response structure or status code');
+        throw new Error('Invalid payment response structure or status code');
       }
     } catch (error) {
       console.error('Payment initiation error:', error);
@@ -257,8 +281,10 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     }
   };
 
-  const handleConfirmEtag = () => {
-    if (etagForm.formState.isValid) {
+  const handleConfirmEtag = async () => {
+    const isValid = await etagForm.trigger();
+    
+    if (isValid) {
       setIsEtagInfoConfirmed(true);
       setCachedEtagFormData(etagForm.getValues());
       toast({
@@ -266,14 +292,19 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         description: 'You can now generate the E-tag.',
       });
     } else {
+      const errors = etagForm.formState.errors;
+      let errorMessage = 'Please fill in all required E-tag information fields correctly:';
+      if (errors.etagStartDate) errorMessage += ' Start Date is invalid.';
+      if (errors.etagEndDate) errorMessage += ' End Date is invalid.';
       toast({
         title: 'Error',
-        description: 'Please fill in all required E-tag information fields correctly.',
+        description: errorMessage,
         variant: 'destructive',
       });
     }
   };
- 
+
+
   const handleConfirmOrder = async () => {
     const invoiceId = localStorage.getItem('invoiceId');
     if (!invoiceId) {
@@ -284,28 +315,29 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       });
       return;
     }
-  
+
     const paymentMethod = customerForm.getValues('paymentMethod');
-  
+
     try {
       const confirmData = {
         invoiceId: invoiceId,
+        etagTypeId: localStorage.getItem('etagTypeId') || '',
         generateEtagRequest: {
           startDate: new Date(etagForm.getValues('etagStartDate')),
           endDate: new Date(etagForm.getValues('etagEndDate')),
-          day: etagForm.getValues('etagDuration'),
-          moneyStart: etagForm.getValues('etagMoney')
+          // day: etagForm.getValues('etagDuration'),
+          // moneyStart: etagForm.getValues('etagMoney')
         }
       };
-  
+
       if (paymentMethod === 'cash') {
-        await confirmOrder(confirmData);
+        // await confirmOrder(confirmData);
         setIsOrderConfirmed(true);
         toast({
           title: 'Order Confirmed',
           description: 'Your cash order has been successfully confirmed.',
         });
-      } else if (paymentMethod === 'momo' || paymentMethod === 'vnpay') {
+      } else if (paymentMethod === 'momo' || paymentMethod === 'vnpay' || paymentMethod === 'payos') {
         try {
           await initiatePayment(paymentMethod, invoiceId);
         } catch (paymentError) {
@@ -328,6 +360,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       });
     }
   };
+
   const handleEtagSubmit = async (data: EtagFormValues) => {
     if (!isOrderConfirmed) {
       toast({
@@ -343,9 +376,8 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         quantity: Number(customerForm.getValues('quantity')),
         etagTypeId: localStorage.getItem('etagTypeId') || '',
         generateEtagRequest: {
-          startDate: new Date(data.etagStartDate).toISOString(),
-          endDate: new Date(data.etagEndDate).toISOString(),
-          day: data.etagDuration,
+          startDate: new Date(data.etagStartDate),
+          endDate: new Date(data.etagEndDate),
         }
       };
 
@@ -353,15 +385,13 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
 
       if (response.data) {
         setEtagData({
-          startDate: data.etagStartDate,
-          endDate: data.etagEndDate,
-          day: data.etagDuration,
-          moneyStart: data.etagMoney,
+          startDate: new Date(data.etagStartDate),
+          endDate: new Date(data.etagEndDate),
         });
 
         toast({
           title: 'E-Tag generated successfully',
-          description: `E-Tag for package ${packageData.name} has been generated.`,
+          description: `E-Tag for ${packageData.name} has been generated.`,
         });
       } else {
         throw new Error('Failed to generate E-Tag');
@@ -381,48 +411,47 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     if (etagStartDate && etagEndDate) {
       const start = new Date(etagStartDate);
       const end = new Date(etagEndDate);
-      if (end > start) {
-        const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
-        etagForm.setValue('etagDuration', duration, { shouldValidate: true });
-      }
+      // if (end > start) {
+      //   const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
+      //   etagForm.setValue('etagDuration', duration, { shouldValidate: true });
+      // }
     }
   }, [etagForm.watch('etagStartDate'), etagForm.watch('etagEndDate')]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
   return (
-    <div className="container mx-auto p-8">
-    <BackButton text="Back To Packages" link="/user/packages" />
-    <h3 className="text-2xl mb-4">Generate E-Tag</h3>
-    {packageData && (
-      <div className="mb-8 flex justify-center">
-        <Card className="overflow-hidden w-full max-w-4xl">
-        <div className="flex flex-col md:flex-row">
-        <div className="md:w-1/2">
-          <img src={packageData.imageUrl} alt={packageData.name} className="w-80 h-100 rounded-lg shadow-lg" />
-        </div>
-        <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{packageData.name}</h2>
-            <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">{packageData.price}</p>
+    <div className="container mx-auto p-4">
+      <BackButton text="Back To Packages" link="/user/packages" />
+      <h3 className="text-2xl mb-4">Generate E-Tag</h3>
+      {packageData && (
+        <div className="flex flex-col md:flex-row gap-8 mb-6">
+          <div className="md:w-1/2">
+            <img src={packageData.imageUrl} alt={packageData.name} className="w-80 h-100 rounded-lg shadow-lg" />
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</h3>
-            <p className="text-gray-600 dark:text-gray-400">{packageData.description}</p>
-          </div>
-          {packageData.packageETagTypeMappings.length > 0 && (
+          <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
             <div>
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Bao gồm E-Tag Type</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                {packageData.packageETagTypeMappings[0]?.etagType?.name}
-              </p>
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{packageData.name}</h2>
+              <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">{packageData.price}</p>
             </div>
-          )}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</h3>
+              <p className="text-gray-600 dark:text-gray-400">{packageData.description}</p>
+            </div>
+            {packageData.packageETagTypeMappings.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Bao gồm E-Tag Type</h3>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {packageData.packageETagTypeMappings[0]?.etagType?.name}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mt-4">
+                  {packageData.packageETagTypeMappings[0]?.etagType?.amount}
+                </p>
+              </div>
+            )}
           </div>
         </div>
-        </Card>
-      </div>
-    )}
+      )}
       <Form {...customerForm}>
         <form onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)} className="space-y-6">
           <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -583,6 +612,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       <SelectItem value="cash">Cash</SelectItem>
                       <SelectItem value="momo">Momo</SelectItem>
                       <SelectItem value="vnpay">VNPay</SelectItem>
+                      <SelectItem value="payos">PayOs</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -615,49 +645,58 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                     <FormItem className="md:w-1/2">
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag Start Date</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" />
+                        <Input
+                          type="date"
+                          {...field}
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            field.onChange(e.target.value);
+                            etagForm.trigger('etagEndDate'); // Trigger validation immediately
+                          }}
+                          className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={etagForm.control}
-                  name="etagEndDate"
-                  render={({ field }) => (
-                    <FormItem className="md:w-1/2">
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag End Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
-                <FormField
-                  control={etagForm.control}
-                  name="etagDuration"
-                  render={({ field }) => (
-                    <FormItem className="md:w-1/2">
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag Duration (Days)</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} readOnly className="bg-gray-200 dark:bg-gray-600 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+      control={etagForm.control}
+      name="etagEndDate"
+      render={({ field }) => (
+        <FormItem className="md:w-1/2">
+          <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">E-Tag End Date</FormLabel>
+          <FormControl>
+            <Input
+              type="date"
+              {...field}
+              value={endDate || field.value || ''}
+              onChange={(e) => {
+                const newValue = e.target.value;
+                setEndDate(newValue);
+                field.onChange(newValue);
+              }}
+              onBlur={() => {
+                field.onBlur();
+                etagForm.trigger('etagEndDate');
+              }}
+              className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
 
               </div>
+
             </div>
             <div className="flex justify-end space-x-4">
               {!isEtagInfoConfirmed ? (
                 <>
-                  <Button type="button" onClick={handleCancelEtag}>
+                  {/* <Button type="button" onClick={handleCancelEtag}>
                     Cancel
-                  </Button>
+                  </Button> */}
                   <Button type="button" onClick={handleConfirmEtag}>
                     Confirm E-tag Information
                   </Button>

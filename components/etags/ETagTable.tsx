@@ -29,7 +29,7 @@ interface EtagTableProps {
   title?: string;
 }
 
-type SortField = "startDate" | "endDate";
+type SortField = "startDate" | "endDate" | "status";
 type SortOrder = "asc" | "desc";
 
 const EtagTable = ({ limit, title }: EtagTableProps) => {
@@ -86,9 +86,15 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   };
 
   const sortedEtags = [...filteredEtags].sort((a, b) => {
-    return sortOrder === "asc"
-      ? new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
-      : new Date(b[sortField]).getTime() - new Date(a[sortField]).getTime();
+    if (sortField === "status") {
+      return sortOrder === "asc"
+        ? a.status - b.status
+        : b.status - a.status;
+    } else {
+      return sortOrder === "asc"
+        ? new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
+        : new Date(b[sortField]).getTime() - new Date(a[sortField]).getTime();
+    }
   });
 
   if (error) return <div>Error: {error}</div>;
@@ -102,11 +108,11 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const getStatusString = (status: number) => {
     switch (status) {
       case 0:
-        return { text: "Inactive", color: "bg-red-500" };
+        return { text: "Inactive", color: "bg-red-500", sortOrder: 2 };
       case 1:
-        return { text: "Active", color: "bg-green-500" };
+        return { text: "Active", color: "bg-green-500", sortOrder: 1 };
       default:
-        return { text: "Block", color: "bg-gray-500" };
+        return { text: "Block", color: "bg-gray-500", sortOrder: 3 };
     }
   };
 
@@ -224,7 +230,9 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
                 <TableHead>
                   <SortButton field="endDate" label="End Date" />
                 </TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>
+                  <SortButton field="status" label="Status" />
+                </TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>

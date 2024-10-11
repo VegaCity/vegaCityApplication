@@ -22,8 +22,8 @@ const ETagTypeCard: React.FC<ETagTypeCardProps> = ({ etagtype, onGenerateETag })
   };
 
   return (
-    <Card className="flex flex-col justify-between h-full shadow-lg rounded-lg overflow-hidden">
-      <div className="w-full aspect-square relative">
+    <Card className="flex flex-col justify-between shadow-lg rounded-lg overflow-hidden">
+      <div className="w-88 h-48 relative rounded-lg overflow-hidden shadow-sm">
         <Image
           src={validImageUrl}
           alt={etagtype.name || 'Package Image'}

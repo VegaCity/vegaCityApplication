@@ -56,97 +56,138 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   
-  const handleChargeMoney = async (data: { etagCode: string, chargeAmount: number, cccd: string, paymentType: string }) => {
+  const handleChargeMoney = async (data: { etagCode: any; chargeAmount: number; cccd: any; paymentType: string; }) => {
     try {
-      // Kiểm tra các tham số đầu vào
-      if (!data.etagCode || data.chargeAmount <= 0 || !data.cccd || !data.paymentType) {
-        toast({
-          title: 'Error',
-          description: 'Please provide all required fields and a valid charge amount.',
-          variant: 'destructive',
-        });
-        return;
-      }
-  
-      // Gọi API nạp tiền
-      const response = await ETagServices.chargeMoney({
-        etagCode: data.etagCode,
-        chargeAmount: data.chargeAmount,
-        cccd: data.cccd,
-        paymentType: data.paymentType,
-      });
-  
-      // Kiểm tra phản hồi từ API nạp tiền
-      if (response.status === 200) {
-        const responseData = response.data;
-  
-        if (responseData && responseData.data) {
-          const { urlDirect, key, invoiceId, urlIpn } = responseData.data;
-  
-          // Kiểm tra dữ liệu quan trọng
-          if (!urlDirect || !invoiceId) {
+        // Validate input parameters
+        if (!data.etagCode || data.chargeAmount <= 0 || !data.cccd || !data.paymentType) {
             toast({
-              title: 'Error',
-              description: 'Critical data missing from response. Please try again later.',
-              variant: 'destructive',
+                title: 'Error',
+                description: 'Please provide all required fields and a valid charge amount.',
+                variant: 'destructive',
             });
             return;
-          }
-  
-          // Gọi API thanh toán
-          let paymentResponse;
-          if (data.paymentType === 'momo') {
-            paymentResponse = await paymentService.momo({ invoiceId, key, urlDirect, urlIpn });
-          } else if (data.paymentType === 'vnpay') {
-            paymentResponse = await paymentService.vnpay({ invoiceId, key, urlDirect, urlIpn });
-          } else {
-            toast({
-              title: 'Error',
-              description: 'Invalid payment method selected. Please try again.',
-              variant: 'destructive',
-            });
-            return;
-          }
-  
-          // Kiểm tra phản hồi từ API thanh toán
-          if (paymentResponse && paymentResponse.data) {
-            // Chuyển hướng người dùng đến URL thanh toán
-            window.location.href = urlDirect;
-          } else {
-            toast({
-              title: 'Error',
-              description: 'Payment response is invalid. Please try again.',
-              variant: 'destructive',
-            });
-          }
-        } else {
-          toast({
-            title: 'Error',
-            description: 'Invalid response structure from chargeMoney API. Please try again later.',
-            variant: 'destructive',
-          });
         }
-      } else {
-        toast({
-          title: 'Error',
-          description: `Failed to charge money. Status code: ${response.status}`,
-          variant: 'destructive',
+
+        // Call the charge money API
+        const response = await ETagServices.chargeMoney({
+            etagCode: data.etagCode,
+            chargeAmount: data.chargeAmount,
+            cccd: data.cccd,
+            paymentType: data.paymentType,
         });
-      }
+
+        // Check the response from the charge money API
+        if (response.status === 200) {
+            const responseData = response.data;
+
+            if (responseData && responseData.data) {
+                const { urlDirect, key, invoiceId } = responseData.data;
+
+                // Validate important data
+                if (!urlDirect || !invoiceId) {
+                    toast({
+                        title: 'Error',
+                        description: 'Critical data missing from response. Please try again later.',
+                        variant: 'destructive',
+                    });
+                    return;
+                }
+
+                // Initiate payment
+                await initiatePayment(data.paymentType, invoiceId, key);
+            } else {
+                toast({
+                    title: 'Error',
+                    description: 'Invalid response structure from chargeMoney API. Please try again later.',
+                    variant: 'destructive',
+                });
+            }
+        } else {
+            toast({
+                title: 'Error',
+                description: `Failed to charge money. Status code: ${response.status}`,
+                variant: 'destructive',
+            });
+        }
     } catch (error) {
-      console.error('Error charging money:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to charge money. Please check your details and try again.',
-        variant: 'destructive',
-      });
+        console.error('Error charging money:', error);
+        toast({
+            title: 'Error',
+            description: 'Failed to charge money. Please check your details and try again.',
+            variant: 'destructive',
+        });
     } finally {
-      setIsPopupOpen(false);
+        setIsPopupOpen(false);
     }
-  };
-  
-  
-  
+};
+
+const initiatePayment = async (paymentMethod: string, invoiceId: string , key: string) => {
+  try {
+    console.log(`Initiating ${paymentMethod} payment for invoice ${invoiceId}`);
+
+    let paymentResponse;
+
+    if (paymentMethod === 'momo') {
+      paymentResponse = await paymentService.momo({ invoiceId  , key});
+    } else if (paymentMethod === 'vnpay') {
+      paymentResponse = await paymentService.vnpay({ invoiceId  , key});
+    } else if (paymentMethod === 'payos') {
+      paymentResponse = await paymentService.payos({ invoiceId  , key});
+    } else {
+      throw new Error('Invalid payment method');
+    }
+
+    console.log('Raw payment response:', JSON.stringify(paymentResponse, null, 2));
+
+    if (paymentResponse && paymentResponse.statusCode === 200) {
+      if (paymentMethod === 'momo') {
+        console.log('Handling MoMo response');
+        const momoData = paymentResponse.data;
+        if (momoData.payUrl) {
+          console.log('Redirecting to payUrl:', momoData.payUrl);
+          window.location.href = momoData.payUrl;
+        } else if (momoData.shortLink) {
+          console.log('Redirecting to shortLink:', momoData.shortLink);
+          window.location.href = momoData.shortLink;
+        } else {
+          console.error('MoMo payment URL not found in the response');
+          throw new Error('MoMo payment URL not found in the response');
+        }
+      } else if (paymentMethod === 'vnpay') {
+        console.log('Handling VNPay response');
+        if (paymentResponse.data.vnPayResponse) {
+          console.log('Redirecting to VNPay URL:', paymentResponse.data.vnPayResponse);
+          window.location.href = paymentResponse.data.vnPayResponse;
+        } else {
+          console.error('VNPay payment URL not found in the response');
+          throw new Error('VNPay payment URL not found in the response');
+        }
+      } else if (paymentMethod === 'payos') {
+        console.log('Handling PayOS response');
+        const payosData = paymentResponse.data;
+        if (payosData.checkoutUrl) {
+          console.log('Redirecting to PayOS checkout URL:', payosData.checkoutUrl);
+          window.location.href = payosData.checkoutUrl;
+        } else {
+          console.error('PayOS checkout URL not found in the response');
+          throw new Error('PayOS checkout URL not found in the response');
+        }
+      }
+    } else {
+      console.error('Invalid payment response structure or status code');
+      throw new Error('Invalid payment response structure or status code');
+    }
+  } catch (error) {
+    console.error('Payment initiation error:', error);
+    toast({
+      title: 'Payment Error',
+      description: `Failed to initiate ${paymentMethod} payment. Please try again.`,
+      variant: 'destructive',
+    });
+    throw error;
+  }
+};
+
   
 
   const form = useForm<FormValues>({
@@ -182,15 +223,11 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       etagCode: form.getValues('etagCode'),
       chargeAmount: 0,
       cccd: form.getValues('cccd'),
-      paymentType: 'cash', 
+      paymentType: 'cash',
+      startDate: form.getValues('startDate'),
+      endDate: form.getValues('endDate')
     },
   });
-  // date
-  const formatDateForDisplay = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
-  };
-
   const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return '';
     return new Date(dateString).toISOString().split('T')[0];
@@ -218,10 +255,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
             bonusRate: etagData.etagType?.bonusRate || 0,
             amount: etagData.etagType?.amount || 0,
           },
-          // marketZone: {
-          //   name: etagData.marketZone?.name || 'N/A',
-          //   shortName: etagData.marketZone?.shortName || 'N/A',
-          // },
           wallet: {
             balance: etagData.wallet?.balance || 0,
             balanceHistory: etagData.wallet?.balanceHistory || 0,
@@ -245,12 +278,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (!etag) return <div>No Etag found</div>;
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString();
-  };
+  if (!etag) return <div>Loading ...</div>;
 
   const getStatusString = (status: number) => {
     switch (status) {
@@ -596,6 +624,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
             <SelectItem value="cash">Cash</SelectItem>
             <SelectItem value="momo">MoMo</SelectItem>
             <SelectItem value="vnpay">VnPay</SelectItem>
+            <SelectItem value="payos">PayOs</SelectItem>
           </SelectContent>
         </Select>
             </div>

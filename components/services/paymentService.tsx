@@ -37,6 +37,20 @@ const paymentService = {
       throw error;
     }
   },
+  payos: async (data: PaymentRequest) => {
+    try {
+      const response = await API.post('/payment/payos', {
+        invoiceId: data.invoiceId,
+        ...(data.key && { key: data.key }),
+        ...(data.urlDirect && { urlDirect: data.urlDirect }),
+        ...(data.urlIpn && { urlIpn: data.urlIpn }),
+      });
+      return response.data;
+    } catch (error) {
+      console.error("payos payment error:", error);
+      throw error;
+    }
+  },
 };
 
 export default paymentService;
