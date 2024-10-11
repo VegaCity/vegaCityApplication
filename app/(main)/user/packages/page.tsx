@@ -7,13 +7,23 @@ import { PackageServices } from "@/components/services/packageServices";
 import { Package } from "@/types/package";
 import PackageCard from "@/components/card/packagecard";
 
-const PackagesPage = () => {
-  const { userRole, loading } = useUserRole();
-  const [packages, setPackages] = useState<Package[]>([]);
+interface ApiResponse {
+  statusCode: number;
+  messageResponse: string;
+  data: Package[];
+  metaData: {
+    size: number;
+    page: number;
+    total: number;
+    totalPage: number;
+  };
+}
 
-  interface Package_Id extends Package {
-    id: string;
-  }
+const PackagesPage = () => {
+  const { userRole, loading: userRoleLoading } = useUserRole();
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -22,22 +32,29 @@ const PackagesPage = () => {
           page: 1,
           size: 10,
         });
-        console.log("API response:", response.data);
-        if (response.data && Array.isArray(response.data.data)) {
-          setPackages(response.data.data);
+        const apiResponse = response.data as ApiResponse;
+        if (apiResponse.statusCode === 200 && Array.isArray(apiResponse.data)) {
+          setPackages(apiResponse.data);
         } else {
-          console.error("Unexpected response format:", response);
+          throw new Error("Invalid response format");
         }
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching packages:", error);
+        setError("Failed to load packages");
+        setLoading(false);
       }
     };
 
     fetchPackages();
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (userRoleLoading || loading) {
+    return <div>Loading packages...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
   }
 
   if (userRole && userRole.name !== "CashierWeb") {
@@ -50,9 +67,13 @@ const PackagesPage = () => {
         <BackButton text="Go Back" link="/" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {packages.map((pkg) => (
-          <PackageCard key={pkg.id} id={pkg.id} />
-        ))}
+        {packages.length > 0 ? (
+          packages.map((pkg) => (
+            <PackageCard key={pkg.id} package={pkg} />
+          ))
+        ) : (
+          <div>No packages available</div>
+        )}
       </div>
     </div>
   );
