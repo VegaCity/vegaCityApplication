@@ -3,8 +3,8 @@
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import { useUserRole } from "@/components/hooks/useUserRole";
-import EtagTypeTable from "@/components/etagtypes/ETagTypesTable";
-import ETagTypesPagination from "@/components/etagtypes/ETagTypesPagination";
+import UserEtagTable from "@/components/userEtag/UserEtagsTable";
+import UserEtagsPagination from "@/components/userEtag/UserEtagsPagination";
 
 const ETagsPage = () => {
   const { userRole, loading } = useUserRole(); //userRole is an object so that u should . to value like userRole.name, userRole.id
@@ -24,12 +24,12 @@ const ETagsPage = () => {
           href="/admin/etagtypes/create"
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         >
-          Create New ETag Type
+          Create New User ETag
         </Link>
       </div>
       {/* <EtagTypeTable /> */}
-      <EtagTypeTable />
-      <ETagTypesPagination />
+      <UserEtagTable />
+      <UserEtagsPagination />
     </div>
   );
 };

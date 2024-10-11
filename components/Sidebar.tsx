@@ -7,8 +7,8 @@ import {
   Package,
   Tag,
   Store,
-  User,
   WarehouseIcon,
+  StoreIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useUserRole } from "@/components/hooks/useUserRole";
@@ -67,23 +67,23 @@ const Sidebar = () => {
         )}
         {userRole && userRole.name === "Admin" && (
           <>
-            <Link href={"/admin/zones"} className="block">
+            <Link href={navigatePage("zones")} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <Store className="h-6 w-8 mb-3" />
                 Zones
               </CommandItem>
             </Link>
-            <Link href={"/admin/houses"} className="block">
+            <Link href={navigatePage("houses")} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
                 <WarehouseIcon className="h-6 w-8 mb-3" />
                 Houses
               </CommandItem>
             </Link>
 
-            <Link href="/users" className="block">
+            <Link href={navigatePage("stores")} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
-                <User className="h-6 w-8 mb-3" />
-                Users
+                <StoreIcon className="h-6 w-8 mb-3" />
+                Stores
               </CommandItem>
             </Link>
           </>

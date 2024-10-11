@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import BackButton from '@/components/BackButton';
-import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import BackButton from "@/components/BackButton";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
@@ -11,19 +11,19 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { HouseServices } from '@/components/services/houseServices';
-import { useRouter } from 'next/navigation';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { HouseServices } from "@/components/services/houseServices";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
-  houseName: z.string().min(1, { message: 'House name is required' }),
-  location: z.string().min(1, { message: 'Location is required' }),
-  address: z.string().min(1, { message: 'Address is required' }),
-  zoneId: z.string().min(1, { message: 'Zone ID is required' }),
+  houseName: z.string().min(1, { message: "House name is required" }),
+  location: z.string().min(1, { message: "Location is required" }),
+  address: z.string().min(1, { message: "Address is required" }),
+  zoneId: z.string().min(1, { message: "Zone ID is required" }),
 });
 
 const HouseCreatePage = () => {
@@ -32,52 +32,55 @@ const HouseCreatePage = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      houseName: '',
-      location: '',
-      address: '',
-      zoneId: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+      houseName: "",
+      location: "",
+      address: "",
+      zoneId: "9f43b0a9-002f-4abf-8c5d-9785e5695997",
     },
   });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    console.log('New house data:', data);
-    if(data){
-      HouseServices.uploadHouse(data).then((res) => {
-        console.log(res.data, 'Upload House')
-        toast({
-          title: 'House has been created successfully',
-          description: `Created house: ${data.houseName}`,
+    console.log("New house data:", data);
+    if (data) {
+      HouseServices.uploadHouse(data)
+        .then((res) => {
+          console.log(res.data, "Upload House");
+          toast({
+            title: "House has been created successfully",
+            description: `Created house: ${data.houseName}`,
+          });
+          router.push("/admin/houses");
+        })
+        .catch((error) => {
+          console.error("Error creating house:", error);
+          toast({
+            title: "Error creating house",
+            description:
+              "An error occurred while creating the house. Please try again.",
+            variant: "destructive",
+          });
         });
-        router.push('/admin/houses');
-      }).catch((error) => {
-        console.error('Error creating house:', error);
-        toast({
-          title: 'Error creating house',
-          description: 'An error occurred while creating the house. Please try again.',
-          variant: 'destructive',
-        });
-      });
     }
   };
 
   return (
     <>
-      <BackButton text='Back To Houses' link='/admin/houses' />
-      <h3 className='text-2xl mb-4'>Create New House</h3>
+      <BackButton text="Back To Houses" link="/admin/houses" />
+      <h3 className="text-2xl mb-4">Create New House</h3>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className='space-y-8'>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name='houseName'
+            name="houseName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                   House Name
                 </FormLabel>
                 <FormControl>
                   <Input
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter house name'
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    placeholder="Enter house name"
                     {...field}
                   />
                 </FormControl>
@@ -88,16 +91,16 @@ const HouseCreatePage = () => {
 
           <FormField
             control={form.control}
-            name='location'
+            name="location"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                   Location
                 </FormLabel>
                 <FormControl>
                   <Input
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter location'
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    placeholder="Enter location"
                     {...field}
                   />
                 </FormControl>
@@ -108,16 +111,16 @@ const HouseCreatePage = () => {
 
           <FormField
             control={form.control}
-            name='address'
+            name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                   Address
                 </FormLabel>
                 <FormControl>
                   <Textarea
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    placeholder='Enter address'
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    placeholder="Enter address"
                     {...field}
                   />
                 </FormControl>
@@ -146,7 +149,7 @@ const HouseCreatePage = () => {
             )}
           /> */}
 
-          <Button className='w-full dark:bg-slate-800 dark:text-white'>
+          <Button className="w-full dark:bg-slate-800 dark:text-white">
             Create House
           </Button>
         </form>
