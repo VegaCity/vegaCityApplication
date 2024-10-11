@@ -23,6 +23,7 @@ const ETagTypeCard: React.FC<ETagTypeCardProps> = ({ etagtype, onGenerateETag })
 
   return (
     <Card className="flex flex-col justify-between shadow-lg rounded-lg overflow-hidden">
+      <div className="w-full flex justify-center p-4">
       <div className="w-88 h-48 relative rounded-lg overflow-hidden shadow-sm">
         <Image
           src={validImageUrl}
@@ -31,10 +32,12 @@ const ETagTypeCard: React.FC<ETagTypeCardProps> = ({ etagtype, onGenerateETag })
           objectFit="cover"
           className="rounded-t-lg"
         />
+        </div>
       </div>
-      <CardContent className="p-4 flex-grow flex flex-col justify-between">
-        <h3 className="text-lg font-semibold mb-2 text-gray-900 line-clamp-2 h-14">{etagtype.name}</h3>
-        <p className="text-red-600 text-lg font-medium">{typeof etagtype.amount === 'number' ? formatCurrency(etagtype.amount) : ''}</p>
+      <CardContent className="p-4">
+        <h3 className="text-lg font-semibold mb-2">{etagtype.name}</h3>
+        <p className="text-red-600 mb-1 text-lg">
+          {typeof etagtype.amount === 'number' ? formatCurrency(etagtype.amount) : ''}</p>
       </CardContent>
       <CardFooter className="p-4">
         <Link href={`/user/etagtypes/generate/${etagtype.id}`} className='w-full'>
