@@ -1,4 +1,3 @@
-
 export interface Package {
   id: string;
   name: string;
@@ -15,4 +14,13 @@ export interface Package {
   statusCode: number;
   messageResponse: string | null;
   data: any | null;
+}
+
+export interface PackagePostPatch {
+  name: string;
+  imageUrl: string;
+  description: string;
+  price: number;
+  startDate: string;
+  endDate: string;
 }
