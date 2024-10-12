@@ -15,24 +15,65 @@ import { GenerateEtag } from '@/components/services/etagService';
 import { ETagServices } from '@/components/services/etagService';
 import paymentService from '@/components/services/paymentService';
 const customerFormSchema = z.object({
-  customerName: z.string().min(1, { message: 'Customer Name is required' }),
-  phoneNumber: z.string().min(1, { message: 'Phone Number is required' }),
-  address: z.string().min(1, { message: 'Address is required' }),
-  cccd: z.string().min(1, { message: 'CCCD Number is required' }),
-  paymentMethod: z.enum(['cash', 'momo', 'vnpay','payos'], { required_error: 'Payment method is required' }),
-  gender: z.enum(['male', 'female', 'other'], { required_error: 'Gender is required' }),
-  quantity: z.coerce.number().min(1, { message: 'Quantity is required and must be at least 1' }),
-  price: z.coerce.number().min(0, { message: 'Price must be a positive number' }),
+  customerName: z.string()
+    .min(2, { message: 'Name must be at least 2 characters long' })
+    .max(100, { message: 'Name must not exceed 100 characters' })
+    .regex(/^[a-zA-Z\s]+$/, { message: 'Name should only contain letters and spaces' }),
+
+  phoneNumber: z.string()
+    .regex(/^(0|\+84)(\s|-)?[1-9]\d{8}$/, { message: 'Invalid phone number format' }),
+
+  address: z.string()
+    .min(5, { message: 'Address must be at least 5 characters long' })
+    .max(200, { message: 'Address must not exceed 200 characters' }),
+
+  cccd: z.string()
+    .regex(/^\d{12}$/, { message: 'CCCD must be exactly 12 digits' }),
+
+  paymentMethod: z.enum(['cash', 'momo', 'vnpay', 'payos'], {
+    required_error: 'Payment method is required',
+    invalid_type_error: 'Invalid payment method selected',
+  }),
+
+  gender: z.enum(['male', 'female', 'other'], {
+    required_error: 'Gender is required',
+    invalid_type_error: 'Invalid gender selected',
+  }),
+
+  quantity: z.number()
+    .int({ message: 'Quantity must be a whole number' })
+    .min(1, { message: 'Quantity must be at least 1' })
+    .max(100, { message: 'Quantity cannot exceed 100' }),
+
+  price: z.number()
+    .min(0, { message: 'Price cannot be negative' })
+    .max(1000000000, { message: 'Price cannot exceed 1 billion' }),
 });
 
 const etagFormSchema = z.object({
-  etagStartDate: z.string().nonempty("Start date is required"),
-  etagEndDate: z.string().nonempty("End date is required"),
-}).refine(data => new Date(data.etagEndDate) > new Date(data.etagStartDate), {
+  etagStartDate: z.string()
+    .refine((date) => {
+      const startDate = new Date(date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return startDate >= today;
+    }, { message: "Start date must be today or a future date" }),
+
+  etagEndDate: z.string()
+    .refine((date) => {
+      const endDate = new Date(date);
+      const maxDate = new Date();
+      maxDate.setFullYear(maxDate.getFullYear() + 5);
+      return endDate <= maxDate;
+    }, { message: "End date cannot be more than 5 years in the future" }),
+}).refine((data) => {
+  const startDate = new Date(data.etagStartDate);
+  const endDate = new Date(data.etagEndDate);
+  return endDate > startDate;
+}, {
   message: "End date must be after start date",
   path: ["etagEndDate"],
 });
-
 type CustomerFormValues = z.infer<typeof customerFormSchema>;
 type EtagFormValues = z.infer<typeof etagFormSchema>;
 
