@@ -149,16 +149,16 @@ const LoginForm = () => {
   // Automatically refresh token if expiration time is near
   const checkTokenExpiration = () => {
     const refreshTokenExp = localStorage.getItem("refreshTokenExp");
-    const newRefreshToken = localStorage.getItem("refreshToken");
+    const checkNewRefreshToken = localStorage.getItem("refreshToken");
     const email = localStorage.getItem("userEmail");
 
-    if (refreshTokenExp && email && newRefreshToken) {
+    if (refreshTokenExp && email && checkNewRefreshToken) {
       const expTime = parseInt(refreshTokenExp);
       const currentTime = new Date().getTime();
 
       // If less than 1 hour remains, refresh the token
       if (currentTime > expTime - 60 * 60 * 1000) {
-        refreshToken(email, newRefreshToken);
+        refreshToken({ email: email, refreshToken: checkNewRefreshToken });
       }
     }
   };
@@ -206,10 +206,10 @@ const LoginForm = () => {
               );
 
             console.log(findUserByEmail, "user from local storage");
-            const message = await refreshToken(
-              findUserByEmail.email,
-              findUserByEmail.refreshToken
-            );
+            const message = await refreshToken({
+              email: findUserByEmail.email,
+              refreshToken: findUserByEmail.refreshToken,
+            });
             if (message) {
               console.log("e");
               loginUser(data);
