@@ -13,5 +13,6 @@ export const AuthServices = {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("userEmail");
   },
 };
