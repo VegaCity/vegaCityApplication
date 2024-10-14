@@ -60,6 +60,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [packageData, setPackageData] = useState<any>(null);
 
   // const pkg = packageList.find((pkg) => pkg.id === params.id);
   const form = useForm<FormValues>({
@@ -122,6 +123,64 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  useEffect(() => {
+    const fetchPackageData = async () => {
+      setIsLoading(true);
+      try {
+        const response = await PackageServices.getPackageById(params.id);
+        const pkgData = response.data.data.package;
+        if (pkgData) {
+          setPackageData(pkgData);
+          if (
+            pkgData?.packageETagTypeMappings &&
+            pkgData?.packageETagTypeMappings.length > 0
+          ) {
+            const etagTypeMapping = pkgData?.packageETagTypeMappings[0];
+            if (
+              etagTypeMapping &&
+              etagTypeMapping?.etagType &&
+              etagTypeMapping?.etagType.id
+            ) {
+              const etagId = etagTypeMapping?.etagType.id;
+              localStorage.setItem("etagTypeId", etagId);
+              console.log("EtagTypeId stored in localStorage:", etagId);
+            } else {
+              console.warn("EtagType or its ID is missing in the package data");
+              setError(
+                "EtagType information is incomplete. Please check the package configuration."
+              );
+            }
+          } else {
+            console.warn(
+              "No packageETagTypeMappings found in the package data"
+            );
+            setError(
+              "No E-Tag type information found for this package. Please check the package configuration."
+            );
+          }
+        } else {
+          throw new Error("Package data is missing in the response");
+        }
+      } catch (err) {
+        console.error("Error fetching package data:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An unknown error occurred while fetching package data"
+        );
+        toast({
+          title: "Error",
+          description: "Failed to load package data. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPackageData();
+  }, [params.id, toast]);
+
+  console.log(packageData, "package Dataaa");
   return (
     <>
       <BackButton text="Back To Packages" link="/admin/packages" />

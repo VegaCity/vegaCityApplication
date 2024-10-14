@@ -1,199 +1,3 @@
-// "use client";
-
-// import BackButton from "@/components/BackButton";
-// import * as z from "zod";
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import {
-//   Form,
-//   FormControl,
-//   FormField,
-//   FormItem,
-//   FormLabel,
-//   FormMessage,
-// } from "@/components/ui/form";
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
-// import { Input } from "@/components/ui/input";
-// import { Button } from "@/components/ui/button";
-// import { redirect, useRouter } from "next/navigation";
-// // import useSignIn from 'react-auth-kit/hooks/useSignIn';
-// import { AuthServices } from "@/components/services/authServices";
-// import { LoginAccount } from "@/types/loginAccount";
-// import { useEffect, useState } from "react";
-// import { toast } from "../ui/use-toast";
-// import { AxiosError } from "axios";
-
-// const formSchema = z.object({
-//   email: z
-//     .string()
-//     .min(1, {
-//       message: "Email is required",
-//     })
-//     .email({
-//       message: "Please enter a valid email",
-//     }),
-//   password: z.string().min(1, {
-//     message: "Password is required",
-//   }),
-// });
-
-// const LoginForm = () => {
-//   const [accessToken, setAccessToken] = useState<string>("");
-//   const [isLoading, setIsLoading] = useState(false);
-//   const router = useRouter();
-
-//   const form = useForm<z.infer<typeof formSchema>>({
-//     resolver: zodResolver(formSchema),
-//     defaultValues: {
-//       email: "",
-//       password: "",
-//     },
-//   });
-
-//   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
-//     if (!isLoading) {
-//       toast({
-//         title: "Loading",
-//         description: "Please wait while we log you in...",
-//         duration: 3000,
-//       });
-//       setIsLoading(true);
-//     }
-//     try {
-//       const res = await AuthServices.loginUser(data);
-//       console.log(res.data, "login res");
-
-//       // Store tokens and user ID
-//       localStorage.setItem("refreshToken", res.data.data.tokens.refreshToken);
-//       localStorage.setItem("accessToken", res.data.data.tokens.accessToken);
-//       localStorage.setItem("userId", res.data.data.userId);
-
-//       // Update access token in your state or context
-//       setAccessToken(res.data.data.tokens.accessToken);
-
-//       // Show success toast
-//       toast({
-//         title: "Login Successful",
-//         description: "Welcome back!",
-//       });
-
-//       // Redirect to home page
-//       setTimeout(() => {
-//         router.push("/");
-//       }, 1000);
-//     } catch (error) {
-//       if (error instanceof AxiosError) {
-//         if (error.response?.status === 401) {
-//           await handleUnauthorizedError(data.email);
-//         } else {
-//           console.error("Login error:", error.response?.data || error.message);
-//           // Handle other types of errors (e.g., network issues, server errors)
-//           console.log(error.response?.status);
-//           // // Show fail toast
-//           // toast({
-//           //   title: "Login Fail",
-//           //   description: error.response?.data || error.message,
-//           // });
-//         }
-//       } else {
-//         console.error("Unexpected error:", error);
-//       }
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   const handleUnauthorizedError = async (email: string) => {
-//     const storedRefreshToken = localStorage.getItem("refreshToken");
-//     const refreshToken =
-//       storedRefreshToken ||
-//       "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ZTk0YzM2ZC0xYjdjLTQzMjgtODczZC03MzhkYjY5MzFmZTgiLCJlbWFpbCI6ImNza2gudmVnYWNpdHkudm5AZ21haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJNYXJrZXRab25lSWQiOiI1ZjcyOGRlYi1iMmMzLTRiYWMtOWQ5Yy00MWExMWUwYWNjY2MiLCJuYmYiOjE3MjgzNzc5MDAsImV4cCI6MTcyODM5NDUxMCwiaXNzIjoiVmVnYUNpdHlBcHAifQ.pFlZr4bbs4ROohI_jHRaeq15lcyR5siH2912vzl3DBM";
-
-//     try {
-//       const res = await AuthServices.fetchUser(email, refreshToken);
-//       console.log(res.data.data.refreshToken, "Fetch user Ref Token");
-//       localStorage.setItem("refreshToken", res.data.data.refreshToken);
-
-//       // Fetch user again with the new refresh token
-//       const secondRes = await AuthServices.fetchUser(
-//         email,
-//         res.data.data.tokens.refreshToken
-//       );
-//       localStorage.setItem("refreshToken", secondRes.data.tokens.refreshToken);
-//     } catch (error) {
-//       console.error("Failed to fetch user refresh token:", error);
-//       // Handle the error (e.g., redirect to login page, show error message)
-//     }
-//   };
-
-//   return (
-//     <Card className="max-w-lg mx-auto p-6">
-//       <CardHeader>
-//         <CardTitle className="text-center text-xl">Login</CardTitle>
-//       </CardHeader>
-//       <CardContent className="space-y-4">
-//         <Form {...form}>
-//           <form
-//             onSubmit={form.handleSubmit(handleSubmit)}
-//             className="space-y-8"
-//           >
-//             <FormField
-//               control={form.control}
-//               name="email"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="uppercase text-sm font-bold text-zinc-500 dark:text-white">
-//                     Email
-//                   </FormLabel>
-//                   <FormControl>
-//                     <Input
-//                       className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
-//                       placeholder="Enter Email"
-//                       {...field}
-//                     />
-//                   </FormControl>
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-
-//             <FormField
-//               control={form.control}
-//               name="password"
-//               render={({ field }) => (
-//                 <FormItem>
-//                   <FormLabel className="uppercase text-sm font-bold text-zinc-500 dark:text-white">
-//                     Password
-//                   </FormLabel>
-//                   <FormControl>
-//                     <Input
-//                       type="password"
-//                       className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
-//                       placeholder="Enter Password"
-//                       {...field}
-//                     />
-//                   </FormControl>
-//                   <FormMessage />
-//                 </FormItem>
-//               )}
-//             />
-
-//             <Button className="w-full bg-sky-600 text-lg ">Sign In</Button>
-//           </form>
-//         </Form>
-//       </CardContent>
-//     </Card>
-//   );
-// };
-
-// export default LoginForm;
-
 "use client";
 
 import * as z from "zod";
@@ -215,6 +19,7 @@ import { useEffect, useState } from "react";
 import { toast } from "../ui/use-toast";
 import { AxiosError } from "axios";
 import { AuthServices } from "@/components/services/authServices";
+import { useAuthUser } from "@/components/hooks/useAuthUser";
 
 const formSchema = z.object({
   email: z
@@ -230,8 +35,19 @@ const formSchema = z.object({
   }),
 });
 
+interface UserRefreshToken {
+  email: string;
+  refreshToken: string;
+}
+
+interface UserLogin {
+  email: string;
+  password: string;
+}
+
 const LoginForm = () => {
-  const [accessToken, setAccessToken] = useState<string>("");
+  const [emailLogin, setEmailLogin] = useState<string>("");
+  const user = useAuthUser();
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
@@ -250,22 +66,19 @@ const LoginForm = () => {
   };
 
   // Function to handle token refresh
-  const refreshToken = async (email: string, refreshToken: string) => {
+  const refreshToken = async (userData: UserRefreshToken) => {
     try {
-      const res = await AuthServices.fetchUser(email, refreshToken);
-      localStorage.setItem("refreshToken", res.data.data.tokens.refreshToken);
-      localStorage.setItem("accessToken", res.data.data.tokens.accessToken);
-      localStorage.setItem(
-        "refreshTokenExp",
-        calculateExpirationTime().toString()
+      const res = await AuthServices.fetchUser(
+        userData.email,
+        userData.refreshToken
       );
+      console.log(res, "responseeeee");
 
-      // Update state with new access token
-      setAccessToken(res.data.data.tokens.accessToken);
       toast({
         title: "Token Refreshed!",
         description: "Tokens have been refreshed!",
       });
+      return "Token Refreshed";
     } catch (error) {
       console.error("Failed to refresh token:", error);
       toast({
@@ -274,6 +87,63 @@ const LoginForm = () => {
       });
       router.push("/auth");
     }
+  };
+
+  // Login function
+  const loginUser = async (data: UserLogin) => {
+    const res = await AuthServices.loginUser(data);
+    console.log(res.data, "login res");
+
+    // Store tokens and set expiration time
+    const newRefreshToken = res.data.data.tokens.refreshToken;
+    const accessToken = res.data.data.tokens.accessToken;
+    const userId = res.data.data.userId;
+
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("userEmail", data.email);
+    localStorage.setItem(
+      "refreshTokenExp",
+      calculateExpirationTime().toString()
+    );
+
+    // Update refreshTokenArray in localStorage
+    let refreshTokenArray: UserRefreshToken[] = JSON.parse(
+      localStorage.getItem("refreshTokenArray") || "[]"
+    );
+
+    // Check if the email already exists in the array
+    const existingIndex = refreshTokenArray.findIndex(
+      (item: UserRefreshToken) => item.email === data.email
+    );
+
+    if (existingIndex !== -1) {
+      // Update existing entry
+      refreshTokenArray[existingIndex].refreshToken = newRefreshToken;
+    } else {
+      // Add new entry
+      refreshTokenArray.push({
+        email: data.email,
+        refreshToken: newRefreshToken,
+      });
+    }
+
+    // Save updated array back to localStorage
+    localStorage.setItem(
+      "refreshTokenArray",
+      JSON.stringify(refreshTokenArray)
+    );
+
+    // Show success toast
+    toast({
+      title: "Login Successful",
+      description: "Welcome back!",
+    });
+
+    // Redirect to home page
+    setTimeout(() => {
+      router.push("/");
+    }, 1000);
   };
 
   // Automatically refresh token if expiration time is near
@@ -300,6 +170,7 @@ const LoginForm = () => {
   }, []);
 
   const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    console.log("a");
     if (!isLoading) {
       toast({
         title: "Loading",
@@ -309,40 +180,63 @@ const LoginForm = () => {
       setIsLoading(true);
     }
     try {
-      const res = await AuthServices.loginUser(data);
-      console.log(res.data, "login res");
-
-      // Store tokens and set expiration time
-      const refreshToken = res.data.data.tokens.refreshToken;
-      const accessToken = res.data.data.tokens.accessToken;
-
-      const userId = res.data.data.userId;
-      console.log(userId, "userId");
-      localStorage.setItem("refreshToken", refreshToken);
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("userId", userId);
-      localStorage.setItem(
-        "refreshTokenExp",
-        calculateExpirationTime().toString()
-      );
-
-      // Update state with access token
-      setAccessToken(accessToken);
-
-      // Show success toast
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
-      });
-
-      // Redirect to home page
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
+      console.log("b");
+      loginUser(data);
     } catch (error) {
       if (error instanceof AxiosError) {
+        console.log("c");
+        if (error.response?.status === 400) {
+          toast({ title: "Login Failed", description: "Wrong password!" });
+        }
         if (error.response?.status === 401) {
-          toast({ title: "Login Failed", description: "Unauthorized access" });
+          console.log("d");
+          //lấy token gần nhất
+          console.log("Session Expired!");
+          const userEmailForm: string = data.email;
+
+          const userRefreshTokenArray = JSON.parse(
+            localStorage.getItem("refreshTokenArray") || ""
+          );
+
+          if (userEmailForm) {
+            const findUserByEmail: UserRefreshToken =
+              userRefreshTokenArray.find(
+                (userEmail: UserRefreshToken) =>
+                  userEmailForm === userEmail.email
+              );
+
+            console.log(findUserByEmail, "user from local storage");
+            const message = await refreshToken(
+              findUserByEmail.email,
+              findUserByEmail.refreshToken
+            );
+            if (message) {
+              console.log("e");
+              loginUser(data);
+            } else {
+              console.log("Hệ thống lỗi thiếu Message");
+            }
+          } else {
+            //Nếu user bị session expired, mà mảng refreshTokenArray trong localStorage rỗng, không có refreshToken trước đó, thì sử dụng api getRefreshTokenByEmail để lấy Token
+            //Sau đó có email và refreshToken rồi thì cấp lại refreshToken mới trong refreshTokenArray trong localStorage và cập nhật lại login
+            //Xử lý như unauthorized
+            console.log("User không có refreshToken");
+          }
+          // const refreshFromLocal = localStorage.getItem("refreshToken");
+          // const latestRefreshToken = refreshFromLocal || "";
+          // const userEmail = emailLogin || "";
+          // if (!userEmail) {
+          //   console.log("Email does not exist!");
+          // }
+          // const message = await refreshToken(userEmail, latestRefreshToken);
+          console.log("e");
+
+          // if (message) {
+          //   console.log("e");
+          //   loginUser(data);
+          // } else {
+          //   console.log("Hệ thống lỗi thiếu Message");
+          // }
         } else {
           console.error("Login error:", error.response?.data || error.message);
         }
