@@ -253,7 +253,7 @@ const LoginForm = () => {
                 return;
               } catch {
                 console.log("Token expired");
-                refreshToken({
+                await refreshToken({
                   email: data.email,
                   refreshToken: newRefreshToken,
                 });
