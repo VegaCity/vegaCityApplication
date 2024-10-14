@@ -102,16 +102,26 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   const getStatusString = (status: number) => {
     switch (status) {
       case 0:
-        return { text: "Inactive", color: "bg-red-500", sortOrder: 2 };
+        return { text: "Inactive", color: "bg-red-500", sortOrder: 0 };
       case 1:
         return { text: "Active", color: "bg-green-500", sortOrder: 1 };
-      default:
+      case 2:
+          return { text: "Expired", color: "bg-yellow-500", sortOrder: 2 };
+      case -1:
         return { text: "Block", color: "bg-gray-500", sortOrder: 3 };
     }
   };
@@ -228,11 +238,11 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
                   <SortButton field="startDate" label="Start Date" />
                 </TableHead>
                 <TableHead>
-                  <SortButton field="endDate" label="End Date" />
-                </TableHead>
-                <TableHead>
-                  <SortButton field="status" label="Status" />
-                </TableHead>
+              <SortButton field="startDate" label="Start Date & Time" />
+            </TableHead>
+            <TableHead>
+              <SortButton field="endDate" label="End Date & Time" />
+            </TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>

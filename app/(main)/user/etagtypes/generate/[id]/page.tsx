@@ -408,10 +408,10 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 name="customerName"
                 render={({ field }) => (
                   <FormItem className="md:w-1/2">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</FormLabel>
+                    <FormLabel className="text-sm font-medium  dark:text-gray-300">Full Name</FormLabel>
                     <FormControl>
                       <Input
-                        className="bg-gray-100 dark:bg-gray-700 border-1 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                         placeholder="Enter Full Name"
                         {...field}
                         disabled={isCustomerInfoConfirmed}
@@ -429,7 +429,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                     <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone Number</FormLabel>
                     <FormControl>
                       <Input
-                        className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                         placeholder="Enter Phone Number"
                         {...field}
                         disabled={isCustomerInfoConfirmed}
@@ -449,7 +449,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                     <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">CCCD:</FormLabel>
                     <FormControl>
                       <Input
-                        className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                         placeholder="Enter ID Number"
                         {...field}
                         disabled={isCustomerInfoConfirmed}
@@ -494,8 +494,12 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       <Input
                         type="number"
                         {...field}
-                        className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                         disabled={isCustomerInfoConfirmed}
+                        onChange={(e) => {
+                          field.onChange(e.target.valueAsNumber);
+                        }}
+                        
                       />
                     </FormControl>
                     <FormMessage />
@@ -513,8 +517,11 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       <Input
                         type="number"
                         {...field}
-                        className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                         disabled={isCustomerInfoConfirmed}
+                        onChange={(e) => {
+                          field.onChange(e.target.valueAsNumber);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -531,7 +538,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Address</FormLabel>
                   <FormControl>
                     <Input
-                      className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                      className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                       placeholder="Enter Address"
                       {...field}
                       disabled={isCustomerInfoConfirmed}
@@ -598,7 +605,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           {...field}
                           value={field.value || ''}  // Ensure a valid value is always set
                           onChange={(e) => field.onChange(e.target.value)}
-                          className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                         />
                       </FormControl>
                       <FormMessage />
@@ -625,7 +632,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 field.onBlur();
                 etagForm.trigger('etagEndDate');
               }}
-              className="bg-gray-100 dark:bg-gray-700 border-0 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
             />
           </FormControl>
           <FormMessage />
