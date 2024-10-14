@@ -10,7 +10,9 @@ export const AuthServices = {
     return API.post("/auth/refresh-token", fetchData);
   },
   fetchUserByEmail(email: string) {
-    return API.post(`/auth/refresh-token/${email}`);
+    const encodedEmail = encodeURIComponent(email);
+    console.log(encodedEmail, "encode email");
+    return API.get(`/auth/refresh-token/${encodedEmail}`);
   },
   logoutUser() {
     localStorage.removeItem("accessToken");
