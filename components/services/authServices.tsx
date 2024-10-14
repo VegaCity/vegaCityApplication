@@ -9,6 +9,9 @@ export const AuthServices = {
     const fetchData = { email, refreshToken };
     return API.post("/auth/refresh-token", fetchData);
   },
+  fetchUserByEmail(email: string) {
+    return API.post(`/auth/refresh-token/${email}`);
+  },
   logoutUser() {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
