@@ -1,30 +1,20 @@
 module.exports = {
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'firebasestorage.googleapis.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'upload.wikimedia.org',
-      },
-    ],
+    domains: ["firebasestorage.googleapis.com"],
   },
   async redirects() {
     return [
       {
-        source: '/user/order-status',
+        source: "/order-status",
         missing: [
           {
-            type: 'query',
-            key: 'status',
+            type: "query",
+            key: "status",
           },
         ],
         permanent: false,
-        destination: '/',
+        destination: "/",
       },
-      
     ];
   },
 };
