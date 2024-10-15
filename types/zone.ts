@@ -1,3 +1,5 @@
+import { HouseType } from "@/types/house";
+
 export interface ZoneType {
   id: string;
   marketZoneId: string;

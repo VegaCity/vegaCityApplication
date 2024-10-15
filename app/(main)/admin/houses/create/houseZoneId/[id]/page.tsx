@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { HouseServices } from "@/components/services/houseServices";
 import { useRouter } from "next/navigation";
+import { HouseType } from "@/types/house";
 
 const formSchema = z.object({
   houseName: z.string().min(1, { message: "House name is required" }),
@@ -28,7 +29,13 @@ const formSchema = z.object({
   isRent: z.boolean().default(false),
 });
 
-const HouseCreatePage = () => {
+interface HouseCreatePageByZoneIdProps {
+  params: { id: string };
+  house: HouseType;
+}
+
+const HouseCreatePageByZoneId = ({ params }: HouseCreatePageByZoneIdProps) => {
+  const zoneId = params.id;
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -37,11 +44,15 @@ const HouseCreatePage = () => {
       houseName: "",
       location: "",
       address: "",
-      zoneId: "",
+      zoneId: zoneId,
       deflag: false,
       isRent: false,
     },
   });
+
+  const handleBackToPreviousPage = () => {
+    router.back();
+  };
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     console.log("New house data:", data);
@@ -69,7 +80,7 @@ const HouseCreatePage = () => {
 
   return (
     <>
-      <BackButton text="Back To Houses" link="/admin/houses" />
+      <BackButton />
       <h3 className="text-2xl mb-4">Create New House</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -162,4 +173,4 @@ const HouseCreatePage = () => {
   );
 };
 
-export default HouseCreatePage;
+export default HouseCreatePageByZoneId;

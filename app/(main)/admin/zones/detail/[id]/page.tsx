@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ZoneType } from "@/types/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
-import { HouseType } from "@/types/house";
+import { HouseTypeId } from "@/types/house";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface ZoneDetailPageProps {
   params: {
@@ -13,9 +14,13 @@ interface ZoneDetailPageProps {
   };
 }
 
+interface GetZone extends ZoneType {
+  id: string;
+}
+
 const ZoneDetailsPage = ({ params }: ZoneDetailPageProps) => {
   const router = useRouter();
-  const [zone, setZone] = useState<ZoneType | null>(null);
+  const [zone, setZone] = useState<GetZone | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,11 +46,6 @@ const ZoneDetailsPage = ({ params }: ZoneDetailPageProps) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const filterHouse = (house: []) => {
-    const filteredHouse = house.filter((house) => house?.deflag === false);
-    return filteredHouse;
-  };
-
   return (
     <div className="p-6">
       {zone ? (
@@ -57,12 +57,17 @@ const ZoneDetailsPage = ({ params }: ZoneDetailPageProps) => {
           <p>
             <strong>Location:</strong> {zone.location}
           </p>
+          <Button>
+            <Link href={`/admin/houses/create/houseZoneId/${zone.id}`}>
+              Create House in Zone
+            </Link>
+          </Button>
           {zone.houses.length > 0 ? (
             <div>
               <h3 className="text-xl mt-4">Houses</h3>
               <ul>
                 {zone?.houses.map(
-                  (house: HouseType, index) =>
+                  (house: HouseTypeId, index) =>
                     house.deflag === false && (
                       <li key={index}>
                         <strong>House {index + 1}:</strong>

@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HouseType } from "@/types/house";
 import { HouseServices } from "@/components/services/houseServices";
 import { AxiosError } from "axios";
+import StoresTable from "@/components/stores/StoresTable";
+import StoresPagination from "@/components/stores/StoresPagination";
 
 interface HouseDetailsPageProps {
   params: { id: string };
@@ -64,7 +66,9 @@ export default function HouseDetailsPage({ params }: HouseDetailsPageProps) {
                     {key.charAt(0).toUpperCase() + key.slice(1)}
                   </span>
                   <span>
-                    {key.includes("Date")
+                    {typeof value === "object" && value !== null
+                      ? JSON.stringify(value) // Use JSON.stringify to display the object
+                      : key.includes("Date")
                       ? new Date(value as string).toLocaleString()
                       : typeof value === "boolean"
                       ? value
