@@ -1,10 +1,12 @@
-
 export interface HouseTypePatch {
-    houseName: string,
-    location: string,
-    address: string
+  id: string;
+  houseName: string;
+  location: string;
+  address: string;
 }
 
-export interface HouseType extends HouseTypePatch{
-    zoneId: string,
+export interface HouseType extends HouseTypePatch {
+  zoneId: string;
+  deflag: boolean;
+  isRent: boolean;
 }

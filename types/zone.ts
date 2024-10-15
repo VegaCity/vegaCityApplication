@@ -1,12 +1,12 @@
 export interface ZoneType {
-  id: string,
-  marketZoneId: string,
-  name: string,
-  location: string,
-  crDate: string,
-  upsDate: string,
-  deflag: boolean,
-  houses: [],
+  id: string;
+  marketZoneId: string;
+  name: string;
+  location: string;
+  crDate: string;
+  upsDate: string;
+  deflag: boolean;
+  houses: [];
 }
 
 export interface ZoneTypePost {
@@ -18,4 +18,3 @@ export interface ZoneTypePatch {
   name: string;
   location: string;
 }
-  

@@ -72,12 +72,13 @@ const LoginForm = () => {
         userData.email,
         userData.refreshToken
       );
-      console.log(res, "responseeeee refreshToken");
+      console.log(res, "response refreshToken");
+      console.log("RefreshToken sucessful!");
 
-      toast({
-        title: "Token Refreshed!",
-        description: "Tokens have been refreshed!",
-      });
+      // toast({
+      //   title: "Token Refreshed!",
+      //   description: "Tokens have been refreshed!",
+      // });
       return "Token Refreshed";
     } catch (error) {
       console.error("Failed to refresh token:", error);
