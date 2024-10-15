@@ -32,8 +32,8 @@ export const customerFormSchema = z.object({
     .max(100, { message: 'Quantity cannot exceed 100' }),
 
   price: z.number()
-    .min(0, { message: 'Price cannot be negative' })
-    .max(1000000000, { message: 'Price cannot exceed 1 billion' }),
+    .min(1000, { message: 'Price cannot be negative' })
+    .max(10000000, { message: 'Price cannot exceed 1 milion' }),
 });
 
 export const etagFormSchema = z.object({

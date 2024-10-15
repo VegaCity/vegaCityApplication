@@ -45,7 +45,7 @@ export interface ETag {
   imageUrl: string;
   gender: string;
   birthday: string | null;
-  qrcode: string;
+  qrCode: string;
   deflag: boolean;
   startDate: string;
   endDate: string;
