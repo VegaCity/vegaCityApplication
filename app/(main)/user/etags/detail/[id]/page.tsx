@@ -204,6 +204,18 @@ const initiatePayment = async (paymentMethod: string, invoiceId: string , key: s
     if (!dateString) return '';
     return new Date(dateString).toISOString().split('T')[0];
   };
+  const formatDateTimeForInput = (dateString: string | null) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toISOString().slice(0, 16); // Format: "YYYY-MM-DDTHH:mm"
+  };
+
+  const formatDateTimeForDisplay = (dateString: string | null) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleString(); // Format: "M/D/YYYY, h:mm:ss AM/PM"
+  };
+
   useEffect(() => {
     const fetchEtag = async () => {
       setIsLoading(true);
@@ -212,13 +224,13 @@ const initiatePayment = async (paymentMethod: string, invoiceId: string , key: s
         const etagData = response.data.data.etag;
         setEtag(etagData);
         form.reset({
-          fullName: etagData.fullName,
-          etagCode: etagData.etagCode,
-          phoneNumber: etagData.phoneNumber,
-          cccd: etagData.cccd,
+          fullName: etagData.fullName.trim(),
+          etagCode: etagData.etagCode.trim(),
+          phoneNumber: etagData.phoneNumber.trim(),
+          cccd: etagData.cccd.trim(),
           birthday: formatDateForInput(etagData.birthday),
-          startDate: formatDateForInput(etagData.startDate),
-          endDate: formatDateForInput(etagData.endDate),
+          startDate: formatDateTimeForInput(etagData.startDate),
+          endDate: formatDateTimeForInput(etagData.endDate),
           gender: etagData.gender.toString(),
           status: etagData.status,
           imageUrl: etagData.imageUrl,
@@ -235,7 +247,7 @@ const initiatePayment = async (paymentMethod: string, invoiceId: string , key: s
         formCharge.reset({
           etagCode: etagData.etagCode,
           chargeAmount: 0,
-          cccd: etagData.cccd,
+          cccd: etagData.cccd.trim(),
           paymentType: 'cash',
         });
       } catch (err) {
@@ -456,36 +468,40 @@ const initiatePayment = async (paymentMethod: string, invoiceId: string , key: s
           <div className='mt-10'>
             <h4 className="text-xl font-semibold mt-24 mb-4">ETag Information</h4>
             <div className="md:flex md:space-x-4 space-y-4 md:space-y-0 mt-6">
-              <FormItem className="md:w-1/2">
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  Start Date
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type='date'
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    {...form.register('startDate')}
-                    readOnly={!isEditing}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+        <FormItem className="md:w-1/2">
+          <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+            Start Date and Time
+          </FormLabel>
+          <FormControl>
+            <Input
+              type='datetime-local'
+              className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+              {...form.register('startDate')}
+              readOnly={!isEditing}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
 
-              <FormItem className="md:w-1/2">
-                <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
-                  End Date
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type='date'
-                    className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
-                    {...form.register('endDate')}
-                    readOnly={!isEditing}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            </div>
+        <FormItem className="md:w-1/2">
+          <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>
+            End Date and Time
+          </FormLabel>
+          <FormControl>
+            <Input
+              type='datetime-local'
+              className='bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0'
+              {...form.register('endDate')}
+              readOnly={!isEditing}
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      </div>
+      {/* <div className="mt-4"> 
+  <p>Start Date and Time: {formatDateTimeForDisplay(form.getValues('startDate'))}</p>
+  <p>End Date and Time: {formatDateTimeForDisplay(form.getValues('endDate'))}</p>
+</div> */}
 
             <FormItem className='md:w-1/3'>
               <FormLabel className='uppercase text-xs font-bold text-zinc-500 dark:text-white'>

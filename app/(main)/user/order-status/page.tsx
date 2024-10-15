@@ -13,7 +13,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 import { Suspense } from "react";
 
 export default function OrderStatusPage() {
-  //if useSearchParams in useOrderStatus hooks is not working, redirect to Loading div
+ 
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <OrderStatusContent />
