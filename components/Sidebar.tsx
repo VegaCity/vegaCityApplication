@@ -93,6 +93,24 @@ const Sidebar = () => {
                 Etags
               </CommandItem>
             </Link>
+            <Link href={navigatePage("serviceStores")} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <TagIcon className="h-6 w-8 mb-3" />
+                Services Store
+              </CommandItem>
+            </Link>
+            <Link href={navigatePage("walletTypes")} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <TagIcon className="h-6 w-8 mb-3" />
+                Wallet Type
+              </CommandItem>
+            </Link>
+            <Link href={navigatePage("usersAccount")} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <TagIcon className="h-6 w-8 mb-3" />
+                Users Account
+              </CommandItem>
+            </Link>
           </>
         )}
       </CommandList>

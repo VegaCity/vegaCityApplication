@@ -362,9 +362,26 @@ const LoginForm = () => {
     }
   };
 
+  // Automatically refresh token if expiration time is near
+  const checkSessionExpired = () => {
+    if (!user) {
+      // If user is not logged in, redirect to login page
+      router.push("/auth");
+      toast({
+        title: "Session expired",
+        description: "Please login again!",
+      });
+    }
+  };
+
   useEffect(() => {
     // Check token expiration every 10 minutes
-    const interval = setInterval(checkTokenExpiration, 10 * 60 * 1000);
+    const runBothFunctions = () => {
+      checkSessionExpired();
+      checkTokenExpiration();
+    };
+
+    const interval = setInterval(runBothFunctions, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
