@@ -51,9 +51,15 @@ export const ETagServices = {
       },
     });
   },
-  getETagById(id: string) {
-    return API.get(`/etag/${id}`);
+  getETagById(id: string, etagCode?: string) {
+    return API.get(`/etag`, {
+      params: {
+        id,
+        etagCode: etagCode || undefined,
+      },
+    });
   },
+
   uploadEtag(etagData: ETag) {
     return API.post("/etag/", etagData);
   },

@@ -1,7 +1,6 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
-import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -53,7 +52,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     paymentType: string;
   }) => {
     try {
-      // Validate input parameters
       if (
         !data.etagCode ||
         data.chargeAmount <= 0 ||

@@ -37,7 +37,7 @@ import {
   EtagFormValues,
   GenerateEtagProps,
 } from "@/lib/validation";
-
+import { Card } from "@/components/ui/card";
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const [endDate, setEndDate] = useState("");
   const { toast } = useToast();
@@ -461,49 +461,56 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     <div className="container mx-auto p-4">
       <BackButton text="Back To Packages" link="/user/packages" />
       <h3 className="text-2xl mb-4">Generate E-Tag</h3>
-      <div className="mb-8 flex justify-center"></div>
-      {packageData && (
-        <div className="flex flex-col md:flex-row gap-8 mb-6">
-          <div className="md:w-1/2">
-            <img
-              src={packageData.imageUrl}
-              alt={packageData.name}
-              className="w-80 h-100 rounded-lg shadow-lg"
-            />
-          </div>
-          <div className="md:w-1/2 space-y-6 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                {packageData.name}
-              </h2>
-              <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">
-                {packageData.price}
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Description
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                {packageData.description}
-              </p>
-            </div>
-            {packageData?.packageETagTypeMappings?.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  Bao gồm E-Tag Type
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  {packageData?.packageETagTypeMappings[0]?.etagType?.name}
-                </p>
-                <p className="text-gray-600 dark:text-gray-400 mt-4">
-                  {packageData?.packageETagTypeMappings[0]?.etagType?.amount}
-                </p>
+      <div className="mb-8 flex justify-center">
+        <Card className="overflow-hidden w-full max-w-4xl">
+          {packageData && (
+            <div className="flex flex-col md:flex-row">
+              <div className="md:w-1/2">
+                <img
+                  src={packageData.imageUrl}
+                  alt={packageData.name}
+                  className="w-80 h-100 rounded-lg shadow-lg"
+                />
               </div>
-            )}
-          </div>
-        </div>
-      )}
+              <div className="md:w-1/2 p-8 flex flex-col justify-center">
+                <div>
+                  <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                    {packageData.name}
+                  </h2>
+                  <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">
+                    {packageData.price}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-4">
+                    Description
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {packageData.description}
+                  </p>
+                </div>
+                {packageData?.packageETagTypeMappings?.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-4">
+                      Bao gồm E-Tag Type
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {packageData?.packageETagTypeMappings[0]?.etagType?.name}
+                    </p>
+                    <p className="text-gray-600 dark:text-gray-400 mt-4">
+                      {
+                        packageData?.packageETagTypeMappings[0]?.etagType
+                          ?.amount
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </Card>
+      </div>
+
       <Form {...customerForm}>
         <form
           onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)}
