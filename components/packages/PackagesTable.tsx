@@ -114,6 +114,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
             <TableRow className="bg-slate-300 hover:bg-slate-300">
               <TableHead>NO</TableHead>
               <TableHead>Name</TableHead>
+              <TableHead className="hidden md:table-cell">Image</TableHead>
               <TableHead className="hidden md:table-cell">
                 Description
               </TableHead>
@@ -128,6 +129,15 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
               <TableRow key={pkg.id}>
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{pkg.name}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <img
+                    src={pkg?.imageUrl ?? "/images/placeholder.jpg"}
+                    alt={pkg.name}
+                    width="100"
+                    height="auto"
+                    className="object-cover"
+                  />
+                </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {pkg.description}
                 </TableCell>
