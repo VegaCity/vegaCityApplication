@@ -19,8 +19,9 @@ import posts from "@/data/posts";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
 import { PackageServices } from "@/components/services/packageServices";
-import { Package } from "@/types/package";
 import { register } from "module";
+import { Package } from "@/types/package";
+import Image from "next/image";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -60,7 +61,8 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [packageData, setPackageData] = useState<any>(null);
+  const [packageData, setPackageData] = useState<Package | null>(null);
+  const [uploadImage, setUploadImage] = useState<string | null>("");
 
   // const pkg = packageList.find((pkg) => pkg.id === params.id);
   const form = useForm<FormValues>({
@@ -75,39 +77,10 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
     },
   });
 
-  useEffect(() => {
-    setIsLoading(true);
-    const fetchPackages = async () => {
-      try {
-        setIsLoading(true);
-        const response = await PackageServices.getPackageById(params.id);
-        const pkgData = response.data.data.package;
-        console.log(pkgData, "Get package by Id"); // Log the response for debugging
-        if (pkgData) {
-          form.reset({
-            name: pkgData.name,
-            imageUrl: pkgData.imageUrl,
-            description: pkgData.description,
-            price: pkgData.price,
-            startDate: pkgData.startDate,
-            endDate: pkgData.endDate,
-          });
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPackages();
-  }, [params.id, form]);
-
   const handleSubmit = async (data: FormValues) => {
     try {
       // Assuming you have an update method in PackageServices
+      console.log(data, "dataaaaaa");
       await PackageServices.editPackage(params.id, data);
       toast({
         title: "Package has been updated successfully",
@@ -120,26 +93,28 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
   useEffect(() => {
     const fetchPackageData = async () => {
       setIsLoading(true);
       try {
         const response = await PackageServices.getPackageById(params.id);
-        const pkgData = response.data.data.package;
+        const pkgData: Package = response.data.data.package;
         if (pkgData) {
           setPackageData(pkgData);
           if (
             pkgData?.packageETagTypeMappings &&
             pkgData?.packageETagTypeMappings.length > 0
           ) {
-            const etagTypeMapping = pkgData?.packageETagTypeMappings[0];
+            const etagTypeMapping =
+              pkgData?.packageETagTypeMappings?.length > 0
+                ? pkgData.packageETagTypeMappings[0]
+                : undefined;
+            console.log(etagTypeMapping, "etagTypeMappingggg");
+
             if (
               etagTypeMapping &&
-              etagTypeMapping?.etagType &&
-              etagTypeMapping?.etagType.id
+              etagTypeMapping.etagType &&
+              etagTypeMapping?.etagTypeId
             ) {
               const etagId = etagTypeMapping?.etagType.id;
               localStorage.setItem("etagTypeId", etagId);
@@ -178,7 +153,40 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
       }
     };
     fetchPackageData();
-  }, [params.id, toast]);
+  }, [params.id]);
+  // useEffect(() => {
+  //   setIsLoading(true);
+  //   const fetchPackages = async () => {
+  //     try {
+  //       setIsLoading(true);
+  //       const response = await PackageServices.getPackageById(params.id);
+  //       const pkgData = response.data.data.package;
+  //       console.log(pkgData, "Get package by Id"); // Log the response for debugging
+  //       if (pkgData) {
+  //         form.reset({
+  //           name: pkgData.name,
+  //           imageUrl: pkgData.imageUrl,
+  //           description: pkgData.description,
+  //           price: pkgData.price,
+  //           startDate: pkgData.startDate,
+  //           endDate: pkgData.endDate,
+  //         });
+  //       }
+  //     } catch (err) {
+  //       setError(
+  //         err instanceof Error ? err.message : "An unknown error occurred"
+  //       );
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  //   fetchPackages();
+  // }, [params.id, form]);
+
+  // Only then check for loading or error state | return must be below useEffect
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   console.log(packageData, "package Dataaa");
   return (
@@ -217,21 +225,25 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type="file" // Change the input type to file
-                    accept="image/*" // Accept only image files
+                    type="file"
+                    accept="image/*"
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Uploade image"
+                    placeholder="Upload image"
                     {...field}
                     onChange={(e) => {
-                      const file = e.target.files?.[0]; // Get the uploaded file
+                      const file = e.target.files?.[0];
                       if (file) {
-                        // Handle the file upload here (you could use a service or API to upload the file)
                         const reader = new FileReader();
+                        const fileName = file.name;
+
                         reader.onloadend = () => {
-                          // Once the file is read, update the form field with the image URL or base64 string
-                          field.onChange(reader.result); // Update the form with the uploaded image (can be a URL or base64)
+                          // const imageDataUrl: ArrayBuffer | string | null = reader.result;
+                          setUploadImage(reader.result as string); // Save the image data to state
+                          field.onChange(""); // Update the form field with the file name
                         };
+
                         reader.readAsDataURL(file); // Read the file as a data URL (base64)
+                        console.log(`File name: ${fileName}`);
                       }
                     }}
                   />
@@ -240,6 +252,17 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
               </FormItem>
             )}
           />
+          {/* Image Preview */}
+          {uploadImage && (
+            <div className="image-preview">
+              <Image
+                src={uploadImage}
+                alt="Image Preview"
+                width={450}
+                height={350}
+              />
+            </div>
+          )}
 
           <FormField
             control={form.control}
