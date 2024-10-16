@@ -23,16 +23,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { UserEtag } from "@/types/userEtag";
-import { UserEtagServices } from "@/components/services/userEtagServices";
+import { ETag } from "@/types/etag";
+import { ETagServices } from "../services/etagService";
 
-interface UserEtagTableProps {
+interface ETagTableProps {
   limit?: number;
   title?: string;
 }
 
-const UserEtagTable = ({ limit, title }: UserEtagTableProps) => {
-  const [etagList, setEtagList] = useState<UserEtag[]>([]);
+const ETagTable = ({ limit, title }: ETagTableProps) => {
+  const [etagList, setEtagList] = useState<ETag[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +41,7 @@ const UserEtagTable = ({ limit, title }: UserEtagTableProps) => {
   useEffect(() => {
     const fetchEtags = async () => {
       try {
-        const response = await UserEtagServices.getEtags({ page: 1, size: 10 });
+        const response = await ETagServices.getETags({ page: 1, size: 10 });
         console.log(response); // Log the response for debugging
 
         const etags = Array.isArray(response.data.data)
@@ -60,10 +60,10 @@ const UserEtagTable = ({ limit, title }: UserEtagTableProps) => {
     fetchEtags();
   }, [isLoading, deleteLoading]);
 
-  const handleDeleteEtag = (etag: UserEtag) => {
+  const handleDeleteEtag = (etag: ETag) => {
     setDeleteLoading(true);
     if (etag.cccd) {
-      UserEtagServices.deleteEtagById(etag.cccd)
+      ETagServices.deleteEtagById(etag.cccd)
         .then((res) => {
           setDeleteLoading(false);
           toast({
@@ -98,7 +98,7 @@ const UserEtagTable = ({ limit, title }: UserEtagTableProps) => {
               <TableHead>Full Name</TableHead>
               <TableHead className="hidden md:table-cell">Phone</TableHead>
               <TableHead className="hidden md:table-cell">CCCD</TableHead>
-              <TableHead className="hidden md:table-cell">Etag Type</TableHead>
+              <TableHead className="hidden md:table-cell">Etag Code</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -114,7 +114,7 @@ const UserEtagTable = ({ limit, title }: UserEtagTableProps) => {
                   {etag.cccd}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {etag.etagTypeId}
+                  {etag.etagCode}
                 </TableCell>
                 <TableCell>
                   <Link href={`/admin/etags/edit/${etag.cccd}`}>
@@ -161,4 +161,4 @@ const UserEtagTable = ({ limit, title }: UserEtagTableProps) => {
   );
 };
 
-export default UserEtagTable;
+export default ETagTable;
