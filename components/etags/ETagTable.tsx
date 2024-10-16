@@ -87,9 +87,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
 
   const sortedEtags = [...filteredEtags].sort((a, b) => {
     if (sortField === "status") {
-      return sortOrder === "asc"
-        ? a.status - b.status
-        : b.status - a.status;
+      return sortOrder === "asc" ? a.status - b.status : b.status - a.status;
     } else {
       return sortOrder === "asc"
         ? new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
@@ -103,13 +101,13 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
   };
 
@@ -120,7 +118,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       case 1:
         return { text: "Active", color: "bg-green-500", sortOrder: 1 };
       case 2:
-          return { text: "Expired", color: "bg-yellow-500", sortOrder: 2 };
+        return { text: "Expired", color: "bg-yellow-500", sortOrder: 2 };
       case -1:
         return { text: "Block", color: "bg-gray-500", sortOrder: 3 };
     }
@@ -235,14 +233,14 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
                 <TableHead>Phone Number</TableHead>
                 <TableHead>CCCD</TableHead>
                 <TableHead>
-                  <SortButton field="startDate" label="Start Date" />
+                  <SortButton field="startDate" label="Start Date & Time" />
                 </TableHead>
                 <TableHead>
-              <SortButton field="startDate" label="Start Date & Time" />
-            </TableHead>
-            <TableHead>
-              <SortButton field="endDate" label="End Date & Time" />
-            </TableHead>
+                  <SortButton field="endDate" label="End Date & Time" />
+                </TableHead>
+                <TableHead>
+                  <SortButton field="status" label="Status" />
+                </TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
