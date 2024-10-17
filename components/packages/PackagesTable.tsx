@@ -50,7 +50,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
           page: 1,
           size: 10,
         });
-        console.log(response.data); // Log the response for debugging
+        console.log(response.data);
 
         const packages = Array.isArray(response.data.data)
           ? response.data.data
