@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -13,28 +14,25 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import {
   AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { HouseServices } from "@/components/services/houseServices";
-import { StoreHouseType } from "@/types/house";
 import { StoreServices } from "@/components/services/storeServices";
-import { StoreInHouse, StoreTypeEnum } from "@/types/storeOwner";
-import { isObject } from "@/lib/isObject";
+import { StoreOwner } from "@/types/storeOwner";
 
 interface StoreTableProps {
-  params: { id: string };
+  limit?: number;
+  title?: string;
 }
 
-const StoresTable = ({ params }: StoreTableProps) => {
-  const { id: houseId } = params;
-  const [house, setHouse] = useState<StoreHouseType | null>(null);
+const StoresTable = ({ limit, title }: StoreTableProps) => {
+  const [storeList, setStoreList] = useState<StoreOwner[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,13 +41,16 @@ const StoresTable = ({ params }: StoreTableProps) => {
   useEffect(() => {
     const fetchStores = async () => {
       try {
-        const response = await HouseServices.getHouseById(houseId);
-        const house = isObject(response.data.data.house)
-          ? response.data.data.house
-          : [];
+        const response = await StoreServices.getStores({
+          page: 1,
+          size: 10,
+        });
+        console.log(response.data); // Log the response for debugging
 
-        console.log(house, "house detail");
-        setHouse(house);
+        const stores = Array.isArray(response.data.data)
+          ? response.data.data
+          : [];
+        setStoreList(stores);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
@@ -62,17 +63,17 @@ const StoresTable = ({ params }: StoreTableProps) => {
     fetchStores();
   }, [isLoading, deleteLoading]);
 
-  const handleDeleteHouse = (house: StoreHouseType) => {
-    const { id: houseId, houseName } = house;
+  console.log(storeList, "stores");
 
+  const handleDeleteStore = (store: StoreOwner) => {
     setDeleteLoading(true);
-    if (houseId) {
-      StoreServices.deleteStoreById(houseId)
+    if (store.id) {
+      StoreServices.deleteStoreById(store.id)
         .then((res) => {
           setDeleteLoading(false);
           toast({
             title: res.data.messageResponse,
-            description: `Store name: ${houseName}`,
+            description: `Store name: ${store.name}`,
           });
         })
         .catch((err) => {
@@ -88,50 +89,74 @@ const StoresTable = ({ params }: StoreTableProps) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
+  const filteredStores = limit ? storeList.slice(0, limit) : storeList;
+
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">Stores</h3>
-      {house && isObject(house) ? (
+      <h3 className="text-2xl mb-4 font-semibold">{title || "Stores"}</h3>
+      {filteredStores.length > 0 ? (
         <Table>
           <TableCaption>A list of recent stores</TableCaption>
           <TableHeader>
             <TableRow className="bg-slate-300 hover:bg-slate-300">
-              <TableHead>House Name</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Stores</TableHead>
+              <TableHead>NO</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead className="hidden md:table-cell">Address</TableHead>
+              <TableHead className="hidden md:table-cell">Phone</TableHead>
+              <TableHead className="hidden md:table-cell">Email</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow key={house.id}>
-              <TableCell>{house.houseName}</TableCell>
-              <TableCell>{house.location}</TableCell>
-              <TableCell>{house.address}</TableCell>
-              <TableCell>
-                {house?.stores?.length > 0 ? (
-                  house?.stores?.map((store, index) => (
-                    <div key={store.id} className="mb-2">
-                      <p>
-                        <strong>
-                          {index + 1}. {store.name}
-                        </strong>{" "}
-                        <br />
-                        Description: {store.description} <br />
-                        Email: {store.email} <br />
-                        Status:{" "}
-                        {store.status === StoreTypeEnum.Clothing
-                          ? "Clothing"
-                          : store.status === StoreTypeEnum.Food
-                          ? "Food"
-                          : "Other"}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <div>Not have any store!</div>
-                )}
-              </TableCell>
-            </TableRow>
+            {filteredStores.map((store, i) => (
+              <TableRow key={store.id}>
+                <TableCell>{i + 1}</TableCell>
+                <TableCell>{store.name}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {store.address}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {store.phoneNumber}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {store.email}
+                </TableCell>
+                <TableCell>
+                  <Link href={`/admin/stores/edit/${store.id}`}>
+                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2">
+                      Edit
+                    </button>
+                  </Link>
+                  <AlertDialog>
+                    <AlertDialogTrigger>
+                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
+                        Delete
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are you sure you want to delete this store:{" "}
+                          {store?.name}?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will remove the
+                          store from your list!
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteStore(store)}
+                        >
+                          Confirm
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       ) : (

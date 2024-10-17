@@ -72,13 +72,12 @@ const LoginForm = () => {
         userData.email,
         userData.refreshToken
       );
-      console.log(res, "response refreshToken");
-      console.log("RefreshToken sucessful!");
+      console.log(res, "responseeeee");
 
-      // toast({
-      //   title: "Token Refreshed!",
-      //   description: "Tokens have been refreshed!",
-      // });
+      toast({
+        title: "Token Refreshed!",
+        description: "Tokens have been refreshed!",
+      });
       return "Token Refreshed";
     } catch (error) {
       console.error("Failed to refresh token:", error);
@@ -92,257 +91,59 @@ const LoginForm = () => {
 
   // Login function
   const loginUser = async (data: UserLogin) => {
-    try {
-      const res = await AuthServices.loginUser(data);
-      console.log(res.data, "login res");
+    const res = await AuthServices.loginUser(data);
+    console.log(res.data, "login res");
 
-      // Store tokens and set expiration time
-      const newRefreshToken = res.data.data.tokens.refreshToken;
-      const accessToken = res.data.data.tokens.accessToken;
-      const userId = res.data.data.userId;
+    // Store tokens and set expiration time
+    const newRefreshToken = res.data.data.tokens.refreshToken;
+    const accessToken = res.data.data.tokens.accessToken;
+    const userId = res.data.data.userId;
 
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("userId", userId);
-      localStorage.setItem("userEmail", data.email);
-      localStorage.setItem(
-        "refreshTokenExp",
-        calculateExpirationTime().toString()
-      );
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("userEmail", data.email);
+    localStorage.setItem(
+      "refreshTokenExp",
+      calculateExpirationTime().toString()
+    );
 
-      // Update refreshTokenArray in localStorage
-      let refreshTokenArray: UserRefreshToken[] = JSON.parse(
-        localStorage.getItem("refreshTokenArray") || "[]"
-      );
+    // Update refreshTokenArray in localStorage
+    let refreshTokenArray: UserRefreshToken[] = JSON.parse(
+      localStorage.getItem("refreshTokenArray") || "[]"
+    );
 
-      // Check if the email already exists in the array
-      const existingIndex = refreshTokenArray.findIndex(
-        (item: UserRefreshToken) => item.email === data.email
-      );
+    // Check if the email already exists in the array
+    const existingIndex = refreshTokenArray.findIndex(
+      (item: UserRefreshToken) => item.email === data.email
+    );
 
-      if (existingIndex !== -1) {
-        // Update existing entry
-        refreshTokenArray[existingIndex].refreshToken = newRefreshToken;
-      } else {
-        // Add new entry
-        refreshTokenArray.push({
-          email: data.email,
-          refreshToken: newRefreshToken,
-        });
-      }
-
-      // Save updated array back to localStorage
-      localStorage.setItem(
-        "refreshTokenArray",
-        JSON.stringify(refreshTokenArray)
-      );
-
-      // Show success toast
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
+    if (existingIndex !== -1) {
+      // Update existing entry
+      refreshTokenArray[existingIndex].refreshToken = newRefreshToken;
+    } else {
+      // Add new entry
+      refreshTokenArray.push({
+        email: data.email,
+        refreshToken: newRefreshToken,
       });
-
-      // Redirect to home page
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
-    } catch (error) {
-      if (error instanceof AxiosError) {
-        if (error.response && error.response.status === 401) {
-          // Server responded with a status other than 2xx
-          try {
-            const res = await AuthServices.fetchUserByEmail(data.email);
-            console.log(res.data, "Fetch User By Email res");
-
-            // Store tokens and userEmail
-            const newRefreshToken = res.data.data.refreshToken;
-            const userEmail = res.data.data.userEmail;
-
-            localStorage.setItem("refreshToken", newRefreshToken);
-            localStorage.setItem("userEmail", userEmail);
-            localStorage.setItem(
-              "refreshTokenExp",
-              calculateExpirationTime().toString()
-            );
-
-            // Update refreshTokenArray in localStorage
-            let refreshTokenArray: UserRefreshToken[] = JSON.parse(
-              localStorage.getItem("refreshTokenArray") || "[]"
-            );
-
-            // Check if the email already exists in the array
-            const existingIndex = refreshTokenArray.findIndex(
-              (item: UserRefreshToken) => item.email === data.email
-            );
-
-            if (existingIndex !== -1) {
-              // Update existing entry
-              refreshTokenArray[existingIndex].refreshToken = newRefreshToken;
-            } else {
-              // Add new entry
-              refreshTokenArray.push({
-                email: data.email,
-                refreshToken: newRefreshToken,
-              });
-            }
-
-            // Save updated array back to localStorage
-            localStorage.setItem(
-              "refreshTokenArray",
-              JSON.stringify(refreshTokenArray)
-            );
-
-            if (userEmail) {
-              try {
-                const res = await AuthServices.loginUser(data);
-                // console.log(
-                //   res.data,
-                //   "login after fetch user refreshToken by email res"
-                // );
-
-                // Store tokens and set expiration time
-                const newRefreshToken = res.data.data.tokens.refreshToken;
-                const accessToken = res.data.data.tokens.accessToken;
-                const userId = res.data.data.userId;
-
-                localStorage.setItem("accessToken", accessToken);
-                localStorage.setItem("userId", userId);
-                localStorage.setItem("userEmail", data.email);
-                localStorage.setItem(
-                  "refreshTokenExp",
-                  calculateExpirationTime().toString()
-                );
-
-                // Update refreshTokenArray in localStorage
-                let refreshTokenArray: UserRefreshToken[] = JSON.parse(
-                  localStorage.getItem("refreshTokenArray") || "[]"
-                );
-
-                // Check if the email already exists in the array
-                const existingIndex = refreshTokenArray.findIndex(
-                  (item: UserRefreshToken) => item.email === data.email
-                );
-
-                if (existingIndex !== -1) {
-                  // Update existing entry
-                  refreshTokenArray[existingIndex].refreshToken =
-                    newRefreshToken;
-                } else {
-                  // Add new entry
-                  refreshTokenArray.push({
-                    email: data.email,
-                    refreshToken: newRefreshToken,
-                  });
-                }
-
-                // Save updated array back to localStorage
-                localStorage.setItem(
-                  "refreshTokenArray",
-                  JSON.stringify(refreshTokenArray)
-                );
-
-                // Show success toast
-                toast({
-                  title: "Login Successful",
-                  description: "Hi! Long time no see ha!",
-                });
-
-                // Redirect to home page
-                setTimeout(() => {
-                  router.push("/");
-                }, 1000);
-                return;
-              } catch {
-                console.log("Token expired");
-                await refreshToken({
-                  email: data.email,
-                  refreshToken: newRefreshToken,
-                });
-                // Show status login again in order to get refreshToken
-                toast({
-                  title: "Login Again!",
-                  description: "Error is busy, login again!",
-                });
-                const res = await AuthServices.loginUser(data);
-                console.log(res.data, "login res");
-
-                // Store tokens and set expiration time
-                const newFetchRefreshToken = res.data.data.tokens.refreshToken;
-                const accessToken = res.data.data.tokens.accessToken;
-                const userId = res.data.data.userId;
-
-                localStorage.setItem("accessToken", accessToken);
-                localStorage.setItem("userId", userId);
-                localStorage.setItem("userEmail", data.email);
-                localStorage.setItem(
-                  "refreshTokenExp",
-                  calculateExpirationTime().toString()
-                );
-
-                // Update refreshTokenArray in localStorage
-                let refreshTokenArray: UserRefreshToken[] = JSON.parse(
-                  localStorage.getItem("refreshTokenArray") || "[]"
-                );
-
-                // Check if the email already exists in the array
-                const existingIndex = refreshTokenArray.findIndex(
-                  (item: UserRefreshToken) => item.email === data.email
-                );
-
-                if (existingIndex !== -1) {
-                  // Update existing entry
-                  refreshTokenArray[existingIndex].refreshToken =
-                    newFetchRefreshToken;
-                } else {
-                  // Add new entry
-                  refreshTokenArray.push({
-                    email: data.email,
-                    refreshToken: newFetchRefreshToken,
-                  });
-                }
-
-                // Save updated array back to localStorage
-                localStorage.setItem(
-                  "refreshTokenArray",
-                  JSON.stringify(refreshTokenArray)
-                );
-
-                // Show success toast
-                toast({
-                  title: "Login Successful",
-                  description: "Hi! Long time no see ha!",
-                });
-
-                // Redirect to home page
-                setTimeout(() => {
-                  router.push("/");
-                }, 1000);
-              }
-            }
-            return;
-          } catch {
-            console.log("wait2"); //does not handle anything
-            // Show success toast
-            toast({
-              title: "Login Again!",
-              description: "Server is busy now, try again!",
-            });
-          }
-        } else if (error.response && error.response.status === 400) {
-          // Request was made but no response was received
-          toast({
-            title: "Login Failed!",
-            description: "Invalid email or password!",
-          });
-        } else {
-          // Something went wrong
-          toast({
-            title: "Login Failed!",
-            description: "Something went wrong in the server!",
-          });
-        }
-      }
     }
+
+    // Save updated array back to localStorage
+    localStorage.setItem(
+      "refreshTokenArray",
+      JSON.stringify(refreshTokenArray)
+    );
+
+    // Show success toast
+    toast({
+      title: "Login Successful",
+      description: "Welcome back!",
+    });
+
+    // Redirect to home page
+    setTimeout(() => {
+      router.push("/");
+    }, 1000);
   };
 
   // Automatically refresh token if expiration time is near
@@ -362,26 +163,9 @@ const LoginForm = () => {
     }
   };
 
-  // Automatically refresh token if expiration time is near
-  const checkSessionExpired = () => {
-    if (!user) {
-      // If user is not logged in, redirect to login page
-      router.push("/auth");
-      toast({
-        title: "Session expired",
-        description: "Please login again!",
-      });
-    }
-  };
-
   useEffect(() => {
     // Check token expiration every 10 minutes
-    const runBothFunctions = () => {
-      checkSessionExpired();
-      checkTokenExpiration();
-    };
-
-    const interval = setInterval(runBothFunctions, 10 * 60 * 1000);
+    const interval = setInterval(checkTokenExpiration, 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 

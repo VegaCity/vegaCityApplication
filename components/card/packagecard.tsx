@@ -21,7 +21,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg }) => {
   };
 
   const validImageUrl =
-    pkg.imageUrl && pkg.imageUrl.startsWith("https")
+    pkg.imageUrl && pkg.imageUrl.startsWith("http")
       ? pkg.imageUrl
       : "/default-image.png";
 
@@ -29,11 +29,12 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg }) => {
     <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
       <div className="w-full flex justify-center p-4">
         <div className="w-88 h-48 relative rounded-lg overflow-hidden shadow-sm">
-          <img
+          <Image
             src={validImageUrl}
             alt={pkg.name || "Package Image"}
-            className="rounded-lg fill cover"
-            loading="eager"
+            layout="fill"
+            objectFit="cover"
+            className="rounded-lg"
           />
         </div>
       </div>

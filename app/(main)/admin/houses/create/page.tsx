@@ -24,8 +24,6 @@ const formSchema = z.object({
   location: z.string().min(1, { message: "Location is required" }),
   address: z.string().min(1, { message: "Address is required" }),
   zoneId: z.string().min(1, { message: "Zone ID is required" }),
-  deflag: z.boolean().default(false),
-  isRent: z.boolean().default(false),
 });
 
 const HouseCreatePage = () => {
@@ -37,9 +35,7 @@ const HouseCreatePage = () => {
       houseName: "",
       location: "",
       address: "",
-      zoneId: "",
-      deflag: false,
-      isRent: false,
+      zoneId: "9f43b0a9-002f-4abf-8c5d-9785e5695997",
     },
   });
 

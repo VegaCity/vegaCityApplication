@@ -1,9 +1,5 @@
 import { API } from "@/components/services/api";
-import {
-  EtagTypePatch,
-  EtagTypePost,
-  ETagTypePackageParams,
-} from "@/types/etagtype";
+import { EtagTypePatch, EtagTypePost } from "@/types/etagtype";
 
 interface ETagPageSize {
   page?: number;
@@ -22,7 +18,6 @@ export const ETagTypeServices = {
   getETagTypeById(id: string) {
     return API.get(`/etag-type/${id}`);
   },
-
   uploadEtagType(etagtypeData: EtagTypePost) {
     return API.post("/etag-type/", etagtypeData);
   },
@@ -31,16 +26,5 @@ export const ETagTypeServices = {
   },
   deleteEtagTypeById(id: string) {
     return API.delete(`/etag-type/${id}`);
-  },
-  addEtagTypeToPackage({
-    etagTypeId,
-    packageId,
-    quantityEtagType,
-  }: ETagTypePackageParams) {
-    return API.post(`/etag-type/${etagTypeId}/package/${packageId}`, null, {
-      params: {
-        quantityEtagType,
-      },
-    });
   },
 };

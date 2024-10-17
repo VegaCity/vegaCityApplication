@@ -1,16 +1,15 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import Providers from "@/app/Provider";
-import { QueryProvider } from "@/providers/query-provider";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from '@/components/providers/ThemeProvider';
+import Providers from '@/app/Provider';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "VegaCity",
-  description: "Admin dashboard",
+  title: 'VegaCity',
+  description: 'Admin dashboard',
 };
 
 export default function RootLayout({
@@ -20,15 +19,15 @@ export default function RootLayout({
 }>) {
   return (
     <Providers>
-      <html lang="en">
+      <html lang='en'>
         <body className={inter.className}>
           <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
+            attribute='class'
+            defaultTheme='light'
             enableSystem={true}
-            storageKey="dashboard-theme"
+            storageKey='dashboard-theme'
           >
-            <QueryProvider>{children}</QueryProvider>
+            {children}
             <Toaster />
           </ThemeProvider>
         </body>

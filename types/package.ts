@@ -1,5 +1,3 @@
-import { EtagType } from "@/types/etagtype";
-
 export interface Package {
   id: string;
   name: string;
@@ -11,19 +9,11 @@ export interface Package {
   upsDate: string;
   deflag: boolean;
   imageUrl: string | null;
-  packageETagTypeMappings:
-    | [
-        {
-          crDate: string;
-          etagType: EtagType;
-          etagTypeId: string;
-          id: string;
-          packageId: string;
-          quantityEtagType: number;
-          upsDate: string;
-        }
-      ]
-    | null;
+  marketZone: any | null;
+  packageETagTypeMappings: any | null;
+  statusCode: number;
+  messageResponse: string | null;
+  data: any | null;
 }
 
 export interface PackagePostPatch {

@@ -19,11 +19,7 @@ const PackagesPage = () => {
       <div className="flex justify-between items-center mb-4">
         <BackButton text="Go Back" link="/" />
       </div>
-      <StoresTable
-        params={{
-          id: "",
-        }}
-      />
+      <StoresTable />
       <StoresPagination />
     </div>
   );

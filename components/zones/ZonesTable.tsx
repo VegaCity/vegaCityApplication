@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ZoneType } from "@/types/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
-import { useRouter } from "next/navigation";
 
 interface ZoneTableProps {
   limit?: number;
@@ -38,7 +37,6 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
     // setIsLoading(true);
@@ -62,17 +60,6 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
 
     fetchZones();
   }, [isLoading, deleteLoading]);
-
-  const handleZoneDetails = (zoneId: string) => {
-    try {
-      router.push(`/admin/zones/detail/${zoneId}`);
-    } catch {
-      toast({
-        title: "Something wrong!",
-        description: "Try again!",
-      });
-    }
-  };
 
   const handleDeleteZone = (zone: ZoneType) => {
     setDeleteLoading(true);
@@ -126,12 +113,7 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
             {filteredZones.map((zns, i) => (
               <TableRow key={zns.id}>
                 <TableCell>{i + 1}</TableCell>
-                <TableCell
-                  className="hover:bg-blue-300 hover:text-cyan-50 hover:underline cursor-pointer transition-colors"
-                  onClick={() => handleZoneDetails(zns.id)}
-                >
-                  {zns.name}
-                </TableCell>
+                <TableCell>{zns.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   {zns.location}
                 </TableCell>

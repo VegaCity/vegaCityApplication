@@ -87,7 +87,9 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
 
   const sortedEtags = [...filteredEtags].sort((a, b) => {
     if (sortField === "status") {
-      return sortOrder === "asc" ? a.status - b.status : b.status - a.status;
+      return sortOrder === "asc"
+        ? a.status - b.status
+        : b.status - a.status;
     } else {
       return sortOrder === "asc"
         ? new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()
@@ -100,26 +102,16 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return new Date(dateString).toLocaleDateString();
   };
 
   const getStatusString = (status: number) => {
     switch (status) {
       case 0:
-        return { text: "Inactive", color: "bg-red-500", sortOrder: 0 };
+        return { text: "Inactive", color: "bg-red-500", sortOrder: 2 };
       case 1:
         return { text: "Active", color: "bg-green-500", sortOrder: 1 };
-      case 2:
-        return { text: "Expired", color: "bg-yellow-500", sortOrder: 2 };
-      case -1:
+      default:
         return { text: "Block", color: "bg-gray-500", sortOrder: 3 };
     }
   };
@@ -233,10 +225,10 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
                 <TableHead>Phone Number</TableHead>
                 <TableHead>CCCD</TableHead>
                 <TableHead>
-                  <SortButton field="startDate" label="Start Date & Time" />
+                  <SortButton field="startDate" label="Start Date" />
                 </TableHead>
                 <TableHead>
-                  <SortButton field="endDate" label="End Date & Time" />
+                  <SortButton field="endDate" label="End Date" />
                 </TableHead>
                 <TableHead>
                   <SortButton field="status" label="Status" />

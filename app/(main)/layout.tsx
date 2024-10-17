@@ -1,14 +1,13 @@
-import { useAuthUser } from "@/components/hooks/useAuthUser";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { redirect } from "next/navigation";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  const auth = useAuthUser;
-  if (!auth) {
-    redirect("/auth");
-  }
+  // const auth = false;
+  // if(!auth){
+  //   redirect('/auth');
+  // }
 
   return (
     <>
