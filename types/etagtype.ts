@@ -25,3 +25,8 @@ export interface ETagTypePackageParams {
   packageId: string;
   quantityEtagType?: number;
 }
+
+export interface EtagTypeMappings extends EtagType {
+  deflag: boolean;
+  walletTypeId: string;
+}
