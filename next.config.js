@@ -26,4 +26,8 @@ module.exports = {
       },
     ];
   },
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> parent of 0893aec (config firebase store)
