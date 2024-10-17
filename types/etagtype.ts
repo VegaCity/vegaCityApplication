@@ -20,3 +20,13 @@ export interface EtagTypePatch {
   bonusRate: number;
   amount: number;
 }
+export interface ETagTypePackageParams {
+  etagTypeId: string;
+  packageId: string;
+  quantityEtagType?: number;
+}
+
+export interface EtagTypeMappings extends EtagType {
+  deflag: boolean;
+  walletTypeId: string;
+}
