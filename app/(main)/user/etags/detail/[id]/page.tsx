@@ -1,51 +1,41 @@
 'use client';
 
-import BackButton from '@/components/BackButton';
-import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormItem, FormLabel, FormMessage, FormField } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { useEffect, useState } from 'react';
-import { ETagServices } from '@/components/services/etagService';
-import { ETag } from '@/types/etag';
-import Image from 'next/image';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import paymentService from '@/components/services/paymentService'; 
-
-const formSchema = z.object({
-  fullName: z.string(),
-  etagCode: z.string(),
-  phoneNumber: z.string(),
-  cccd: z.string(),
-  birthday: z.string().nullable(),
-  gender: z.string(),
-  startDate: z.string(),
-  endDate: z.string(),
-  status: z.number(),
-  imageUrl: z.string(),
-  etagType: z.object({
-    name: z.string(),
-    bonusRate: z.number(),
-    amount: z.number(),
-  }),
-  marketZone: z.object({
-    name: z.string(),
-    shortName: z.string(),
-  }),
-  wallet: z.object({
-    balance: z.number(),
-    balanceHistory: z.number(),
-  }),
-});
-
-interface EtagDetailPageProps {
-  params: { id: string };
-}
-type FormValues = z.infer<typeof formSchema>;
+import BackButton from "@/components/BackButton";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormField,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { useEffect, useState } from "react";
+import { ETagServices } from "@/components/services/etagService";
+import { ETag } from "@/types/etag";
+import Image from "next/image";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import paymentService from "@/components/services/paymentService";
+import { formSchema, FormValues, EtagDetailPageProps } from "@/lib/validation";
 
 const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const { toast } = useToast();
@@ -58,8 +48,39 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   
   const handleChargeMoney = async (data: { etagCode: any; chargeAmount: number; cccd: any; paymentType: string; }) => {
     try {
-        // Validate input parameters
-        if (!data.etagCode || data.chargeAmount <= 0 || !data.cccd || !data.paymentType) {
+      // Validate input parameters
+      if (
+        !data.etagCode ||
+        data.chargeAmount <= 0 ||
+        !data.cccd ||
+        !data.paymentType
+      ) {
+        toast({
+          title: "Error",
+          description:
+            "Please provide all required fields and a valid charge amount.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Call the charge money API
+      const response = await ETagServices.chargeMoney({
+        etagCode: data.etagCode,
+        chargeAmount: data.chargeAmount,
+        cccd: data.cccd,
+        paymentType: data.paymentType,
+      });
+
+      // Check the response from the charge money API
+      if (response.status === 200) {
+        const responseData = response.data;
+
+        if (responseData && responseData.data) {
+          const { urlDirect, key, invoiceId } = responseData.data;
+
+          // Validate important data
+          if (!urlDirect || !invoiceId) {
             toast({
                 title: 'Error',
                 description: 'Please provide all required fields and a valid charge amount.',
