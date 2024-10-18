@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
 import { UserServices } from "@/components/services/userServices";
 import { UserAccount } from "@/types/userAccount";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   fullName: z.string().min(1, {
@@ -67,6 +68,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState<UserAccountPost | null>(null);
+  const router = useRouter();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -122,11 +124,14 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
 
   const handleSubmit = async (data: FormValues) => {
     try {
-      await UserServices.updateUserById(params.id, data);
+      const userUpdated = await UserServices.updateUserById(params.id, data);
       toast({
         title: "User has been updated successfully",
         description: `User ${data.fullName} was updated.`,
       });
+      if (userUpdated) {
+        router.push("/admin/usersAccount");
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
@@ -139,7 +144,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
 
   return (
     <>
-      <BackButton text="Back To Users" link="/admin/users" />
+      <BackButton text="Back To Users" link="/admin/users/" />
       <h3 className="text-2xl mb-4">Edit User</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">

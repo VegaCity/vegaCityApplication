@@ -124,7 +124,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                   {user.address}
                 </TableCell>
                 <TableCell>
-                  <Link href={`/admin/users/edit/${user.id}`}>
+                  <Link href={`/admin/usersAccount/edit/${user.id}`}>
                     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2">
                       Edit
                     </button>
