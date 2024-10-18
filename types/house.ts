@@ -11,6 +11,12 @@ export interface HouseTypeId extends HouseType {
   id: string;
 }
 
+export interface HouseTypePatch {
+  houseName: string;
+  location: string;
+  address: string;
+}
+
 export interface StoreHouseType {
   id: string;
   houseName: string;

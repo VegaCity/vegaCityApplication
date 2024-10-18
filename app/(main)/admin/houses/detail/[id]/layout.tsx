@@ -12,10 +12,8 @@ export default async function HouseDetailLayout({
 }: {
   children: React.ReactNode;
   params: { id: string };
-  house: StoreHouseType;
 }) {
   const { id: houseId } = params;
-  console.log(houseId, "house Id");
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div>

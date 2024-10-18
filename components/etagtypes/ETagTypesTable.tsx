@@ -50,7 +50,7 @@ const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
           page: 1,
           size: 10,
         });
-        console.log(response.data, "Etag Table Data");
+        console.log(response.data, "Etag Table Data"); // Log the response for debugging
 
         const etagTypes = Array.isArray(response.data.data)
           ? response.data.data

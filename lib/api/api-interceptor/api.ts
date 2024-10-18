@@ -1,7 +1,7 @@
 import axios from "axios";
 
-import refreshToken from "./refresh-token-server";
-import { auth, update } from "@/lib/next-auth/auth";
+// import refreshToken from "./refresh-token-server";
+import auth from "@/lib/next-auth/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
