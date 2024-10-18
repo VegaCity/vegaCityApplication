@@ -1,7 +1,7 @@
 import { Session } from "next-auth";
 import { axiosAuth } from "./api";
 import refreshToken from "./refresh-token-server";
-import { update, auth } from "@/lib/next-auth/auth";
+import update from "@/lib/next-auth/auth";
 
 const setupAxiosAuth = async (session: Session | null) => {
   axiosAuth.interceptors.request.use(

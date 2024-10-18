@@ -1,32 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { HouseServices } from "@/components/services/houseServices";
+import { StoreServices } from "@/components/services/storeServices";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  TableCaption,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog";
-import { HouseServices } from "@/components/services/houseServices";
-import { StoreHouseType } from "@/types/house";
-import { StoreServices } from "@/components/services/storeServices";
-import { StoreInHouse, StoreTypeEnum } from "@/types/storeOwner";
 import { isObject } from "@/lib/isObject";
+import { StoreHouseType } from "@/types/house";
+import { StoreTypeEnum } from "@/types/storeOwner";
+import { useEffect, useState } from "react";
 
 interface StoreTableProps {
   params: { id: string };
