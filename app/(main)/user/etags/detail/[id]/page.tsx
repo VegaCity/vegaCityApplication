@@ -616,10 +616,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                 <FormMessage />
               </FormItem>
             </div>
-            {/* <div className="mt-4"> 
-  <p>Start Date and Time: {formatDateTimeForDisplay(form.getValues('startDate'))}</p>
-  <p>End Date and Time: {formatDateTimeForDisplay(form.getValues('endDate'))}</p>
-</div> */}
 
             <FormItem className="md:w-1/3">
               <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
