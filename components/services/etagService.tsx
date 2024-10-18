@@ -51,13 +51,16 @@ export const ETagServices = {
       },
     });
   },
-  getETagById(id: string, etagCode?: string) {
-    return API.get(`/etag`, {
-      params: {
-        id,
-        etagCode: etagCode || undefined,
-      },
-    });
+  getETagById(idOrEtagCode: string) {
+    const params: { id?: string; etagCode?: string } = {};
+
+    if (idOrEtagCode.startsWith("VG")) {
+      params.etagCode = idOrEtagCode;
+    } else {
+      params.id = idOrEtagCode;
+    }
+
+    return API.get("/etag", { params });
   },
 
   uploadEtag(etagData: ETag) {

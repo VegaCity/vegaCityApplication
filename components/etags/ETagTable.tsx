@@ -23,7 +23,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-
+import { API } from "@/components/services/api";
+import { useRouter } from "next/navigation";
 interface EtagTableProps {
   limit?: number;
   title?: string;
@@ -37,14 +38,47 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const [filteredEtags, setFilteredEtags] = useState<ETag[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchResult, setSearchResult] = useState(null);
   const [sortField, setSortField] = useState<SortField>("startDate");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
+  const router = useRouter();
+  const isValidGuid = (str: any) => {
+    const guidPattern =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return guidPattern.test(str);
+  };
 
+  const handleSearch = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      let response;
+      if (searchTerm.startsWith("VGC")) {
+        // Search by eTag code
+        response = await ETagServices.getETagById(searchTerm);
+      } else if (isValidGuid(searchTerm)) {
+        // Search by eTag GUID
+        response = await ETagServices.getETagById(searchTerm);
+      } else {
+        throw new Error("Invalid search format");
+      }
+
+      if (response.data.data && response.data.data.id) {
+        // Navigate to the eTag detail page
+        router.push(`/user/etags/detail/${response.data.data.id}`);
+      } else {
+        setError("eTag information not found");
+      }
+    } catch (err) {
+      setError("No results found or an error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const fetchEtag = async (page: number) => {
     setIsLoading(true);
     try {
@@ -71,7 +105,9 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   useEffect(() => {
     const filtered = etagList.filter(
       (etag) =>
-        etag.phoneNumber.includes(searchTerm) || etag.cccd.includes(searchTerm)
+        etag.phoneNumber.includes(searchTerm) ||
+        etag.cccd.includes(searchTerm) ||
+        etag.etagCode.includes(searchTerm)
     );
     setFilteredEtags(filtered);
   }, [searchTerm, etagList]);
@@ -121,6 +157,8 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
         return { text: "Expired", color: "bg-yellow-500", sortOrder: 2 };
       case -1:
         return { text: "Block", color: "bg-gray-500", sortOrder: 3 };
+      default:
+        return { text: "Unknown", color: "bg-gray-300", sortOrder: 4 };
     }
   };
 
@@ -241,73 +279,86 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
           className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
           size={20}
         />
-        <Input
+        <input
           type="text"
-          placeholder="Search by Phone Number or CCCD"
+          placeholder="Nhập mã eTagCode hoặc GUID"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 pr-4 py-2"
+          className="pl-10 pr-4 py-2 w-full border rounded-md"
         />
       </div>
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : limitedEtags.length > 0 ? (
-        <>
-          <Table>
-            <TableCaption>A list of Etags</TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Full Name</TableHead>
-                <TableHead>Phone Number</TableHead>
-                <TableHead>CCCD</TableHead>
-                <TableHead>
-                  <SortButton field="startDate" label="Start Date & Time" />
-                </TableHead>
-                <TableHead>
-                  <SortButton field="endDate" label="End Date & Time" />
-                </TableHead>
-                <TableHead>
-                  <SortButton field="status" label="Status" />
-                </TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {limitedEtags.map((etag) => {
-                const statusInfo = getStatusString(etag.status);
-                return (
-                  <TableRow key={etag.id}>
-                    <TableCell>{etag.fullName}</TableCell>
-                    <TableCell>{etag.phoneNumber}</TableCell>
-                    <TableCell>{etag.cccd}</TableCell>
-                    <TableCell>{formatDate(etag.startDate)}</TableCell>
-                    <TableCell>{formatDate(etag.endDate)}</TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-block text-white px-2 py-1 rounded ${statusInfo.color}`}
-                      >
-                        {statusInfo.text}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/user/etags/detail/${etag.id}`}>
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
-                          View Details
-                        </button>
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-          <div className="mt-4">
-            <ETagPagination />
-          </div>
-        </>
-      ) : (
-        <div>No Etags found</div>
+      <button
+        onClick={handleSearch}
+        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        disabled={isLoading}
+      >
+        {isLoading ? "Đang tìm kiếm..." : "Tìm kiếm"}
+      </button>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {searchResult && (
+        <div className="mt-4">
+          <h3 className="font-bold">Kết quả tìm kiếm:</h3>
+          <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
+            {JSON.stringify(searchResult, null, 2)}
+          </pre>
+        </div>
       )}
+
+      <>
+        <Table>
+          <TableCaption>A list of Etags</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Full Name</TableHead>
+              <TableHead>Phone Number</TableHead>
+              <TableHead>CCCD</TableHead>
+              <TableHead>EtagCode</TableHead>
+              <TableHead>
+                <SortButton field="startDate" label="Start Date & Time" />
+              </TableHead>
+              <TableHead>
+                <SortButton field="endDate" label="End Date & Time" />
+              </TableHead>
+              <TableHead>
+                <SortButton field="status" label="Status" />
+              </TableHead>
+              <TableHead>Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {limitedEtags.map((etag) => {
+              const statusInfo = getStatusString(etag.status);
+              return (
+                <TableRow key={etag.id}>
+                  <TableCell>{etag.fullName}</TableCell>
+                  <TableCell>{etag.phoneNumber}</TableCell>
+                  <TableCell>{etag.cccd}</TableCell>
+                  <TableCell>{etag.etagCode}</TableCell>
+                  <TableCell>{formatDate(etag.startDate)}</TableCell>
+                  <TableCell>{formatDate(etag.endDate)}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-block text-white px-2 py-1 rounded ${statusInfo.color}`}
+                    >
+                      {statusInfo.text}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <Link href={`/user/etags/detail/${etag.id}`}>
+                      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
+                        View Details
+                      </button>
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+        <div className="mt-4">
+          <ETagPagination />
+        </div>
+      </>
     </div>
   );
 };
