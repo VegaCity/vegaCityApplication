@@ -1,5 +1,5 @@
 import axios from "axios";
-import NextAuth, { NextAuthConfig } from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth"; // Use NextAuthOptions instead
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -17,7 +17,8 @@ interface UserJWT extends JWT {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export const authOptions: NextAuthConfig = {
+export const authOptions: NextAuthOptions = {
+  // Use NextAuthOptions here
   session: { strategy: "jwt" },
   providers: [
     GoogleProvider({
@@ -50,7 +51,6 @@ export const authOptions: NextAuthConfig = {
         } catch (error) {
           return null;
         }
-
       },
     }),
   ],
@@ -64,8 +64,16 @@ export const authOptions: NextAuthConfig = {
     async session({ session, token }) {
       session.user = token as UserJWT;
       if (token) {
-        const { id, email, roleName, roleId, accessToken, refreshToken } = token;
-        Object.assign(session.user, { id, email, roleName, roleId, accessToken, refreshToken });
+        const { id, email, roleName, roleId, accessToken, refreshToken } =
+          token;
+        Object.assign(session.user, {
+          id,
+          email,
+          roleName,
+          roleId,
+          accessToken,
+          refreshToken,
+        });
       }
       return session;
     },
@@ -74,4 +82,4 @@ export const authOptions: NextAuthConfig = {
   secret: process.env.NEXTAUTH_SECRET!,
 };
 
-export const { handlers, auth, signIn, signOut, unstable_update: update } = NextAuth(authOptions);
+export default NextAuth(authOptions); // Use the default export for NextAuth

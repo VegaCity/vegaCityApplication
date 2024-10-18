@@ -31,7 +31,6 @@ const formSchema = z.object({
 
 interface HouseCreatePageByZoneIdProps {
   params: { id: string };
-  house: HouseType;
 }
 
 const HouseCreatePageByZoneId = ({ params }: HouseCreatePageByZoneIdProps) => {
