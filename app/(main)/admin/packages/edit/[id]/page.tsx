@@ -23,6 +23,12 @@ import { register } from "module";
 import { Package } from "@/types/package";
 import Image from "next/image";
 
+//firebase
+import getConfig from "next/config";
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import { getStorage, ref } from "firebase/storage";
+
 const formSchema = z.object({
   name: z.string().min(1, {
     message: "Name is required",
@@ -63,6 +69,29 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [packageData, setPackageData] = useState<Package | null>(null);
   const [uploadImage, setUploadImage] = useState<string | null>("");
+  //get store from firebase storage
+  const storage = getStorage();
+  // Points to the root reference
+  const storageRef = ref(storage);
+  //Points to images ref
+  const imagesRef = ref(storageRef, "images");
+  // Points to 'images/thien.jpg'
+  // Note that you can use variables to create child values
+  const fileName = "thien.png";
+  const thienRef = ref(imagesRef, fileName);
+
+  // File path is 'images/thien.jpg'
+  const path = thienRef.fullPath;
+
+  // File name is 'space.jpg'
+  const name = thienRef.name;
+
+  // Points to 'images'
+  const imagesRefAgain = thienRef.parent;
+
+  console.log(path, "pathhhhh");
+  console.log(name, "nameeeeee");
+  console.log(imagesRefAgain, "imagesRefAgainnnn");
 
   // const pkg = packageList.find((pkg) => pkg.id === params.id);
   const form = useForm<FormValues>({
@@ -154,35 +183,24 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
     };
     fetchPackageData();
   }, [params.id]);
-  // useEffect(() => {
-  //   setIsLoading(true);
-  //   const fetchPackages = async () => {
-  //     try {
-  //       setIsLoading(true);
-  //       const response = await PackageServices.getPackageById(params.id);
-  //       const pkgData = response.data.data.package;
-  //       console.log(pkgData, "Get package by Id"); // Log the response for debugging
-  //       if (pkgData) {
-  //         form.reset({
-  //           name: pkgData.name,
-  //           imageUrl: pkgData.imageUrl,
-  //           description: pkgData.description,
-  //           price: pkgData.price,
-  //           startDate: pkgData.startDate,
-  //           endDate: pkgData.endDate,
-  //         });
-  //       }
-  //     } catch (err) {
-  //       setError(
-  //         err instanceof Error ? err.message : "An unknown error occurred"
-  //       );
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
 
-  //   fetchPackages();
-  // }, [params.id, form]);
+  useEffect(() => {
+    const firebaseConfig = {
+      apiKey: process.env.FIREBASE_API_KEY,
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.FIREBASE_APP_ID,
+      measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    // Use app and analytics here
+    console.log(app, "appppppp");
+    console.log(analytics, "analyticssss");
+  }, []);
 
   // Only then check for loading or error state | return must be below useEffect
   if (isLoading) return <div>Loading...</div>;

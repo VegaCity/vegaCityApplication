@@ -97,7 +97,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
 
   if (error) return <div>Error: {error}</div>;
 
-  const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
+  // const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -156,10 +156,37 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   );
 
   const ETagPagination = () => {
-    const pageNumbers = [];
-    for (let i = 1; i <= totalPages; i++) {
-      pageNumbers.push(i);
-    }
+    const getPageNumbers = () => {
+      const pageNumbers = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      } else {
+        if (currentPage <= 4) {
+          for (let i = 1; i <= 5; i++) {
+            pageNumbers.push(i);
+          }
+          pageNumbers.push("ellipsis");
+          pageNumbers.push(totalPages);
+        } else if (currentPage >= totalPages - 3) {
+          pageNumbers.push(1);
+          pageNumbers.push("ellipsis");
+          for (let i = totalPages - 4; i <= totalPages; i++) {
+            pageNumbers.push(i);
+          }
+        } else {
+          pageNumbers.push(1);
+          pageNumbers.push("ellipsis");
+          for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+            pageNumbers.push(i);
+          }
+          pageNumbers.push("ellipsis");
+          pageNumbers.push(totalPages);
+        }
+      }
+      return pageNumbers;
+    };
 
     return (
       <Pagination>
@@ -172,22 +199,21 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
               }
             />
           </PaginationItem>
-          {pageNumbers.map((number) => (
-            <PaginationItem key={number}>
-              <PaginationLink
-                href="#"
-                onClick={() => setCurrentPage(number)}
-                isActive={currentPage === number}
-              >
-                {number}
-              </PaginationLink>
+          {getPageNumbers().map((number, index) => (
+            <PaginationItem key={index}>
+              {number === "ellipsis" ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  href="#"
+                  onClick={() => setCurrentPage(number as number)}
+                  isActive={currentPage === number}
+                >
+                  {number}
+                </PaginationLink>
+              )}
             </PaginationItem>
           ))}
-          {totalPages > 5 && currentPage < totalPages - 2 && (
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-          )}
           <PaginationItem>
             <PaginationNext
               onClick={() =>
@@ -204,7 +230,9 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       </Pagination>
     );
   };
+  if (error) return <div>Error: {error}</div>;
 
+  const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
   return (
     <div className="mt-10">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Etags"}</h3>

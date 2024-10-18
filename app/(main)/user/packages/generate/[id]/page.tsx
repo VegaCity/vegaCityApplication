@@ -62,7 +62,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       phoneNumber: "",
       address: "",
       cccd: "",
-      paymentMethod: "cash",
+      paymentMethod: "Cash",
       gender: "male",
       quantity: 1,
       price: 0,
@@ -236,7 +236,11 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       });
     }
   };
-  const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
+  const initiatePayment = async (
+    paymentMethod: string,
+    invoiceId: string,
+    key?: string
+  ) => {
     try {
       console.log(
         `Initiating ${paymentMethod} payment for invoice ${invoiceId}`
@@ -244,12 +248,12 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
 
       let paymentResponse;
 
-      if (paymentMethod === "momo") {
-        paymentResponse = await paymentService.momo({ invoiceId });
-      } else if (paymentMethod === "vnpay") {
-        paymentResponse = await paymentService.vnpay({ invoiceId });
-      } else if (paymentMethod === "payos") {
-        paymentResponse = await paymentService.payos({ invoiceId });
+      if (paymentMethod === "Momo") {
+        paymentResponse = await paymentService.momo({ invoiceId, key });
+      } else if (paymentMethod === "VnPay") {
+        paymentResponse = await paymentService.vnpay({ invoiceId, key });
+      } else if (paymentMethod === "PayOS") {
+        paymentResponse = await paymentService.payos({ invoiceId, key });
       } else {
         throw new Error("Invalid payment method");
       }
@@ -260,7 +264,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       );
 
       if (paymentResponse && paymentResponse.statusCode === 200) {
-        if (paymentMethod === "momo") {
+        if (paymentMethod === "Momo") {
           console.log("Handling MoMo response");
           const momoData = paymentResponse.data;
           if (momoData.payUrl) {
@@ -273,7 +277,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
             console.error("MoMo payment URL not found in the response");
             throw new Error("MoMo payment URL not found in the response");
           }
-        } else if (paymentMethod === "vnpay") {
+        } else if (paymentMethod === "VnPay") {
           console.log("Handling VNPay response");
           if (paymentResponse.data.vnPayResponse) {
             console.log(
@@ -285,7 +289,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
             console.error("VNPay payment URL not found in the response");
             throw new Error("VNPay payment URL not found in the response");
           }
-        } else if (paymentMethod === "payos") {
+        } else if (paymentMethod === "PayOS") {
           console.log("Handling PayOS response");
           const payosData = paymentResponse.data;
           if (payosData.checkoutUrl) {
@@ -363,7 +367,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         },
       };
 
-      if (paymentMethod === "cash") {
+      if (paymentMethod === "Cash") {
         // await confirmOrder(confirmData);
         setIsOrderConfirmed(true);
         toast({
@@ -371,9 +375,9 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           description: "Your cash order has been successfully confirmed.",
         });
       } else if (
-        paymentMethod === "momo" ||
-        paymentMethod === "vnpay" ||
-        paymentMethod === "payos"
+        paymentMethod === "Momo" ||
+        paymentMethod === "VnPay" ||
+        paymentMethod === "PayOS"
       ) {
         try {
           await initiatePayment(paymentMethod, invoiceId);
@@ -702,10 +706,10 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="cash">Cash</SelectItem>
-                      <SelectItem value="momo">Momo</SelectItem>
-                      <SelectItem value="vnpay">VNPay</SelectItem>
-                      <SelectItem value="payos">PayOs</SelectItem>
+                      <SelectItem value="Cash">Cash</SelectItem>
+                      <SelectItem value="Momo">Momo</SelectItem>
+                      <SelectItem value="VnPay">VNPay</SelectItem>
+                      <SelectItem value="PayOS">PayOs</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

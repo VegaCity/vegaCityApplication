@@ -22,7 +22,7 @@ export const customerFormSchema = z.object({
     .string()
     .regex(/^\d{12}$/, { message: "CCCD phải bao gồm đúng 12 chữ số" }),
 
-  paymentMethod: z.enum(["cash", "momo", "vnpay", "payos"], {
+  paymentMethod: z.enum(["Cash", "Momo", "VnPay", "PayOS"], {
     required_error: "Phương thức thanh toán là bắt buộc",
     invalid_type_error: "Phương thức thanh toán không hợp lệ",
   }),
