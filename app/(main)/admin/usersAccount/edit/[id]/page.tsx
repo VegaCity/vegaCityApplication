@@ -15,103 +15,117 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import posts from "@/data/posts";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { PackageServices } from "@/components/services/packageServices";
-import { Package } from "@/types/package";
-import { register } from "module";
+import { UserServices } from "@/components/services/userServices";
+import { UserAccount } from "@/types/userAccount";
 
 const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "Name is required",
+  fullName: z.string().min(1, {
+    message: "Full Name is required",
   }),
-  imageUrl: z.string().min(1, {
-    message: "Image Url is required",
+  address: z.string().min(1, {
+    message: "Address is required",
   }),
   description: z.string().min(1, {
     message: "Description is required",
   }),
-  price: z.coerce
-    .number({
-      required_error: "Price is required!",
-      invalid_type_error: "Price must be a number!",
-    })
-    .refine((value) => value > 0 && value <= 10000000, {
-      message: "Price must be above zero and less than 10.000.000VND!",
-    }),
-  startDate: z.string().min(1, {
-    message: "Date is required",
+  phoneNumber: z.string().min(1, {
+    message: "Phone Number is required",
   }),
-  endDate: z.string().min(1, {
-    message: "Date is required",
+  birthday: z.string().min(1, {
+    message: "Birthday is required",
+  }),
+  gender: z.number().min(0, {
+    message: "Gender is required",
+  }),
+  cccd: z.string().min(1, {
+    message: "CCCD is required",
+  }),
+  imageUrl: z.string().min(1, {
+    message: "Image URL is required",
   }),
 });
 
-interface PackageEditPageProps {
+interface UserEditPageProps {
   params: {
     id: string;
   };
 }
 
+interface UserAccountPost {
+  userData: {
+    user: UserAccount;
+    imageUrl: string;
+  };
+}
+
 type FormValues = z.infer<typeof formSchema>;
 
-const PackageEditPage = ({ params }: PackageEditPageProps) => {
+const UserEditPage = ({ params }: UserEditPageProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [packageData, setPackageData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserAccountPost | null>(null);
 
-  // const pkg = packageList.find((pkg) => pkg.id === params.id);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      imageUrl: "",
+      fullName: "",
+      address: "",
       description: "",
-      price: 1,
-      startDate: "",
-      endDate: "",
+      phoneNumber: "",
+      birthday: "",
+      gender: 0,
+      cccd: "",
+      imageUrl: "",
     },
   });
 
   useEffect(() => {
-    setIsLoading(true);
-    const fetchPackages = async () => {
+    const fetchUserData = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
-        const response = await PackageServices.getPackageById(params.id);
-        const pkgData = response.data.data.package;
-        console.log(pkgData, "Get package by Id"); // Log the response for debugging
-        if (pkgData) {
+        const response = await UserServices.getUserById(params.id);
+        const user = response.data.data.user;
+        if (user) {
+          setUserData(user);
           form.reset({
-            name: pkgData.name,
-            imageUrl: pkgData.imageUrl,
-            description: pkgData.description,
-            price: pkgData.price,
-            startDate: pkgData.startDate,
-            endDate: pkgData.endDate,
+            fullName: user.fullName,
+            address: user.address,
+            description: user.description,
+            phoneNumber: user.phoneNumber,
+            birthday: user.birthday,
+            gender: user.gender,
+            cccd: user.cccd,
+            imageUrl: user.imageUrl,
           });
+        } else {
+          throw new Error("User data is missing in the response");
         }
       } catch (err) {
+        console.error("Error fetching user data:", err);
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
         );
+        toast({
+          title: "Error",
+          description: "Failed to load user data. Please try again.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
-
-    fetchPackages();
-  }, [params.id, form]);
+    fetchUserData();
+  }, [params.id, toast]);
 
   const handleSubmit = async (data: FormValues) => {
     try {
-      // Assuming you have an update method in PackageServices
-      await PackageServices.editPackage(params.id, data);
+      await UserServices.updateUserById(params.id, data);
       toast({
-        title: "Package has been updated successfully",
-        description: `Package ${data.name} was updated with price ${data.price} VND`,
+        title: "User has been updated successfully",
+        description: `User ${data.fullName} was updated.`,
       });
     } catch (err) {
       setError(
@@ -123,82 +137,24 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  useEffect(() => {
-    const fetchPackageData = async () => {
-      setIsLoading(true);
-      try {
-        const response = await PackageServices.getPackageById(params.id);
-        const pkgData = response.data.data.package;
-        if (pkgData) {
-          setPackageData(pkgData);
-          if (
-            pkgData?.packageETagTypeMappings &&
-            pkgData?.packageETagTypeMappings.length > 0
-          ) {
-            const etagTypeMapping = pkgData?.packageETagTypeMappings[0];
-            if (
-              etagTypeMapping &&
-              etagTypeMapping?.etagType &&
-              etagTypeMapping?.etagType.id
-            ) {
-              const etagId = etagTypeMapping?.etagType.id;
-              localStorage.setItem("etagTypeId", etagId);
-              console.log("EtagTypeId stored in localStorage:", etagId);
-            } else {
-              console.warn("EtagType or its ID is missing in the package data");
-              setError(
-                "EtagType information is incomplete. Please check the package configuration."
-              );
-            }
-          } else {
-            console.warn(
-              "No packageETagTypeMappings found in the package data"
-            );
-            setError(
-              "No E-Tag type information found for this package. Please check the package configuration."
-            );
-          }
-        } else {
-          throw new Error("Package data is missing in the response");
-        }
-      } catch (err) {
-        console.error("Error fetching package data:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An unknown error occurred while fetching package data"
-        );
-        toast({
-          title: "Error",
-          description: "Failed to load package data. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchPackageData();
-  }, [params.id, toast]);
-
-  console.log(packageData, "package Dataaa");
   return (
     <>
-      <BackButton text="Back To Packages" link="/admin/packages" />
-      <h3 className="text-2xl mb-4">Edit Package</h3>
+      <BackButton text="Back To Users" link="/admin/users" />
+      <h3 className="text-2xl mb-4">Edit User</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            name="name"
+            name="fullName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Package Name
+                  Full Name
                 </FormLabel>
                 <FormControl>
-                  <Textarea
+                  <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Package Name"
+                    placeholder="Enter Full Name"
                     {...field}
                   />
                 </FormControl>
@@ -209,31 +165,17 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
 
           <FormField
             control={form.control}
-            name="imageUrl"
+            name="address"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Uploade Image
+                  Address
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type="file" // Change the input type to file
-                    accept="image/*" // Accept only image files
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Uploade image"
+                    placeholder="Enter Address"
                     {...field}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0]; // Get the uploaded file
-                      if (file) {
-                        // Handle the file upload here (you could use a service or API to upload the file)
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          // Once the file is read, update the form field with the image URL or base64 string
-                          field.onChange(reader.result); // Update the form with the uploaded image (can be a URL or base64)
-                        };
-                        reader.readAsDataURL(file); // Read the file as a data URL (base64)
-                      }
-                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -250,7 +192,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
                   Description
                 </FormLabel>
                 <FormControl>
-                  <Input
+                  <Textarea
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Description"
                     {...field}
@@ -263,17 +205,57 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
 
           <FormField
             control={form.control}
-            name="price"
+            name="phoneNumber"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Price
+                  Phone Number
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    placeholder="Enter Phone Number"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="birthday"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  Birthday
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="gender"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  Gender
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Price"
+                    placeholder="Enter Gender (0 for Male, 1 for Female)"
                     {...field}
                   />
                 </FormControl>
@@ -284,17 +266,16 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
 
           <FormField
             control={form.control}
-            name="startDate"
+            name="cccd"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Start Date
+                  CCCD
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type="datetime-local"
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Date"
+                    placeholder="Enter CCCD"
                     {...field}
                   />
                 </FormControl>
@@ -305,17 +286,16 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
 
           <FormField
             control={form.control}
-            name="endDate"
+            name="imageUrl"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  End Date
+                  Image URL
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type="datetime-local"
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Date"
+                    placeholder="Enter Image URL"
                     {...field}
                   />
                 </FormControl>
@@ -325,7 +305,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
           />
 
           <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Update Package
+            Update User
           </Button>
         </form>
       </Form>
@@ -333,4 +313,4 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   );
 };
 
-export default PackageEditPage;
+export default UserEditPage;

@@ -4,12 +4,23 @@ export interface UserAccount {
   cccd: string;
   address: string;
   email: string;
-  description: string;
+  description?: string | null;
   roleName: string;
 }
 
 export interface UserAccountPostPatch extends UserAccount {
-  apiKey: "5f728deb-b2c3-4bac-9d9c-41a11e0acccc";
+  apiKey: string;
+}
+
+export interface UserAccountPost {
+  fullName: string;
+  phoneNumber: string;
+  address: string;
+  description?: string | null;
+  birthday: string;
+  gender: number;
+  cccd: string;
+  imageUrl: string;
 }
 
 export interface UserAccountGet extends UserAccount {

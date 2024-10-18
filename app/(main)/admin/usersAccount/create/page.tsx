@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { roles } from "@/types/role";
+import { UserAccountPostPatch } from "@/types/userAccount";
 
 const formSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required" }),
@@ -59,14 +60,19 @@ const UserCreatePage = () => {
   });
 
   const handleSubmit = (data: FormValues) => {
-    // Here you would typically send this data to your API
-    console.log("New user data:", data);
-    if (data) {
-      UserServices.createUser(data).then((res) => {
+    // Create a new object that includes the apiKey
+    const userData: UserAccountPostPatch | null = {
+      ...data,
+      apiKey: "5f728deb-b2c3-4bac-9d9c-41a11e0acccc", // Add the apiKey here
+    };
+
+    console.log("New user data:", userData);
+    if (userData) {
+      UserServices.createUser(userData).then((res) => {
         console.log(res.data, "Create User");
         toast({
           title: "User has been created successfully",
-          description: `Created user: ${data.fullName}`,
+          description: `Created user: ${userData.fullName}`,
         });
         router.push("/admin/usersAccount");
       });

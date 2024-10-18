@@ -1,6 +1,6 @@
 import { API } from "@/components/services/api";
 import { Users } from "@/types/user";
-import { UserAccountPostPatch } from "@/types/userAccount";
+import { UserAccountPostPatch, UserAccountPost } from "@/types/userAccount";
 
 interface UserPageSize {
   page?: number;
@@ -21,7 +21,7 @@ export const UserServices = {
   createUser(userData: UserAccountPostPatch) {
     return API.post("/user/", userData);
   },
-  updateUserById(userData: UserAccountPostPatch, userId: string) {
+  updateUserById(userId: string, userData: UserAccountPost) {
     return API.patch(`/user/${userId}`, userData);
   },
   deleteUserById(userId: string) {
