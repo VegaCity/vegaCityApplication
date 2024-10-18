@@ -112,7 +112,7 @@ const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
             <TableRow>
               <TableHead>NO</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead className="hidden md:table-cell">Image URL</TableHead>
+              <TableHead className="hidden md:table-cell">Image</TableHead>
               <TableHead className="hidden md:table-cell">Bonus Rate</TableHead>
               <TableHead className="hidden md:table-cell">Amout</TableHead>
               <TableHead>Actions</TableHead>
@@ -124,7 +124,13 @@ const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{etag.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {etag.imageUrl}
+                  <img
+                    src={etag?.imageUrl ?? "/images/placeholder.jpg"}
+                    alt={etag.name}
+                    width="100"
+                    height="auto"
+                    className="object-cover"
+                  />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {etag.bonusRate}
