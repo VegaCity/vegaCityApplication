@@ -1,5 +1,4 @@
 "use client";
-
 import BackButton from "@/components/BackButton";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,7 +34,18 @@ import {
 } from "@/components/ui/dialog";
 import paymentService from "@/components/services/paymentService";
 import { formSchema, FormValues, EtagDetailPageProps } from "@/lib/validation";
-
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import { confirmOrder } from "@/components/services/orderuserServices";
+import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
+import { ConfirmOrderData } from "@/types/orderUser";
 const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const { toast } = useToast();
   const [etag, setEtag] = useState<ETag | null>(null);
@@ -44,7 +54,8 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
+  const [isProcessingPopupOpen, setIsProcessingPopupOpen] = useState(false);
+  const [pendingInvoiceId, setPendingInvoiceId] = useState<string | null>(null);
   const handleChargeMoney = async (data: {
     etagCode: any;
     chargeAmount: number;
@@ -67,7 +78,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         return;
       }
 
-      // Call the charge money API
       const response = await ETagServices.chargeMoney({
         etagCode: data.etagCode,
         chargeAmount: data.chargeAmount,
@@ -75,14 +85,12 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         paymentType: data.paymentType,
       });
 
-      // Check the response from the charge money API
       if (response.status === 200) {
         const responseData = response.data;
-
         if (responseData && responseData.data) {
           const { urlDirect, key, invoiceId } = responseData.data;
+          localStorage.setItem("pendingInvoiceId", invoiceId);
 
-          // Validate important data
           if (!urlDirect || !invoiceId) {
             toast({
               title: "Error",
@@ -93,8 +101,12 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
             return;
           }
 
-          // Initiate payment
-          await initiatePayment(data.paymentType, invoiceId, key);
+          if (data.paymentType === "Cash") {
+            setPendingInvoiceId(invoiceId);
+            setIsProcessingPopupOpen(true);
+          } else {
+            await initiatePayment(data.paymentType, invoiceId);
+          }
         } else {
           toast({
             title: "Error",
@@ -114,19 +126,19 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       console.error("Error charging money:", error);
       toast({
         title: "Error",
-        description:
-          "Failed to charge money. Please check your details and try again.",
+        description: "Failed to charge money. Please try again later.",
         variant: "destructive",
       });
     } finally {
+      setIsLoading(false);
       setIsPopupOpen(false);
     }
   };
 
   const initiatePayment = async (
     paymentMethod: string,
-    invoiceId: string,
-    key: string
+    invoiceId: string
+    // key?: string
   ) => {
     try {
       console.log(
@@ -135,12 +147,12 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
 
       let paymentResponse;
 
-      if (paymentMethod === "momo") {
-        paymentResponse = await paymentService.momo({ invoiceId, key });
-      } else if (paymentMethod === "vnpay") {
-        paymentResponse = await paymentService.vnpay({ invoiceId, key });
-      } else if (paymentMethod === "payos") {
-        paymentResponse = await paymentService.payos({ invoiceId, key });
+      if (paymentMethod === "Momo") {
+        paymentResponse = await paymentService.momo({ invoiceId });
+      } else if (paymentMethod === "VnPay") {
+        paymentResponse = await paymentService.vnpay({ invoiceId });
+      } else if (paymentMethod === "PayOS") {
+        paymentResponse = await paymentService.payos({ invoiceId });
       } else {
         throw new Error("Invalid payment method");
       }
@@ -151,7 +163,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       );
 
       if (paymentResponse && paymentResponse.statusCode === 200) {
-        if (paymentMethod === "momo") {
+        if (paymentMethod === "Momo") {
           console.log("Handling MoMo response");
           const momoData = paymentResponse.data;
           if (momoData.payUrl) {
@@ -164,7 +176,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
             console.error("MoMo payment URL not found in the response");
             throw new Error("MoMo payment URL not found in the response");
           }
-        } else if (paymentMethod === "vnpay") {
+        } else if (paymentMethod === "VnPay") {
           console.log("Handling VNPay response");
           if (paymentResponse.data.vnPayResponse) {
             console.log(
@@ -176,7 +188,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
             console.error("VNPay payment URL not found in the response");
             throw new Error("VNPay payment URL not found in the response");
           }
-        } else if (paymentMethod === "payos") {
+        } else if (paymentMethod === "PayOS") {
           console.log("Handling PayOS response");
           const payosData = paymentResponse.data;
           if (payosData.checkoutUrl) {
@@ -205,6 +217,58 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     }
   };
 
+  const handleConfirmPayment = async () => {
+    if (!pendingInvoiceId) {
+      toast({
+        title: "Lỗi",
+        description: "Không có hóa đơn chờ xác nhận",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsConfirming(true);
+    try {
+      const confirmData = {
+        invoiceId: pendingInvoiceId,
+      };
+
+      console.log("Đang xác nhận đơn hàng với dữ liệu:", confirmData);
+      const result = await confirmOrder(confirmData);
+      console.log("Kết quả xác nhận:", result);
+
+      if (result.statusCode === 200 || result.statusCode === "200") {
+        toast({
+          title: "Thanh toán thành công",
+          description: "Đơn hàng đã được xác nhận",
+        });
+        setIsProcessingPopupOpen(false);
+        setPendingInvoiceId(null);
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      } else {
+        throw new Error(
+          result.messageResponse || "Không thể xác nhận đơn hàng"
+        );
+      }
+    } catch (error) {
+      console.error("Lỗi khi xác nhận đơn hàng:", error);
+      let errorMessage = "Có lỗi xảy ra khi xác nhận đơn hàng";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === "object" && error !== null) {
+        errorMessage = JSON.stringify(error);
+      }
+      toast({
+        title: "Lỗi xác nhận",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsConfirming(false);
+    }
+  };
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -238,7 +302,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       etagCode: form.getValues("etagCode"),
       chargeAmount: 0,
       cccd: form.getValues("cccd"),
-      paymentType: "cash",
+      paymentType: "Cash",
       startDate: form.getValues("startDate"),
       endDate: form.getValues("endDate"),
     },
@@ -291,7 +355,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
           etagCode: etagData.etagCode,
           chargeAmount: 0,
           cccd: etagData.cccd.trim(),
-          paymentType: "cash",
+          paymentType: "Cash",
         });
       } catch (err) {
         setError(
@@ -632,77 +696,106 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
               </FormControl>
             </FormItem>
           </div>
-          {etag.status === 1 && (
-            <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
-              <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
-                <DialogTrigger asChild>
-                  <Button>Charge Money</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Charge Money</DialogTitle>
-                    <DialogDescription>
-                      Enter the necessary details to charge money.
-                    </DialogDescription>
-                  </DialogHeader>
+          <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
+            <DialogTrigger asChild>
+              <Button>Charge Money</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Charge Money</DialogTitle>
+                <DialogDescription>
+                  Enter the necessary details to charge money.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={formCharge.handleSubmit(handleChargeMoney)}>
+                <div className="space-y-4">
+                  <label>Etag Code</label>
+                  <Input
+                    type="text"
+                    {...formCharge.register("etagCode")}
+                    readOnly
+                  />
 
-                  <form onSubmit={formCharge.handleSubmit(handleChargeMoney)}>
-                    <div className="space-y-4">
-                      <label>Etag Code</label>
-                      <Input
-                        type="text"
-                        {...formCharge.register("etagCode")}
-                        readOnly
-                      />
+                  <label>Amount</label>
+                  <Input
+                    type="number"
+                    {...formCharge.register("chargeAmount")}
+                    placeholder="Enter amount"
+                    required
+                  />
 
-                      <label>Amount</label>
-                      <Input
-                        type="number"
-                        {...formCharge.register("chargeAmount")}
-                        placeholder="Enter amount"
-                        required
-                      />
+                  <label>CCCD</label>
+                  <Input
+                    type="text"
+                    {...formCharge.register("cccd")}
+                    readOnly
+                  />
 
-                      <label>CCCD</label>
-                      <Input
-                        type="text"
-                        {...formCharge.register("cccd")}
-                        readOnly
-                      />
+                  <label>Payment Type</label>
+                  <Select
+                    defaultValue={formCharge.getValues("paymentType")}
+                    onValueChange={(value) =>
+                      formCharge.setValue("paymentType", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Payment Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Cash">Cash</SelectItem>
+                      <SelectItem value="Momo">MoMo</SelectItem>
+                      <SelectItem value="VnPay">VnPay</SelectItem>
+                      <SelectItem value="PayOS">PayOs</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex justify-end mt-4 space-x-2">
+                  <Button type="submit">Submit</Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsPopupOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
 
-                      <label>Payment Type</label>
-                      <Select
-                        defaultValue={formCharge.getValues("paymentType")}
-                        onValueChange={(value) =>
-                          formCharge.setValue("paymentType", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Payment Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="momo">MoMo</SelectItem>
-                          <SelectItem value="vnpay">VnPay</SelectItem>
-                          <SelectItem value="payos">PayOs</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex justify-end mt-4 space-x-2">
-                      <Button type="submit">Submit</Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsPopupOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
-          )}
-
+          <AlertDialog
+            open={isProcessingPopupOpen}
+            onOpenChange={(open) => {
+              if (!open) {
+                setPendingInvoiceId(null);
+              }
+              setIsProcessingPopupOpen(open);
+            }}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Đơn hàng đang chờ xác nhận</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Vui lòng xác nhận khi đã nhận được tiền mặt.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel
+                  onClick={() => {
+                    setIsProcessingPopupOpen(false);
+                    setPendingInvoiceId(null);
+                  }}
+                >
+                  Hủy
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleConfirmPayment}
+                  disabled={isConfirming || !pendingInvoiceId}
+                >
+                  {isConfirming ? "Đang xác nhận..." : "Xác nhận đã thanh toán"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           {/* Popup charge money */}
         </form>
       </Form>
