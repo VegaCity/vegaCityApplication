@@ -46,7 +46,7 @@ import {
 import { confirmOrder } from "@/components/services/orderuserServices";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { ConfirmOrderData } from "@/types/orderUser";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const { toast } = useToast();
   const [etag, setEtag] = useState<ETag | null>(null);
@@ -56,7 +56,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isProcessingPopupOpen, setIsProcessingPopupOpen] = useState(false);
-  const [shouldShowAlertDialog, setShouldShowAlertDialog] = useState(false);
   const [pendingInvoiceId, setPendingInvoiceId] = useState<string | null>(null);
   const handleChargeMoney = async (data: {
     etagCode: any;
@@ -65,7 +64,21 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     paymentType: string;
   }) => {
     try {
-      setIsLoading(true);
+      if (
+        !data.etagCode ||
+        data.chargeAmount <= 0 ||
+        !data.cccd ||
+        !data.paymentType
+      ) {
+        toast({
+          title: "Error",
+          description:
+            "Please provide all required fields and a valid charge amount.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const response = await ETagServices.chargeMoney({
         etagCode: data.etagCode,
         chargeAmount: data.chargeAmount,
@@ -91,11 +104,17 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
 
           if (data.paymentType === "Cash") {
             setPendingInvoiceId(invoiceId);
-            setShouldShowAlertDialog(true);
             setIsProcessingPopupOpen(true);
           } else {
             await initiatePayment(data.paymentType, invoiceId);
           }
+        } else {
+          toast({
+            title: "Error",
+            description:
+              "Invalid response structure from chargeMoney API. Please try again later.",
+            variant: "destructive",
+          });
         }
       } else {
         toast({
@@ -116,10 +135,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       setIsPopupOpen(false);
     }
   };
-  useEffect(() => {
-    console.log("isProcessingPopupOpen:", isProcessingPopupOpen);
-    console.log("shouldShowAlertDialog:", shouldShowAlertDialog);
-  }, [isProcessingPopupOpen, shouldShowAlertDialog]);
+
   const initiatePayment = async (
     paymentMethod: string,
     invoiceId: string
@@ -227,12 +243,11 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
           title: "Thanh toán thành công",
           description: "Đơn hàng đã được xác nhận",
         });
-        setShouldShowAlertDialog(false);
         setIsProcessingPopupOpen(false);
         setPendingInvoiceId(null);
         setTimeout(() => {
           window.location.reload();
-        }, 4000);
+        }, 3000);
       } else {
         throw new Error(
           result.messageResponse || "Không thể xác nhận đơn hàng"
@@ -293,7 +308,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       endDate: form.getValues("endDate"),
     },
   });
-
   const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return "";
     return new Date(dateString).toISOString().split("T")[0];
@@ -304,11 +318,11 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     return date.toISOString().slice(0, 16); // Format: "YYYY-MM-DDTHH:mm"
   };
 
-  // const formatDateTimeForDisplay = (dateString: string | null) => {
-  //   if (!dateString) return "";
-  //   const date = new Date(dateString);
-  //   return date.toLocaleString(); // Format: "M/D/YYYY, h:mm:ss AM/PM"
-  // };
+  const formatDateTimeForDisplay = (dateString: string | null) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleString(); // Format: "M/D/YYYY, h:mm:ss AM/PM"
+  };
 
   useEffect(() => {
     const fetchEtag = async () => {
@@ -454,276 +468,256 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
               alt={etag.fullName || "Image"}
               layout="fill"
               objectFit="cover"
-              className="rounded-lg justify-center items-center"
+              className="rounded-lg"
             />
           </div>
 
-          <Card className="w-full max-w-5xl mx-auto">
-            <CardHeader className="pb-2">
-              <CardTitle>Thông tin ETag</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="max-w-4xl mx-auto pl-20 space-y-12">
-                {/* Personal Details */}
-                <div className="space-y-4 ">
-                  <h4 className="text-lg font-semibold mb-2 mt-10">
-                    Thông tin cá nhân
-                  </h4>
-                  <div className="space-y-2 mr-14">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center items-center ">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12 ">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Họ tên :
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("fullName")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
+          {/* Customer Information */}
+          <h4 className="text-xl font-semibold mt-6 mb-4">
+            Customer Information
+          </h4>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Full Name
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("fullName")}
+                  readOnly={!isEditing}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
 
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Etag Code :
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("etagCode")}
-                            readOnly
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Etag Code
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("etagCode")}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Số điện thoại :
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("phoneNumber")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Phone Number
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("phoneNumber")}
+                  readOnly={!isEditing}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
 
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          CCCD:
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("cccd")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                CCCD
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("cccd")}
+                  readOnly={!isEditing}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Ngày sinh:
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("birthday")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0 mb-11">
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Birthday
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("birthday")}
+                  readOnly={!isEditing}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
 
-                      <FormField
-                        control={form.control}
-                        name="gender"
-                        render={({ field }) => (
-                          <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1  md:w-10/12">
-                            <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                              Giới tính:
-                            </FormLabel>
-                            <Select
-                              onValueChange={(value) => field.onChange(value)}
-                              defaultValue={field.value}
-                              disabled={!isEditing}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="0">Nữ</SelectItem>
-                                <SelectItem value="1">Nam</SelectItem>
-                                <SelectItem value="2">Khác</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold mb-2">Thời hạn thẻ</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Ngày bắt đầu:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="datetime-local"
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("startDate")}
-                          readOnly={!isEditing}
-                        />
-                      </FormControl>
-                    </FormItem>
-
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Ngày kết thúc:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="datetime-local"
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("endDate")}
-                          readOnly={!isEditing}
-                        />
-                      </FormControl>
-                    </FormItem>
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Status
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          value={getStatusString(etag.status)}
-                          readOnly
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  </div>
-                </div>
-
-                {/* ETag Type Information */}
-                <div>
-                  <h4 className="text-lg font-semibold mb-2">
-                    Thông tin ETag Type
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        ETag Type:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("etagType.name")}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Giá trị:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("etagType.amount")}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
-                </div>
-
-                {/* Wallet Information */}
-                <div>
-                  <h4 className="text-lg font-semibold mb-2">Thông tin Ví</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Số dư:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("wallet.balance")}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12 ">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Lịch sử số dư:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("wallet.balanceHistory")}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Dialog
-            open={isPopupOpen}
-            onOpenChange={(open) => {
-              setIsPopupOpen(open);
-              if (!open) {
-                setShouldShowAlertDialog(false);
-                formCharge.reset();
-              }
-            }}
-          >
-            <DialogTrigger asChild>
-              {etag && etag.status === 1 && (
-                <div className="flex justify-end mt-4">
-                  <Button type="button" onClick={() => setIsPopupOpen(true)}>
-                    Nạp Tiền
-                  </Button>
-                </div>
+            <FormField
+              control={form.control}
+              name="gender"
+              render={({ field }) => (
+                <FormItem className="md:w-1/2">
+                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                    Gender
+                  </FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value)}
+                    defaultValue={field.value}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Female</SelectItem>
+                      <SelectItem value="1">Male</SelectItem>
+                      <SelectItem value="2">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+          </div>
+
+          {/* ETag Information */}
+          <div className="mt-10">
+            <h4 className="text-xl font-semibold mt-24 mb-4">
+              ETag Information
+            </h4>
+            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0 mt-6">
+              <FormItem className="md:w-1/2">
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  Start Date and Time
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="datetime-local"
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    {...form.register("startDate")}
+                    readOnly={!isEditing}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+
+              <FormItem className="md:w-1/2">
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  End Date and Time
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="datetime-local"
+                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    {...form.register("endDate")}
+                    readOnly={!isEditing}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            </div>
+            {/* <div className="mt-4"> 
+  <p>Start Date and Time: {formatDateTimeForDisplay(form.getValues('startDate'))}</p>
+  <p>End Date and Time: {formatDateTimeForDisplay(form.getValues('endDate'))}</p>
+</div> */}
+
+            <FormItem className="md:w-1/3">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Status
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  value={getStatusString(etag.status)}
+                  readOnly
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </div>
+
+          {/* ETag Type Information */}
+          <h4 className="text-xl font-semibold mt-6 mb-4">
+            ETag Type Information
+          </h4>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                ETag Type Name
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("etagType.name")}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Amount
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("etagType.amount")}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+          </div>
+          {/* Wallet Information */}
+          <h4 className="text-xl font-semibold mt-16 mb-4">
+            Wallet Information
+          </h4>
+          <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Balance
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("wallet.balance")}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+            <FormItem className="md:w-1/2">
+              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                Balance History
+              </FormLabel>
+              <FormControl>
+                <Input
+                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                  {...form.register("wallet.balanceHistory")}
+                  readOnly
+                />
+              </FormControl>
+            </FormItem>
+          </div>
+          <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
+            <DialogTrigger asChild>
+              <Button>Charge Money</Button>
             </DialogTrigger>
-            <DialogContent className="w-[600px] h-[500px] max-w-2xl">
+            <DialogContent>
               <DialogHeader>
-                <DialogTitle className="font-bold text-center">
-                  Nạp Tiền
-                </DialogTitle>
+                <DialogTitle>Charge Money</DialogTitle>
+                <DialogDescription>
+                  Enter the necessary details to charge money.
+                </DialogDescription>
               </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  formCharge.handleSubmit(handleChargeMoney)(e);
-                }}
-              >
-                {/* Grid layout with labels aligned to the left */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6 p-6 items-center">
-                  <label className="font-medium">Etag Code</label>
+              <form onSubmit={formCharge.handleSubmit(handleChargeMoney)}>
+                <div className="space-y-4">
+                  <label>Etag Code</label>
                   <Input
                     type="text"
                     {...formCharge.register("etagCode")}
                     readOnly
                   />
 
-                  <label className="font-medium">Số Tiền (đ)</label>
+                  <label>Amount</label>
                   <Input
                     type="number"
                     {...formCharge.register("chargeAmount")}
@@ -731,14 +725,14 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                     required
                   />
 
-                  <label className="font-medium">CCCD</label>
+                  <label>CCCD</label>
                   <Input
                     type="text"
                     {...formCharge.register("cccd")}
                     readOnly
                   />
 
-                  <label className="font-medium">Phương thức thanh toán</label>
+                  <label>Payment Type</label>
                   <Select
                     defaultValue={formCharge.getValues("paymentType")}
                     onValueChange={(value) =>
@@ -749,46 +743,33 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                       <SelectValue placeholder="Payment Type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Cash">Tiền mặt</SelectItem>
+                      <SelectItem value="Cash">Cash</SelectItem>
                       <SelectItem value="Momo">MoMo</SelectItem>
                       <SelectItem value="VnPay">VnPay</SelectItem>
                       <SelectItem value="PayOS">PayOs</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* Submit button aligned to the right */}
-                <div className="flex justify-end mt-4 pr-6">
+                <div className="flex justify-end mt-4 space-x-2">
                   <Button type="submit">Submit</Button>
                   <Button
-                    type="button"
                     variant="outline"
-                    onClick={() => {
-                      setIsPopupOpen(false);
-                      formCharge.reset();
-                    }}
+                    onClick={() => setIsPopupOpen(false)}
                   >
                     Cancel
                   </Button>
                 </div>
               </form>
-
-              {/* Cancel button aligned with Submit button */}
-              <div className="flex justify-end mt-2 pr-6 space-x-2"></div>
             </DialogContent>
           </Dialog>
 
           <AlertDialog
-            open={isProcessingPopupOpen && shouldShowAlertDialog}
+            open={isProcessingPopupOpen}
             onOpenChange={(open) => {
-              setIsProcessingPopupOpen(open);
               if (!open) {
-                setShouldShowAlertDialog(false);
-                setIsProcessingPopupOpen(false);
                 setPendingInvoiceId(null);
-                formCharge.reset();
-                setIsPopupOpen(false);
               }
+              setIsProcessingPopupOpen(open);
             }}
           >
             <AlertDialogContent>
@@ -816,6 +797,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          {/* Popup charge money */}
         </form>
       </Form>
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
