@@ -21,9 +21,22 @@ const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
 module.exports = {
+  // images: {
+  //   domains: ["firebasestorage.googleapis.com"],
+  // },
+
   images: {
     domains: ["firebasestorage.googleapis.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org", // Add this line
+        port: "",
+        pathname: "/**", // This allows any pathname under the hostname
+      },
+    ],
   },
+
   async redirects() {
     return [
       {

@@ -25,6 +25,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { UserServices } from "@/components/services/userServices";
+import Image from "next/image";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 
 interface UsersTableProps {
   limit?: number;
@@ -113,7 +115,18 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             {filteredUsers.map((user, i) => (
               <TableRow key={user.id}>
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{user.fullName}</TableCell>
+                <TableCell>
+                  <div className="flex items-center">
+                    <Image
+                      src={validImageUrl(user?.imageUrl ?? "")} // Use the URL from the user object
+                      alt={user.fullName} // Provide an appropriate alt text
+                      width={100} // Specify a width
+                      height={100} // Specify a height
+                      className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
+                    />
+                    <p className="ml-4">{user.fullName}</p>
+                  </div>
+                </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {user.email}
                 </TableCell>
