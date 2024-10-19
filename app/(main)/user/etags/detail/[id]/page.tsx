@@ -614,7 +614,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                     </FormItem>
                   </div>
                 </div>
-
                 {/* ETag Type Information */}
                 <div>
                   <h4 className="text-lg font-semibold mb-2">

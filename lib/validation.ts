@@ -186,9 +186,57 @@ export const formSchema = z
     }
   );
 
+// Utility function to check if the date is over 18 years ago
+const isOver18 = (date: string) => {
+  const today = new Date();
+  const birthDate = new Date(date);
+  const age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
+
+  // Adjust the age if the current month and day are before the birth month/day
+  return (
+    age > 18 ||
+    (age === 18 && (monthDiff > 0 || (monthDiff === 0 && dayDiff >= 0)))
+  );
+};
+
+export const userAccountFormSchema = z.object({
+  fullName: z
+    .string()
+    .min(2, { message: "Tên phải có ít nhất 2 ký tự" })
+    .max(100, { message: "Tên không được vượt quá 100 ký tự" })
+    .regex(/^[\p{L}\s]+$/u, {
+      message: "Tên chỉ được chứa chữ cái và khoảng trắng",
+    }),
+  address: z
+    .string()
+    .min(5, { message: "Địa chỉ phải có ít nhất 5 ký tự" })
+    .max(200, { message: "Địa chỉ không được vượt quá 200 ký tự" }),
+  description: z.string().min(1, {
+    message: "Description is required",
+  }),
+  phoneNumber: z
+    .string()
+    .regex(
+      /^(\+84|0)[3|5|7|8|9][0-9]{8}$/,
+      "Số điện thoại không hợp lệ. Vui lòng sử dụng số điện thoại Việt Nam hợp lệ"
+    ),
+  birthday: z
+    .string()
+    .min(1, { message: "Birthday is required" })
+    .refine(isOver18, { message: "You must be over 18 years old" }),
+  gender: z.string().min(0, {
+    message: "Gender is required",
+  }),
+  cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
+  imageUrl: z.string().url("Invalid image URL").nullable(), //does not effect
+});
+
 export type FormValues = z.infer<typeof formSchema>;
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 export type EtagFormValues = z.infer<typeof etagFormSchema>;
+export type UserAccountFormValues = z.infer<typeof userAccountFormSchema>;
 
 export interface EtagDetailPageProps {
   params: { id: string };
