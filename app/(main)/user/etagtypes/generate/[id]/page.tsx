@@ -68,24 +68,13 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         await deleteOrder(storedOrderId);
         localStorage.removeItem("orderId");
         localStorage.removeItem("invoiceId");
-        toast({
-          title: "Order Deleted",
-          description: "The existing order has been successfully deleted.",
-        });
       } catch (err) {
         console.error("Error deleting order:", err);
-        toast({
-          title: "Error",
-          description: "Failed to delete the existing order. Please try again.",
-          variant: "destructive",
-        });
       }
     }
   };
   const handleCancelEtag = () => {
-    // Reset or handle cancellation logic here
-    console.log("E-tag information canceled");
-    setIsEtagInfoConfirmed(false); // Reset the confirmation state
+    setIsEtagInfoConfirmed(false);
   };
 
   const handleCancelOrder = async () => {
@@ -126,10 +115,8 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         },
       };
       const response = await createOrder(orderData);
-
       localStorage.setItem("orderId", response.data.orderId);
       localStorage.setItem("invoiceId", response.data.invoiceId);
-
       setOrderId(response.data.invoiceId);
       toast({
         title: "Order Created",
@@ -149,15 +136,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     }
   };
   const handleEtagSubmit = async (data: EtagFormValues) => {
-    if (!isOrderConfirmed) {
-      toast({
-        title: "Error",
-        description: "Please confirm your order before generating E-Tag.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const generateEtagData: GenerateEtag = {
         quantity: Number(customerForm.getValues("quantity")),
@@ -167,19 +145,18 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           endDate: new Date(data.etagEndDate),
         },
       };
-
       const response = await ETagServices.generateEtag(generateEtagData);
-
       if (response.data) {
         setEtagData({
           startDate: new Date(data.etagStartDate),
           endDate: new Date(data.etagEndDate),
         });
-
+        localStorage.setItem("etag", response.data.etag.id);
         toast({
           title: "E-Tag generated successfully",
           description: `E-Tag for ${etagInfo.name} has been generated.`,
         });
+        return true;
       } else {
         throw new Error("Failed to generate E-Tag");
       }
@@ -190,6 +167,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         description: "Failed to generate E-Tag. Please try again.",
         variant: "destructive",
       });
+      return false;
     }
   };
   const handleConfirmEtag = async () => {
@@ -250,6 +228,17 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         paymentMethod === "VnPay" ||
         paymentMethod === "PayOS"
       ) {
+        // Generate E-tag before initiating payment
+        const etagGenerated = await handleEtagSubmit(etagForm.getValues());
+        if (!etagGenerated) {
+          toast({
+            title: "Error",
+            description: "Failed to generate E-Tag. Payment process halted.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         try {
           await initiatePayment(paymentMethod, invoiceId);
         } catch (paymentError) {
@@ -700,7 +689,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           <Input
                             type="datetime-local"
                             {...field}
-                            value={field.value || ""} // Ensure a valid value is always set
+                            value={field.value || ""}
                             onChange={(e) => field.onChange(e.target.value)}
                             className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                           />
