@@ -1,9 +1,8 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { UserServices } from "@/components/services/userServices";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -13,40 +12,27 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useEffect, useState } from "react";
-import { UserServices } from "@/components/services/userServices";
-import { UserAccount } from "@/types/userAccount";
+import { handlePlusOneDayFromBe } from "@/lib/utils/convertDatePlusOne";
+import { userAccountFormSchema, UserAccountFormValues } from "@/lib/validation";
+import {
+  genders,
+  handleGenderToBe,
+  handleGenderToFe,
+  UserAccount,
+} from "@/types/userAccount";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-
-const formSchema = z.object({
-  fullName: z.string().min(1, {
-    message: "Full Name is required",
-  }),
-  address: z.string().min(1, {
-    message: "Address is required",
-  }),
-  description: z.string().min(1, {
-    message: "Description is required",
-  }),
-  phoneNumber: z.string().min(1, {
-    message: "Phone Number is required",
-  }),
-  birthday: z.string().min(1, {
-    message: "Birthday is required",
-  }),
-  gender: z.number().min(0, {
-    message: "Gender is required",
-  }),
-  cccd: z.string().min(1, {
-    message: "CCCD is required",
-  }),
-  imageUrl: z.string().min(1, {
-    message: "Image URL is required",
-  }),
-});
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 interface UserEditPageProps {
   params: {
@@ -61,8 +47,6 @@ interface UserAccountPost {
   };
 }
 
-type FormValues = z.infer<typeof formSchema>;
-
 const UserEditPage = ({ params }: UserEditPageProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -70,17 +54,17 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
   const [userData, setUserData] = useState<UserAccountPost | null>(null);
   const router = useRouter();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<UserAccountFormValues>({
+    resolver: zodResolver(userAccountFormSchema),
     defaultValues: {
       fullName: "",
       address: "",
       description: "",
       phoneNumber: "",
       birthday: "",
-      gender: 0,
+      gender: "",
       cccd: "",
-      imageUrl: "",
+      imageUrl: null,
     },
   });
 
@@ -90,15 +74,18 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
       try {
         const response = await UserServices.getUserById(params.id);
         const user = response.data.data.user;
+        console.log(user.birthday, "user birthday fetchhhh");
+        console.log(user, "user fetchhhhhhhh");
         if (user) {
+          const convertGenderToDisplay = handleGenderToFe(user.gender);
           setUserData(user);
           form.reset({
             fullName: user.fullName,
             address: user.address,
             description: user.description,
             phoneNumber: user.phoneNumber,
-            birthday: user.birthday,
-            gender: user.gender,
+            birthday: handlePlusOneDayFromBe(user.birthday),
+            gender: convertGenderToDisplay,
             cccd: user.cccd,
             imageUrl: user.imageUrl,
           });
@@ -122,9 +109,16 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
     fetchUserData();
   }, [params.id, toast]);
 
-  const handleSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: UserAccountFormValues) => {
+    const { birthday, gender, ...rest } = data;
+    console.log(birthday, "birthdayyyyyy");
+    const renderGenderToNumber: number = handleGenderToBe(gender as string);
+
     try {
-      const userUpdated = await UserServices.updateUserById(params.id, data);
+      const userUpdated = await UserServices.updateUserById(params.id, {
+        ...data,
+        gender: renderGenderToNumber,
+      });
       toast({
         title: "User has been updated successfully",
         description: `User ${data.fullName} was updated.`,
@@ -144,7 +138,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
 
   return (
     <>
-      <BackButton text="Back To Users" link="/admin/users/" />
+      <BackButton text="Back To Users" link="/admin/usersAccount/" />
       <h3 className="text-2xl mb-4">Edit User</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -240,7 +234,13 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   <Input
                     type="date"
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    {...field}
+                    value={
+                      field.value
+                        ? new Date(field.value).toISOString().split("T")[0]
+                        : ""
+                    } //value property is field that display data on UI, should solve login in here
+                    onChange={(e) => field.onChange(e.target.value)} //onChange property that change and set on field.birthday, should not change it's data change receive
+                    // {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -257,12 +257,21 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   Gender
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Gender (0 for Male, 1 for Female)"
+                  <Select
+                    onValueChange={(value) => field.onChange(value)}
                     {...field}
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {genders.map((gender) => (
+                        <SelectItem key={gender.id} value={gender.name}>
+                          {gender.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -301,7 +310,8 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Image URL"
-                    {...field}
+                    value={field.value || ""} // Use an empty string if field.value is null
+                    onChange={(e) => field.onChange(e.target.value || null)} // Convert empty string back to null if needed
                   />
                 </FormControl>
                 <FormMessage />
