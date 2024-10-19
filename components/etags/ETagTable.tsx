@@ -158,9 +158,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       case -1:
         return { text: "Block", color: "bg-gray-500", sortOrder: 3 };
       default:
-
         return { text: "Unknown", color: "bg-gray-500", sortOrder: 4 };
-
     }
   };
 
