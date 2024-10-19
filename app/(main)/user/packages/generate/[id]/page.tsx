@@ -68,7 +68,13 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       price: 0,
     },
   });
-
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+    }).format(value);
+  };
   const etagForm = useForm<EtagFormValues>({
     resolver: zodResolver(etagFormSchema),
     defaultValues: {
@@ -362,8 +368,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         generateEtagRequest: {
           startDate: new Date(etagForm.getValues("etagStartDate")),
           endDate: new Date(etagForm.getValues("etagEndDate")),
-          // day: etagForm.getValues('etagDuration'),
-          // moneyStart: etagForm.getValues('etagMoney')
         },
       };
 
@@ -452,10 +456,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     if (etagStartDate && etagEndDate) {
       const start = new Date(etagStartDate);
       const end = new Date(etagEndDate);
-      // if (end > start) {
-      //   const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24));
-      //   etagForm.setValue('etagDuration', duration, { shouldValidate: true });
-      // }
     }
   }, [etagForm.watch("etagStartDate"), etagForm.watch("etagEndDate")]);
 
@@ -482,7 +482,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                     {packageData.name}
                   </h2>
                   <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">
-                    {packageData.price}
+                    {formatCurrency(packageData.price)}
                   </p>
                 </div>
                 <div>
@@ -502,10 +502,10 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       {packageData?.packageETagTypeMappings[0]?.etagType?.name}
                     </p>
                     <p className="text-gray-600 dark:text-gray-400 mt-4">
-                      {
+                      {formatCurrency(
                         packageData?.packageETagTypeMappings[0]?.etagType
                           ?.amount
-                      }
+                      )}
                     </p>
                   </div>
                 )}
@@ -515,249 +515,31 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         </Card>
       </div>
 
-      <Form {...customerForm}>
-        <form
-          onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)}
-          className="space-y-6"
-        >
-          <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-              Customer Information
-            </h3>
-            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
-              <FormField
-                control={customerForm.control}
-                name="customerName"
-                render={({ field }) => (
-                  <FormItem className="md:w-1/2">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Full Name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                        placeholder="Enter Full Name"
-                        {...field}
-                        disabled={isCustomerInfoConfirmed}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={customerForm.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem className="md:w-1/2">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Phone Number
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                        placeholder="Enter Phone Number"
-                        {...field}
-                        disabled={isCustomerInfoConfirmed}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
-              <FormField
-                control={customerForm.control}
-                name="cccd"
-                render={({ field }) => (
-                  <FormItem className="md:w-1/2">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      CCCD:
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                        placeholder="Enter ID Number"
-                        {...field}
-                        disabled={isCustomerInfoConfirmed}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={customerForm.control}
-                name="gender"
-                render={({ field }) => (
-                  <FormItem className="md:w-1/2">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Gender
-                    </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isCustomerInfoConfirmed}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
-              <FormField
-                control={customerForm.control}
-                name="quantity"
-                render={({ field }) => (
-                  <FormItem className="md:w-1/2">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Quantity
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                        disabled={isCustomerInfoConfirmed}
-                        onChange={(e) => {
-                          field.onChange(e.target.valueAsNumber);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={customerForm.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem className="md:w-1/2">
-                    <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Price
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        {...field}
-                        className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                        disabled={isCustomerInfoConfirmed}
-                        onChange={(e) => {
-                          field.onChange(e.target.valueAsNumber);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="md:flex md:space-x-4 space-y-4 md:space-y-0"></div>
-            <FormField
-              control={customerForm.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Address
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                      placeholder="Enter Address"
-                      {...field}
-                      disabled={isCustomerInfoConfirmed}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={customerForm.control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Payment Method
-                  </FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isCustomerInfoConfirmed}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment method" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Cash">Cash</SelectItem>
-                      <SelectItem value="Momo">Momo</SelectItem>
-                      <SelectItem value="VnPay">VNPay</SelectItem>
-                      <SelectItem value="PayOS">PayOs</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="flex justify-end space-x-4">
-            {!isCustomerInfoConfirmed && (
-              <Button type="submit">Confirm Information</Button>
-            )}
-          </div>
-        </form>
-      </Form>
-      {isCustomerInfoConfirmed && (
-        <Form {...etagForm}>
+      <div className="container mx-auto px-4 w-full max-w-5xl">
+        <Form {...customerForm}>
           <form
-            onSubmit={(e) => {
-              console.log("Form submitted");
-              console.log("Form is valid:", etagForm.formState.isValid);
-              console.log("Form errors:", etagForm.formState.errors);
-              etagForm.handleSubmit(handleEtagSubmit)(e);
-            }}
-            className="space-y-6 mt-8"
+            onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)}
+            className="space-y-6"
           >
             <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
-                E-Tag Information
+              <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-14 text-center">
+                Thông Tin Khách Hàng
               </h3>
-              <div className="md:flex md:space-x-4 space-y-4 md:space-y-0">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
-                  control={etagForm.control}
-                  name="etagStartDate"
+                  control={customerForm.control}
+                  name="customerName"
                   render={({ field }) => (
-                    <FormItem className="md:w-1/2">
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        E-Tag Start Date
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium dark:text-gray-300">
+                        Họ và Tên
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type="datetime-local"
-                          {...field}
-                          value={field.value || ""}
-                          onChange={(e) => {
-                            field.onChange(e.target.value);
-                            etagForm.trigger("etagEndDate"); // Trigger validation immediately
-                          }}
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          placeholder="Nhập họ và tên"
+                          {...field}
+                          disabled={isCustomerInfoConfirmed}
                         />
                       </FormControl>
                       <FormMessage />
@@ -765,28 +547,19 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   )}
                 />
                 <FormField
-                  control={etagForm.control}
-                  name="etagEndDate"
+                  control={customerForm.control}
+                  name="phoneNumber"
                   render={({ field }) => (
-                    <FormItem className="md:w-1/2">
+                    <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        E-Tag End Date
+                        Số điện thoại
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type="datetime-local"
-                          {...field}
-                          value={endDate || field.value || ""}
-                          onChange={(e) => {
-                            const newValue = e.target.value;
-                            setEndDate(newValue);
-                            field.onChange(newValue);
-                          }}
-                          onBlur={() => {
-                            field.onBlur();
-                            etagForm.trigger("etagEndDate");
-                          }}
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          placeholder="Nhập số điện thoại"
+                          {...field}
+                          disabled={isCustomerInfoConfirmed}
                         />
                       </FormControl>
                       <FormMessage />
@@ -794,34 +567,261 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   )}
                 />
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={customerForm.control}
+                  name="cccd"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        CCCD:
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          placeholder="Nhập CCCD"
+                          {...field}
+                          disabled={isCustomerInfoConfirmed}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={customerForm.control}
+                  name="gender"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Giới tính
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isCustomerInfoConfirmed}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Chọn giới tính" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="male">Nam</SelectItem>
+                          <SelectItem value="female">Nữ</SelectItem>
+                          <SelectItem value="other">Khác</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={customerForm.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Số lượng
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          disabled={isCustomerInfoConfirmed}
+                          onChange={(e) => {
+                            field.onChange(e.target.valueAsNumber);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={customerForm.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Giá tiền
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          {...field}
+                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          disabled={isCustomerInfoConfirmed}
+                          value={field.value?.toLocaleString("en-US")}
+                          onChange={(e) => {
+                            const rawValue = e.target.value.replace(/,/g, "");
+                            const numericValue = parseFloat(rawValue) || 0;
+                            field.onChange(numericValue);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={customerForm.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Địa chỉ
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          placeholder="Nhập địa chỉ"
+                          {...field}
+                          disabled={isCustomerInfoConfirmed}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={customerForm.control}
+                  name="paymentMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Phương thức Thanh Toán
+                      </FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isCustomerInfoConfirmed}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select payment method" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Cash">Tiền mặt</SelectItem>
+                          <SelectItem value="Momo">Momo</SelectItem>
+                          <SelectItem value="VnPay">VNPay</SelectItem>
+                          <SelectItem value="PayOS">PayOs</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
-            <div className="flex justify-end space-x-4">
-              {!isEtagInfoConfirmed ? (
-                <>
-                  {/* <Button type="button" onClick={handleCancelEtag}>
-                    Cancel
-                  </Button> */}
-                  <Button type="button" onClick={handleConfirmEtag}>
-                    Confirm E-tag Information
-                  </Button>
-                </>
-              ) : !isOrderConfirmed ? (
-                <>
-                  <Button type="button" onClick={handleCancelOrder}>
-                    Cancel Order
-                  </Button>
-                  <Button type="button" onClick={handleConfirmOrder}>
-                    Confirm Order
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button type="submit">Generate E-Tag</Button>
-                </>
+            <div className="flex justify-end">
+              {!isCustomerInfoConfirmed && (
+                <Button type="submit">Confirm Information</Button>
               )}
             </div>
           </form>
         </Form>
+      </div>
+      {isCustomerInfoConfirmed && (
+        <div className="container mx-auto px-4 w-full max-w-5xl">
+          <Form {...etagForm}>
+            <form
+              onSubmit={(e) => {
+                etagForm.handleSubmit(handleEtagSubmit)(e);
+              }}
+              className="space-y-6 mt-8"
+            >
+              <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-12 text-center">
+                  Thông Tin ETag
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={etagForm.control}
+                    name="etagStartDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Ngày Bắt Đầu
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="datetime-local"
+                            {...field}
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={etagForm.control}
+                    name="etagEndDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Ngày Kết Thúc
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="datetime-local"
+                            {...field}
+                            value={endDate || field.value || ""}
+                            onChange={(e) => {
+                              const newValue = e.target.value;
+                              setEndDate(newValue);
+                              field.onChange(newValue);
+                            }}
+                            onBlur={() => {
+                              field.onBlur();
+                              etagForm.trigger("etagEndDate");
+                            }}
+                            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-4">
+                {!isEtagInfoConfirmed ? (
+                  <>
+                    {/* <Button type="button" onClick={handleCancelEtag}>
+                    Cancel
+                  </Button> */}
+                    <Button type="button" onClick={handleConfirmEtag}>
+                      Confirm E-tag Information
+                    </Button>
+                  </>
+                ) : !isOrderConfirmed ? (
+                  <>
+                    <Button type="button" onClick={handleCancelOrder}>
+                      Cancel Order
+                    </Button>
+                    <Button type="button" onClick={handleConfirmOrder}>
+                      Confirm Order
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button type="submit">Generate E-Tag</Button>
+                  </>
+                )}
+              </div>
+            </form>
+          </Form>
+        </div>
       )}
     </div>
   );
