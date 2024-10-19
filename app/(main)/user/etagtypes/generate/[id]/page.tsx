@@ -246,68 +246,33 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           description: "Your cash order has been successfully confirmed.",
         });
       } else if (
-      // Generate E-tag first for online payment methods
-      if (
         paymentMethod === "Momo" ||
         paymentMethod === "VnPay" ||
         paymentMethod === "PayOS"
       ) {
-        const generateEtagData: GenerateEtag = {
-          quantity: Number(customerForm.getValues("quantity")),
-          etagTypeId: localStorage.getItem("etagTypeId") || "",
-          generateEtagRequest: {
-            startDate: new Date(etagForm.getValues("etagStartDate")),
-            endDate: new Date(etagForm.getValues("etagEndDate")),
-          },
-        };
-
-        // Generate E-tag
-        const etagResponse = await ETagServices.generateEtag(generateEtagData);
-
-        if (etagResponse.data) {
-          // Store E-tag code in localStorage
-          if (etagResponse.data.etagCode) {
-            localStorage.setItem("etagCode", etagResponse.data.etagCode);
-          }
-
-          setEtagData({
-            startDate: new Date(etagForm.getValues("etagStartDate")),
-            endDate: new Date(etagForm.getValues("etagEndDate")),
+        try {
+          await initiatePayment(paymentMethod, invoiceId);
+        } catch (paymentError) {
+          console.error("Payment initiation error:", paymentError);
+          toast({
+            title: "Payment Error",
+            description: `Failed to initiate ${paymentMethod} payment. Please try again.`,
+            variant: "destructive",
           });
-
-          // Proceed with payment after successful E-tag generation
-          try {
-            await initiatePayment(paymentMethod, invoiceId);
-          } catch (paymentError) {
-            console.error("Payment initiation error:", paymentError);
-            toast({
-              title: "Payment Error",
-              description: `Failed to initiate ${paymentMethod} payment. Please try again.`,
-              variant: "destructive",
-            });
-          }
-        } else {
-          throw new Error("Failed to generate E-Tag");
         }
-      } else if (paymentMethod === "Cash") {
-        // For cash payment, just confirm the order
-        setIsOrderConfirmed(true);
-        toast({
-          title: "Order Confirmed",
-          description: "Your cash order has been successfully confirmed.",
-        });
       } else {
         throw new Error("Invalid payment method");
       }
     } catch (err) {
-      console.error("Error in handleConfirmOrder:", err);
+      console.error("Error confirming order:", err);
       toast({
         title: "Error",
-        description: "Failed to process order. Please try again.",
+        description: "Failed to confirm order. Please try again.",
         variant: "destructive",
       });
     }
   };
+
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
       console.log(
