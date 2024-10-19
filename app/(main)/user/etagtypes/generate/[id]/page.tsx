@@ -223,29 +223,44 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           title: "Order Confirmed",
           description: "Your cash order has been successfully confirmed.",
         });
+
+        // Generate E-tag after confirming cash payment
+        const etagGenerated = await handleEtagSubmit(etagForm.getValues());
+        if (!etagGenerated) {
+          toast({
+            title: "Warning",
+            description:
+              "Order confirmed, but failed to generate E-Tag. Please contact support.",
+          });
+        }
       } else if (
         paymentMethod === "Momo" ||
         paymentMethod === "VnPay" ||
         paymentMethod === "PayOS"
       ) {
-        // Generate E-tag before initiating payment
-        const etagGenerated = await handleEtagSubmit(etagForm.getValues());
-        if (!etagGenerated) {
-          toast({
-            title: "Error",
-            description: "Failed to generate E-Tag. Payment process halted.",
-            variant: "destructive",
-          });
-          return;
-        }
-
         try {
+          // Initiate payment first
           await initiatePayment(paymentMethod, invoiceId);
+
+          // After successful payment, generate E-tag
+          const etagGenerated = await handleEtagSubmit(etagForm.getValues());
+          if (!etagGenerated) {
+            toast({
+              title: "Warning",
+              description:
+                "Payment successful, but failed to generate E-Tag. Please contact support.",
+            });
+          } else {
+            toast({
+              title: "Success",
+              description: `${paymentMethod} payment successful and E-Tag generated.`,
+            });
+          }
         } catch (paymentError) {
           console.error("Payment initiation error:", paymentError);
           toast({
             title: "Payment Error",
-            description: `Failed to initiate ${paymentMethod} payment. Please try again.`,
+            description: `Failed to process ${paymentMethod} payment. Please try again.`,
             variant: "destructive",
           });
         }
