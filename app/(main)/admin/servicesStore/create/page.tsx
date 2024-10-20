@@ -2,6 +2,7 @@
 
 import BackButton from "@/components/BackButton";
 import { ServiceStoreServices } from "@/components/services/Store/servicesStoreServices";
+import { StoreServices } from "@/components/services/Store/storeServices";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -11,6 +12,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -18,13 +26,19 @@ import {
   ServiceStoreFormValues,
 } from "@/lib/validation";
 import { PostServicesStore } from "@/types/serviceStore/serviceStore";
+import { StoreOwner } from "@/types/storeOwner";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 const ServiceStoreCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [storeList, setStoreList] = useState<StoreOwner[] | []>([]);
   const form = useForm<ServiceStoreFormValues>({
     resolver: zodResolver(serviceStoreFormSchema),
     defaultValues: {
@@ -50,6 +64,29 @@ const ServiceStoreCreatePage = () => {
     }
   };
 
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchStoreData = async () => {
+      try {
+        console.log("b");
+        const storeRes = await StoreServices.getStores({ page: 1, size: 10 });
+        setStoreList(storeRes.data.data);
+        console.log(storeRes.data.data, "store resss");
+        setIsLoading(false);
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          setError(error?.message);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchStoreData();
+  }, []);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <>
       <BackButton text="Back To Services Store" link="/admin/servicesStore" />
@@ -70,6 +107,36 @@ const ServiceStoreCreatePage = () => {
                     placeholder="Enter service name"
                     {...field}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="storeId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  Store name
+                </FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) => field.onChange(value)}
+                    {...field}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select store's name" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {storeList.map((store) => (
+                        <SelectItem key={store.id} value={store.id}>
+                          {store.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

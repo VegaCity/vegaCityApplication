@@ -2,6 +2,7 @@
 
 import BackButton from "@/components/BackButton";
 import { ServiceStoreServices } from "@/components/services/Store/servicesStoreServices";
+import { StoreServices } from "@/components/services/Store/storeServices";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -38,6 +39,7 @@ const ServiceStoreEditPage = ({ params }: ServiceStoreEditPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [serviceStoreData, setServiceStoreData] =
     useState<PostServicesStore | null>(null);
+  const [storeId, setStoreId] = useState<string | null>("");
   const router = useRouter();
 
   const form = useForm<ServiceStoreFormValues>({
@@ -59,6 +61,10 @@ const ServiceStoreEditPage = ({ params }: ServiceStoreEditPageProps) => {
         console.log(serviceStore, "Service Store fetchhhh");
         if (serviceStore) {
           setServiceStoreData(serviceStore);
+          setStoreId(serviceStore.storeId);
+          const storeResponse = await StoreServices.getStoreById(
+            serviceStore.storeId
+          );
           form.reset({
             name: serviceStore.name,
             storeId: serviceStore.storeId,
@@ -110,8 +116,8 @@ const ServiceStoreEditPage = ({ params }: ServiceStoreEditPageProps) => {
 
   return (
     <>
-      <BackButton text="Back To Users" link="/admin/servicesStore" />
-      <h3 className="text-2xl mb-4">Edit User</h3>
+      <BackButton text="Back to services store" link="/admin/servicesStore" />
+      <h3 className="text-2xl mb-4">Edit Service Store</h3>
       {<p>StoreId: {form.getValues("storeId")}</p>}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
