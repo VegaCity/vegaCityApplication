@@ -68,7 +68,6 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       }
 
       if (response.data.data && response.data.data.id) {
-        // Navigate to the eTag detail page
         router.push(`/user/etags/detail/${response.data.data.id}`);
       } else {
         setError("eTag information not found");
@@ -132,9 +131,17 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   });
 
   if (error) return <div>Error: {error}</div>;
-
-  // const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
-
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this etag?")) {
+      try {
+        await ETagServices.deleteEtagById(id);
+        // After successful deletion, refresh the etag list
+        fetchEtag(currentPage);
+      } catch (err) {
+        setError("Failed to delete etag. Please try again.");
+      }
+    }
+  };
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -349,6 +356,12 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
                         View Details
                       </button>
                     </Link>
+                    <button
+                      onClick={() => handleDelete(etag.id)}
+                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs"
+                    >
+                      Delete
+                    </button>
                   </TableCell>
                 </TableRow>
               );

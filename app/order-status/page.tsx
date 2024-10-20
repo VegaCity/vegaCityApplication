@@ -25,17 +25,15 @@ function OrderStatusContent() {
   const { isSuccess, orderDetails } = useOrderStatus();
   const router = useRouter();
 
-  // Redirect back to E-tag generation page
-  const continueEtagGeneration = () => {
-    const etagTypeId = localStorage.getItem("etagTypeId");
-    if (etagTypeId) {
-      router.push(`/user/etagtypes/generate/${etagTypeId}`);
+  const continueEtag = () => {
+    const etagId = localStorage.getItem("etag");
+    if (etagId) {
+      router.push(`/user/etags/detail/${etagId}`);
     } else {
       router.push("/user/etagtypes");
     }
   };
 
-  // Handle failure case
   const handleFailure = () => {
     router.push("/user/etagtypes");
   };

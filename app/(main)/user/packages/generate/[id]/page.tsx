@@ -378,6 +378,14 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           title: "Order Confirmed",
           description: "Your cash order has been successfully confirmed.",
         });
+        const etagGenerated = await handleEtagSubmit(etagForm.getValues());
+        if (!etagGenerated) {
+          toast({
+            title: "Warning",
+            description:
+              "Order confirmed, but failed to generate E-Tag. Please contact support.",
+          });
+        }
       } else if (
         paymentMethod === "Momo" ||
         paymentMethod === "VnPay" ||
@@ -385,6 +393,19 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       ) {
         try {
           await initiatePayment(paymentMethod, invoiceId);
+          const etagGenerated = await handleEtagSubmit(etagForm.getValues());
+          if (!etagGenerated) {
+            toast({
+              title: "Warning",
+              description:
+                "Payment successful, but failed to generate E-Tag. Please contact support.",
+            });
+          } else {
+            toast({
+              title: "Success",
+              description: `${paymentMethod} payment successful and E-Tag generated.`,
+            });
+          }
         } catch (paymentError) {
           console.error("Payment initiation error:", paymentError);
           toast({
@@ -407,15 +428,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   };
 
   const handleEtagSubmit = async (data: EtagFormValues) => {
-    if (!isOrderConfirmed) {
-      toast({
-        title: "Error",
-        description: "Please confirm your order before generating E-Tag.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       const generateEtagData: GenerateEtag = {
         quantity: Number(customerForm.getValues("quantity")),
@@ -425,19 +437,18 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           endDate: new Date(data.etagEndDate),
         },
       };
-
       const response = await ETagServices.generateEtag(generateEtagData);
-
       if (response.data) {
         setEtagData({
           startDate: new Date(data.etagStartDate),
           endDate: new Date(data.etagEndDate),
         });
-
+        localStorage.setItem("etag", response.data.etag.id);
         toast({
           title: "E-Tag generated successfully",
           description: `E-Tag for ${packageData.name} has been generated.`,
         });
+        return true;
       } else {
         throw new Error("Failed to generate E-Tag");
       }
@@ -448,9 +459,9 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         description: "Failed to generate E-Tag. Please try again.",
         variant: "destructive",
       });
+      return false;
     }
   };
-
   useEffect(() => {
     const { etagStartDate, etagEndDate } = etagForm.watch();
     if (etagStartDate && etagEndDate) {

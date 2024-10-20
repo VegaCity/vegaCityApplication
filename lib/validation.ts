@@ -249,6 +249,32 @@ export const loginFormSchema = z.object({
   password: z.string().min(1, "Your password must at least 1 letter"),
 });
 
+export const chargeFormSchema = z.object({
+  etagCode: z
+    .string()
+    .regex(
+      /^[A-Z0-9]{10}$/,
+      "Mã ETag phải có 10 ký tự và chỉ chứa chữ cái in hoa và số"
+    ),
+  chargeAmount: z
+    .number()
+    .positive({ message: "Số tiền nạp phải lớn hơn 0" })
+    .min(10000, { message: "Số tiền nạp tối thiểu là 10.000 VND" })
+    .max(10000000, { message: "Số tiền nạp tối đa là 10.000.000 VND" }),
+  cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
+  paymentType: z.enum(["Cash", "Momo", "VnPay", "PayOS"], {
+    required_error: "Phương thức thanh toán là bắt buộc",
+    invalid_type_error: "Phương thức thanh toán không hợp lệ",
+  }),
+  startDate: z
+    .string()
+    .refine(
+      (date) => new Date(date) >= new Date(),
+      "Ngày bắt đầu phải là ngày hôm nay hoặc trong tương lai"
+    ),
+  endDate: z.string(),
+});
+export type ChargeFormValues = z.infer<typeof chargeFormSchema>;
 export type FormValues = z.infer<typeof formSchema>;
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 export type EtagFormValues = z.infer<typeof etagFormSchema>;
