@@ -25,7 +25,6 @@ function OrderStatusContent() {
   const { isSuccess, orderDetails } = useOrderStatus();
   const router = useRouter();
 
-  // Redirect back to E-tag generation page
   const continueEtag = () => {
     const etagId = localStorage.getItem("etag");
     if (etagId) {
@@ -35,7 +34,6 @@ function OrderStatusContent() {
     }
   };
 
-  // Handle failure case
   const handleFailure = () => {
     router.push("/user/etags");
   };
