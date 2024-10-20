@@ -1,7 +1,7 @@
 "use client";
 
 import { HouseServices } from "@/components/services/houseServices";
-import { StoreServices } from "@/components/services/storeServices";
+import { StoreServices } from "@/components/services/Store/storeServices";
 import {
   Table,
   TableBody,

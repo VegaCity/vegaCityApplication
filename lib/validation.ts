@@ -233,10 +233,27 @@ export const userAccountFormSchema = z.object({
   imageUrl: z.string().url("Invalid image URL").nullable(), //does not effect
 });
 
+export const serviceStoreFormSchema = z.object({
+  name: z.string().min(1, "Name must be over 1 letter"),
+  storeId: z.string().min(1, "Store Id is required!"),
+});
+
+export const loginFormSchema = z.object({
+  email: z.string().email("Your email is invalid!"),
+  // password: z
+  //   .string()
+  //   .regex(
+  //     /^[A-Z](?=.*\d)[\w, \W]{6,40}$/,
+  //     "Your password must minimium 6 characters"
+  //   ), //password minimium 6 characters and Uppercase first character and one digit in
+  password: z.string().min(1, "Your password must at least 1 letter"),
+});
+
 export type FormValues = z.infer<typeof formSchema>;
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 export type EtagFormValues = z.infer<typeof etagFormSchema>;
 export type UserAccountFormValues = z.infer<typeof userAccountFormSchema>;
+export type loginFormValues = z.infer<typeof loginFormSchema>;
 
 export interface EtagDetailPageProps {
   params: { id: string };
