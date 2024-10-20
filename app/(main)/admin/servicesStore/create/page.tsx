@@ -28,29 +28,10 @@ import { ETagTypeServices } from "@/components/services/etagtypeServices";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { EtagType } from "@/types/etagtype";
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  imageUrl: z.string().min(1, { message: "Image URL is required" }),
-  description: z.string().min(1, { message: "Description is required" }),
-  price: z.number().min(0, { message: "Price must be a positive number" }),
-  startDate: z
-    .string()
-    .min(1, { message: "Start date is required" })
-    .refine((val) => !isNaN(Date.parse(val)), {
-      message: "Invalid start date",
-    }),
-  endDate: z
-    .string()
-    .min(1, { message: "End date is required" })
-    .refine((val) => !isNaN(Date.parse(val)), { message: "Invalid end date" }),
-  etagTypeId: z.string().min(1, { message: "ETag Type is required" }),
-  quantityEtagType: z
-    .number()
-    .min(1, { message: "Quantity must be at least 1" }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import {
+  ServiceStoreFormValues,
+  serviceStoreFormSchema,
+} from "@/lib/validation";
 
 const ServiceStoreCreatePage = () => {
   const { toast } = useToast();
@@ -63,17 +44,11 @@ const ServiceStoreCreatePage = () => {
     name: string;
   } | null>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ServiceStoreFormValues>({
+    resolver: zodResolver(serviceStoreFormSchema),
     defaultValues: {
       name: "",
-      imageUrl: "",
-      description: "",
-      price: 0,
-      startDate: "",
-      endDate: "",
-      etagTypeId: "",
-      quantityEtagType: 1,
+      storeId: "",
     },
   });
 
@@ -126,7 +101,7 @@ const ServiceStoreCreatePage = () => {
     }
   };
 
-  const handleSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: ServiceStoreFormValues) => {
     try {
       // Tạo package và lấy packageId
       const packageResponse = await PackageServices.uploadPackage(data);

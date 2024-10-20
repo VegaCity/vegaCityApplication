@@ -254,6 +254,7 @@ export type CustomerFormValues = z.infer<typeof customerFormSchema>;
 export type EtagFormValues = z.infer<typeof etagFormSchema>;
 export type UserAccountFormValues = z.infer<typeof userAccountFormSchema>;
 export type loginFormValues = z.infer<typeof loginFormSchema>;
+export type ServiceStoreFormValues = z.infer<typeof serviceStoreFormSchema>;
 
 export interface EtagDetailPageProps {
   params: { id: string };
