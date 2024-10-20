@@ -10,6 +10,7 @@ import {
   WarehouseIcon,
   StoreIcon,
   TagIcon,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useUserRole } from "@/components/hooks/useUserRole";
@@ -107,7 +108,7 @@ const Sidebar = () => {
             </Link>
             <Link href={navigatePage("usersAccount")} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
-                <TagIcon className="h-6 w-8 mb-3" />
+                <User className="h-6 w-8 mb-3" />
                 Users Account
               </CommandItem>
             </Link>
