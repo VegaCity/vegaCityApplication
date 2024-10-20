@@ -217,50 +217,59 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       };
 
       if (paymentMethod === "Cash") {
-        // await confirmOrder(confirmData);
+        // Xử lý thanh toán tiền mặt
         setIsOrderConfirmed(true);
         toast({
           title: "Order Confirmed",
           description: "Your cash order has been successfully confirmed.",
         });
 
-        // Generate E-tag after confirming cash payment
-        const etagGenerated = await handleEtagSubmit(etagForm.getValues());
-        if (!etagGenerated) {
+        // Tạo E-tag sau khi xác nhận thanh toán tiền mặt
+        handleEtagSubmit(etagForm.getValues()).catch((error) => {
+          console.error("Failed to generate E-Tag:", error);
           toast({
             title: "Warning",
             description:
               "Order confirmed, but failed to generate E-Tag. Please contact support.",
           });
-        }
+        });
       } else if (
         paymentMethod === "Momo" ||
         paymentMethod === "VnPay" ||
         paymentMethod === "PayOS"
       ) {
-        try {
-          // Initiate payment first
-          await initiatePayment(paymentMethod, invoiceId);
+        // Thực hiện thanh toán và tạo E-tag đồng thời
+        const [paymentResult, etagResult] = await Promise.allSettled([
+          initiatePayment(paymentMethod, invoiceId),
+          handleEtagSubmit(etagForm.getValues()),
+        ]);
 
-          // After successful payment, generate E-tag
-          const etagGenerated = await handleEtagSubmit(etagForm.getValues());
-          if (!etagGenerated) {
-            toast({
-              title: "Warning",
-              description:
-                "Payment successful, but failed to generate E-Tag. Please contact support.",
-            });
-          } else {
-            toast({
-              title: "Success",
-              description: `${paymentMethod} payment successful and E-Tag generated.`,
-            });
-          }
-        } catch (paymentError) {
-          console.error("Payment initiation error:", paymentError);
+        // Xử lý kết quả thanh toán
+        if (paymentResult.status === "fulfilled") {
+          toast({
+            title: "Payment Successful",
+            description: `${paymentMethod} payment was processed successfully.`,
+          });
+        } else {
+          console.error("Payment error:", paymentResult.reason);
           toast({
             title: "Payment Error",
             description: `Failed to process ${paymentMethod} payment. Please try again.`,
+            variant: "destructive",
+          });
+        }
+
+        // Xử lý kết quả tạo E-tag
+        if (etagResult.status === "fulfilled") {
+          toast({
+            title: "E-Tag Generated",
+            description: "E-Tag was successfully generated.",
+          });
+        } else {
+          console.error("E-Tag generation error:", etagResult.reason);
+          toast({
+            title: "E-Tag Error",
+            description: "Failed to generate E-Tag. Please contact support.",
             variant: "destructive",
           });
         }
@@ -268,15 +277,15 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         throw new Error("Invalid payment method");
       }
     } catch (err) {
-      console.error("Error confirming order:", err);
+      console.error("Error in order confirmation process:", err);
       toast({
         title: "Error",
-        description: "Failed to confirm order. Please try again.",
+        description:
+          "An error occurred during the process. Please try again or contact support.",
         variant: "destructive",
       });
     }
   };
-
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
       console.log(
