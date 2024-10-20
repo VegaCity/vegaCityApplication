@@ -11,6 +11,7 @@ import {
   StoreIcon,
   TagIcon,
   User,
+  PizzaIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useUserRole } from "@/components/hooks/useUserRole";
@@ -94,9 +95,9 @@ const Sidebar = () => {
                 Etags
               </CommandItem>
             </Link>
-            <Link href={navigatePage("serviceStores")} className="block">
+            <Link href={navigatePage("servicesStore")} className="block">
               <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
-                <TagIcon className="h-6 w-8 mb-3" />
+                <PizzaIcon className="h-6 w-8 mb-3" />
                 Services Store
               </CommandItem>
             </Link>

@@ -1,12 +1,15 @@
 import { API } from "@/components/services/api";
-import { PatchServicesStore } from "@/types/PATCH/servicesStore/patchServiceStoreType";
+import {
+  PatchServicesStore,
+  PostServicesStore,
+} from "@/types/serviceStore/serviceStore";
 
 interface ServiceStoresPageSize {
   page?: number;
   size?: number;
 }
 
-export const StoreServices = {
+export const ServiceStoreServices = {
   getServiceStores({ page, size }: ServiceStoresPageSize) {
     return API.get("/service-stores", {
       params: {
@@ -18,10 +21,16 @@ export const StoreServices = {
   getServicesStoreById(id: string) {
     return API.get(`/service-store/${id}`);
   },
-  editStore(storeId: string, storeData: PatchServicesStore) {
-    return API.patch(`/service-store/${storeId}`, storeData);
+  createServicesStore(serviceStoreData: PostServicesStore) {
+    return API.post("/service-store/", serviceStoreData);
   },
-  deleteStoreById(id: string) {
+  editServiceStore(
+    serviceStoreId: string,
+    serviceStoreData: PatchServicesStore
+  ) {
+    return API.patch(`/service-store/${serviceStoreId}`, serviceStoreData);
+  },
+  deleteServiceStoreById(id: string) {
     return API.delete(`/service-store/${id}`);
   },
 };

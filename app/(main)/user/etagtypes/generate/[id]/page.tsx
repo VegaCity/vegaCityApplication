@@ -155,7 +155,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
         description: "Please confirm your order before generating E-Tag.",
         variant: "destructive",
       });
-      return;
+      return "handleEtagSubmit";
     }
 
     try {

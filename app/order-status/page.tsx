@@ -30,12 +30,12 @@ function OrderStatusContent() {
     if (etagId) {
       router.push(`/user/etags/detail/${etagId}`);
     } else {
-      router.push("/user/etagtypes");
+      router.push("/user/etags");
     }
   };
 
   const handleFailure = () => {
-    router.push("/user/etagtypes");
+    router.push("/user/etags");
   };
 
   return (
@@ -52,7 +52,6 @@ function OrderStatusContent() {
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <p className="text-gray-600 mb-4">
                 Đơn hàng #{orderDetails.orderId} đã được thanh toán thành công.
-                Vui lòng tiếp tục để tạo E-tag.
               </p>
               {orderDetails.total && (
                 <p className="text-sm text-gray-500">
@@ -72,7 +71,7 @@ function OrderStatusContent() {
         </CardContent>
         <CardFooter className="justify-center">
           {isSuccess ? (
-            <Button onClick={continueEtagGeneration}>Tiếp tục tạo E-tag</Button>
+            <Button onClick={continueEtag}>Thông tin etag</Button>
           ) : (
             <Button onClick={handleFailure} variant="destructive">
               Quay lại

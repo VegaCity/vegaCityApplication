@@ -6,3 +6,12 @@ export interface GetServicesStore {
   upsDate: string;
   deflag: boolean;
 }
+
+export interface PatchServicesStore {
+  name: string;
+}
+
+export interface PostServicesStore {
+  name: string;
+  storeId: string;
+}

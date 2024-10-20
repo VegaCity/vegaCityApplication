@@ -2,8 +2,8 @@
 
 import BackButton from "@/components/BackButton";
 import { useUserRole } from "@/components/hooks/useUserRole";
-import PackagesPagination from "@/components/packages/PackagesPagination";
-import PackageTable from "@/components/packages/PackagesTable";
+import ServiceStoresPagination from "@/components/serviceStore/ServiceStoresPagination";
+import ServiceStoresTable from "@/components/serviceStore/ServiceStoresTable";
 import Link from "next/link";
 
 const ServicesStorePage = () => {
@@ -25,8 +25,8 @@ const ServicesStorePage = () => {
           Create new Store's service
         </Link>
       </div>
-      <PackageTable />
-      <PackagesPagination />
+      <ServiceStoresTable />
+      <ServiceStoresPagination />
     </div>
   );
 };
