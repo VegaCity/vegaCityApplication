@@ -152,13 +152,13 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                 </TableCell>
                 <TableCell>
                   <Link href={`/admin/packages/edit/${pkg.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2">
+                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
                       Edit
                     </button>
                   </Link>
                   <AlertDialog>
                     <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
+                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
                         Delete
                       </button>
                     </AlertDialogTrigger>

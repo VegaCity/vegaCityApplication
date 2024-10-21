@@ -16,7 +16,7 @@ export const StoreServices = {
     });
   },
   getStoreById(id: string) {
-    return API.get(`/stores/${id}`);
+    return API.get(`/store/${id}`);
   },
   editStore(storeId: string, storeData: StoreOwnerPatch) {
     return API.patch(`/store/${storeId}`, storeData);

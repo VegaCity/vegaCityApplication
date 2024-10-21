@@ -30,6 +30,7 @@ import {
   UserAccount,
 } from "@/types/userAccount";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -314,6 +315,12 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                     onChange={(e) => field.onChange(e.target.value || null)} // Convert empty string back to null if needed
                   />
                 </FormControl>
+                <Image
+                  src={field.value || ""}
+                  alt={field.value || "image"}
+                  width={300}
+                  height={250}
+                />
                 <FormMessage />
               </FormItem>
             )}

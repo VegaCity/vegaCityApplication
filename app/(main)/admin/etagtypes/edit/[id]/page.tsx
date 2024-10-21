@@ -18,39 +18,23 @@ import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState, useMemo } from "react";
 import { ETagTypeServices } from "@/components/services/etagtypeServices";
 import { useRouter } from "next/navigation";
-
-const etagTypesSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  imageUrl: z.string().url({ message: "Image URL must be a valid URL" }),
-  bonusRate: z.coerce.number({
-    required_error: "Bonus Rate is required!",
-    invalid_type_error: "Price must be a number!",
-  }),
-  amount: z.coerce.number({
-    required_error: "Amount is required!",
-    invalid_type_error: "Price must be a number!",
-  }),
-});
+import { EtagTypeFormValues, etagTypeFormSchema } from "@/lib/validation";
+import Image from "next/image";
 
 interface EtagTypeEditPageProps {
   params: { id: string };
 }
 
-type FormValues = z.infer<typeof etagTypesSchema>;
 const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
   const router = useRouter();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useMemo(
-    () =>
-      useForm<FormValues>({
-        resolver: zodResolver(etagTypesSchema),
-        defaultValues: { name: "", imageUrl: "", bonusRate: 0, amount: 0 },
-      }),
-    []
-  );
+  const form = useForm<EtagTypeFormValues>({
+    resolver: zodResolver(etagTypeFormSchema),
+    defaultValues: { name: "", imageUrl: "", bonusRate: 0, amount: 0 },
+  });
 
   useEffect(() => {
     const fetchEtagType = async () => {
@@ -78,7 +62,7 @@ const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
     fetchEtagType();
   }, [params.id, form]);
 
-  const handleSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: EtagTypeFormValues) => {
     try {
       await ETagTypeServices.editEtagType(params.id, data);
       toast({
@@ -134,6 +118,12 @@ const EtagTypeEditPage = ({ params }: EtagTypeEditPageProps) => {
                     {...field}
                   />
                 </FormControl>
+                <Image
+                  src={field.value}
+                  alt={field.value}
+                  width={300}
+                  height={250}
+                />
                 <FormMessage />
               </FormItem>
             )}

@@ -204,6 +204,7 @@ import {
   User,
   Wallet,
   Loader2,
+  LandPlot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -245,7 +246,7 @@ const Sidebar = () => {
     },
     {
       name: "Zones",
-      icon: Store,
+      icon: LandPlot,
       href: navigatePage("zones"),
       roles: ["Admin"],
     },

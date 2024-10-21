@@ -214,7 +214,7 @@ export const userAccountFormSchema = z.object({
     .min(5, { message: "Địa chỉ phải có ít nhất 5 ký tự" })
     .max(200, { message: "Địa chỉ không được vượt quá 200 ký tự" }),
   description: z.string().min(1, {
-    message: "Description is required",
+    message: "Còn thiếu trường Mô tả!",
   }),
   phoneNumber: z
     .string()
@@ -224,29 +224,29 @@ export const userAccountFormSchema = z.object({
     ),
   birthday: z
     .string()
-    .min(1, { message: "Birthday is required" })
-    .refine(isOver18, { message: "You must be over 18 years old" }),
+    .min(1, { message: "Nhập ngày sinh nhật!" })
+    .refine(isOver18, { message: "Người dùng phải trên 18 tuổi!" }),
   gender: z.string().min(0, {
-    message: "Gender is required",
+    message: "Nhập giới tính!",
   }),
   cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
-  imageUrl: z.string().url("Invalid image URL").nullable(), //does not effect
+  imageUrl: z.string().url("Url ảnh không hợp lệ").nullable(), //does not effect
 });
 
 export const serviceStoreFormSchema = z.object({
-  name: z.string().min(1, "Name must be over 1 letter"),
-  storeId: z.string().min(1, "Store Id is required!"),
+  name: z.string().min(1, "Tên phải ít nhất 1 ký tự"),
+  storeId: z.string().min(1, "Cần trường StoreId"),
 });
 
 export const loginFormSchema = z.object({
-  email: z.string().email("Your email is invalid!"),
+  email: z.string().email("Email của bạn chứa chính xác!"),
   // password: z
   //   .string()
   //   .regex(
   //     /^[A-Z](?=.*\d)[\w, \W]{6,40}$/,
   //     "Your password must minimium 6 characters"
   //   ), //password minimium 6 characters and Uppercase first character and one digit in
-  password: z.string().min(1, "Your password must at least 1 letter"),
+  password: z.string().min(1, "Password của bạn chứa ít nhất 1 ký tự!"),
 });
 
 export const chargeFormSchema = z.object({
@@ -274,6 +274,53 @@ export const chargeFormSchema = z.object({
     ),
   endDate: z.string(),
 });
+
+export const storeFormSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Tên store là bắt buộc")
+    .max(50, "Tên store không được vượt quá 50 ký tự"),
+  address: z
+    .string()
+    .min(5, { message: "Địa chỉ phải có ít nhất 5 ký tự" })
+    .max(200, { message: "Địa chỉ không được vượt quá 200 ký tự" }),
+  phoneNumber: z
+    .string()
+    .regex(
+      /^(\+84|0)[3|5|7|8|9][0-9]{8}$/,
+      "Số điện thoại không hợp lệ. Vui lòng sử dụng số điện thoại Việt Nam hợp lệ"
+    ),
+  shortName: z
+    .string()
+    .min(2, { message: "Tên viết tắt phải có ít nhất 2 ký tự" })
+    .max(10, { message: "Tên viết tắt không được vượt quá 10 ký tự" }),
+  email: z.string().email("Your email is invalid!"),
+  description: z.string().min(1, {
+    message: "Còn thiếu trường Mô tả!",
+  }),
+  storeType: z.coerce.number({
+    required_error: "Store Type is required!",
+    invalid_type_error: "Store Type must be a number!",
+  }),
+  status: z.coerce.number({
+    required_error: "Store Status is required!",
+    invalid_type_error: "Store Status must be a number!",
+  }),
+});
+
+export const etagTypeFormSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  imageUrl: z.string().url({ message: "Image URL must be a valid URL" }),
+  bonusRate: z.coerce.number({
+    required_error: "Bonus Rate is required!",
+    invalid_type_error: "Price must be a number!",
+  }),
+  amount: z.coerce.number({
+    required_error: "Amount is required!",
+    invalid_type_error: "Price must be a number!",
+  }),
+});
+
 export type ChargeFormValues = z.infer<typeof chargeFormSchema>;
 export type FormValues = z.infer<typeof formSchema>;
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
@@ -281,6 +328,8 @@ export type EtagFormValues = z.infer<typeof etagFormSchema>;
 export type UserAccountFormValues = z.infer<typeof userAccountFormSchema>;
 export type loginFormValues = z.infer<typeof loginFormSchema>;
 export type ServiceStoreFormValues = z.infer<typeof serviceStoreFormSchema>;
+export type StoreFormValues = z.infer<typeof storeFormSchema>;
+export type EtagTypeFormValues = z.infer<typeof etagTypeFormSchema>;
 
 export interface EtagDetailPageProps {
   params: { id: string };

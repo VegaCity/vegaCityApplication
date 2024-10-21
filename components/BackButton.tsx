@@ -20,9 +20,11 @@ const BackButton = ({ text, link }: BackButtonProps) => {
   };
 
   return text && link ? (
-    <Button onClick={() => handleBackToPageLink(link)}>
-      <ArrowLeftCircle size={18} className="mr-2" /> {text}
-    </Button>
+    <div className="mb-3">
+      <Button onClick={() => handleBackToPageLink(link)}>
+        <ArrowLeftCircle size={18} className="mr-2" /> {text}
+      </Button>
+    </div>
   ) : (
     <div className="mb-3">
       <Button onClick={handleBackToPreviousPage}>

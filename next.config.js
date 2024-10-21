@@ -34,6 +34,12 @@ module.exports = {
         port: "",
         pathname: "/**", // This allows any pathname under the hostname
       },
+      {
+        protocol: "https",
+        hostname: "assets.example.com",
+        port: "",
+        pathname: "/account123/**", // Allow specific paths from assets.example.com
+      },
     ],
   },
 
