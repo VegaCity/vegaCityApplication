@@ -1,7 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,9 +6,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableCaption,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import {
+  StoreService,
+  ServiceResponse,
+} from "@/types/serviceStore/serviceStore";
+import Link from "next/link";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,137 +24,110 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ServiceStoreServices } from "@/components/services/Store/servicesStoreServices"; // Assuming you defined the type for stores
-import { GetServicesStore } from "@/types/serviceStore/serviceStore";
+import { ServiceStoreServices } from "@/components/services/Store/servicesStoreServices";
 
-interface ServiceStoreTableProps {
-  limit?: number;
-  title?: string;
-}
-
-const ServiceStoresTable = ({ limit, title }: ServiceStoreTableProps) => {
-  const [storeList, setStoreList] = useState<GetServicesStore[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+const ServiceStoresTable = () => {
+  const [stores, setStores] = useState<StoreService[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [storeToDelete, setStoreToDelete] = useState<StoreService | null>(null);
 
   useEffect(() => {
-    const fetchStores = async () => {
-      try {
-        const response = await ServiceStoreServices.getServiceStores({
-          page: 1,
-          size: 10,
-        });
-        console.log(response.data); // Log the response for debugging
-
-        const stores = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
-        setStoreList(stores);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchStores();
-  }, [isLoading, deleteLoading]);
+  }, [currentPage]);
 
-  console.log(storeList, "stores");
-
-  const handleDeleteStore = (store: GetServicesStore) => {
-    setDeleteLoading(true);
-    if (store.storeId) {
-      ServiceStoreServices.deleteServiceStoreById(store.storeId)
-        .then((res) => {
-          setDeleteLoading(false);
-          toast({
-            title: res.data.messageResponse,
-            description: `Store name: ${store.name}`,
-          });
-        })
-        .catch((err) => {
-          setDeleteLoading(false);
-          toast({
-            title: err.data.messageResponse,
-            description: "Some errors have occurred!",
-          });
-        });
+  const fetchStores = async () => {
+    try {
+      const response = await ServiceStoreServices.getServiceStores({
+        page: currentPage,
+        size: 10,
+      });
+      const serviceResponse: ServiceResponse = response.data;
+      setStores(serviceResponse.data);
+      setTotalPages(serviceResponse.metaData.totalPage);
+    } catch (error) {
+      console.error("Error fetching stores:", error);
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  const filteredStores = limit ? storeList.slice(0, limit) : storeList;
+  const handleDelete = async (id: string) => {
+    try {
+      await ServiceStoreServices.deleteServiceStoreById(id);
+      fetchStores();
+      setStoreToDelete(null);
+    } catch (error) {
+      console.error("Error deleting store:", error);
+    }
+  };
 
   return (
-    <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">
-        {title || "Service Stores"}
-      </h3>
-      {filteredStores.length > 0 ? (
-        <Table>
-          <TableCaption>A list of recent stores</TableCaption>
-          <TableHeader>
-            <TableRow className="bg-slate-300 hover:bg-slate-300">
-              <TableHead>NO</TableHead>
-              <TableHead>Store Name</TableHead>
-              <TableHead>Store ID</TableHead>
-              <TableHead>Actions</TableHead>
+    <div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>NO</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Created Date</TableHead>
+            <TableHead>Updated Date</TableHead>
+            <TableHead>Active</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {stores.map((store, i) => (
+            <TableRow key={store.id}>
+              <TableCell>{i + 1}</TableCell>
+              <TableCell>{store.name}</TableCell>
+              <TableCell>{new Date(store.crDate).toLocaleString()}</TableCell>
+              <TableCell>{new Date(store.upsDate).toLocaleString()}</TableCell>
+              <TableCell>{store.deflag ? "No" : "Yes"}</TableCell>
+              <TableCell>
+                <Link href={`/admin/servicesStore/edit/${store.id}`}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2"
+                  >
+                    Edit
+                  </Button>
+                </Link>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setStoreToDelete(store)}
+                >
+                  Delete
+                </Button>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredStores.map((store, i) => (
-              <TableRow key={store.id}>
-                <TableCell>{i + 1}</TableCell>
-                <TableCell>{store.name}</TableCell>
-                <TableCell>{store.storeId}</TableCell>
-                <TableCell>
-                  <Link href={`/admin/servicesStore/edit/${store.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2">
-                      Edit
-                    </button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
-                        Delete
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you sure you want to delete this store -{" "}
-                          {store.name}?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will delete the
-                          store from your list!
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteStore(store)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <div>Data is fetching... Please wait...</div>
-      )}
+          ))}
+        </TableBody>
+      </Table>
+
+      <AlertDialog
+        open={!!storeToDelete}
+        onOpenChange={() => setStoreToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete {storeToDelete?.name}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will deflag the store in your
+              store list!
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => storeToDelete && handleDelete(storeToDelete.id)}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
