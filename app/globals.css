@@ -2,6 +2,14 @@
   @tailwind components;
   @tailwind utilities;
 
+  /* Important things should add in global.css | It's could help u prevent scroll when wrapping Provider */
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: auto; /* Allow natural scrolling */
+  }
+
   @layer base {
     :root {
       --background: 0 0% 100%;

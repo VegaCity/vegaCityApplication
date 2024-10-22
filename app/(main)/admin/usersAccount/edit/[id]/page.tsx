@@ -1,6 +1,7 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
+import { Loader } from "@/components/loader/Loader";
 import { UserServices } from "@/components/services/userServices";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { handlePlusOneDayFromBe } from "@/lib/utils/convertDatePlusOne";
 import { userAccountFormSchema, UserAccountFormValues } from "@/lib/validation";
+import { useFirebase } from "@/providers/FirebaseProvider";
 import {
   genders,
   handleGenderToBe,
@@ -30,6 +32,13 @@ import {
   UserAccount,
 } from "@/types/userAccount";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  StorageReference,
+  uploadBytes,
+} from "firebase/storage";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -54,6 +63,10 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState<UserAccountPost | null>(null);
   const router = useRouter();
+  const [imageUploaded, setImageUploaded] = useState<string | null>("");
+  const [isLoadingImageUpload, setIsLoadingImageUpload] =
+    useState<boolean>(false);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
 
   const form = useForm<UserAccountFormValues>({
     resolver: zodResolver(userAccountFormSchema),
@@ -110,14 +123,68 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
     fetchUserData();
   }, [params.id, toast]);
 
+  // Loader function
+  // const myLoader = ({ src }: File) => {
+  //   return src; // Return the src directly, you can modify this if needed
+  // };
+
+  const uploadImage = async (file: File) => {
+    const storage = getStorage();
+    const storageRef = ref(storage, `images/${file.name}`);
+
+    try {
+      // Upload the file
+      await uploadBytes(storageRef, file);
+      // Get the download URL after upload on firebase storage
+      const imageUrl = await getDownloadURL(storageRef);
+      setImageUploaded(imageUrl); //set image to display on UI
+      return imageUrl; // Return the URL for use
+    } catch (error) {
+      console.error("Upload failed:", error);
+      return null;
+    }
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] || null;
+    if (file) {
+      const imageUrl = await uploadImage(file); // Upload and get the URL
+      // You can then use this URL to display the image
+      console.log("Image uploaded:", imageUrl);
+      setIsLoadingImageUpload(true);
+    }
+    setIsLoadingImageUpload(false);
+
+    // setIsLoadingImageUpload(false);
+
+    // setSelectedFile(file);
+    console.log(file, "handleFileChangeee");
+  };
+
+  // const handleUploadImage = async (imageUrl: string | null) => {
+  //   if (!selectedFile || !storage) {
+  //     toast({ title: "No file selected or Firebase not initialized" });
+  //     return;
+  //   }
+  //   //upload image and store to firebase store
+  //   const imagesRef = ref(storage, `images/${selectedFile.name}`);
+  //   await uploadBytes(imagesRef, selectedFile);
+  //   const downloadUrl = await getDownloadURL(imagesRef);
+  //   setImageUploaded(downloadUrl);
+  //   console.log(downloadUrl, "imageUploaded");
+  // };
+
   const handleSubmit = async (data: UserAccountFormValues) => {
     const { birthday, gender, ...rest } = data;
-    console.log(birthday, "birthdayyyyyy");
+    // console.log(birthday, "birthdayyyyyy");
     const renderGenderToNumber: number = handleGenderToBe(gender as string);
 
     try {
       const userUpdated = await UserServices.updateUserById(params.id, {
         ...data,
+        imageUrl: imageUploaded,
         gender: renderGenderToNumber,
       });
       toast({
@@ -299,7 +366,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
             )}
           />
 
-          <FormField
+          {/* <FormField
             control={form.control}
             name="imageUrl"
             render={({ field }) => (
@@ -321,6 +388,44 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   width={300}
                   height={250}
                 />
+                <FormMessage />
+              </FormItem>
+            )}
+          /> */}
+
+          {/* sửa ở đây Form React.children.only */}
+          <FormField
+            control={form.control}
+            name="imageUrl"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  Image URL
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    className=" w-30 bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    placeholder="Enter Image URL"
+                    onChange={handleFileChange} // Convert empty string back to null if needed
+                  />
+                </FormControl>
+
+                {!imageUploaded ? (
+                  <Loader isLoading={isLoadingImageUpload} />
+                ) : (
+                  <>
+                    <Image
+                      src={imageUploaded || ""}
+                      alt={field.value || "image"}
+                      width={300}
+                      height={250}
+                      onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
+                    />
+                  </>
+                )}
+
                 <FormMessage />
               </FormItem>
             )}

@@ -230,7 +230,7 @@ export const userAccountFormSchema = z.object({
     message: "Nhập giới tính!",
   }),
   cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
-  imageUrl: z.string().url("Url ảnh không hợp lệ").nullable(), //does not effect
+  imageUrl: z.string().nullable(), //does not effect
 });
 
 export const serviceStoreFormSchema = z.object({
