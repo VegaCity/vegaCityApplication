@@ -11,6 +11,7 @@ import {
   StoreIcon,
   TagIcon,
   User,
+  MessageSquareWarning,
 } from "lucide-react";
 import Link from "next/link";
 import { useUserRole } from "@/components/hooks/useUserRole";
@@ -60,12 +61,20 @@ const Sidebar = () => {
             </>
           )}
         {userRole && userRole.name === "CashierWeb" && (
-          <Link href={navigatePage("etags")} className="block">
-            <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
-              <Tag className="h-6 w-8 mb-3" />
-              ETag
-            </CommandItem>
-          </Link>
+          <>
+            <Link href={navigatePage("etags")} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <Tag className="h-6 w-8 mb-3" />
+                ETag
+              </CommandItem>
+            </Link>
+            <Link href={navigatePage("reports")} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <MessageSquareWarning className="h-6 w-8 mb-3" />
+                Reports
+              </CommandItem>
+            </Link>
+          </>
         )}
         {userRole && userRole.name === "Admin" && (
           <>

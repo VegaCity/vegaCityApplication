@@ -22,7 +22,7 @@ export const customerFormSchema = z.object({
     .string()
     .regex(/^\d{12}$/, { message: "CCCD phải bao gồm đúng 12 chữ số" }),
 
-  paymentMethod: z.enum(["Cash", "Momo", "VnPay", "PayOS"], {
+  paymentMethod: z.enum(["Cash", "Momo", "VnPay", "PayOS", "ZaloPay"], {
     required_error: "Phương thức thanh toán là bắt buộc",
     invalid_type_error: "Phương thức thanh toán không hợp lệ",
   }),
@@ -77,7 +77,14 @@ export const etagFormSchema = z
       path: ["etagEndDate"],
     }
   );
-
+export interface GenerateEtag {
+  quantity: number;
+  etagTypeId: string;
+  generateEtagRequest: {
+    startDate: Date;
+    endDate: Date;
+  };
+}
 export const formSchema = z
   .object({
     fullName: z
