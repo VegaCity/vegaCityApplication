@@ -300,19 +300,19 @@ const Sidebar = () => {
               item.roles.includes(userRole?.name || "") && (
                 <Tooltip key={item.name}>
                   <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "w-full h-12 flex flex-col items-center justify-center",
-                        "hover:bg-primary hover:text-primary-foreground",
-                        "transition-colors duration-200"
-                      )}
-                    >
-                      <Link href={item.href}>
+                    <Link href={item.href}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "w-full h-12 flex flex-col items-center justify-center",
+                          "hover:bg-primary hover:text-primary-foreground",
+                          "transition-colors duration-200"
+                        )}
+                      >
                         <item.icon className="h-6 w-6" />
-                      </Link>
-                    </Button>
+                      </Button>
+                    </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right">
                     <p>{item.name}</p>
