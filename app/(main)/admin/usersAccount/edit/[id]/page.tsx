@@ -411,21 +411,13 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                     onChange={handleFileChange} // Convert empty string back to null if needed
                   />
                 </FormControl>
-
-                {!imageUploaded ? (
-                  <Loader isLoading={isLoadingImageUpload} />
-                ) : (
-                  <>
-                    <Image
-                      src={imageUploaded || ""}
-                      alt={field.value || "image"}
-                      width={300}
-                      height={250}
-                      onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
-                    />
-                  </>
-                )}
-
+                <Image
+                  src={imageUploaded || field.value || ""}
+                  alt={field.value || "image"}
+                  width={300}
+                  height={250}
+                  onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
+                />
                 <FormMessage />
               </FormItem>
             )}
