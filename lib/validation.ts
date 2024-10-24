@@ -18,7 +18,7 @@ export const customerFormSchema = z.object({
     .min(5, { message: "Địa chỉ phải có ít nhất 5 ký tự" })
     .max(200, { message: "Địa chỉ không được vượt quá 200 ký tự" }),
 
-  cccd: z
+  cccdPassport: z
     .string()
     .regex(/^\d{12}$/, { message: "CCCD phải bao gồm đúng 12 chữ số" }),
 
@@ -109,7 +109,13 @@ export const formSchema = z
         "Số điện thoại không hợp lệ. Vui lòng sử dụng số điện thoại Việt Nam hợp lệ"
       ),
 
-    cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
+    // cccdPassport: z
+    //   .string()
+    //   .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
+
+    cccdPassport: z
+      .string()
+      .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
 
     birthday: z.string().refine((date) => {
       const birthDate = new Date(date);

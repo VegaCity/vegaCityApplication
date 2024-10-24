@@ -55,7 +55,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       customerName: "",
       phoneNumber: "",
       address: "",
-      cccd: "",
+      cccdPassport: "",
       paymentMethod: "Cash",
       gender: "male",
       quantity: 1,
@@ -202,7 +202,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
                     {packageData.name}
                   </h2>
-                  <p className="text-xl font-semibold text-green-600 dark:text-green-400 mt-6">
+                  <p className="text-xl text-red-600 dark:text-red-400 mt-6">
                     {formatCurrency(packageData.price)}
                   </p>
                 </div>
@@ -210,24 +210,34 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-4">
                     Description
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
                     {packageData.description}
                   </p>
                 </div>
                 {packageData?.packageETagTypeMappings?.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-4">
-                      Bao gồm E-Tag Type
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {packageData?.packageETagTypeMappings[0]?.etagType?.name}
-                    </p>
-                    <p className="text-gray-600 dark:text-gray-400 mt-4">
+                    <div>Bao gồm E-Tag Type</div>
+                    <div className="flex items-center gap-2 mt-4 mb-4">
+                      <span>
+                        {
+                          packageData?.packageETagTypeMappings[0]?.etagType
+                            ?.name
+                        }
+                      </span>
+                      <span className="text-red-600 dark:text-red-400">
+                        x{" "}
+                        {
+                          packageData?.packageETagTypeMappings[0]
+                            ?.quantityEtagType
+                        }
+                      </span>
+                    </div>
+                    <span>
                       {formatCurrency(
                         packageData?.packageETagTypeMappings[0]?.etagType
                           ?.amount
                       )}
-                    </p>
+                    </span>
                   </div>
                 )}
               </div>
@@ -291,11 +301,11 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={customerForm.control}
-                  name="cccd"
+                  name="cccdPassport"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        CCCD:
+                        CCCD/PassPort:
                       </FormLabel>
                       <FormControl>
                         <Input

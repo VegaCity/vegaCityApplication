@@ -61,7 +61,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const handleChargeMoney = async (data: {
     etagCode: any;
     chargeAmount: number;
-    cccd: any;
+    cccdPassport: any;
     paymentType: string;
   }) => {
     try {
@@ -69,7 +69,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       const response = await ETagServices.chargeMoney({
         etagCode: data.etagCode,
         chargeAmount: data.chargeAmount,
-        cccd: data.cccd,
+        cccdPassport: data.cccdPassport,
         paymentType: data.paymentType,
       });
 
@@ -261,7 +261,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       fullName: "",
       etagCode: "",
       phoneNumber: "",
-      cccd: "",
+      cccdPassport: "",
       birthday: "",
       gender: "0",
       startDate: "",
@@ -273,10 +273,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         bonusRate: 0,
         amount: 0,
       },
-      marketZone: {
-        name: "",
-        shortName: "",
-      },
       wallet: {
         balance: 0,
         balanceHistory: 0,
@@ -287,7 +283,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     defaultValues: {
       etagCode: form.getValues("etagCode"),
       chargeAmount: 0,
-      cccd: form.getValues("cccd"),
+      cccdPassport: form.getValues("cccdPassport"),
       paymentType: "Cash",
       startDate: form.getValues("startDate"),
       endDate: form.getValues("endDate"),
@@ -301,33 +297,63 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const formatDateTimeForInput = (dateString: string | null) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toISOString().slice(0, 16); // Format: "YYYY-MM-DDTHH:mm"
+    date.setHours(date.getHours() + 7);
+    return date.toISOString().slice(0, 16);
   };
+  const formatDateTimeForDisplay = (dateString: string | null) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    date.setHours(date.getHours()); // Adjust for timezone if needed
 
-  // const formatDateTimeForDisplay = (dateString: string | null) => {
-  //   if (!dateString) return "";
-  //   const date = new Date(dateString);
-  //   return date.toLocaleString(); // Format: "M/D/YYYY, h:mm:ss AM/PM"
-  // };
+    // Get date components
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
 
+    // Get time components
+    let hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+
+    // Convert hours to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // If hours is 0, set to 12
+
+    // Combine all components
+    return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+  };
   useEffect(() => {
     const fetchEtag = async () => {
-      setIsLoading(true);
+      if (!params?.id) {
+        setError("No ID provided");
+        setIsLoading(false);
+        return;
+      }
+
       try {
+        setIsLoading(true);
         const response = await ETagServices.getETagById(params.id);
-        const etagData = response.data.data.etag;
+        const etagData = response.data?.data?.etag;
+
+        if (!etagData) {
+          throw new Error("No etag data received");
+        }
+
+        const etagDetails = etagData.etagDetails?.[0] || {};
         setEtag(etagData);
+
+        // Reset form with fetched data
         form.reset({
-          fullName: etagData.fullName.trim(),
-          etagCode: etagData.etagCode.trim(),
-          phoneNumber: etagData.phoneNumber.trim(),
-          cccd: etagData.cccd.trim(),
-          birthday: formatDateForInput(etagData.birthday),
-          startDate: formatDateTimeForInput(etagData.startDate),
-          endDate: formatDateTimeForInput(etagData.endDate),
-          gender: etagData.gender.toString(),
-          status: etagData.status,
-          imageUrl: etagData.imageUrl,
+          fullName: etagDetails.fullName || "",
+          etagCode: etagData.etagCode || "",
+          phoneNumber: etagDetails.phoneNumber || "",
+          cccdPassport: etagDetails.cccdPassport || "",
+          birthday: formatDateForInput(etagDetails.birthday) || "",
+          startDate: formatDateTimeForInput(etagData.startDate) || "",
+          endDate: formatDateTimeForInput(etagData.endDate) || "",
+          gender: (etagDetails.gender || 0).toString(),
+          status: etagData.status || 0,
+          imageUrl: etagData.imageUrl || "",
           etagType: {
             name: etagData.etagType?.name || "N/A",
             bonusRate: etagData.etagType?.bonusRate || 0,
@@ -338,23 +364,30 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
             balanceHistory: etagData.wallet?.balanceHistory || 0,
           },
         });
+
+        // Reset charge form
         formCharge.reset({
-          etagCode: etagData.etagCode,
+          etagCode: etagData.etagCode || "",
           chargeAmount: 0,
-          cccd: etagData.cccd.trim(),
+          cccdPassport: (etagDetails.cccdPassport || "").trim(),
           paymentType: "Cash",
         });
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
         );
+        toast({
+          title: "Error",
+          description: "Failed to load ETag details",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchEtag();
-  }, [params.id, form]);
+  }, [params?.id, form, formCharge, toast]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -401,7 +434,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     try {
       const formData = form.getValues();
       const activateData = {
-        cccd: formData.cccd,
+        cccdPassport: formData.cccdPassport,
         name: formData.fullName,
         phone: formData.phoneNumber,
         gender: formData.gender,
@@ -451,7 +484,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
           <div className="relative w-full h-48">
             <Image
               src={validImageUrl}
-              alt={etag.fullName || "Image"}
+              alt={"Image"}
               layout="fill"
               objectFit="cover"
               className="rounded-lg justify-center items-center"
@@ -519,7 +552,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                         <FormControl>
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("cccd")}
+                            {...form.register("cccdPassport")}
                             readOnly={!isEditing}
                           />
                         </FormControl>
@@ -558,8 +591,8 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                                 <SelectValue placeholder="Select gender" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="0">Nữ</SelectItem>
-                                <SelectItem value="1">Nam</SelectItem>
+                                <SelectItem value="0">Nam</SelectItem>
+                                <SelectItem value="1">Nữ</SelectItem>
                                 <SelectItem value="2">Khác</SelectItem>
                               </SelectContent>
                             </Select>
@@ -572,32 +605,53 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                 <div>
                   <h4 className="text-lg font-semibold mb-2">Thời hạn thẻ</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Ngày bắt đầu:
                       </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="datetime-local"
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("startDate")}
-                          readOnly={!isEditing}
-                        />
-                      </FormControl>
+                      {isEditing ? (
+                        <FormControl>
+                          <Input
+                            type="datetime-local"
+                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            {...form.register("startDate")}
+                          />
+                        </FormControl>
+                      ) : (
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            value={formatDateTimeForDisplay(
+                              form.getValues("startDate")
+                            )}
+                            readOnly
+                          />
+                        </FormControl>
+                      )}
                     </FormItem>
-
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Ngày kết thúc:
                       </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="datetime-local"
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("endDate")}
-                          readOnly={!isEditing}
-                        />
-                      </FormControl>
+                      {isEditing ? (
+                        <FormControl>
+                          <Input
+                            type="datetime-local"
+                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            {...form.register("endDate")}
+                          />
+                        </FormControl>
+                      ) : (
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            value={formatDateTimeForDisplay(
+                              form.getValues("endDate")
+                            )}
+                            readOnly
+                          />
+                        </FormControl>
+                      )}
                     </FormItem>
                     <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
@@ -733,7 +787,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                   <label className="font-medium">CCCD</label>
                   <Input
                     type="text"
-                    {...formCharge.register("cccd")}
+                    {...formCharge.register("cccdPassport")}
                     readOnly
                   />
 

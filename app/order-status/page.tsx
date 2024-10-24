@@ -33,6 +33,8 @@ function OrderStatusContent() {
       router.push("/user/etags");
     }
   };
+  const orderId = localStorage.getItem("orderId");
+  const invoiceId = localStorage.getItem("invoiceId");
 
   const handleFailure = () => {
     router.push("/user/etags");
@@ -40,7 +42,7 @@ function OrderStatusContent() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-[350px]">
+      <Card className="w-[850px]">
         <CardHeader>
           <CardTitle className="text-center">
             {isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
@@ -51,7 +53,7 @@ function OrderStatusContent() {
             <>
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <p className="text-gray-600 mb-4">
-                Đơn hàng #{orderDetails.orderId} đã được thanh toán thành công.
+                Đơn hàng #{invoiceId} đã được thanh toán thành công.
               </p>
               {orderDetails.total && (
                 <p className="text-sm text-gray-500">

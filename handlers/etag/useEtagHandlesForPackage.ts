@@ -290,7 +290,6 @@ export const useEtagHandlers = ({
           setIsOrderConfirmed(true);
         }
       } else {
-        // For other payment methods, handle both payment and etag generation
         const etagResult = await handleEtagSubmit(etagForm.getValues());
         if (etagResult) {
           await initiatePayment(paymentMethod, invoiceId);

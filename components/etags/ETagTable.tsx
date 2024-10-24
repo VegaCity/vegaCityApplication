@@ -48,7 +48,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(50);
   const [activeTab, setActiveTab] = useState<StatusTab>("all");
   const router = useRouter();
 
@@ -140,12 +140,15 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       return etag.status === statusMap[tab];
     });
 
-    const searchFiltered = filtered.filter(
-      (etag) =>
-        etag.phoneNumber.includes(searchTerm) ||
-        etag.cccd.includes(searchTerm) ||
-        etag.etagCode.includes(searchTerm)
-    );
+    const searchFiltered = filtered.filter((etag) => {
+      if (!searchTerm) return true;
+
+      return (
+        (etag.phoneNumber?.includes(searchTerm) ?? false) ||
+        (etag.cccd?.includes(searchTerm) ?? false) ||
+        (etag.etagCode?.includes(searchTerm) ?? false)
+      );
+    });
 
     setFilteredEtags(searchFiltered);
   };
@@ -386,9 +389,10 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
           <TableCaption>A list of Etags</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>Full Name</TableHead>
+              <TableHead>No</TableHead>
+              {/* <TableHead>Full Name</TableHead>
               <TableHead>Phone Number</TableHead>
-              <TableHead>CCCD</TableHead>
+              <TableHead>CCCD</TableHead> */}
               <TableHead>EtagCode</TableHead>
               <TableHead>
                 <SortButton field="startDate" label="Start Date & Time" />
@@ -403,13 +407,11 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {limitedEtags.map((etag) => {
+            {limitedEtags.map((etag, index) => {
               const statusInfo = getStatusString(etag.status);
               return (
                 <TableRow key={etag.id}>
-                  <TableCell>{etag.fullName}</TableCell>
-                  <TableCell>{etag.phoneNumber}</TableCell>
-                  <TableCell>{etag.cccd}</TableCell>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell>{etag.etagCode}</TableCell>
                   <TableCell>{formatDate(etag.startDate)}</TableCell>
                   <TableCell>{formatDate(etag.endDate)}</TableCell>

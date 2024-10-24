@@ -59,7 +59,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       customerName: "",
       phoneNumber: "",
       address: "",
-      cccd: "",
+      cccdPassport: "",
       paymentMethod: "Cash",
       gender: "male",
       quantity: 1,
@@ -219,11 +219,11 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={customerForm.control}
-                  name="cccd"
+                  name="cccdPassport"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        CCCD:
+                        CCCD/PassPort:
                       </FormLabel>
                       <FormControl>
                         <Input

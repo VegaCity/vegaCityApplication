@@ -152,6 +152,38 @@ export const useEtagHandlers = ({
       });
     }
   };
+  const handleAutoActivateEtag = async (
+    etagId: string,
+    customerData: CustomerFormValues,
+    etagFormData: EtagFormValues
+  ) => {
+    try {
+      const activateData = {
+        cccd: customerData.cccd,
+        name: customerData.customerName,
+        phone: customerData.phoneNumber,
+        gender: customerData.gender,
+        birthday: new Date().toISOString(), // You might want to add a birthday field to your form
+        startDate: etagFormData.etagStartDate,
+        endDate: etagFormData.etagEndDate,
+      };
+
+      await ETagServices.activateEtag(etagId, activateData);
+
+      toast({
+        title: "Success",
+        description: "E-Tag has been automatically activated.",
+      });
+    } catch (err) {
+      console.error("Error in auto activation:", err);
+      toast({
+        title: "Warning",
+        description:
+          "E-Tag was generated but automatic activation failed. Please activate manually.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleEtagSubmit = async (data: EtagFormValues) => {
     try {
@@ -160,9 +192,10 @@ export const useEtagHandlers = ({
         throw new Error("ETag type ID not found");
       }
 
+      const quantity = Number(customerForm.getValues("quantity"));
       const generateEtagData: GenerateEtag = {
-        quantity: Number(customerForm.getValues("quantity")),
-        etagTypeId: etagTypeId,
+        quantity,
+        etagTypeId,
         generateEtagRequest: {
           startDate: new Date(data.etagStartDate),
           endDate: new Date(data.etagEndDate),
@@ -175,20 +208,26 @@ export const useEtagHandlers = ({
         throw new Error("Failed to generate E-Tag");
       }
 
-      // Store start and end dates
       setEtagData({
         startDate: new Date(data.etagStartDate),
         endDate: new Date(data.etagEndDate),
       });
 
-      // Handle ETag IDs storage
+      if (quantity === 1 && response.data.data.etag?.id) {
+        await handleAutoActivateEtag(
+          response.data.data.etag.id,
+          customerForm.getValues(),
+          data
+        );
+      }
+
       if (response.data.data.listIdEtag?.length > 0) {
         localStorage.setItem(
           "etagList",
-          JSON.stringify(response.data.listIdEtag)
+          JSON.stringify(response.data.data.listIdEtag)
         );
-        localStorage.setItem("etag", response.data.data.listIdEtag[0]);
-      } else if (response.data.etag?.id) {
+        localStorage.setItem("etag", response.data.data.id);
+      } else if (response.data.data.etag?.id) {
         localStorage.setItem("etag", response.data.data.etag.id);
       } else {
         throw new Error("No ETag IDs received");
@@ -196,7 +235,10 @@ export const useEtagHandlers = ({
 
       toast({
         title: "Success",
-        description: "E-Tag generated successfully!",
+        description:
+          quantity === 1
+            ? "E-Tag generated and activated successfully!"
+            : "E-Tags generated successfully!",
       });
 
       return true;
@@ -210,7 +252,6 @@ export const useEtagHandlers = ({
       return false;
     }
   };
-
   const handleConfirmEtag = async () => {
     const isValid = await etagForm.trigger();
     if (!isValid) {
@@ -227,7 +268,6 @@ export const useEtagHandlers = ({
       return;
     }
 
-    // Validate date range
     const startDate = new Date(etagForm.getValues("etagStartDate"));
     const endDate = new Date(etagForm.getValues("etagEndDate"));
 
@@ -272,8 +312,6 @@ export const useEtagHandlers = ({
       if (!paymentUrl) {
         throw new Error("Payment URL not found in response");
       }
-
-      // Navigate to payment URL
       window.location.href = paymentUrl;
       return true;
     } catch (error) {
