@@ -4,3 +4,16 @@ export interface AnalyticsItem {
   pv: number;
   amt: number;
 }
+
+export interface AnalyticsAdminDashboard {
+  name: string;
+  totalTransactions: number;
+  totalTransactionsAmount: number;
+  etagCount: number;
+  orderCount: number;
+}
+
+export interface AnalyticsPostProps {
+  startDate: string;
+  days: number;
+}

@@ -89,7 +89,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
   console.log(auth, "Auth firebase app");
 
   if (isLoading) {
-    return <div>Loading Firebase...</div>; // Render loading state
+    return <div className="loader"></div>; // Render loading state
   }
 
   // if (firebaseApp || storage) {
