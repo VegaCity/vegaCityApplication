@@ -205,10 +205,15 @@ import {
   Wallet,
   Loader2,
   LandPlot,
+  MessageSquareWarning,
+  WarehouseIcon,
+  StoreIcon,
+  TagIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useUserRole } from "@/components/hooks/useUserRole";
+import { Command, CommandList, CommandItem } from "@/components/ui/command";
 
 const Sidebar = () => {
   const { userRole, loading } = useUserRole();
@@ -292,37 +297,131 @@ const Sidebar = () => {
   }
 
   return (
-    <div className="fixed top-0 left-0 h-full w-28 bg-secondary shadow-lg z-50">
-      <TooltipProvider>
-        <div className="flex flex-col h-full py-4 space-y-4 overflow-y-auto">
-          {menuItems.map(
-            (item) =>
-              item.roles.includes(userRole?.name || "") && (
-                <Tooltip key={item.name}>
-                  <TooltipTrigger asChild>
-                    <Link href={item.href}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                          "w-full h-12 flex flex-col items-center justify-center",
-                          "hover:bg-primary hover:text-primary-foreground",
-                          "transition-colors duration-200"
-                        )}
-                      >
-                        <item.icon className="h-6 w-6" />
-                      </Button>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>{item.name}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )
+    <>
+      <div className="fixed top-0 left-0 h-full w-28 bg-secondary shadow-lg z-50">
+        <TooltipProvider>
+          <div className="flex flex-col h-full py-4 space-y-4 overflow-y-auto">
+            {menuItems.map(
+              (item) =>
+                item.roles.includes(userRole?.name || "") && (
+                  <Tooltip key={item.name}>
+                    <TooltipTrigger asChild>
+                      <Link href={item.href}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn(
+                            "w-full h-12 flex flex-col items-center justify-center",
+                            "hover:bg-primary hover:text-primary-foreground",
+                            "transition-colors duration-200"
+                          )}
+                        >
+                          <item.icon className="h-6 w-6" />
+                        </Button>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      <p>{item.name}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )
+            )}
+          </div>
+        </TooltipProvider>
+      </div>
+      <Command className="bg-secondary rounded-none">
+        <CommandList>
+          <Link href="/" className="block">
+            <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+              <LayoutDashboard className="h-6 w-8 mb-3" />
+              Dashboard
+            </CommandItem>
+          </Link>
+
+          {userRole &&
+            (userRole.name === "Admin" || userRole.name === "CashierWeb") && (
+              <>
+                <Link href={navigatePage("packages")} className="block">
+                  <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                    <Package className="h-6 w-8 mb-3" />
+                    Packages
+                  </CommandItem>
+                </Link>
+
+                <Link href={navigatePage("etagtypes")} className="block">
+                  <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                    <Tag className="h-6 w-8 mb-3" />
+                    ETagTypes
+                  </CommandItem>
+                </Link>
+              </>
+            )}
+          {userRole && userRole.name === "CashierWeb" && (
+            <>
+              <Link href={navigatePage("etags")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <Tag className="h-6 w-8 mb-3" />
+                  ETag
+                </CommandItem>
+              </Link>
+              <Link href={navigatePage("reports")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <MessageSquareWarning className="h-6 w-8 mb-3" />
+                  Reports
+                </CommandItem>
+              </Link>
+            </>
           )}
-        </div>
-      </TooltipProvider>
-    </div>
+          {userRole && userRole.name === "Admin" && (
+            <>
+              <Link href={navigatePage("zones")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <Store className="h-6 w-8 mb-3" />
+                  Zones
+                </CommandItem>
+              </Link>
+              <Link href={navigatePage("houses")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <WarehouseIcon className="h-6 w-8 mb-3" />
+                  Houses
+                </CommandItem>
+              </Link>
+
+              <Link href={navigatePage("stores")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <StoreIcon className="h-6 w-8 mb-3" />
+                  Stores
+                </CommandItem>
+              </Link>
+              <Link href={navigatePage("etags")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <TagIcon className="h-6 w-8 mb-3" />
+                  Etags
+                </CommandItem>
+              </Link>
+              <Link href={navigatePage("serviceStores")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <TagIcon className="h-6 w-8 mb-3" />
+                  Services Store
+                </CommandItem>
+              </Link>
+              <Link href={navigatePage("walletTypes")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <TagIcon className="h-6 w-8 mb-3" />
+                  Wallet Type
+                </CommandItem>
+              </Link>
+              <Link href={navigatePage("usersAccount")} className="block">
+                <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                  <User className="h-6 w-8 mb-3" />
+                  Users Account
+                </CommandItem>
+              </Link>
+            </>
+          )}
+        </CommandList>
+      </Command>
+    </>
   );
 };
 

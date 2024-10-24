@@ -10,7 +10,7 @@ interface PaymentRequest {
 const paymentService = {
   vnpay: async (data: PaymentRequest) => {
     try {
-      const response = await API.post('/payment/vnpay', {
+      const response = await API.post("/payment/vnpay", {
         invoiceId: data.invoiceId,
         ...(data.key && { key: data.key }),
         ...(data.urlDirect && { urlDirect: data.urlDirect }),
@@ -25,7 +25,7 @@ const paymentService = {
 
   momo: async (data: PaymentRequest) => {
     try {
-      const response = await API.post('/payment/momo', {
+      const response = await API.post("/payment/momo", {
         invoiceId: data.invoiceId,
         ...(data.key && { key: data.key }),
         ...(data.urlDirect && { urlDirect: data.urlDirect }),
@@ -39,7 +39,7 @@ const paymentService = {
   },
   payos: async (data: PaymentRequest) => {
     try {
-      const response = await API.post('/payment/payos', {
+      const response = await API.post("/payment/payos", {
         invoiceId: data.invoiceId,
         ...(data.key && { key: data.key }),
         ...(data.urlDirect && { urlDirect: data.urlDirect }),
@@ -48,6 +48,20 @@ const paymentService = {
       return response.data;
     } catch (error) {
       console.error("payos payment error:", error);
+      throw error;
+    }
+  },
+  zalopay: async (data: PaymentRequest) => {
+    try {
+      const response = await API.post("/payment/zalopay", {
+        invoiceId: data.invoiceId,
+        ...(data.key && { key: data.key }),
+        ...(data.urlDirect && { urlDirect: data.urlDirect }),
+        ...(data.urlIpn && { urlIpn: data.urlIpn }),
+      });
+      return response.data;
+    } catch (error) {
+      console.error("zalopay payment error:", error);
       throw error;
     }
   },

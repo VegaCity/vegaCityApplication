@@ -67,10 +67,8 @@ const PackagesPage = () => {
         <BackButton text="Go Back" link="/" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {packages.length > 0 ? (
-          packages.map((pkg) => (
-            <PackageCard key={pkg.id} package={pkg} />
-          ))
+        {packages?.length > 0 ? (
+          packages.map((pkg) => <PackageCard key={pkg.id} package={pkg} />)
         ) : (
           <div>No packages available</div>
         )}
