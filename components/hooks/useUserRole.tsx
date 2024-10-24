@@ -1,6 +1,6 @@
 "use client";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
-import { UserServices } from "@/components/services/userServices";
+import { UserServices } from "@/components/services/User/userServices";
 import { Role, roles } from "@/types/role";
 import { Users } from "@/types/user";
 import { useState, useEffect } from "react";

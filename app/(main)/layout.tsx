@@ -1,14 +1,19 @@
+"use client";
+
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { redirect } from "next/navigation";
+import { useEffect } from "react";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const auth = useAuthUser;
   if (!auth) {
     redirect("/auth");
   }
+
+  useEffect(() => {}, [auth]);
 
   return (
     <>

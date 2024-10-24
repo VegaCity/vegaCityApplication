@@ -2,7 +2,7 @@
 
 import BackButton from "@/components/BackButton";
 import { Loader } from "@/components/loader/Loader";
-import { UserServices } from "@/components/services/userServices";
+import { UserServices } from "@/components/services/User/userServices";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -77,7 +77,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
       phoneNumber: "",
       birthday: "",
       gender: "",
-      cccd: "",
+      cccdPassport: "",
       imageUrl: null,
     },
   });
@@ -100,7 +100,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
             phoneNumber: user.phoneNumber,
             birthday: handlePlusOneDayFromBe(user.birthday),
             gender: convertGenderToDisplay,
-            cccd: user.cccd,
+            cccdPassport: user.cccdPassport,
             imageUrl: user.imageUrl,
           });
         } else {
@@ -348,16 +348,16 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
 
           <FormField
             control={form.control}
-            name="cccd"
+            name="cccdPassport"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  CCCD
+                  cccdPassport
                 </FormLabel>
                 <FormControl>
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter CCCD"
+                    placeholder="Enter cccdPassport"
                     {...field}
                   />
                 </FormControl>

@@ -4,6 +4,26 @@ export enum Gender {
   Other = 2,
 }
 
+export enum UserStatus {
+  Active = 0,
+  Inactive = 1,
+  Ban = 2,
+  PendingVerify = 3,
+}
+
+//handle User status from number to string
+export const handleUserStatusFromBe = (status: number): string => {
+  switch (status) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      return UserStatus[status]; //Returns the enum label as string
+    default:
+      throw new Error("Invalid UserStatus input"); // Optional: handle invalid input
+  }
+};
+
 export const handleGenderToBe = (gender: string): number => {
   switch (gender.toLowerCase()) {
     case "male":
@@ -53,7 +73,7 @@ export const genders: UserGender[] = [
 export interface UserAccount {
   fullName: string;
   phoneNumber: string;
-  cccd: string;
+  cccdPassport: string;
   address: string;
   email: string;
   description?: string | null;
@@ -71,7 +91,7 @@ export interface UserAccountPost {
   description?: string | null;
   birthday: string;
   gender: number;
-  cccd: string;
+  cccdPassport: string;
   imageUrl?: string | null;
 }
 
@@ -81,8 +101,8 @@ export interface UserAccountGet extends UserAccount {
   storeId: string;
   crDate: string;
   upsDate: string;
-  gender: 2;
+  gender: number;
   imageUrl?: string | null;
   roleId: string;
-  status: 0;
+  status: number;
 }

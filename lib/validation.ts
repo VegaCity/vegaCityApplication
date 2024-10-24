@@ -18,9 +18,9 @@ export const customerFormSchema = z.object({
     .min(5, { message: "Địa chỉ phải có ít nhất 5 ký tự" })
     .max(200, { message: "Địa chỉ không được vượt quá 200 ký tự" }),
 
-  cccd: z
+  cccdPassport: z
     .string()
-    .regex(/^\d{12}$/, { message: "CCCD phải bao gồm đúng 12 chữ số" }),
+    .regex(/^\d{12}$/, { message: "cccdPassport phải bao gồm đúng 12 chữ số" }),
 
   paymentMethod: z.enum(["Cash", "Momo", "VnPay", "PayOS"], {
     required_error: "Phương thức thanh toán là bắt buộc",
@@ -102,7 +102,9 @@ export const formSchema = z
         "Số điện thoại không hợp lệ. Vui lòng sử dụng số điện thoại Việt Nam hợp lệ"
       ),
 
-    cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
+    cccdPassport: z
+      .string()
+      .regex(/^[0-9]{12}$/, "cccdPassport phải có đúng 12 chữ số"),
 
     birthday: z.string().refine((date) => {
       const birthDate = new Date(date);
@@ -229,7 +231,9 @@ export const userAccountFormSchema = z.object({
   gender: z.string().min(0, {
     message: "Nhập giới tính!",
   }),
-  cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
+  cccdPassport: z
+    .string()
+    .regex(/^[0-9]{12}$/, "cccdPassport phải có đúng 12 chữ số"),
   imageUrl: z.string().nullable(), //does not effect
 });
 
@@ -261,7 +265,9 @@ export const chargeFormSchema = z.object({
     .positive({ message: "Số tiền nạp phải lớn hơn 0" })
     .min(10000, { message: "Số tiền nạp tối thiểu là 10.000 VND" })
     .max(10000000, { message: "Số tiền nạp tối đa là 10.000.000 VND" }),
-  cccd: z.string().regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
+  cccdPassport: z
+    .string()
+    .regex(/^[0-9]{12}$/, "cccdPassport phải có đúng 12 chữ số"),
   paymentType: z.enum(["Cash", "Momo", "VnPay", "PayOS"], {
     required_error: "Phương thức thanh toán là bắt buộc",
     invalid_type_error: "Phương thức thanh toán không hợp lệ",

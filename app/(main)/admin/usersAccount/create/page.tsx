@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-import { UserServices } from "@/components/services/userServices";
+import { UserServices } from "@/components/services/User/userServices";
 import {
   SelectItem,
   Select,
@@ -31,7 +31,7 @@ import { UserAccountPostPatch } from "@/types/userAccount";
 const formSchema = z.object({
   fullName: z.string().min(1, { message: "Full Name is required" }),
   phoneNumber: z.string().min(1, { message: "Phone Number is required" }),
-  cccd: z.string().min(1, { message: "CCCD is required" }),
+  cccdPassport: z.string().min(1, { message: "cccdPassport is required" }),
   address: z.string().min(1, { message: "Address is required" }),
   email: z
     .string()
@@ -51,7 +51,7 @@ const UserCreatePage = () => {
     defaultValues: {
       fullName: "",
       phoneNumber: "",
-      cccd: "",
+      cccdPassport: "",
       address: "",
       email: "",
       description: "",
@@ -127,16 +127,16 @@ const UserCreatePage = () => {
 
           <FormField
             control={form.control}
-            name="cccd"
+            name="cccdPassport"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  CCCD
+                  cccdPassport
                 </FormLabel>
                 <FormControl>
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter CCCD"
+                    placeholder="Enter cccdPassport"
                     {...field}
                   />
                 </FormControl>

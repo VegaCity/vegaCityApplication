@@ -28,7 +28,8 @@ function OrderStatusContent() {
   const continueEtag = () => {
     const etagId = localStorage.getItem("etag");
     if (etagId) {
-      router.push(`/user/etags/detail/${etagId}`);
+      // router.push(`/user/etags/detail/${etagId}`);
+      router.push(`/order/detail/${etagId}`);
     } else {
       router.push("/user/etags");
     }
