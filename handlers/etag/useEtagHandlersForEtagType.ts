@@ -103,8 +103,7 @@ export const useEtagHandlers = ({
 
   const handleCustomerInfoSubmit = async (data: CustomerFormValues) => {
     try {
-      // Delete any existing order first
-      await deleteExistingOrder();
+      // await deleteExistingOrder();
 
       const orderData = {
         saleType: "EtagType",
@@ -124,7 +123,7 @@ export const useEtagHandlers = ({
           phoneNumber: data.phoneNumber,
           address: data.address,
           gender: data.gender,
-          cccd: data.cccd,
+          cccdPassport: data.cccdPassport,
         },
       };
 
@@ -159,11 +158,11 @@ export const useEtagHandlers = ({
   ) => {
     try {
       const activateData = {
-        cccd: customerData.cccd,
+        cccdPassport: customerData.cccdPassport,
         name: customerData.customerName,
         phone: customerData.phoneNumber,
         gender: customerData.gender,
-        birthday: new Date().toISOString(), // You might want to add a birthday field to your form
+        birthday: new Date().toISOString(),
         startDate: etagFormData.etagStartDate,
         endDate: etagFormData.etagEndDate,
       };
@@ -213,22 +212,20 @@ export const useEtagHandlers = ({
         endDate: new Date(data.etagEndDate),
       });
 
-      if (quantity === 1 && response.data.data.etag?.id) {
+      if (quantity === 1 && response.data.data) {
         await handleAutoActivateEtag(
-          response.data.data.etag.id,
+          response.data.data,
           customerForm.getValues(),
           data
         );
       }
 
-      if (response.data.data.listIdEtag?.length > 0) {
-        localStorage.setItem(
-          "etagList",
-          JSON.stringify(response.data.data.listIdEtag)
-        );
+      if (response.data.data.length > 0) {
+        localStorage.setItem("etagList", JSON.stringify(response.data.data));
+        console.log("etagList", response.data.data);
         localStorage.setItem("etag", response.data.data.id);
       } else if (response.data.data.etag?.id) {
-        localStorage.setItem("etag", response.data.data.etag.id);
+        localStorage.setItem("etag", response.data.data.id);
       } else {
         throw new Error("No ETag IDs received");
       }

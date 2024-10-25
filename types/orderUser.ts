@@ -11,7 +11,7 @@ export interface CustomerInfo {
   phoneNumber: string;
   address: string;
   gender: string;
-  cccd: string;
+  cccdPassport: string;
 }
 
 export interface OrderData {

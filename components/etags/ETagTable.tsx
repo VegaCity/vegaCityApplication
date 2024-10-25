@@ -10,6 +10,16 @@ import {
   TableRow,
   TableCaption,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { ChevronUp, ChevronDown, Search } from "lucide-react";
@@ -50,8 +60,17 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(50);
   const [activeTab, setActiveTab] = useState<StatusTab>("all");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingEtagId, setDeletingEtagId] = useState<string | null>(null);
   const router = useRouter();
-
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setDeletingEtagId(null);
+  };
+  const handleDeleteClick = (id: string) => {
+    setDeletingEtagId(id);
+    setIsDeleteDialogOpen(true);
+  };
   const statusTabs = [
     { value: "all", label: "All", count: 0 },
     { value: "active", label: "Active", status: 1, count: 0 },
@@ -180,17 +199,18 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
     }
   });
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("Are you sure you want to delete this etag?")) {
-      try {
-        await ETagServices.deleteEtagById(id);
-        fetchEtag(currentPage);
-      } catch (err) {
-        setError("Failed to delete etag. Please try again.");
-      }
+  const handleDeleteConfirm = async () => {
+    if (!deletingEtagId) return;
+
+    try {
+      await ETagServices.deleteEtagById(deletingEtagId);
+      await fetchEtag(currentPage);
+      setIsDeleteDialogOpen(false);
+      setDeletingEtagId(null);
+    } catch (err) {
+      setError("Failed to delete etag. Please try again.");
     }
   };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -426,11 +446,11 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
                     <div className="flex space-x-2">
                       <Link href={`/user/etags/detail/${etag.id}`}>
                         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
-                          View Details
+                          Details
                         </button>
                       </Link>
                       <button
-                        onClick={() => handleDelete(etag.id)}
+                        onClick={() => handleDeleteClick(etag.id)}
                         className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs"
                       >
                         Delete
@@ -441,6 +461,33 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
               );
             })}
           </TableBody>
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to delete this etag?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  etag from the database.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleDeleteCancel}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteConfirm}
+                  className="bg-red-500 hover:bg-red-700 text-white"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </Table>
         <div className="mt-4">
           <ETagPagination />

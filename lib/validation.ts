@@ -27,7 +27,7 @@ export const customerFormSchema = z.object({
     invalid_type_error: "Phương thức thanh toán không hợp lệ",
   }),
 
-  gender: z.enum(["male", "female", "other"], {
+  gender: z.enum(["0", "1", "2"], {
     required_error: "Giới tính là bắt buộc",
     invalid_type_error: "Giới tính không hợp lệ",
   }),

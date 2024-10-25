@@ -11,6 +11,7 @@ export interface AnalyticsAdminDashboard {
   totalTransactionsAmount: number;
   etagCount: number;
   orderCount: number;
+  packageCount: number;
 }
 
 export interface AnalyticsPostProps {

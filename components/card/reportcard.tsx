@@ -54,22 +54,27 @@ const ReportCard = () => {
 
   if (formStatus === "success") {
     return (
-      <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
-        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-          <Check className="w-5 h-5 text-green-600" />
-        </div>
-        <h2 className="text-xl font-semibold">Success!</h2>
-        <p className="text-center text-gray-600">
-          Your bug report request has been submitted successfully.
-        </p>
-        <p className="text-sm text-gray-500">
-          You can{" "}
-          <button className="text-blue-500 hover:underline" onClick={resetForm}>
-            click here
-          </button>{" "}
-          to track the status of your request.
-        </p>
-      </Card>
+      <div className="w-full flex justify-center">
+        <Card className="w-full max-w-xl max-h-2xl p-6 flex flex-col items-center space-y-4">
+          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+            <Check className="w-5 h-5 text-green-600" />
+          </div>
+          <h2 className="text-xl font-semibold">Success!</h2>
+          <p className="text-center text-gray-600">
+            Your bug report request has been submitted successfully.
+          </p>
+          {/* <p className="text-sm text-gray-500">
+            You can{" "}
+            <button
+              className="text-blue-500 hover:underline"
+              onClick={resetForm}
+            >
+              click here
+            </button>{" "}
+            to track the status of your request.
+          </p> */}
+        </Card>
+      </div>
     );
   }
 
