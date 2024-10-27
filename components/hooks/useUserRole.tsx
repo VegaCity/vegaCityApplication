@@ -1,8 +1,6 @@
 "use client";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
-import { UserServices } from "@/components/services/userServices";
 import { Role, roles } from "@/types/role";
-import { Users } from "@/types/user";
 import { useState, useEffect } from "react";
 
 export function useUserRole(): { userRole: Role | null; loading: boolean } {

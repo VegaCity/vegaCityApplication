@@ -9,10 +9,12 @@ export function useAuthUser(): {
   user: Users | null;
   roleName: string;
   loading: boolean;
+  storeId: string | null;
 } {
   const [user, setUser] = useState<Users | null>(null);
   const [roleName, setRoleName] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [storeId, setStoreId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -22,7 +24,13 @@ export function useAuthUser(): {
       UserServices.getUserById(authUser)
         .then((res) => {
           setUser(res.data.data.user);
-          setRoleName(res.data.data.roleName);
+          setRoleName(res.data.data.user.roleName);
+          const userStoreId = res.data.data.user?.storeId;
+          if (userStoreId) {
+            localStorage.setItem("storeId", userStoreId);
+            setStoreId(userStoreId);
+          }
+          
           console.log(res.data.data.user);
         })
         .catch((err) => {
@@ -32,6 +40,7 @@ export function useAuthUser(): {
           const fetchLogoutUser = async () => {
             if (error401 === 401) {
               AuthServices.logoutUser();
+              localStorage.removeItem("storeId");
             } else {
               toast({
                 title: "Something wrong!",
@@ -47,5 +56,5 @@ export function useAuthUser(): {
     }
   }, [loading]);
 
-  return { user, roleName, loading };
+  return { user, roleName, loading, storeId };
 }

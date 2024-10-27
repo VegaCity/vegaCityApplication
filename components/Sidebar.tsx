@@ -21,8 +21,10 @@ const Sidebar = () => {
     // console.log(userRole, "userRole");
     if (userRole && userRole.name === "Admin") {
       return `/admin/${routeName}`;
-    } else {
+    } else if (userRole && userRole.name === "CashierWeb") {
       return `/user/${routeName}`;
+    } else {
+      return `/store/${routeName}`;
     }
   };
 
@@ -111,8 +113,22 @@ const Sidebar = () => {
                 Users Account
               </CommandItem>
             </Link>
+            <Link href={navigatePage("store")} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <TagIcon className="h-6 w-8 mb-3" />
+                Users Account
+              </CommandItem>
+            </Link>
           </>
         )}
+         {userRole && userRole.name === "Store" && (
+          <Link href={navigatePage("product")} className="block">
+              <CommandItem className="hover:hover:bg-hover-button hover:hover:text-cyan-100 transition-colors flex flex-col items-center p-3 cursor-pointer">
+                <TagIcon className="h-6 w-8 mb-3" />
+                Product
+              </CommandItem>
+            </Link>
+         )}
       </CommandList>
     </Command>
   );
