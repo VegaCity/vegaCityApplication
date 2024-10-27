@@ -1,12 +1,12 @@
 import { API } from "@/components/services/api";
-import { PostPatchWalletType } from "@/types/walletType/walletType";
+import { WalletTypePostPatch } from "@/types/walletType/walletType";
 
-interface WalletTypePageSize {
+interface WalletTypesPageSize {
   page?: number;
   size?: number;
 }
-export const WalletTypeServices = {
-  getWalletTypes({ page, size }: WalletTypePageSize) {
+export const WalletTypesServices = {
+  getWalletTypes({ page, size }: WalletTypesPageSize) {
     return API.get("/wallet-types", {
       params: {
         page,
@@ -17,12 +17,12 @@ export const WalletTypeServices = {
   getWalletTypeById(walletTypeId: string) {
     return API.get(`/wallet-type/${walletTypeId}`);
   },
-  createWalletType(welletTypeData: PostPatchWalletType) {
+  createWalletType(welletTypeData: WalletTypePostPatch) {
     return API.post("/wallet-type/", welletTypeData);
   },
   updateWalletTypeById(
     walletTypeId: string,
-    welletTypeData: PostPatchWalletType
+    welletTypeData: WalletTypePostPatch
   ) {
     return API.patch(`/wallet-type/${walletTypeId}`, welletTypeData);
   },

@@ -34,10 +34,11 @@ module.exports = {
         port: "",
         pathname: "/**", // This allows any pathname under the hostname
       },
-      // {//
-      //   protocol: "http",
-      //   hostname: "localhost",
-      //   port: "3000",
+      // {
+      //   //
+      //   protocol: "https",
+      //   hostname: "firebasestorage.googleapis.com",
+      //   port: "",
       //   pathname: "/**", // Allow specific paths from assets.example.com
       // },
     ],

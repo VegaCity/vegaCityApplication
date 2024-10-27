@@ -6,7 +6,7 @@ export enum Gender {
 
 export enum UserStatus {
   Active = 0,
-  Inactive = 1,
+  Disable = 1,
   Ban = 2,
   PendingVerify = 3,
 }
@@ -105,4 +105,15 @@ export interface UserAccountGet extends UserAccount {
   imageUrl?: string | null;
   roleId: string;
   status: number;
+}
+
+export interface UserApprove {
+  id: string;
+  locationHouse: string;
+  adressHouse: string;
+  storeName: string;
+  storeAddress: string;
+  phoneNumber: string;
+  storeEmail: string;
+  approvalStatus: string;
 }

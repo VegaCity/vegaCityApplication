@@ -44,6 +44,7 @@ import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import {
   handleUserStatusFromBe,
   UserAccountGet,
+  UserApprove,
   UserStatus,
 } from "@/types/userAccount";
 import { CaretSortIcon } from "@radix-ui/react-icons";
@@ -51,6 +52,7 @@ import { CheckIcon, PenLine, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 interface UsersTableProps {
   limit?: number;
@@ -72,6 +74,34 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [userSearch, setUserSearch] = useState<UserAccountGet | null>(null);
   const [isUserFound, setIsUserFound] = useState<boolean>(false);
+
+  //form user approve
+  const { register, handleSubmit, reset } = useForm<UserApprove>();
+
+  const handleApproveUser = async (data: UserApprove) => {
+    console.log(data, "data approveee");
+    try {
+      setIsLoading(true);
+      const response = await UserServices.approveUser(data.id, data); // Assuming `user.id` and `data`
+      setIsLoading(false);
+      toast({
+        title: "User Approved",
+        description: `User ${data.storeName} has been approved successfully.`,
+      });
+
+      setUserList((prevList) =>
+        prevList.map(
+          (u) => (u.id === data.id ? { ...u, status: 0 } : u) // Set status to active
+        )
+      );
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        title: "Error",
+        description: "Failed to approve the user.",
+      });
+    }
+  };
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -148,8 +178,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       label: "Pending",
     },
     {
-      value: "inactive",
-      label: "Inactive",
+      value: "disable",
+      label: "Disable",
     },
     {
       value: "ban",
@@ -164,7 +194,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     switch (userStatusValue) {
       case "active":
         return userList.filter((user) => user.status === 0);
-      case "inactive":
+      case "disable":
         return userList.filter((user) => user.status === 1);
       case "ban":
         return userList.filter((user) => user.status === 2);
@@ -186,6 +216,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   const handleSearch = (searchEmail: string) => {
     console.log(searchEmail, "email searchhhh");
   };
+  console.log(handleUserStatusFromBe(2), "status");
 
   const UserFound = (userData: UserAccountGet) => {
     return (
@@ -281,6 +312,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
               value={userStatusValue}
               setValue={setUserStatusValue}
               filterList={filterUserStatusList}
+              placeholder="Select User Status..."
             />
 
             <div className="flex w-full max-w-sm items-center space-x-2">
@@ -315,7 +347,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {userSearch
+            {searchTerm && userSearch
               ? UserFound(userSearch)
               : filteredUsers?.map((user, i) => (
                   <TableRow key={user.id}>
@@ -353,15 +385,15 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                     </TableCell>
                     <TableCell>
                       <Link href={`/admin/usersAccount/edit/${user.id}`}>
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
+                        <Button className="w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
                           Edit
-                        </button>
+                        </Button>
                       </Link>
                       <AlertDialog>
                         <AlertDialogTrigger>
-                          <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                          <Button className="w-20 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
                             Delete
-                          </button>
+                          </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
@@ -384,6 +416,65 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
+
+                      {/* // In TableRow under Actions cell */}
+                      {user.status === 3 && (
+                        <AlertDialog>
+                          <AlertDialogTrigger>
+                            <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                              Approve
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="space-y-2">
+                            <form onSubmit={handleSubmit(handleApproveUser)}>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Approve this user - {user?.fullName}?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Enter the approval details below.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <div className="space-y-2">
+                                <Input
+                                  {...register("locationHouse")}
+                                  placeholder="Location House"
+                                />
+                                <Input
+                                  {...register("adressHouse")}
+                                  placeholder="Address House"
+                                />
+                                <Input
+                                  {...register("storeName")}
+                                  placeholder="Store Name"
+                                />
+                                <Input
+                                  {...register("storeAddress")}
+                                  placeholder="Store Address"
+                                />
+                                <Input
+                                  {...register("phoneNumber")}
+                                  placeholder="Phone Number"
+                                />
+                                <Input
+                                  {...register("storeEmail")}
+                                  placeholder="Store Email"
+                                />
+                                <Input
+                                  {...register("approvalStatus")}
+                                  placeholder="Approval Status"
+                                />
+                              </div>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction type="submit">
+                                  Confirm
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </form>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

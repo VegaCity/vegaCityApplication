@@ -22,7 +22,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="hidden md:block h-[127vh] w-28">
           <Sidebar />
         </div>
-        <div className="p-10 w-full md:max-w-[1400px]">{children}</div>
+        <div className="p-10 w-full md:max-w-full">{children}</div>
         <Toaster />
       </div>
     </>

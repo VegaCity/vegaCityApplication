@@ -25,6 +25,7 @@ interface ComboboxProps {
   value: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
   filterList: { value: string; label: string }[];
+  placeholder: string;
 }
 
 export const ComboboxCustom: React.FC<ComboboxProps> = ({
@@ -33,6 +34,7 @@ export const ComboboxCustom: React.FC<ComboboxProps> = ({
   value,
   setValue,
   filterList,
+  placeholder,
 }) => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,15 +47,15 @@ export const ComboboxCustom: React.FC<ComboboxProps> = ({
         >
           {value
             ? filterList.find((data) => data.value === value)?.label
-            : "Select framework..."}
+            : placeholder}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search framework..." className="h-9" />
+          <CommandInput placeholder={placeholder} className="h-9" />
           <CommandList>
-            <CommandEmpty>No select user status found!</CommandEmpty>
+            <CommandEmpty>No {placeholder} found!</CommandEmpty>
             <CommandGroup>
               {filterList.map((currentValue) => (
                 <CommandItem

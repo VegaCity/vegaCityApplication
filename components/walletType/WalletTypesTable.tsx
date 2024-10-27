@@ -27,7 +27,7 @@ import { ZoneType } from "@/types/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { useRouter } from "next/navigation";
 import { GetWalletType } from "@/types/walletType/walletType";
-import { WalletTypeServices } from "@/components/services/User/walletTypeServices";
+import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
 
 interface WalletTypeTableProps {
   limit?: number;
@@ -46,7 +46,7 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
     // setIsLoading(true);
     const fetchWalletTypes = async () => {
       try {
-        const response = await WalletTypeServices.getWalletTypes({
+        const response = await WalletTypesServices.getWalletTypes({
           page: 1,
           size: 10,
         });
@@ -82,7 +82,7 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
   const handleDeleteWalletType = (walletType: GetWalletType) => {
     setDeleteLoading(true);
     if (walletType.id) {
-      ZoneServices.deleteZoneById(walletType.id)
+      WalletTypesServices.deleteWalletTypeById(walletType.id)
         .then((res) => {
           setDeleteLoading(false);
           toast({
