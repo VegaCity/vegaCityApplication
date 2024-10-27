@@ -65,12 +65,6 @@ const Sidebar = () => {
       roles: ["Admin"],
     },
     {
-      name: "Houses",
-      icon: Warehouse,
-      href: navigatePage("houses"),
-      roles: ["Admin"],
-    },
-    {
       name: "Stores",
       icon: Store,
       href: navigatePage("stores"),

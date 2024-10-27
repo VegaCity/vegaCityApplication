@@ -92,7 +92,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   //search user by email, cccdPassport, phone number
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [userSearch, setUserSearch] = useState<UserAccountGet | null>(null);
+  const [userSearch, setUserSearch] = useState<UserAccountGet[]>([]);
   const [isUserFound, setIsUserFound] = useState<boolean>(false);
 
   //get house api for approve user pending verify
@@ -259,45 +259,49 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   };
   console.log(handleUserStatusFromBe(2), "status");
 
-  const UserFound = (userData: UserAccountGet) => {
-    return (
-      <TableRow key={userData.id}>
+  const UserFound = () => {
+    return userSearch?.map((userFound: UserAccountGet) => (
+      <TableRow key={userFound.id}>
         <TableCell>
           <PenLine />
         </TableCell>
         <TableCell>
           <div className="flex items-center">
             <Image
-              src={validImageUrl(userData?.imageUrl ?? "")} // Use the URL from the user object
-              alt={userData.fullName} // Provide an appropriate alt text
+              src={validImageUrl(userFound?.imageUrl ?? "")} // Use the URL from the user object
+              alt={userFound.fullName} // Provide an appropriate alt text
               width={100} // Specify a width
               height={100} // Specify a height
               className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
             />
-            <p className="ml-4">{userData.fullName}</p>
+            <p className="ml-4">{userFound.fullName}</p>
           </div>
         </TableCell>
-        <TableCell className="hidden md:table-cell">{userData.email}</TableCell>
         <TableCell className="hidden md:table-cell">
-          {userData.phoneNumber}
+          {userFound.email}
         </TableCell>
         <TableCell className="hidden md:table-cell">
-          {userData.address}
+          {userFound.phoneNumber}
         </TableCell>
         <TableCell className="hidden md:table-cell">
-          {userData.cccdPassport}
+          {userFound.address}
+        </TableCell>
+        <TableCell className="hidden md:table-cell">
+          {userFound.cccdPassport}
         </TableCell>
         <TableCell>
-          <Badge className={cn(handleBadgeStatusColor(userData.status))}>
-            {handleUserStatusFromBe(userData.status)}
+          <Badge className={cn(handleBadgeStatusColor(userFound.status))}>
+            {handleUserStatusFromBe(userFound.status)}
           </Badge>
         </TableCell>
         <TableCell>
-          <Link href={`/admin/usersAccount/edit/${userData.id}`}>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-              Edit
-            </button>
-          </Link>
+          {userFound.status !== 3 && (
+            <Link href={`/admin/usersAccount/edit/${userFound.id}`}>
+              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
+                Edit
+              </button>
+            </Link>
+          )}
           <AlertDialog>
             <AlertDialogTrigger>
               <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
@@ -308,7 +312,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
               <AlertDialogHeader>
                 <AlertDialogTitle>
                   Are you sure you want to delete this user -{" "}
-                  {userData?.fullName}?
+                  {userFound?.fullName}?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   This action cannot be undone. This will delete the user from
@@ -317,7 +321,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleDeleteUser(userData)}>
+                <AlertDialogAction onClick={() => handleDeleteUser(userFound)}>
                   Confirm
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -325,10 +329,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           </AlertDialog>
         </TableCell>
       </TableRow>
-    );
+    ));
   };
-
-  console.log(filteredUsers, "userfilter list");
 
   console.log(housesList, "Houses List");
 
@@ -353,6 +355,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           storeAddress: "",
           phoneNumber: "",
           storeEmail: userData.email,
+          approvalStatus: "APPROVED",
         }); // Reset form fields when the popup is reopened
       }
     };
@@ -539,14 +542,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   };
 
   useEffect(() => {
-    const filtered = userList.find(
+    const filtered = userList.filter(
       (user) =>
         user.phoneNumber.includes(searchTerm) ||
         user.cccdPassport.includes(searchTerm) ||
         user.email.includes(searchTerm)
     );
     console.log(filtered, "user filter");
-    setUserSearch(filtered || null);
+    setUserSearch(filtered);
   }, [searchTerm, userList]);
 
   if (isLoading) return <div>Loading...</div>;
@@ -599,138 +602,142 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {searchTerm && userSearch
-              ? UserFound(userSearch)
-              : filteredUsers?.map((user, i) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{i + 1}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Image
-                          src={validImageUrl(user?.imageUrl ?? "")} // Use the URL from the user object
-                          alt={user.fullName} // Provide an appropriate alt text
-                          width={100} // Specify a width
-                          height={100} // Specify a height
-                          className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
-                        />
-                        <p className="ml-4">{user.fullName}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {user.email}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {user.phoneNumber}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {user.address}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {user.cccdPassport}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={cn(handleBadgeStatusColor(user.status))}
-                      >
-                        {handleUserStatusFromBe(user.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/admin/usersAccount/edit/${user.id}`}>
-                        <Button className="w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                          Edit
-                        </Button>
-                      </Link>
-                      <AlertDialog>
-                        <AlertDialogTrigger>
-                          <Button className="w-20 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Are you sure you want to delete this user -{" "}
-                              {user?.fullName}?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone. This will delete the
-                              user from your list!
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteUser(user)}
-                            >
-                              Confirm
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+            <>
+              {searchTerm && userSearch
+                ? UserFound()
+                : filteredUsers?.map((user, i) => (
+                    <TableRow key={user.id}>
+                      <TableCell>{i + 1}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Image
+                            src={validImageUrl(user?.imageUrl ?? "")} // Use the URL from the user object
+                            alt={user.fullName} // Provide an appropriate alt text
+                            width={100} // Specify a width
+                            height={100} // Specify a height
+                            className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
+                          />
+                          <p className="ml-4">{user.fullName}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {user.email}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {user.phoneNumber}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {user.address}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {user.cccdPassport}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={cn(handleBadgeStatusColor(user.status))}
+                        >
+                          {handleUserStatusFromBe(user.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {user.status !== 3 && (
+                          <Link href={`/admin/usersAccount/edit/${user.id}`}>
+                            <Button className="w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
+                              Edit
+                            </Button>
+                          </Link>
+                        )}
+                        <AlertDialog>
+                          <AlertDialogTrigger>
+                            <Button className="w-20 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you sure you want to delete this user -{" "}
+                                {user?.fullName}?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will delete
+                                the user from your list!
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteUser(user)}
+                              >
+                                Confirm
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
 
-                      {/* // In TableRow under Actions cell */}
-                      {
-                        user.status === 3 && UserPendingVerifyPopUp(user)
-                        // <AlertDialog>
-                        //   <AlertDialogTrigger>
-                        //     <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
-                        //       Approve
-                        //     </Button>
-                        //   </AlertDialogTrigger>
-                        //   <AlertDialogContent className="space-y-2">
-                        //     <form onSubmit={handleSubmit(handleApproveUser)}>
-                        //       <AlertDialogHeader>
-                        //         <AlertDialogTitle>
-                        //           Approve this user - {user?.fullName}?
-                        //         </AlertDialogTitle>
-                        //         <AlertDialogDescription>
-                        //           Enter the approval details below.
-                        //         </AlertDialogDescription>
-                        //       </AlertDialogHeader>
-                        //       <div className="my-3 space-y-6">
-                        //         <Input
-                        //           {...register("locationHouse")}
-                        //           placeholder="Location House"
-                        //         />
-                        //         <Input
-                        //           {...register("adressHouse")}
-                        //           placeholder="Address House"
-                        //         />
-                        //         <Input
-                        //           {...register("storeName")}
-                        //           placeholder="Store Name"
-                        //         />
-                        //         <Input
-                        //           {...register("storeAddress")}
-                        //           placeholder="Store Address"
-                        //         />
-                        //         <Input
-                        //           {...register("phoneNumber")}
-                        //           placeholder="Phone Number"
-                        //         />
-                        //         <Input
-                        //           {...register("storeEmail")}
-                        //           placeholder="Store Email"
-                        //         />
-                        //         <Input
-                        //           {...register("approvalStatus")}
-                        //           placeholder="Approval Status"
-                        //         />
-                        //       </div>
-                        //       <AlertDialogFooter>
-                        //         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        //         <AlertDialogAction type="submit">
-                        //           Confirm
-                        //         </AlertDialogAction>
-                        //       </AlertDialogFooter>
-                        //     </form>
-                        //   </AlertDialogContent>
-                        // </AlertDialog>
-                      }
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        {/* // In TableRow under Actions cell */}
+                        {
+                          user.status === 3 && UserPendingVerifyPopUp(user)
+                          // <AlertDialog>
+                          //   <AlertDialogTrigger>
+                          //     <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                          //       Approve
+                          //     </Button>
+                          //   </AlertDialogTrigger>
+                          //   <AlertDialogContent className="space-y-2">
+                          //     <form onSubmit={handleSubmit(handleApproveUser)}>
+                          //       <AlertDialogHeader>
+                          //         <AlertDialogTitle>
+                          //           Approve this user - {user?.fullName}?
+                          //         </AlertDialogTitle>
+                          //         <AlertDialogDescription>
+                          //           Enter the approval details below.
+                          //         </AlertDialogDescription>
+                          //       </AlertDialogHeader>
+                          //       <div className="my-3 space-y-6">
+                          //         <Input
+                          //           {...register("locationHouse")}
+                          //           placeholder="Location House"
+                          //         />
+                          //         <Input
+                          //           {...register("adressHouse")}
+                          //           placeholder="Address House"
+                          //         />
+                          //         <Input
+                          //           {...register("storeName")}
+                          //           placeholder="Store Name"
+                          //         />
+                          //         <Input
+                          //           {...register("storeAddress")}
+                          //           placeholder="Store Address"
+                          //         />
+                          //         <Input
+                          //           {...register("phoneNumber")}
+                          //           placeholder="Phone Number"
+                          //         />
+                          //         <Input
+                          //           {...register("storeEmail")}
+                          //           placeholder="Store Email"
+                          //         />
+                          //         <Input
+                          //           {...register("approvalStatus")}
+                          //           placeholder="Approval Status"
+                          //         />
+                          //       </div>
+                          //       <AlertDialogFooter>
+                          //         <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          //         <AlertDialogAction type="submit">
+                          //           Confirm
+                          //         </AlertDialogAction>
+                          //       </AlertDialogFooter>
+                          //     </form>
+                          //   </AlertDialogContent>
+                          // </AlertDialog>
+                        }
+                      </TableCell>
+                    </TableRow>
+                  ))}
+            </>
           </TableBody>
         </Table>
       </>

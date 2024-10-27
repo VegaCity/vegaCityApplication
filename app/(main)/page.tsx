@@ -63,7 +63,7 @@ const Home = () => {
     };
 
     fetchAnalytics();
-  }, []);
+  }, [isLoading]);
 
   // Format number for display
   const formatNumber = (num: number): number | string => {

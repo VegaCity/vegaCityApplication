@@ -192,7 +192,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
         description: `User ${data.fullName} was updated.`,
       });
       if (userUpdated) {
-        router.push("/admin/usersAccount");
+        router.back();
       }
     } catch (err) {
       setError(

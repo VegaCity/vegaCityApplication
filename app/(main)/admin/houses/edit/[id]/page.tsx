@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -41,6 +42,7 @@ type FormValues = z.infer<typeof houseSchema>;
 
 const HouseEditPage = ({ params }: HouseEditPageProps) => {
   const { toast } = useToast();
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -87,6 +89,7 @@ const HouseEditPage = ({ params }: HouseEditPageProps) => {
         title: "House has been updated successfully",
         description: `House ${data.houseName} was updated`,
       });
+      router.back();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
