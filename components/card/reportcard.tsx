@@ -89,9 +89,7 @@ const ReportCard = () => {
           <p className="text-center text-gray-600">
             Sorry, it seems your request failed.
           </p>
-          <p className="text-sm text-gray-500">
-            Error 500 | Internal server error
-          </p>
+
           <Button onClick={resetForm}>TRY AGAIN</Button>
         </Card>
       </div>
