@@ -346,7 +346,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
     const handleOpenChange = (isOpen: boolean) => {
       if (isOpen) {
-        userApproveForm.reset(); // Reset form fields when the popup is reopened
+        userApproveForm.reset({
+          locationHouse: "",
+          adressHouse: "",
+          storeName: "",
+          storeAddress: "",
+          phoneNumber: "",
+          storeEmail: userData.email,
+        }); // Reset form fields when the popup is reopened
       }
     };
 
