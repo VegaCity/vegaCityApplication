@@ -1,8 +1,9 @@
 "use client";
 import { AuthServices } from "@/components/services/authServices";
-import { UserServices } from "@/components/services/userServices";
+import { UserServices } from "@/components/services/User/userServices";
 import { useToast } from "@/components/ui/use-toast";
 import { Users } from "@/types/user";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export function useAuthUser(): {
@@ -15,46 +16,63 @@ export function useAuthUser(): {
   const [roleName, setRoleName] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [authUserFromLocal, setAuthUserFromLocal] = useState<string | null>("");
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const authUser: string | null = localStorage.getItem("userId");
-
-    if (authUser) {
-      UserServices.getUserById(authUser)
-        .then((res) => {
-          setUser(res.data.data.user);
-          setRoleName(res.data.data.user.roleName);
-          const userStoreId = res.data.data.user?.storeId;
-          if (userStoreId) {
-            localStorage.setItem("storeId", userStoreId);
-            setStoreId(userStoreId);
-          }
-          
-          console.log(res.data.data.user);
-        })
-        .catch((err) => {
-          console.log(err.response.status, "error message");
-          setLoading(false);
-          const error401 = err.response.status;
-          const fetchLogoutUser = async () => {
-            if (error401 === 401) {
-              AuthServices.logoutUser();
-              localStorage.removeItem("storeId");
-            } else {
-              toast({
-                title: "Something wrong!",
-                description: "Server have problems, try again!",
-              });
+    setAuthUserFromLocal(authUser);
+    function fetchAuthUser() {
+      if (authUser) {
+        UserServices.getUserById(authUser)
+          .then((res) => {
+            setUser(res.data.data.user);
+            setRoleName(res.data.data.user.roleName);
+            const userStoreId = res.data.data.user?.storeId;
+            if (userStoreId) {
+              localStorage.setItem("storeId", userStoreId);
+              setStoreId(userStoreId);
             }
-          };
-          fetchLogoutUser();
+            console.log(res.data.data.user);
+          })
+          .catch((err) => {
+            console.log(err.response.status, "error message");
+            setLoading(false);
+            const error401 = err.response.status;
+            const fetchLogoutUser = async () => {
+              try {
+                const error = await error401;
+                if (error === 401) {
+                  AuthServices.logoutUser();
+                  localStorage.removeItem("storeId");
+                  router.push("/auth");
+                  toast({
+                    title: "Your token is expired!",
+                    description: "Please login again!",
+                  });
+                }
+              } catch {
+                toast({
+                  title: "Something wrong!",
+                  description: "Server have problems, try again!",
+                });
+              }
+            };
+            fetchLogoutUser();
+          });
+      } else {
+        setLoading(false);
+        console.log("User is unauthorized!");
+        toast({
+          title: "Something went wrong!",
+          description: "User is unauthorized!",
         });
-    } else {
-      setLoading(false);
-      console.log("User is unauthorized!");
+        router.push("/auth");
+      }
     }
-  }, [loading]);
+    fetchAuthUser();
+  }, [loading, authUserFromLocal]);
 
   return { user, roleName, loading, storeId };
 }

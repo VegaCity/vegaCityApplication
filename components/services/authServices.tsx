@@ -6,13 +6,19 @@ export const AuthServices = {
     return API.post("/auth/login", data);
   },
   fetchUser(email: string, refreshToken: string) {
-    const fetchData = { email, refreshToken };
+    const apiKey: string = "5f728deb-b2c3-4bac-9d9c-41a11e0acccc";
+    const fetchData = { email, refreshToken, apiKey };
+    console.log(fetchData, "fetch Usersss");
     return API.post("/auth/refresh-token", fetchData);
   },
   fetchUserByEmail(email: string) {
-    const encodedEmail = encodeURIComponent(email);
-    console.log(encodedEmail, "encode email");
-    return API.get(`/auth/refresh-token/${encodedEmail}`);
+    // const encodedEmail = encodeURIComponent(email);
+    // console.log(encodedEmail, "encode email");
+    const apiKey: string = "5f728deb-b2c3-4bac-9d9c-41a11e0acccc";
+    return API.post(`/auth/refresh-token/${email}`, {
+      headers: { "Content-Type": "application/json" },
+      apiKey,
+    });
   },
   logoutUser() {
     localStorage.removeItem("accessToken");

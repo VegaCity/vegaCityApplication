@@ -6,6 +6,7 @@ export enum StoreTypeEnum {
 
 export interface StoreOwner {
   id: string;
+  houseId: string;
   name: string;
   address: string;
   phoneNumber: string;
@@ -13,7 +14,8 @@ export interface StoreOwner {
   email: string;
   description: string;
   storeType: number;
-  storeStatus: number;
+  status: number;
+  deflag: boolean;
 }
 
 export interface StoreOwnerPatch {

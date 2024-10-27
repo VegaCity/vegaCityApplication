@@ -10,6 +10,17 @@ import {
   TableRow,
   TableCaption,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { ChevronUp, ChevronDown, Search } from "lucide-react";
 import { ETag } from "@/types/etag";
@@ -25,6 +36,7 @@ import {
 } from "@/components/ui/pagination";
 import { API } from "@/components/services/api";
 import { useRouter } from "next/navigation";
+
 interface EtagTableProps {
   limit?: number;
   title?: string;
@@ -32,6 +44,8 @@ interface EtagTableProps {
 
 type SortField = "startDate" | "endDate" | "status";
 type SortOrder = "asc" | "desc";
+
+type StatusTab = "all" | "active" | "inactive" | "expired" | "block";
 
 const EtagTable = ({ limit, title }: EtagTableProps) => {
   const [etagList, setEtagList] = useState<ETag[]>([]);
@@ -44,8 +58,39 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize] = useState(50);
+  const [activeTab, setActiveTab] = useState<StatusTab>("all");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingEtagId, setDeletingEtagId] = useState<string | null>(null);
   const router = useRouter();
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
+    setDeletingEtagId(null);
+  };
+  const handleDeleteClick = (id: string) => {
+    setDeletingEtagId(id);
+    setIsDeleteDialogOpen(true);
+  };
+  const statusTabs = [
+    { value: "all", label: "All", count: 0 },
+    { value: "active", label: "Active", status: 1, count: 0 },
+    { value: "inactive", label: "Inactive", status: 0, count: 0 },
+    { value: "expired", label: "Expired", status: 2, count: 0 },
+    { value: "block", label: "Blocked", status: -1, count: 0 },
+  ];
+
+  const getStatusCounts = (etags: ETag[]) => {
+    return statusTabs.map((tab) => ({
+      ...tab,
+      count:
+        tab.value === "all"
+          ? etags.length
+          : etags.filter((etag) => etag.status === tab.status).length,
+    }));
+  };
+
+  const [tabsWithCounts, setTabsWithCounts] = useState(statusTabs);
+
   const isValidGuid = (str: any) => {
     const guidPattern =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -58,18 +103,19 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
     try {
       let response;
       if (searchTerm.startsWith("VGC")) {
-        // Search by eTag code
         response = await ETagServices.getETagById(searchTerm);
       } else if (isValidGuid(searchTerm)) {
-        // Search by eTag GUID
         response = await ETagServices.getETagById(searchTerm);
       } else {
         throw new Error("Invalid search format");
       }
 
-      if (response.data.data && response.data.data.id) {
-        // Navigate to the eTag detail page
-        router.push(`/user/etags/detail/${response.data.data.id}`);
+      if (
+        response.data.data &&
+        response.data.data.etag &&
+        response.data.data.etag.id
+      ) {
+        router.push(`/user/etags/detail/${response.data.data.etag.id}`);
       } else {
         setError("eTag information not found");
       }
@@ -79,6 +125,7 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       setIsLoading(false);
     }
   };
+
   const fetchEtag = async (page: number) => {
     setIsLoading(true);
     try {
@@ -87,7 +134,8 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
         ? response.data.data
         : [];
       setEtagList(etagtypes);
-      setFilteredEtags(etagtypes);
+      setTabsWithCounts(getStatusCounts(etagtypes));
+      filterEtagsByTab(etagtypes, activeTab);
       setTotalPages(response.data.metaData.totalPage);
     } catch (err) {
       setError(
@@ -98,19 +146,39 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
     }
   };
 
+  const filterEtagsByTab = (etags: ETag[], tab: StatusTab) => {
+    const filtered = etags.filter((etag) => {
+      if (tab === "all") return true;
+      const statusMap: Record<StatusTab, number> = {
+        active: 1,
+        inactive: 0,
+        expired: 2,
+        block: -1,
+        all: -99, // unused
+      };
+      return etag.status === statusMap[tab];
+    });
+
+    const searchFiltered = filtered.filter((etag) => {
+      if (!searchTerm) return true;
+
+      return (
+        (etag.phoneNumber?.includes(searchTerm) ?? false) ||
+        (etag.cccd?.includes(searchTerm) ?? false) ||
+        (etag.etagCode?.includes(searchTerm) ?? false)
+      );
+    });
+
+    setFilteredEtags(searchFiltered);
+  };
+
   useEffect(() => {
     fetchEtag(currentPage);
   }, [currentPage, pageSize]);
 
   useEffect(() => {
-    const filtered = etagList.filter(
-      (etag) =>
-        etag.phoneNumber.includes(searchTerm) ||
-        etag.cccd.includes(searchTerm) ||
-        etag.etagCode.includes(searchTerm)
-    );
-    setFilteredEtags(filtered);
-  }, [searchTerm, etagList]);
+    filterEtagsByTab(etagList, activeTab);
+  }, [searchTerm, activeTab, etagList]);
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -131,10 +199,18 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
     }
   });
 
-  if (error) return <div>Error: {error}</div>;
+  const handleDeleteConfirm = async () => {
+    if (!deletingEtagId) return;
 
-  // const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
-
+    try {
+      await ETagServices.deleteEtagById(deletingEtagId);
+      await fetchEtag(currentPage);
+      setIsDeleteDialogOpen(false);
+      setDeletingEtagId(null);
+    } catch (err) {
+      setError("Failed to delete etag. Please try again.");
+    }
+  };
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -150,17 +226,15 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
   const getStatusString = (status: number) => {
     switch (status) {
       case 0:
-        return { text: "Inactive", color: "bg-red-500", sortOrder: 0 };
+        return { text: "Inactive", color: "bg-gray-500", sortOrder: 0 };
       case 1:
         return { text: "Active", color: "bg-green-500", sortOrder: 1 };
       case 2:
         return { text: "Expired", color: "bg-yellow-500", sortOrder: 2 };
       case -1:
-        return { text: "Block", color: "bg-gray-500", sortOrder: 3 };
+        return { text: "Block", color: "bg-red-500", sortOrder: 3 };
       default:
-
         return { text: "Unknown", color: "bg-gray-500", sortOrder: 4 };
-
     }
   };
 
@@ -270,50 +344,75 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
       </Pagination>
     );
   };
-  if (error) return <div>Error: {error}</div>;
 
   const limitedEtags = limit ? sortedEtags.slice(0, limit) : sortedEtags;
+
   return (
     <div className="mt-10">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Etags"}</h3>
-      <div className="relative mb-4">
-        <Search
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-          size={20}
-        />
-        <input
-          type="text"
-          placeholder="Nhập mã eTagCode hoặc GUID"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 pr-4 py-2 w-full border rounded-md"
-        />
-      </div>
-      <button
-        onClick={handleSearch}
-        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-        disabled={isLoading}
-      >
-        {isLoading ? "Đang tìm kiếm..." : "Tìm kiếm"}
-      </button>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
-      {searchResult && (
-        <div className="mt-4">
-          <h3 className="font-bold">Kết quả tìm kiếm:</h3>
-          <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
-            {JSON.stringify(searchResult, null, 2)}
-          </pre>
+      <div className="relative flex items-center space-x-4 mb-4">
+        <div className="relative flex-1 md:max-w-xs" style={{ width: "300px" }}>
+          <Search
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={20}
+          />
+          <input
+            type="text"
+            placeholder="Nhập mã eTagCode hoặc GUID"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full border rounded-md"
+          />
         </div>
-      )}
+        <button
+          onClick={handleSearch}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          disabled={isLoading}
+        >
+          {isLoading ? "Đang tìm kiếm..." : "Tìm kiếm"}
+        </button>
+      </div>
 
-      <>
+      <Tabs
+        defaultValue="all"
+        className="w-full"
+        onValueChange={(value) => setActiveTab(value as StatusTab)}
+      >
+        <TabsList className="mb-4 w-full h-12 bg-gray-100 p-1 rounded-lg grid grid-cols-5 gap-1">
+          {tabsWithCounts.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value} className="w-full">
+              {tab.label}
+              <span
+                className={`
+              w-full h-8 
+              flex items-center justify-center
+              space-x-2
+              text-sm font-medium
+              transition-all
+              rounded-md
+              ${
+                activeTab === tab.value
+                  ? "bg-white shadow-sm text-blue-600"
+                  : "hover:bg-gray-200 text-gray-600"
+              }
+            `}
+              >
+                {tab.count}
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {error && <p className="text-red-500 mt-2">{error}</p>}
+
         <Table>
           <TableCaption>A list of Etags</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead>Full Name</TableHead>
+              <TableHead>No</TableHead>
+              {/* <TableHead>Full Name</TableHead>
               <TableHead>Phone Number</TableHead>
-              <TableHead>CCCD</TableHead>
+              <TableHead>CCCD</TableHead> */}
               <TableHead>EtagCode</TableHead>
               <TableHead>
                 <SortButton field="startDate" label="Start Date & Time" />
@@ -328,13 +427,11 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {limitedEtags.map((etag) => {
+            {limitedEtags.map((etag, index) => {
               const statusInfo = getStatusString(etag.status);
               return (
                 <TableRow key={etag.id}>
-                  <TableCell>{etag.fullName}</TableCell>
-                  <TableCell>{etag.phoneNumber}</TableCell>
-                  <TableCell>{etag.cccd}</TableCell>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell>{etag.etagCode}</TableCell>
                   <TableCell>{formatDate(etag.startDate)}</TableCell>
                   <TableCell>{formatDate(etag.endDate)}</TableCell>
@@ -346,21 +443,56 @@ const EtagTable = ({ limit, title }: EtagTableProps) => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <Link href={`/user/etags/detail/${etag.id}`}>
-                      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
-                        View Details
+                    <div className="flex space-x-2">
+                      <Link href={`/user/etags/detail/${etag.id}`}>
+                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
+                          Details
+                        </button>
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteClick(etag.id)}
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs"
+                      >
+                        Delete
                       </button>
-                    </Link>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
             })}
           </TableBody>
+          <AlertDialog
+            open={isDeleteDialogOpen}
+            onOpenChange={setIsDeleteDialogOpen}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to delete this etag?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the
+                  etag from the database.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleDeleteCancel}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteConfirm}
+                  className="bg-red-500 hover:bg-red-700 text-white"
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </Table>
         <div className="mt-4">
           <ETagPagination />
         </div>
-      </>
+      </Tabs>
     </div>
   );
 };

@@ -11,9 +11,9 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle, XCircle } from "lucide-react";
 import { Suspense } from "react";
+import { useRouter } from "next/navigation";
 
 export default function OrderStatusPage() {
- 
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <OrderStatusContent />
@@ -22,35 +22,64 @@ export default function OrderStatusPage() {
 }
 
 function OrderStatusContent() {
-  const { isSuccess, orderDetails, goToHomePage } = useOrderStatus();
+  const { isSuccess, orderDetails } = useOrderStatus();
+  const router = useRouter();
+
+  const continueEtag = () => {
+    const etagId = localStorage.getItem("etag");
+    if (etagId) {
+      // router.push(`/user/etags/detail/${etagId}`);
+      router.push(`/order/detail/${etagId}`);
+    } else {
+      router.push("/user/etags");
+    }
+  };
+  const orderId = localStorage.getItem("orderId");
+  const invoiceId = localStorage.getItem("invoiceId");
+
+  const handleFailure = () => {
+    router.push("/user/etags");
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-[350px]">
+      <Card className="w-[850px]">
         <CardHeader>
           <CardTitle className="text-center">
-            {isSuccess ? "Giao dịch thành công!" : "Giao dịch thất bại"}
+            {isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
           {isSuccess ? (
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <>
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">
+                Đơn hàng #{invoiceId} đã được thanh toán thành công.
+              </p>
+              {orderDetails.total && (
+                <p className="text-sm text-gray-500">
+                  Số tiền đã thanh toán: {orderDetails.total}
+                </p>
+              )}
+            </>
           ) : (
-            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          )}
-          <p className="text-gray-600 mb-4">
-            {isSuccess
-              ? `Cảm ơn bạn đã đặt hàng. Đơn hàng #${orderDetails.orderId} của bạn đã được xác nhận.`
-              : "Rất tiếc, đã xảy ra lỗi trong quá trình xử lý đơn hàng của bạn."}
-          </p>
-          {isSuccess && (
-            <p className="text-sm text-gray-500">
-              Tổng giá trị đơn hàng: ${orderDetails.total}
-            </p>
+            <>
+              <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">
+                Rất tiếc, đã xảy ra lỗi trong quá trình thanh toán. Vui lòng thử
+                lại.
+              </p>
+            </>
           )}
         </CardContent>
         <CardFooter className="justify-center">
-          <Button onClick={goToHomePage}>Quay lại trang chủ</Button>
+          {isSuccess ? (
+            <Button onClick={continueEtag}>Thông tin etag</Button>
+          ) : (
+            <Button onClick={handleFailure} variant="destructive">
+              Quay lại
+            </Button>
+          )}
         </CardFooter>
       </Card>
     </div>

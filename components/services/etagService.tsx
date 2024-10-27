@@ -16,8 +16,8 @@ export interface GenerateEtag {
   };
 }
 
-interface ActivateEtagRequest {
-  cccd: string;
+export interface ActivateEtagRequest {
+  cccdPassport: string;
   name: string;
   phone: string;
   gender: string;
@@ -28,7 +28,7 @@ interface ActivateEtagRequest {
 interface ChargeMoneyRequest {
   etagCode: string;
   chargeAmount: number;
-  cccd: string;
+  cccdPassport: string;
   paymentType: string;
 }
 interface ChargeMoneyResponse {
@@ -94,7 +94,7 @@ export const ETagServices = {
   chargeMoney({
     etagCode,
     chargeAmount,
-    cccd,
+    cccdPassport,
     paymentType,
   }: ChargeMoneyRequest) {
     const userId = localStorage.getItem("userId");
@@ -106,7 +106,7 @@ export const ETagServices = {
       userId,
       etagCode,
       chargeAmount,
-      cccd,
+      cccdPassport,
       paymentType,
     };
 

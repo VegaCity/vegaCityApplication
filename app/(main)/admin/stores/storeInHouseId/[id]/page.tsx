@@ -1,24 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import BackButton from "@/components/BackButton";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { HouseServices } from "@/components/services/houseServices"; // Assuming you have a service for fetching stores
-import { useRouter } from "next/navigation";
-import { StoreInHouse } from "@/types/storeOwner";
-import StoresTable from "@/components/stores/StoresTable";
 import StoresPagination from "@/components/stores/StoresPagination";
+import StoresTable from "@/components/stores/StoresTable";
 
 interface StoreListPageByHouseIdProps {
   params: { id: string };

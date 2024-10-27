@@ -1,7 +1,8 @@
 "use client";
 
+import { Loader } from "@/components/loader/Loader";
 import { HouseServices } from "@/components/services/houseServices";
-import { StoreServices } from "@/components/services/storeServices";
+import { StoreServices } from "@/components/services/Store/storeServices";
 import {
   Table,
   TableBody,
@@ -14,31 +15,44 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { isObject } from "@/lib/isObject";
 import { StoreHouseType } from "@/types/house";
-import { StoreTypeEnum } from "@/types/storeOwner";
+import { StoreOwner, StoreTypeEnum } from "@/types/storeOwner";
+import { Minus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface StoreTableProps {
-  params: { id: string };
+  params?: { id?: string }; // Optional for fetching all stores
 }
 
 const StoresTable = ({ params }: StoreTableProps) => {
-  const { id: houseId } = params;
+  const houseId = params?.id;
   const [house, setHouse] = useState<StoreHouseType | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [stores, setStores] = useState<StoreOwner[]>([]); // For handling all stores
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchStores = async () => {
+      setIsLoading(true);
       try {
-        const response = await HouseServices.getHouseById(houseId);
-        const house = isObject(response.data.data.house)
-          ? response.data.data.house
-          : [];
-
-        console.log(house, "house detail");
-        setHouse(house);
+        if (houseId) {
+          // Fetch store by house ID
+          const response = await HouseServices.getHouseById(houseId);
+          const house = isObject(response.data.data.house)
+            ? response.data.data.house
+            : null;
+          setHouse(house);
+        } else {
+          // Fetch all stores
+          const response = await StoreServices.getStores({ page: 1, size: 10 });
+          const stores = Array.isArray(response.data.data)
+            ? response.data.data
+            : [];
+          setStores(stores);
+        }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
@@ -49,19 +63,19 @@ const StoresTable = ({ params }: StoreTableProps) => {
     };
 
     fetchStores();
-  }, [isLoading, deleteLoading]);
+  }, [houseId]);
 
-  const handleDeleteHouse = (house: StoreHouseType) => {
-    const { id: houseId, houseName } = house;
+  const handleDeleteStore = (store: StoreOwner) => {
+    const { id, name } = store;
 
     setDeleteLoading(true);
-    if (houseId) {
-      StoreServices.deleteStoreById(houseId)
+    if (id) {
+      StoreServices.deleteStoreById(id)
         .then((res) => {
           setDeleteLoading(false);
           toast({
             title: res.data.messageResponse,
-            description: `Store name: ${houseName}`,
+            description: `Store name: ${name}`,
           });
         })
         .catch((err) => {
@@ -76,13 +90,16 @@ const StoresTable = ({ params }: StoreTableProps) => {
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
+  <Loader isLoading={deleteLoading} />;
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">Stores</h3>
-      {house && isObject(house) ? (
+      <h3 className="text-2xl mb-4 font-semibold">
+        {houseId ? "Stores by House" : "All Stores"}
+      </h3>
+      {houseId && house && isObject(house) ? (
         <Table>
-          <TableCaption>A list of recent stores</TableCaption>
+          <TableCaption>Stores associated with the house</TableCaption>
           <TableHeader>
             <TableRow className="bg-slate-300 hover:bg-slate-300">
               <TableHead>House Name</TableHead>
@@ -117,14 +134,68 @@ const StoresTable = ({ params }: StoreTableProps) => {
                     </div>
                   ))
                 ) : (
-                  <div>Not have any store!</div>
+                  <div>No stores available!</div>
                 )}
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
+      ) : stores?.length > 0 ? (
+        <Table>
+          <TableCaption>A list of all stores</TableCaption>
+          <TableHeader>
+            <TableRow className="bg-slate-300 hover:bg-slate-300">
+              <TableHead>#</TableHead>
+              <TableHead>Store Name</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>PhoneNumber</TableHead>
+              <TableHead>ShortName</TableHead>
+              <TableHead>Address</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>StoreType</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {stores.map((store, index) => (
+              <TableRow key={store.id}>
+                <TableCell>{index + 1}</TableCell>
+                <TableCell>{store.name}</TableCell>
+                <TableCell>{store.email}</TableCell>
+                <TableCell>{store.phoneNumber}</TableCell>
+                <TableCell>
+                  {store.shortName ? store.shortName : <Minus />}
+                </TableCell>
+                <TableCell>{store.address}</TableCell>
+                <TableCell>
+                  {store.description ? store.description : <Minus />}
+                </TableCell>
+                <TableCell>
+                  {store.storeType ? store.storeType : <Minus />}
+                </TableCell>
+                <TableCell>
+                  <button
+                    onClick={() =>
+                      router.push(`/admin/stores/edit/${store.id}`)
+                    }
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200"
+                  >
+                    Edit
+                  </button>
+                  {/* Add delete functionality */}
+                  <button
+                    onClick={() => handleDeleteStore(store)}
+                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200"
+                  >
+                    Delete
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <div>No stores found!</div>
       )}
     </div>
   );

@@ -1,9 +1,9 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "@/components/loader/Loader";
+import { StoreServices } from "@/components/services/Store/storeServices";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,40 +14,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { StoreFormValues, storeFormSchema } from "@/lib/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { StoreServices } from "@/components/services/storeServices";
-import { StoreOwner } from "@/types/storeOwner";
-
-const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "Store Name is required",
-  }),
-  address: z.string().min(1, {
-    message: "Address is required",
-  }),
-  phoneNumber: z.string().min(1, {
-    message: "Phone Number is required",
-  }),
-  shortName: z.string().min(1, {
-    message: "Short Name is required",
-  }),
-  email: z.string().email({
-    message: "Invalid email format",
-  }),
-  description: z.string().min(1, {
-    message: "Description is required",
-  }),
-  storeType: z.coerce.number({
-    required_error: "Store Type is required!",
-    invalid_type_error: "Store Type must be a number!",
-  }),
-  storeStatus: z.coerce.number({
-    required_error: "Store Status is required!",
-    invalid_type_error: "Store Status must be a number!",
-  }),
-});
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 interface StoreEditPageProps {
   params: {
@@ -55,15 +28,14 @@ interface StoreEditPageProps {
   };
 }
 
-type FormValues = z.infer<typeof formSchema>;
-
 const StoreEditPage = ({ params }: StoreEditPageProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<StoreFormValues>({
+    resolver: zodResolver(storeFormSchema),
     defaultValues: {
       name: "",
       address: "",
@@ -72,7 +44,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
       email: "",
       description: "",
       storeType: 0,
-      storeStatus: 0,
+      status: 0,
     },
   });
 
@@ -92,7 +64,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
             email: storeData.email,
             description: storeData.description,
             storeType: storeData.storeType,
-            storeStatus: storeData.storeStatus,
+            status: storeData.status,
           });
         }
       } catch (err) {
@@ -107,13 +79,20 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
     fetchStore();
   }, [params.id, form]);
 
-  const handleSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: StoreFormValues) => {
     try {
-      await StoreServices.editStore(params.id, data);
+      const storeType = 0;
+      const status = 0;
+      await StoreServices.editStore(params.id, {
+        ...data,
+        storeType: storeType,
+        storeStatus: status,
+      });
       toast({
         title: "Store has been updated successfully",
         description: `Store ${data.name} was updated with address ${data.address}`,
       });
+      router.back();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
@@ -121,7 +100,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <div>Error: {error}</div>;
 
   return (
