@@ -106,6 +106,12 @@ const Sidebar = () => {
       href: navigatePage("usersAccount"),
       roles: ["Admin"],
     },
+    {
+      name: "WithDraw",
+      icon: ArrowRightLeft,
+      href: navigatePage("withdraws"),
+      roles: ["CashierWeb"],
+    },
   ];
 
   if (loading) {

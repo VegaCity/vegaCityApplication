@@ -5,6 +5,7 @@ import BackButton from "@/components/BackButton";
 // import { ReportServices } from "@/components/services/reportService";
 // import { Report } from "@/types/report";
 import ReportCard from "@/components/card/reportcard";
+import ReportTable from "@/components/reports/ReportTable";
 
 const ReportPage = () => {
   const { user } = useAuthUser();
@@ -22,7 +23,7 @@ const ReportPage = () => {
     <div className="container mx-auto p-4">
       <BackButton link="/" />
       <div className="w-full h-auto">
-        <ReportCard />
+        <ReportTable />
       </div>
     </div>
   );
