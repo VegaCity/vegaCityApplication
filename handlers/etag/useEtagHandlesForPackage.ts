@@ -79,7 +79,7 @@ export const useEtagHandlers = ({
   };
 
   const handleCustomerInfoSubmit = async (data: CustomerFormValues) => {
-    await deleteExistingOrder();
+    // await deleteExistingOrder();
 
     try {
       const orderData = {
@@ -100,7 +100,7 @@ export const useEtagHandlers = ({
           phoneNumber: data.phoneNumber,
           address: data.address,
           gender: data.gender,
-          cccd: data.cccd,
+          cccdPassport: data.cccdPassport,
         },
       };
       const response = await createOrder(orderData);
@@ -126,9 +126,10 @@ export const useEtagHandlers = ({
         throw new Error("ETag type ID not found");
       }
 
+      const quantity = Number(customerForm.getValues("quantity"));
       const generateEtagData: GenerateEtag = {
-        quantity: Number(customerForm.getValues("quantity")),
-        etagTypeId: etagTypeId,
+        quantity,
+        etagTypeId,
         generateEtagRequest: {
           startDate: new Date(data.etagStartDate),
           endDate: new Date(data.etagEndDate),
@@ -141,28 +142,27 @@ export const useEtagHandlers = ({
         throw new Error("Failed to generate E-Tag");
       }
 
-      // Store start and end dates
       setEtagData({
         startDate: new Date(data.etagStartDate),
         endDate: new Date(data.etagEndDate),
       });
 
-      // Handle ETag IDs storage
-      if (response.data.data.listIdEtag?.length > 0) {
-        localStorage.setItem(
-          "etagList",
-          JSON.stringify(response.data.listIdEtag)
-        );
-        localStorage.setItem("etag", response.data.data.listIdEtag[0]);
-      } else if (response.data.etag?.id) {
-        localStorage.setItem("etag", response.data.data.etag.id);
+      if (response.data.data.length > 0) {
+        localStorage.setItem("etagList", JSON.stringify(response.data.data));
+        console.log("etagList", response.data.data);
+        localStorage.setItem("etag", response.data.data.id);
+      } else if (response.data.data.etag?.id) {
+        localStorage.setItem("etag", response.data.data.id);
       } else {
         throw new Error("No ETag IDs received");
       }
 
       toast({
         title: "Success",
-        description: "E-Tag generated successfully!",
+        description:
+          quantity === 1
+            ? "E-Tag generated and activated successfully!"
+            : "E-Tags generated successfully!",
       });
 
       return true;

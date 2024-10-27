@@ -61,7 +61,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       address: "",
       cccdPassport: "",
       paymentMethod: "Cash",
-      gender: "male",
+      gender: "0",
       quantity: 1,
       price: 0,
     },
@@ -256,9 +256,9 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="male">Nam</SelectItem>
-                          <SelectItem value="female">Nữ</SelectItem>
-                          <SelectItem value="other">Khác</SelectItem>
+                          <SelectItem value="0">Nam</SelectItem>
+                          <SelectItem value="1">Nữ</SelectItem>
+                          <SelectItem value="2">Khác</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

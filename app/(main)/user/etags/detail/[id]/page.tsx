@@ -76,7 +76,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
       if (response.status === 200) {
         const responseData = response.data;
         if (responseData && responseData.data) {
-          const { urlDirect, key, invoiceId } = responseData.data;
+          const { urlDirect, invoiceId } = responseData.data;
           localStorage.setItem("pendingInvoiceId", invoiceId);
 
           if (!urlDirect || !invoiceId) {
@@ -120,88 +120,59 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     console.log("isProcessingPopupOpen:", isProcessingPopupOpen);
     console.log("shouldShowAlertDialog:", shouldShowAlertDialog);
   }, [isProcessingPopupOpen, shouldShowAlertDialog]);
-  const initiatePayment = async (
-    paymentMethod: string,
-    invoiceId: string
-    // key?: string
-  ) => {
+  const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
-      console.log(
-        `Initiating ${paymentMethod} payment for invoice ${invoiceId}`
-      );
-
       let paymentResponse;
 
-      if (paymentMethod === "Momo") {
-        paymentResponse = await paymentService.momo({ invoiceId });
-      } else if (paymentMethod === "VnPay") {
-        paymentResponse = await paymentService.vnpay({ invoiceId });
-      } else if (paymentMethod === "PayOS") {
-        paymentResponse = await paymentService.payos({ invoiceId });
-      } else {
-        throw new Error("Invalid payment method");
+      switch (paymentMethod.toLowerCase()) {
+        case "momo":
+          paymentResponse = await paymentService.momo({ invoiceId });
+          break;
+        case "vnpay":
+          paymentResponse = await paymentService.vnpay({ invoiceId });
+          break;
+        case "payos":
+          paymentResponse = await paymentService.payos({ invoiceId });
+          break;
+        case "zalopay":
+          paymentResponse = await paymentService.zalopay({ invoiceId });
+          break;
+        default:
+          throw new Error(`Unsupported payment method: ${paymentMethod}`);
       }
 
-      console.log(
-        "Raw payment response:",
-        JSON.stringify(paymentResponse, null, 2)
-      );
-
-      if (paymentResponse && paymentResponse.statusCode === 200) {
-        if (paymentMethod === "Momo") {
-          console.log("Handling MoMo response");
-          const momoData = paymentResponse.data;
-          if (momoData.payUrl) {
-            console.log("Redirecting to payUrl:", momoData.payUrl);
-            window.location.href = momoData.payUrl;
-          } else if (momoData.shortLink) {
-            console.log("Redirecting to shortLink:", momoData.shortLink);
-            window.location.href = momoData.shortLink;
-          } else {
-            console.error("MoMo payment URL not found in the response");
-            throw new Error("MoMo payment URL not found in the response");
-          }
-        } else if (paymentMethod === "VnPay") {
-          console.log("Handling VNPay response");
-          if (paymentResponse.data.vnPayResponse) {
-            console.log(
-              "Redirecting to VNPay URL:",
-              paymentResponse.data.vnPayResponse
-            );
-            window.location.href = paymentResponse.data.vnPayResponse;
-          } else {
-            console.error("VNPay payment URL not found in the response");
-            throw new Error("VNPay payment URL not found in the response");
-          }
-        } else if (paymentMethod === "PayOS") {
-          console.log("Handling PayOS response");
-          const payosData = paymentResponse.data;
-          if (payosData.checkoutUrl) {
-            console.log(
-              "Redirecting to PayOS checkout URL:",
-              payosData.checkoutUrl
-            );
-            window.location.href = payosData.checkoutUrl;
-          } else {
-            console.error("PayOS checkout URL not found in the response");
-            throw new Error("PayOS checkout URL not found in the response");
-          }
-        }
-      } else {
-        console.error("Invalid payment response structure or status code");
-        throw new Error("Invalid payment response structure or status code");
+      if (paymentResponse?.statusCode !== 200) {
+        throw new Error("Payment service returned non-200 status");
       }
+
+      const paymentUrl = getPaymentUrl(paymentMethod, paymentResponse.data);
+      if (!paymentUrl) {
+        throw new Error("Payment URL not found in response");
+      }
+      window.location.href = paymentUrl;
+      return true;
     } catch (error) {
       console.error("Payment initiation error:", error);
-      toast({
-        title: "Payment Error",
-        description: `Failed to initiate ${paymentMethod} payment. Please try again.`,
-        variant: "destructive",
-      });
       throw error;
     }
   };
 
+  const getPaymentUrl = (method: string, data: any): string | null => {
+    if (!data) return null;
+
+    switch (method.toLowerCase()) {
+      case "momo":
+        return data.payUrl || data.shortLink;
+      case "vnpay":
+        return data.vnPayResponse;
+      case "payos":
+        return data.checkoutUrl;
+      case "zalopay":
+        return data.order_url;
+      default:
+        return null;
+    }
+  };
   const handleConfirmPayment = async () => {
     if (!pendingInvoiceId) {
       toast({
@@ -547,7 +518,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
 
                       <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          CCCD:
+                          CCCD/Passport :
                         </FormLabel>
                         <FormControl>
                           <Input

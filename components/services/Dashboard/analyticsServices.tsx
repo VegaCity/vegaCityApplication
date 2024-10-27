@@ -7,7 +7,7 @@ const dataExample: AnalyticsPostProps = {
 };
 
 export const AnalyticsServices = {
-  getAdminDashboardAnalytics() {
+  getDashboardAnalytics() {
     return API.post("/transaction/dashboard", dataExample);
   },
 };

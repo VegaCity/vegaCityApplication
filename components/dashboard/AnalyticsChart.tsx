@@ -32,7 +32,7 @@ const AnalyticsChart = () => {
       // fetch data from API
       setIsLoading(true);
       try {
-        const res = await AnalyticsServices.getAdminDashboardAnalytics();
+        const res = await AnalyticsServices.getDashboardAnalytics();
         const analyticsRes = res.data.data ? res.data.data : [];
         setAnalyticsData(analyticsRes);
         console.log(analyticsRes, "analyticsRes");
@@ -53,9 +53,9 @@ const AnalyticsChart = () => {
             <CardDescription>Views Per Month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div style={{ width: "100%", height: 300 }}>
+            <div style={{ width: "70%", height: 300 }}>
               <ResponsiveContainer>
-                <LineChart width={1100} height={300} data={analyticsData}>
+                <LineChart width={1000} height={300} data={analyticsData}>
                   <Line
                     type="monotone"
                     dataKey="totalTransactions"
@@ -77,9 +77,9 @@ const AnalyticsChart = () => {
             <CardDescription>Views Per Month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div style={{ width: "100%", height: 300 }}>
+            <div style={{ width: "70%", height: 300 }}>
               <ResponsiveContainer>
-                <LineChart width={1100} height={300} data={analyticsData}>
+                <LineChart width={1000} height={300} data={analyticsData}>
                   <Line
                     type="monotone"
                     dataKey="totalTransactionsAmount"
@@ -101,7 +101,7 @@ const AnalyticsChart = () => {
             <CardDescription>Views Per Month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div style={{ width: "100%", height: 300 }}>
+            <div style={{ width: "70%", height: 300 }}>
               <ResponsiveContainer>
                 <LineChart width={1100} height={300} data={analyticsData}>
                   <Line type="monotone" dataKey="etagCount" stroke="#8884d8" />
@@ -119,7 +119,7 @@ const AnalyticsChart = () => {
             <CardDescription>Views Per Month</CardDescription>
           </CardHeader>
           <CardContent>
-            <div style={{ width: "100%", height: 300 }}>
+            <div style={{ width: "70%", height: 300 }}>
               <ResponsiveContainer>
                 <LineChart width={1100} height={300} data={analyticsData}>
                   <Line type="monotone" dataKey="orderCount" stroke="#8884d8" />

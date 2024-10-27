@@ -23,6 +23,7 @@ import {
   WarehouseIcon,
   StoreIcon,
   TagIcon,
+  ArrowRightLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -58,12 +59,6 @@ const Sidebar = () => {
       roles: ["Admin", "CashierWeb"],
     },
     {
-      name: "ETag",
-      icon: Tag,
-      href: navigatePage("etags"),
-      roles: ["CashierWeb"],
-    },
-    {
       name: "Zones",
       icon: LandPlot,
       href: navigatePage("zones"),
@@ -91,6 +86,12 @@ const Sidebar = () => {
       name: "Reports",
       icon: MessageSquareWarning,
       href: navigatePage("reports"),
+      roles: ["CashierWeb"],
+    },
+    {
+      name: "Transactions",
+      icon: ArrowRightLeft,
+      href: navigatePage("transactions"),
       roles: ["CashierWeb"],
     },
     {
