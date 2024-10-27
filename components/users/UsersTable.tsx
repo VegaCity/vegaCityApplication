@@ -386,11 +386,16 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                             <SelectValue placeholder="Select location house" />
                           </SelectTrigger>
                           <SelectContent>
-                            {housesList?.map((house, i) => (
-                              <SelectItem key={i} value={house.location || "-"}>
-                                {house.location || "-"}
-                              </SelectItem>
-                            ))}
+                            {housesList
+                              ?.filter((house) => !house.isRent)
+                              .map((house, i) => (
+                                <SelectItem
+                                  key={i}
+                                  value={house.location || "-"}
+                                >
+                                  {house.location || "-"}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       </FormControl>
