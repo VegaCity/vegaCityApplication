@@ -338,6 +338,19 @@ export const etagTypeFormSchema = z.object({
   }),
 });
 
+export const userApproveFormSchema = z.object({
+  locationHouse: z.string().min(1, "Location house is invalid"),
+  // addressHouse: z.string().min(1, "Address house is invalid"),
+  adressHouse: z.string().min(1, "Address house is invalid"),
+  storeName: z.string().min(1, "Store name is invalid"),
+  storeAddress: z.string().min(1, "Store address is invalid"),
+  phoneNumber: z.string().regex(/^(0|\+84)(\s|-)?[1-9]\d{8}$/, {
+    message: "Phone number is invalid!",
+  }),
+  storeEmail: z.string().email("Your email is invalid!"),
+  approvalStatus: z.string().min(1, "Approve status is invalid!"),
+});
+
 export type ChargeFormValues = z.infer<typeof chargeFormSchema>;
 export type FormValues = z.infer<typeof formSchema>;
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;
@@ -347,6 +360,7 @@ export type loginFormValues = z.infer<typeof loginFormSchema>;
 export type ServiceStoreFormValues = z.infer<typeof serviceStoreFormSchema>;
 export type StoreFormValues = z.infer<typeof storeFormSchema>;
 export type EtagTypeFormValues = z.infer<typeof etagTypeFormSchema>;
+export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;
 
 export interface EtagDetailPageProps {
   params: { id: string };

@@ -1,6 +1,7 @@
 "use client";
 
 import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
+import { HouseServices } from "@/components/services/houseServices";
 import { UserServices } from "@/components/services/User/userServices";
 import {
   AlertDialog,
@@ -23,12 +24,26 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -41,13 +56,18 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import { userApproveFormSchema, UserApproveFormValues } from "@/lib/validation";
+import { HouseType } from "@/types/house";
 import {
   handleUserStatusFromBe,
   UserAccountGet,
   UserApprove,
+  UserApproveSubmit,
   UserStatus,
 } from "@/types/userAccount";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretSortIcon } from "@radix-ui/react-icons";
+import { AxiosError } from "axios";
 import { CheckIcon, PenLine, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -75,47 +95,71 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   const [userSearch, setUserSearch] = useState<UserAccountGet | null>(null);
   const [isUserFound, setIsUserFound] = useState<boolean>(false);
 
-  //form user approve
-  const { register, handleSubmit, reset } = useForm<UserApprove>();
+  //get house api for approve user pending verify
+  const [housesList, setHousesList] = useState<HouseType[]>([]);
 
-  const handleApproveUser = async (data: UserApprove) => {
+  //User approve form
+  const userApproveForm = useForm<UserApproveFormValues>({
+    resolver: zodResolver(userApproveFormSchema),
+    defaultValues: {
+      locationHouse: "",
+      adressHouse: "",
+      storeName: "",
+      storeAddress: "",
+      phoneNumber: "",
+      storeEmail: "",
+      approvalStatus: "APPROVED",
+    },
+  });
+  //get location house selection
+  const [selectionHouse, setSelectionHouse] = useState<string>("");
+
+  const handleApproveUser = async (data: UserApproveSubmit) => {
     console.log(data, "data approveee");
     try {
       setIsLoading(true);
-      const response = await UserServices.approveUser(data.id, data); // Assuming `user.id` and `data`
-      setIsLoading(false);
-      toast({
-        title: "User Approved",
-        description: `User ${data.storeName} has been approved successfully.`,
+
+      const { approvalStatus, ...restData } = data;
+      const response = await UserServices.approveUser(data.id, {
+        ...restData,
+        approvalStatus: "APPROVED",
       });
 
-      setUserList((prevList) =>
-        prevList.map(
-          (u) => (u.id === data.id ? { ...u, status: 0 } : u) // Set status to active
-        )
-      );
-    } catch (error) {
+      console.log(response, "Approve user successfully!");
       setIsLoading(false);
       toast({
-        title: "Error",
-        description: "Failed to approve the user.",
+        title: "User is approved!",
+        description: `User - Store ${data.storeName} has been approved successfully.`,
       });
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        setIsLoading(false);
+        toast({
+          title: "Error",
+          description: error.message,
+        });
+      }
     }
   };
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUsersAndHouses = async () => {
       try {
-        const response = await UserServices.getUsers({
-          page: 1,
-          size: 100,
-        });
-        console.log(response.data); // Log the response for debugging
+        const [userResponse, houseResponse] = await Promise.all([
+          UserServices.getUsers({ page: 1, size: 100 }),
+          HouseServices.getHouses({ page: 1, size: 100 }),
+        ]);
+        // console.log(response.data, "get users list"); // Log the response for debugging
+        console.log(houseResponse.data, "response houses"); // Log the response for debugging
 
-        const users = Array.isArray(response.data.data)
-          ? response.data.data
+        const users: UserAccountGet[] = Array.isArray(userResponse.data.data)
+          ? userResponse.data.data
+          : [];
+        const houses: HouseType[] = Array.isArray(houseResponse.data.data)
+          ? houseResponse.data.data
           : [];
         setUserList(users);
+        setHousesList(houses);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
@@ -125,7 +169,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       }
     };
 
-    fetchUsers();
+    fetchUsersAndHouses();
   }, [isLoading, deleteLoading]);
 
   const handleDeleteUser = (user: UserAccountGet) => {
@@ -186,9 +230,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       label: "Ban",
     },
   ];
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   const filterUserStatus = (): UserAccountGet[] | undefined => {
     switch (userStatusValue) {
@@ -289,6 +330,202 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   console.log(filteredUsers, "userfilter list");
 
+  console.log(housesList, "Houses List");
+
+  const UserPendingVerifyPopUp = (userData: UserAccountGet) => {
+    // const userApproveForm = useForm<UserApproveFormValues>({
+    //   defaultValues: {
+    //     approvalStatus: "APPROVED",
+    //   },
+    // });
+
+    const onSubmit = (userApprove: UserApprove) => {
+      const completeData = { ...userApprove, id: userData.id }; // Combine form values with userData.id
+      handleApproveUser(completeData);
+    };
+
+    const handleOpenChange = (isOpen: boolean) => {
+      if (isOpen) {
+        userApproveForm.reset(); // Reset form fields when the popup is reopened
+      }
+    };
+
+    return (
+      <AlertDialog onOpenChange={handleOpenChange}>
+        <AlertDialogTrigger>
+          <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+            Approve
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent className="space-y-2">
+          <Form {...userApproveForm}>
+            <form onSubmit={userApproveForm.handleSubmit(onSubmit)}>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Approve this user - {userData?.fullName}?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Enter the approval details below.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="my-3 space-y-6">
+                <FormField
+                  control={userApproveForm.control}
+                  name="locationHouse"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectionHouse(value);
+                          }}
+                          {...field}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select location house" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {housesList?.map((house, i) => (
+                              <SelectItem key={i} value={house.location || "-"}>
+                                {house.location || "-"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  disabled={selectionHouse === ""}
+                  control={userApproveForm.control}
+                  // name="addressHouse"
+                  name="adressHouse"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange} //change value
+                          {...field} //get value
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select address house" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {housesList
+                              ?.filter(
+                                (house) => house.location === selectionHouse
+                              )
+                              .map((house, i) => (
+                                <SelectItem
+                                  key={i}
+                                  value={house.address || "-"}
+                                >
+                                  {house.address || "-"}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userApproveForm.control}
+                  name="storeName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          placeholder="Enter Store's Name"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userApproveForm.control}
+                  name="storeEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          placeholder="Enter Store's Email"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userApproveForm.control}
+                  name="storeAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          placeholder="Enter Store's Address"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={userApproveForm.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          placeholder="Enter Phone Number"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {/* <FormField
+                  control={userApproveForm.control}
+                  name="approvalStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          placeholder="Enter Approval Status"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                /> */}
+                {/* <Button type="submit">Confirm</Button> */}
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button type="submit">Confirm</Button>
+              </AlertDialogFooter>
+            </form>
+          </Form>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  };
+
   useEffect(() => {
     const filtered = userList.find(
       (user) =>
@@ -299,6 +536,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     console.log(filtered, "user filter");
     setUserSearch(filtered || null);
   }, [searchTerm, userList]);
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="mt-10">
@@ -418,63 +658,64 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                       </AlertDialog>
 
                       {/* // In TableRow under Actions cell */}
-                      {user.status === 3 && (
-                        <AlertDialog>
-                          <AlertDialogTrigger>
-                            <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
-                              Approve
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="space-y-2">
-                            <form onSubmit={handleSubmit(handleApproveUser)}>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Approve this user - {user?.fullName}?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Enter the approval details below.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <div className="space-y-2">
-                                <Input
-                                  {...register("locationHouse")}
-                                  placeholder="Location House"
-                                />
-                                <Input
-                                  {...register("adressHouse")}
-                                  placeholder="Address House"
-                                />
-                                <Input
-                                  {...register("storeName")}
-                                  placeholder="Store Name"
-                                />
-                                <Input
-                                  {...register("storeAddress")}
-                                  placeholder="Store Address"
-                                />
-                                <Input
-                                  {...register("phoneNumber")}
-                                  placeholder="Phone Number"
-                                />
-                                <Input
-                                  {...register("storeEmail")}
-                                  placeholder="Store Email"
-                                />
-                                <Input
-                                  {...register("approvalStatus")}
-                                  placeholder="Approval Status"
-                                />
-                              </div>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction type="submit">
-                                  Confirm
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </form>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
+                      {
+                        user.status === 3 && UserPendingVerifyPopUp(user)
+                        // <AlertDialog>
+                        //   <AlertDialogTrigger>
+                        //     <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                        //       Approve
+                        //     </Button>
+                        //   </AlertDialogTrigger>
+                        //   <AlertDialogContent className="space-y-2">
+                        //     <form onSubmit={handleSubmit(handleApproveUser)}>
+                        //       <AlertDialogHeader>
+                        //         <AlertDialogTitle>
+                        //           Approve this user - {user?.fullName}?
+                        //         </AlertDialogTitle>
+                        //         <AlertDialogDescription>
+                        //           Enter the approval details below.
+                        //         </AlertDialogDescription>
+                        //       </AlertDialogHeader>
+                        //       <div className="my-3 space-y-6">
+                        //         <Input
+                        //           {...register("locationHouse")}
+                        //           placeholder="Location House"
+                        //         />
+                        //         <Input
+                        //           {...register("adressHouse")}
+                        //           placeholder="Address House"
+                        //         />
+                        //         <Input
+                        //           {...register("storeName")}
+                        //           placeholder="Store Name"
+                        //         />
+                        //         <Input
+                        //           {...register("storeAddress")}
+                        //           placeholder="Store Address"
+                        //         />
+                        //         <Input
+                        //           {...register("phoneNumber")}
+                        //           placeholder="Phone Number"
+                        //         />
+                        //         <Input
+                        //           {...register("storeEmail")}
+                        //           placeholder="Store Email"
+                        //         />
+                        //         <Input
+                        //           {...register("approvalStatus")}
+                        //           placeholder="Approval Status"
+                        //         />
+                        //       </div>
+                        //       <AlertDialogFooter>
+                        //         <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        //         <AlertDialogAction type="submit">
+                        //           Confirm
+                        //         </AlertDialogAction>
+                        //       </AlertDialogFooter>
+                        //     </form>
+                        //   </AlertDialogContent>
+                        // </AlertDialog>
+                      }
                     </TableCell>
                   </TableRow>
                 ))}

@@ -108,12 +108,16 @@ export interface UserAccountGet extends UserAccount {
 }
 
 export interface UserApprove {
-  id: string;
   locationHouse: string;
+  // addressHouse: string;
   adressHouse: string;
   storeName: string;
   storeAddress: string;
   phoneNumber: string;
   storeEmail: string;
   approvalStatus: string;
+}
+
+export interface UserApproveSubmit extends UserApprove {
+  id: string;
 }
