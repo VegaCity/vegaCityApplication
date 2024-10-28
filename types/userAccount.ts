@@ -109,8 +109,7 @@ export interface UserAccountGet extends UserAccount {
 
 export interface UserApprove {
   locationHouse: string;
-  // addressHouse: string;
-  adressHouse: string;
+  addressHouse: string;
   storeName: string;
   storeAddress: string;
   phoneNumber: string;

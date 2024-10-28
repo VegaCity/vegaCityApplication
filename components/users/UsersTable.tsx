@@ -103,7 +103,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     resolver: zodResolver(userApproveFormSchema),
     defaultValues: {
       locationHouse: "",
-      adressHouse: "",
+      addressHouse: "",
       storeName: "",
       storeAddress: "",
       phoneNumber: "",
@@ -260,10 +260,12 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   console.log(handleUserStatusFromBe(2), "status");
 
   const UserFound = () => {
-    return userSearch?.map((userFound: UserAccountGet) => (
+    return userSearch?.map((userFound: UserAccountGet, i) => (
       <TableRow key={userFound.id}>
         <TableCell>
-          <PenLine />
+          <div className="flex items-center">
+            <PenLine size={20} />.{i}
+          </div>
         </TableCell>
         <TableCell>
           <div className="flex items-center">
@@ -295,18 +297,20 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           </Badge>
         </TableCell>
         <TableCell>
-          {userFound.status !== 3 && (
+          {userFound.status !== 3 ? (
             <Link href={`/admin/usersAccount/edit/${userFound.id}`}>
-              <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
+              <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
                 Edit
-              </button>
+              </Button>
             </Link>
+          ) : (
+            UserPendingVerifyPopUp(userFound)
           )}
           <AlertDialog>
             <AlertDialogTrigger>
-              <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+              <Button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
                 Delete
-              </button>
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -350,7 +354,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       if (isOpen) {
         userApproveForm.reset({
           locationHouse: "",
-          adressHouse: "",
+          addressHouse: "",
           storeName: "",
           storeAddress: "",
           phoneNumber: "",
@@ -417,7 +421,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                   disabled={selectionHouse === ""}
                   control={userApproveForm.control}
                   // name="addressHouse"
-                  name="adressHouse"
+                  name="addressHouse"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -642,14 +646,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                       <TableCell>
                         {user.status !== 3 && (
                           <Link href={`/admin/usersAccount/edit/${user.id}`}>
-                            <Button className="w-20 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
+                            <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
                               Edit
                             </Button>
                           </Link>
                         )}
                         <AlertDialog>
                           <AlertDialogTrigger>
-                            <Button className="w-20 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                            <Button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
                               Delete
                             </Button>
                           </AlertDialogTrigger>

@@ -340,8 +340,7 @@ export const etagTypeFormSchema = z.object({
 
 export const userApproveFormSchema = z.object({
   locationHouse: z.string().min(1, "Location house is invalid"),
-  // addressHouse: z.string().min(1, "Address house is invalid"),
-  adressHouse: z.string().min(1, "Address house is invalid"),
+  addressHouse: z.string().min(1, "Address house is invalid"),
   storeName: z.string().min(1, "Store name is invalid"),
   storeAddress: z.string().min(1, "Store address is invalid"),
   phoneNumber: z.string().regex(/^(0|\+84)(\s|-)?[1-9]\d{8}$/, {
