@@ -274,23 +274,19 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const formatDateTimeForDisplay = (dateString: string | null) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    date.setHours(date.getHours()); // Adjust for timezone if needed
+    date.setHours(date.getHours());
 
-    // Get date components
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
 
-    // Get time components
     let hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
 
-    // Convert hours to 12-hour format
     hours = hours % 12;
-    hours = hours ? hours : 12; // If hours is 0, set to 12
+    hours = hours ? hours : 12;
 
-    // Combine all components
     return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
   };
   useEffect(() => {
@@ -305,15 +301,13 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         setIsLoading(true);
         const response = await ETagServices.getETagById(params.id);
         const etagData = response.data?.data?.etag;
-
+        console.log(etagData, "etagData");
         if (!etagData) {
           throw new Error("No etag data received");
         }
-
-        const etagDetails = etagData.etagDetails?.[0] || {};
+        const etagDetails = etagData.etagDetail;
+        console.log(etagDetails, "etagDetails");
         setEtag(etagData);
-
-        // Reset form with fetched data
         form.reset({
           fullName: etagDetails.fullName || "",
           etagCode: etagData.etagCode || "",
@@ -422,7 +416,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         description: "The ETag has been successfully activated.",
       });
       window.location.reload();
-      // Optionally refresh ETag data here
     } catch (err) {
       toast({
         title: "Activation Failed",
