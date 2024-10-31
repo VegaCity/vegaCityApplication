@@ -1,10 +1,9 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useAuthUser } from "@/components/hooks/useAuthUser";
 import BackButton from "@/components/BackButton";
+import { useAuthUser } from "@/components/hooks/useAuthUser";
+import { useState } from "react";
 // import { ReportServices } from "@/components/services/reportService";
 // import { Report } from "@/types/report";
-import ReportCard from "@/components/card/reportcard";
 import ReportTable from "@/components/reports/ReportTable";
 
 const ReportPage = () => {
