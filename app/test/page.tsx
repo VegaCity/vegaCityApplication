@@ -149,7 +149,7 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
           throw new Error("No etag data received");
         }
 
-        const etagDetails = etagData.etagDetails?.[0] || {};
+        const etagDetails = etagData.etagDetails;
         setEtag(etagData);
 
         // Reset form with fetched data
