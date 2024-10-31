@@ -364,6 +364,9 @@ export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;
 export interface EtagDetailPageProps {
   params: { id: string };
 }
+export interface EtagEditPageProps {
+  params: { id: string };
+}
 
 export interface GenerateEtagProps {
   params: { id: string };

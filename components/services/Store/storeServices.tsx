@@ -3,6 +3,7 @@ import { StoreOwnerPatch } from "@/types/storeOwner";
 
 interface StorePageSize {
   // apiKey: string;
+  apiKey?: string;
   page?: number;
   size?: number;
 }

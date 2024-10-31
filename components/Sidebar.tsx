@@ -36,6 +36,8 @@ const Sidebar = () => {
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
       ? `/admin/${routeName}`
+      : userRole?.name === "Store"
+      ? `/store/${routeName}`
       : `/user/${routeName}`;
   };
 
@@ -44,7 +46,7 @@ const Sidebar = () => {
       name: "Dashboard",
       icon: LayoutDashboard,
       href: "/",
-      roles: ["Admin", "CashierWeb"],
+      roles: ["Admin", "CashierWeb", "Store"],
     },
     {
       name: "Packages",
@@ -111,6 +113,12 @@ const Sidebar = () => {
       icon: ArrowRightLeft,
       href: navigatePage("withdraws"),
       roles: ["CashierWeb"],
+    },
+    {
+      name: "Menu",
+      icon: Pizza,
+      href: navigatePage("product"),
+      roles: ["Store"],
     },
   ];
 

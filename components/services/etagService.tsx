@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { ETag } from "@/types/etag";
+import { ETag, ETagHandleUpdate } from "@/types/etag";
 
 interface ETagPageSize {
   page?: number;
@@ -67,6 +67,9 @@ export const ETagServices = {
     return API.post("/etag/", etagData);
   },
   editEtag(id: string, etagData: ETag) {
+    return API.patch(`/etag/${id}`, etagData);
+  },
+  editInfoEtag(id: string, etagData: ETagHandleUpdate) {
     return API.patch(`/etag/${id}`, etagData);
   },
   deleteEtagById(id: string) {

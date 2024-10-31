@@ -32,7 +32,7 @@ interface WalletInfo {
   balance: number;
 }
 
-const ETAG_CODE_PATTERN = /^VGC[0-9]{13,16}$/;
+const ETAG_CODE_PATTERN = /^VGC[0-9]{16,19}$/;
 const MIN_WITHDRAWAL = 50000;
 const FORMAT_LOCALE = "vi-VN";
 
@@ -96,9 +96,7 @@ const WithdrawMoney: React.FC<WithdrawMoneyProps> = ({ onSuccess }) => {
       try {
         setIsLoading(true);
         setError("");
-
         const response = await API.get("/etag", { params: { etagCode: code } });
-
         if (response.data.statusCode === 200 && response.data.data) {
           const { data } = response.data;
           // Update wallet info
