@@ -274,7 +274,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const formatDateTimeForDisplay = (dateString: string | null) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    date.setHours(date.getHours()); // Adjust for timezone if needed
+    date.setHours(date.getHours()); 
 
     // Get date components
     const day = date.getDate().toString().padStart(2, "0");

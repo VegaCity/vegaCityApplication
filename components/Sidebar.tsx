@@ -35,9 +35,10 @@ const Sidebar = () => {
 
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
-      ? `/admin/${routeName}`:
-      userRole?.name==="store"?
-      `/store/${routeName}` : `/user/${routeName}`;
+      ? `/admin/${routeName}`
+      : userRole?.name === "Store"
+      ? `/store/${routeName}`
+      : `/user/${routeName}`;
   };
 
   const menuItems = [
@@ -45,7 +46,7 @@ const Sidebar = () => {
       name: "Dashboard",
       icon: LayoutDashboard,
       href: "/",
-      roles: ["Admin", "CashierWeb"],
+      roles: ["Admin", "CashierWeb", "Store"],
     },
     {
       name: "Packages",
@@ -112,6 +113,12 @@ const Sidebar = () => {
       icon: User,
       href: navigatePage("usersAccount"),
       roles: ["Admin"],
+    },
+    {
+      name: "Menu",
+      icon: Pizza,
+      href: navigatePage("product"),
+      roles: ["Store"],
     },
   ];
 
