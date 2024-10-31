@@ -364,6 +364,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       }
     };
 
+    const disableIfNoHouse = (house: HouseType): boolean => {
+      if (house.isRent) return true;
+      else return false;
+    };
+
     return (
       <AlertDialog onOpenChange={handleOpenChange}>
         <AlertDialogTrigger>
@@ -434,9 +439,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           </SelectTrigger>
                           <SelectContent>
                             {housesList
-                              ?.filter(
-                                (house) => house.location === selectionHouse
-                              )
+                              ?.filter((house) => !house.isRent)
                               .map((house, i) => (
                                 <SelectItem
                                   key={i}
@@ -452,6 +455,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={userApproveForm.control}
                   name="storeName"

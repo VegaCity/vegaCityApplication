@@ -1,31 +1,61 @@
 "use client";
 
+import { AppSidebar } from "@/components/app-sidebar";
+import Breadcrumb from "@/components/Breadcrumb";
+
 import { useAuthUser } from "@/components/hooks/useAuthUser";
-import Navbar from "@/components/Navbar";
-import Sidebar from "@/components/Sidebar";
-import { Toaster } from "@/components/ui/toaster";
-import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { redirect, usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
+  const pathname = usePathname();
   const auth = useAuthUser;
   if (!auth) {
     redirect("/auth");
   }
 
-  useEffect(() => {}, [auth]);
+  const breadcrumbItems = pathname
+    .split("/")
+    .filter(Boolean)
+    .map((segment, index, arr) => {
+      const isLast = index === arr.length - 1;
+      return {
+        label: segment,
+        href: "/" + arr.slice(0, index + 1).join("/"),
+        isLast,
+      };
+    });
+
+  console.log(breadcrumbItems, "breadcrumbItems");
 
   return (
-    <>
-      <Navbar />
-      <div className="flex">
-        <div className="hidden md:block h-[127vh] w-28">
-          <Sidebar />
+    <SidebarProvider>
+      <>
+        {/* <Navbar /> */}
+        <div className="flex w-full">
+          <div className="hidden md:block h-screen w-18">
+            {/* <Sidebar /> */}
+            <AppSidebar />
+          </div>
+          <div className="p-5 w-full md:block">
+            <div className="fixed left-29 top-1">
+              <SidebarTrigger />
+            </div>
+            <div className="overflow-y-auto">
+              <>
+                <div className="my-4">
+                  <Breadcrumb items={breadcrumbItems} />
+                </div>
+                {children}
+              </>
+            </div>
+          </div>
+          {/* <Toaster /> */}
         </div>
-        <div className="p-10 w-full md:max-w-full">{children}</div>
-        <Toaster />
-      </div>
-    </>
+      </>
+    </SidebarProvider>
   );
 };
 

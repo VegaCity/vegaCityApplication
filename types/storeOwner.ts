@@ -14,6 +14,7 @@ export interface StoreOwner {
   email: string;
   description: string;
   storeType: number;
+  zoneName: string;
   status: number;
   deflag: boolean;
 }

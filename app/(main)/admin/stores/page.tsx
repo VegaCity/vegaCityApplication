@@ -18,12 +18,14 @@ const PackagesPage = () => {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <BackButton text="Go Back" link="/" />
+        <Link
+          href="/admin/zones"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Create Store by Zone
+        </Link>
       </div>
-      <StoresTable
-        params={{
-          id: "",
-        }}
-      />
+      <StoresTable />
       <StoresPagination />
     </div>
   );

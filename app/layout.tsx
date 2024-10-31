@@ -1,18 +1,30 @@
-import type { Metadata } from "next";
+"use client";
+
+import Providers from "@/app/Provider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { Toaster } from "@/components/ui/toaster";
+import { FirebaseProvider } from "@/providers/FirebaseProvider";
+import { QueryProvider } from "@/providers/query-provider";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "@/components/providers/ThemeProvider";
-import Providers from "@/app/Provider";
-import { QueryProvider } from "@/providers/query-provider";
-import { FirebaseProvider } from "@/providers/FirebaseProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "VegaCity",
-  description: "Admin dashboard",
-};
+// export const metadata: Metadata = {
+//   title: "VegaCity",
+//   description: "Admin dashboard",
+// };
+
+// function MainApp() {
+//   const { state } = useSidebar(); // Using useSidebar
+
+//   return (
+//     <div>
+//       <h1>{state}</h1>
+//       <AppSidebar />
+//     </div>
+//   );
+// }
 
 export default function RootLayout({
   children,
@@ -32,6 +44,7 @@ export default function RootLayout({
       >
         <FirebaseProvider>
           <Providers>
+            {/* <AppSidebar /> */}
             <ThemeProvider
               attribute="class"
               defaultTheme="light"

@@ -52,6 +52,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
             ? response.data.data
             : [];
           setStores(stores);
+          console.log(response.data.data, "all store");
         }
       } catch (err) {
         setError(
@@ -145,8 +146,9 @@ const StoresTable = ({ params }: StoreTableProps) => {
           <TableCaption>A list of all stores</TableCaption>
           <TableHeader>
             <TableRow className="bg-slate-300 hover:bg-slate-300">
-              <TableHead>#</TableHead>
+              <TableHead>No.</TableHead>
               <TableHead>Store Name</TableHead>
+              <TableHead>Zone Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>PhoneNumber</TableHead>
               <TableHead>ShortName</TableHead>
@@ -161,6 +163,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
               <TableRow key={store.id}>
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{store.name}</TableCell>
+                <TableCell>{store.zoneName}</TableCell>
                 <TableCell>{store.email}</TableCell>
                 <TableCell>{store.phoneNumber}</TableCell>
                 <TableCell>

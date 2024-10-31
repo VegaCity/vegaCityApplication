@@ -504,7 +504,9 @@ const LoginForm = () => {
               )}
             />
 
-            <Button className="w-full bg-sky-600 text-lg ">Sign In</Button>
+            <Button className="w-full text-lg bg-sky-500 hover:bg-sky-600">
+              Sign In
+            </Button>
           </form>
         </Form>
       </CardContent>

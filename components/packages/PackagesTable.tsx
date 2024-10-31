@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
 
 interface PackageTableProps {
   limit?: number;
@@ -107,6 +108,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
   return (
     <div className="mt-10">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
+      <PopoverActionTable />
       {filteredPackages.length > 0 ? (
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
