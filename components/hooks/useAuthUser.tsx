@@ -10,10 +10,12 @@ export function useAuthUser(): {
   user: Users | null;
   roleName: string;
   loading: boolean;
+  storeId: string | null;
 } {
   const [user, setUser] = useState<Users | null>(null);
   const [roleName, setRoleName] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [storeId, setStoreId] = useState<string | null>(null);
   const [authUserFromLocal, setAuthUserFromLocal] = useState<string | null>("");
   const { toast } = useToast();
   const router = useRouter();
@@ -26,7 +28,12 @@ export function useAuthUser(): {
         UserServices.getUserById(authUser)
           .then((res) => {
             setUser(res.data.data.user);
-            setRoleName(res.data.data.roleName);
+            setRoleName(res.data.data.user.roleName);
+            const userStoreId = res.data.data.user?.storeId;
+            if (userStoreId) {
+              localStorage.setItem("storeId", userStoreId);
+              setStoreId(userStoreId);
+            }
             console.log(res.data.data.user);
           })
           .catch((err) => {
@@ -38,6 +45,7 @@ export function useAuthUser(): {
                 const error = await error401;
                 if (error === 401) {
                   AuthServices.logoutUser();
+                  localStorage.removeItem("storeId");
                   router.push("/auth");
                   toast({
                     title: "Your token is expired!",
@@ -66,5 +74,5 @@ export function useAuthUser(): {
     fetchAuthUser();
   }, [loading, authUserFromLocal]);
 
-  return { user, roleName, loading };
+  return { user, roleName, loading, storeId };
 }

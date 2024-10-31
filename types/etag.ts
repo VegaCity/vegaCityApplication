@@ -60,3 +60,9 @@ export interface ETag {
   marketZone: MarketZone;
   wallet: Wallet;
 }
+
+export interface ETagHandleUpdate {
+  phoneNumber: string;
+  gender: string;
+  birthday: string;
+}
