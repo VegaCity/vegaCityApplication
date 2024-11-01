@@ -96,29 +96,43 @@ const WithdrawMoney = () => {
         setIsLoading(true);
         setError("");
         const response = await API.get("/etag", { params: { etagCode: code } });
-        if (response.data.statusCode === 200 && response.data.data) {
+
+        if (response.data?.statusCode === 200) {
           const { data } = response.data;
-          // Update wallet info
-          setWalletInfo({
-            id: data.etag.wallet.id,
-            balance: data.etag.wallet.balance,
-          });
-          const details = data.etag.etagDetails[0];
-          setEtagDetails({
-            id: details.id,
-            etagId: details.etagId,
-            fullName: details.fullName,
-            phoneNumber: details.phoneNumber,
-            cccdPassport: details.cccdPassport,
-            birthday: details.birthday,
-            createAt: details.createAt,
-            updateAt: details.updateAt,
-          });
+
+          if (data?.etag) {
+            if (data.etag.wallet) {
+              setWalletInfo({
+                id: data.etag.wallet.id,
+                balance: data.etag.wallet.balance,
+              });
+            }
+
+            if (data.etag.etagDetail) {
+              setEtagDetails({
+                id: data.etag.etagDetail.id,
+                etagId: data.etag.etagDetail.etagId,
+                fullName: data.etag.etagDetail.fullName,
+                phoneNumber: data.etag.etagDetail.phoneNumber,
+                cccdPassport: data.etag.etagDetail.cccdPassport,
+                birthday: data.etag.etagDetail.birthday,
+                createAt: data.etag.etagDetail.createAt,
+                updateAt: data.etag.etagDetail.updateAt,
+              });
+            } else {
+              throw new Error("Không tìm thấy thông tin chi tiết E-tag");
+            }
+          } else {
+            throw new Error("Không tìm thấy thông tin E-tag");
+          }
         } else {
-          throw new Error("Không tìm thấy thông tin E-tag");
+          throw new Error(
+            response.data?.messageResponse || "Không tìm thấy thông tin E-tag"
+          );
         }
       } catch (err) {
-        setError("Đã có lỗi xảy ra .Vui lòng kiểm tra lại.");
+        console.error("Error fetching etag info:", err);
+        setError("Đã có lỗi xảy ra. Vui lòng kiểm tra lại.");
         setWalletInfo(null);
         setEtagDetails(null);
       } finally {
