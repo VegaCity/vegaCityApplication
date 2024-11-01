@@ -74,15 +74,24 @@ export function AppSidebar() {
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
       ? `/admin/${routeName}`
+      : userRole?.name === "Store"
+      ? `/store/${routeName}`
       : `/user/${routeName}`;
   };
 
   const menuItems = [
+
     {
       name: "Dashboard",
       icon: LayoutDashboard,
       href: "/",
-      roles: ["Admin", "CashierWeb"],
+      roles: ["Admin", "CashierWeb", "Store"],
+    },
+    {
+      name: "Product",
+      icon: LayoutDashboard,
+      href: navigatePage("product"),
+      roles: [ "Store"],
     },
     {
       name: "Packages",

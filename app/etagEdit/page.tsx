@@ -54,9 +54,9 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const DEV_CONFIG = {
-    // This ID will be replaced with QR code scanning logic in production
+  
     DEMO_ETAG_ID: "1d8f7fc6-0634-486a-9238-ec56b7aaa50e",
-    IS_DEVELOPMENT: true  // Toggle this when implementing QR scanning
+    IS_DEVELOPMENT: true  
   };
 
 
@@ -149,7 +149,7 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
           throw new Error("No etag data received");
         }
 
-        const etagDetails = etagData.etagDetails;
+        const etagDetails = etagData.etagDetail;
         setEtag(etagData);
 
         // Reset form with fetched data
