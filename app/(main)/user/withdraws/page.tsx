@@ -34,8 +34,8 @@ const ETAG_CODE_PATTERN = /^VGC[0-9]{16,19}$/;
 const MIN_WITHDRAWAL = 50000;
 const FORMAT_LOCALE = "vi-VN";
 
-const WithdrawMoney = () => {
-  const onSuccess = () => {};
+const WithdrawMoney: React.FC<WithdrawMoneyProps> = ({ onSuccess }) => {
+  // const onSuccess = () => {};
   const { toast } = useToast();
   const [etagCode, setEtagCode] = useState("");
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);

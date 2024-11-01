@@ -25,6 +25,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { EtagType } from "@/types/etagtype";
 import { ETagTypeServices } from "@/components/services/etagtypeServices";
+import { Pencil, Trash } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
 
 interface EtagTypeTableProps {
   limit?: number;
@@ -146,37 +149,10 @@ const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
                   </React.Fragment>
                 ))} */}
                 <TableCell>
-                  <Link href={`/admin/etagtypes/edit/${etag.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2">
-                      Edit
-                    </button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
-                        Delete
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are sure for delete this -{etag?.name}- Etag Type?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will deflag Etag in
-                          your Etag list!
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteEtagType(etag)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <PopoverActionTable
+                    etag={etag}
+                    handleDelete={handleDeleteEtagType}
+                  />
                 </TableCell>
               </TableRow>
             ))}
