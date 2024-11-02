@@ -18,22 +18,27 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { EtagType } from "@/types/etagtype";
+import { Package } from "@/types/package";
 import { Pencil, Trash } from "lucide-react";
 import Link from "next/link";
 
-interface GetEtagType extends EtagType {
+interface BaseType {
   id: string;
+  name?: string;
+  houseName?: string;
 }
 
-interface PopoverActionProps {
-  etag: GetEtagType;
-  handleDelete: (etag: GetEtagType) => void;
+interface PopoverActionProps<T extends BaseType> {
+  item: T;
+  editLink: string;
+  handleDelete: (item: T) => void;
 }
 
-export const PopoverActionTable: React.FC<PopoverActionProps> = ({
-  etag,
+export const PopoverActionTable = <T extends BaseType>({
+  item,
+  editLink,
   handleDelete,
-}) => {
+}: PopoverActionProps<T>) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -50,7 +55,7 @@ export const PopoverActionTable: React.FC<PopoverActionProps> = ({
           <div className="grid gap-2">
             <div className="grid grid-cols-3 items-center gap-4">
               <Label htmlFor="width">Edit</Label>
-              <Link href={`/admin/etagtypes/edit/${etag.id}`}>
+              <Link href={editLink}>
                 <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded text-xs mr-2">
                   <Pencil />
                 </Button>
@@ -70,16 +75,15 @@ export const PopoverActionTable: React.FC<PopoverActionProps> = ({
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      Are sure for delete this -{etag.name}- Etag Type?
+                      Are sure for delete this -{item.name ?? item.houseName}-?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      This action cannot be undone. This will deflag Etag in
-                      your Etag list!
+                      This action cannot be undone. This will deflag in list!
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleDelete(etag)}>
+                    <AlertDialogAction onClick={() => handleDelete(item)}>
                       Confirm
                     </AlertDialogAction>
                   </AlertDialogFooter>

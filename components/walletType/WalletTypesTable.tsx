@@ -28,6 +28,7 @@ import { ZoneServices } from "@/components/services/zoneServices";
 import { useRouter } from "next/navigation";
 import { GetWalletType } from "@/types/walletType/walletType";
 import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
 
 interface WalletTypeTableProps {
   limit?: number;
@@ -138,38 +139,11 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
                   </React.Fragment>
                 ))} */}
                 <TableCell>
-                  <Link href={`/admin/walletTypes/edit/${walletType.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                      Edit
-                    </button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                        Delete
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are sure for delete this -{walletType?.name}- wallet
-                          type?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will delete
-                          permanently!
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteWalletType(walletType)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <PopoverActionTable
+                    item={walletType}
+                    editLink={`/admin/walletTypes/edit/${walletType.id}`}
+                    handleDelete={handleDeleteWalletType}
+                  />
                 </TableCell>
               </TableRow>
             ))}

@@ -108,7 +108,6 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
   return (
     <div className="mt-10">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
-      <PopoverActionTable />
       {filteredPackages.length > 0 ? (
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
@@ -153,37 +152,11 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                   {new Date(pkg.endDate).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  <Link href={`/admin/packages/edit/${pkg.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                      Edit
-                    </button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                        Delete
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are sure for delete this -{pkg?.name}- PACKAGE?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will deflag package
-                          in your package list!
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeletePackage(pkg)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <PopoverActionTable
+                    item={pkg}
+                    editLink={`/admin/packages/edit/${pkg.id}`}
+                    handleDelete={handleDeletePackage}
+                  />
                 </TableCell>
               </TableRow>
             ))}

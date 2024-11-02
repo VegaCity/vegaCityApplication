@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader } from "@/components/loader/Loader";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { HouseServices } from "@/components/services/houseServices";
 import { StoreServices } from "@/components/services/Store/storeServices";
 import {
@@ -177,21 +178,11 @@ const StoresTable = ({ params }: StoreTableProps) => {
                   {store.storeType ? store.storeType : <Minus />}
                 </TableCell>
                 <TableCell>
-                  <button
-                    onClick={() =>
-                      router.push(`/admin/stores/edit/${store.id}`)
-                    }
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200"
-                  >
-                    Edit
-                  </button>
-                  {/* Add delete functionality */}
-                  <button
-                    onClick={() => handleDeleteStore(store)}
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200"
-                  >
-                    Delete
-                  </button>
+                  <PopoverActionTable
+                    item={store}
+                    editLink={`/admin/stores/edit/${store.id}`}
+                    handleDelete={handleDeleteStore}
+                  />
                 </TableCell>
               </TableRow>
             ))}

@@ -25,9 +25,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ServiceStoreServices } from "@/components/services/Store/servicesStoreServices";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { Loader } from "@/components/loader/Loader";
+import { toast } from "@/components/ui/use-toast";
 
 const ServiceStoresTable = () => {
   const [stores, setStores] = useState<StoreService[]>([]);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [storeToDelete, setStoreToDelete] = useState<StoreService | null>(null);
@@ -50,15 +54,30 @@ const ServiceStoresTable = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await ServiceStoreServices.deleteServiceStoreById(id);
-      fetchStores();
-      setStoreToDelete(null);
-    } catch (error) {
-      console.error("Error deleting store:", error);
+  const handleDeleteServiceStore = async (serviceStore: StoreService) => {
+    const { id, name } = serviceStore;
+
+    setDeleteLoading(true);
+    if (id) {
+      ServiceStoreServices.deleteServiceStoreById(id)
+        .then((res) => {
+          setDeleteLoading(false);
+          toast({
+            title: res.data.messageResponse,
+            description: `Store name: ${name}`,
+          });
+        })
+        .catch((err) => {
+          setDeleteLoading(false);
+          toast({
+            title: err.data.messageResponse,
+            description: "Some errors have occurred!",
+          });
+        });
     }
   };
+
+  <Loader isLoading={deleteLoading} />;
 
   return (
     <div>
@@ -82,30 +101,18 @@ const ServiceStoresTable = () => {
               <TableCell>{new Date(store.upsDate).toLocaleString()}</TableCell>
               <TableCell>{store.deflag ? "No" : "Yes"}</TableCell>
               <TableCell>
-                <Link href={`/admin/servicesStore/edit/${store.id}`}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200"
-                  >
-                    Edit
-                  </Button>
-                </Link>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200"
-                  onClick={() => setStoreToDelete(store)}
-                >
-                  Delete
-                </Button>
+                <PopoverActionTable
+                  item={store}
+                  editLink={`/admin/servicesStore/edit/${store.id}`}
+                  handleDelete={handleDeleteServiceStore}
+                />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      <AlertDialog
+      {/* <AlertDialog
         open={!!storeToDelete}
         onOpenChange={() => setStoreToDelete(null)}
       >
@@ -122,13 +129,15 @@ const ServiceStoresTable = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => storeToDelete && handleDelete(storeToDelete.id)}
+              onClick={() =>
+                storeToDelete && handleDeleteServiceStore(storeToDelete)
+              }
             >
               Confirm
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
     </div>
   );
 };

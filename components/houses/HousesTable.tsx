@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { HouseType } from "@/types/house";
 import { HouseServices } from "@/components/services/houseServices";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
 
 interface HouseTableProps {
   limit?: number;
@@ -117,38 +118,11 @@ const HouseTable = ({ limit, title }: HouseTableProps) => {
                   {house.address}
                 </TableCell>
                 <TableCell>
-                  <Link href={`/admin/houses/edit/${house.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                      Edit
-                    </button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
-                        Delete
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you sure you want to delete this house -{" "}
-                          {house.houseName}?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will remove the
-                          house from your list!
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteHouse(house)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <PopoverActionTable
+                    item={house}
+                    editLink={`/admin/packages/edit/${house.id}`}
+                    handleDelete={handleDeleteHouse}
+                  />
                 </TableCell>
               </TableRow>
             ))}

@@ -26,6 +26,7 @@ import {
 import { ZoneType } from "@/types/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { useRouter } from "next/navigation";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
 
 interface ZoneTableProps {
   limit?: number;
@@ -143,37 +144,11 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
                   </React.Fragment>
                 ))} */}
                 <TableCell>
-                  <Link href={`/admin/zones/edit/${zns.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                      Edit
-                    </button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                        Delete
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are sure for delete this -{zns?.name}- ZONE?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will deflag Zone in
-                          your Zone list!
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeleteZone(zns)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <PopoverActionTable
+                    item={zns}
+                    editLink={`/admin/zones/edit/${zns.id}`}
+                    handleDelete={handleDeleteZone}
+                  />
                 </TableCell>
               </TableRow>
             ))}

@@ -1,19 +1,18 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import { Input } from "@/components/ui/input";
+import { API } from "@/components/services/api";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ArrowDownToLine, Loader2, Wallet } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { API } from "@/components/services/api";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { WithdrawMoneyProps } from "@/types/withdraw";
+import { AlertCircle, ArrowDownToLine, Loader2, Wallet } from "lucide-react";
+import React, { useCallback, useState } from "react";
 
 interface EtagDetails {
   id: string;
@@ -34,8 +33,7 @@ const ETAG_CODE_PATTERN = /^VGC[0-9]{16,19}$/;
 const MIN_WITHDRAWAL = 50000;
 const FORMAT_LOCALE = "vi-VN";
 
-const WithdrawMoney: React.FC<WithdrawMoneyProps> = ({ onSuccess }) => {
-  // const onSuccess = () => {};
+const WithdrawMoney = () => {
   const { toast } = useToast();
   const [etagCode, setEtagCode] = useState("");
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
@@ -213,7 +211,6 @@ const WithdrawMoney: React.FC<WithdrawMoneyProps> = ({ onSuccess }) => {
           title: "Thành công",
           description: "Rút tiền thành công!",
         });
-        onSuccess?.();
         setTimeout(() => window.location.reload(), 2500);
       } else {
         throw new Error(
@@ -230,7 +227,7 @@ const WithdrawMoney: React.FC<WithdrawMoneyProps> = ({ onSuccess }) => {
     } finally {
       setIsWithdrawing(false);
     }
-  }, [walletInfo?.id, pendingTransactionId, onSuccess, toast]);
+  }, [walletInfo?.id, pendingTransactionId, toast]);
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 flex items-center justify-center">
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-lg p-8 space-y-8">

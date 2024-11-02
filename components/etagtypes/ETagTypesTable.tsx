@@ -150,7 +150,8 @@ const EtagTypeTable = ({ limit, title }: EtagTypeTableProps) => {
                 ))} */}
                 <TableCell>
                   <PopoverActionTable
-                    etag={etag}
+                    item={etag}
+                    editLink={`/admin/packages/edit/${etag.id}`}
                     handleDelete={handleDeleteEtagType}
                   />
                 </TableCell>

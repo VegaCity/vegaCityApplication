@@ -1,6 +1,7 @@
 "use client";
 
 import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { HouseServices } from "@/components/services/houseServices";
 import { UserServices } from "@/components/services/User/userServices";
 import {
@@ -298,39 +299,43 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         </TableCell>
         <TableCell>
           {userFound.status !== 3 ? (
-            <Link href={`/admin/usersAccount/edit/${userFound.id}`}>
-              <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                Edit
-              </Button>
-            </Link>
+            <PopoverActionTable
+              item={userFound}
+              editLink={`/admin/usersAccount/edit/${userFound.id}`}
+              handleDelete={handleDeleteUser}
+            />
           ) : (
-            UserPendingVerifyPopUp(userFound)
+            <>
+              {UserPendingVerifyPopUp(userFound)}
+              <AlertDialog>
+                <AlertDialogTrigger>
+                  <Button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you sure you want to delete this user -{" "}
+                      {userFound?.fullName}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will delete the user
+                      from your list!
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => handleDeleteUser(userFound)}
+                    >
+                      Confirm
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           )}
-          <AlertDialog>
-            <AlertDialogTrigger>
-              <Button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Are you sure you want to delete this user -{" "}
-                  {userFound?.fullName}?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will delete the user from
-                  your list!
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => handleDeleteUser(userFound)}>
-                  Confirm
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </TableCell>
       </TableRow>
     ));
@@ -649,99 +654,15 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                       </TableCell>
                       <TableCell>
                         {user.status !== 3 && (
-                          <Link href={`/admin/usersAccount/edit/${user.id}`}>
-                            <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                              Edit
-                            </Button>
-                          </Link>
+                          <PopoverActionTable
+                            item={user}
+                            editLink={`/admin/usersAccount/edit/${user.id}`}
+                            handleDelete={handleDeleteUser}
+                          />
                         )}
-                        <AlertDialog>
-                          <AlertDialogTrigger>
-                            <Button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs mr-2 transition-colors duration-200">
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Are you sure you want to delete this user -{" "}
-                                {user?.fullName}?
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will delete
-                                the user from your list!
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteUser(user)}
-                              >
-                                Confirm
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-
-                        {/* // In TableRow under Actions cell */}
-                        {
-                          user.status === 3 && UserPendingVerifyPopUp(user)
-                          // <AlertDialog>
-                          //   <AlertDialogTrigger>
-                          //     <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
-                          //       Approve
-                          //     </Button>
-                          //   </AlertDialogTrigger>
-                          //   <AlertDialogContent className="space-y-2">
-                          //     <form onSubmit={handleSubmit(handleApproveUser)}>
-                          //       <AlertDialogHeader>
-                          //         <AlertDialogTitle>
-                          //           Approve this user - {user?.fullName}?
-                          //         </AlertDialogTitle>
-                          //         <AlertDialogDescription>
-                          //           Enter the approval details below.
-                          //         </AlertDialogDescription>
-                          //       </AlertDialogHeader>
-                          //       <div className="my-3 space-y-6">
-                          //         <Input
-                          //           {...register("locationHouse")}
-                          //           placeholder="Location House"
-                          //         />
-                          //         <Input
-                          //           {...register("adressHouse")}
-                          //           placeholder="Address House"
-                          //         />
-                          //         <Input
-                          //           {...register("storeName")}
-                          //           placeholder="Store Name"
-                          //         />
-                          //         <Input
-                          //           {...register("storeAddress")}
-                          //           placeholder="Store Address"
-                          //         />
-                          //         <Input
-                          //           {...register("phoneNumber")}
-                          //           placeholder="Phone Number"
-                          //         />
-                          //         <Input
-                          //           {...register("storeEmail")}
-                          //           placeholder="Store Email"
-                          //         />
-                          //         <Input
-                          //           {...register("approvalStatus")}
-                          //           placeholder="Approval Status"
-                          //         />
-                          //       </div>
-                          //       <AlertDialogFooter>
-                          //         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          //         <AlertDialogAction type="submit">
-                          //           Confirm
-                          //         </AlertDialogAction>
-                          //       </AlertDialogFooter>
-                          //     </form>
-                          //   </AlertDialogContent>
-                          // </AlertDialog>
-                        }
+                        {/* Could handle Delete Button here */}
+                        {/* Approve user button */}
+                        {user.status === 3 && UserPendingVerifyPopUp(user)}
                       </TableCell>
                     </TableRow>
                   ))}
