@@ -68,7 +68,6 @@ export function AppSidebar() {
   const router = useRouter();
   const { userRole, loading } = useUserRole();
   const { user } = useAuthUser();
-  console.log(userRole, "userrrr");
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -225,7 +224,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map(
                 (item) =>
-                  item.roles.includes(userRole || "") &&
+                  item.roles.includes(userRole?.name || null) &&
                   (item.child && item.child.length > 0 ? (
                     <Collapsible defaultOpen className="group/collapsible">
                       <SidebarMenuItem>

@@ -2,17 +2,17 @@
 import { AuthServices } from "@/components/services/authServices";
 import { UserServices } from "@/components/services/User/userServices";
 import { useToast } from "@/components/ui/use-toast";
-import { Users } from "@/types/user";
+import { Users, GetUserById } from "@/types/user";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 export function useAuthUser(): {
-  user: Users | null;
+  user: GetUserById | null;
   roleName: string;
   loading: boolean;
   storeId: string | null;
 } {
-  const [user, setUser] = useState<Users | null>(null);
+  const [user, setUser] = useState<GetUserById | null>(null);
   const [roleName, setRoleName] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [storeId, setStoreId] = useState<string | null>(null);
@@ -29,12 +29,12 @@ export function useAuthUser(): {
           .then((res) => {
             setUser(res.data.data);
             setRoleName(res.data.data.role.name);
-            const userStoreId = res.data.data.user?.storeId;
+            const userStoreId = res.data.data?.storeId;
             if (userStoreId) {
               localStorage.setItem("storeId", userStoreId);
               setStoreId(userStoreId);
             }
-            console.log(res.data.data.user);
+            console.log(res.data.data);
           })
           .catch((err) => {
             console.log(err.response.status, "error message");

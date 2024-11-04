@@ -16,6 +16,31 @@ export interface Users {
   status: number;
 }
 
+export interface GetUserById extends Users {
+  role: {
+    id: string;
+    name: string;
+    deflag: false;
+    users: [null];
+  };
+  // orders: [];
+  // reports: [];
+  // transactions: [];
+  // userRefreshTokens: [];
+  // userSessions: [];
+  // userStoreMappings: [];
+  wallets: [
+    {
+      id: string;
+      walletTypeId: string;
+      crDate: string;
+      upsDate: string;
+      balance: number;
+      balanceHistory: number;
+      deflag: false;
+    }
+  ];
+}
 export interface UserProfileFormData {
   fullName: string;
   address: string;
