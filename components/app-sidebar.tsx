@@ -68,6 +68,7 @@ export function AppSidebar() {
   const router = useRouter();
   const { userRole, loading } = useUserRole();
   const { user } = useAuthUser();
+  console.log(userRole, "userrrr");
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -80,7 +81,6 @@ export function AppSidebar() {
   };
 
   const menuItems = [
-
     {
       name: "Dashboard",
       icon: LayoutDashboard,
@@ -91,7 +91,7 @@ export function AppSidebar() {
       name: "Product",
       icon: LayoutDashboard,
       href: navigatePage("product"),
-      roles: [ "Store"],
+      roles: ["Store"],
     },
     {
       name: "Packages",
@@ -225,7 +225,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map(
                 (item) =>
-                  item.roles.includes(userRole?.name || "") &&
+                  item.roles.includes(userRole || "") &&
                   (item.child && item.child.length > 0 ? (
                     <Collapsible defaultOpen className="group/collapsible">
                       <SidebarMenuItem>

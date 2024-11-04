@@ -1,7 +1,8 @@
 import axios from "axios";
 
 // const BASE_URL = 'https://vega.vinhuser.one/api/v1';
-const BASE_URL = "https://api.vegacity.id.vn/api/v1";
+// const BASE_URL = "https://api.vegacity.id.vn/api/v1";
+const BASE_URL = "https://localhost:7127/api/v1";
 export const apiKey = "5f728deb-b2c3-4bac-9d9c-41a11e0acccc";
 
 export const API = axios.create({

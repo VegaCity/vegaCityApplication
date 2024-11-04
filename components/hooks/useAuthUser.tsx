@@ -27,8 +27,8 @@ export function useAuthUser(): {
       if (authUser) {
         UserServices.getUserById(authUser)
           .then((res) => {
-            setUser(res.data.data.user);
-            setRoleName(res.data.data.user.roleName);
+            setUser(res.data.data);
+            setRoleName(res.data.data.role.name);
             const userStoreId = res.data.data.user?.storeId;
             if (userStoreId) {
               localStorage.setItem("storeId", userStoreId);

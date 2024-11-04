@@ -12,9 +12,9 @@ export function useUserRole(): { userRole: Role | null; loading: boolean } {
   useEffect(() => {
     async function fetchUserRole() {
       if (user && user.roleId) {
-        const authUser = user?.roleId;
-        const getUserRole = roles.find(({ id }) => id === authUser) || null;
-        setUserRole(getUserRole);
+        const authUser = user?.role.name;
+        // const getUserRole = roles.find(({ id }) => id === authUser) || null;
+        setUserRole(authUser);
       }
       setLoading(false);
     }
