@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ZoneType } from "@/types/zone";
+import { ZoneType } from "@/types/zone/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { useRouter } from "next/navigation";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";

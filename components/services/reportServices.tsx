@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { ReportPatchType } from "@/types/report";
+import { ReportPatchType } from "@/types/report/report";
 
 interface ReportPageSize {
   page?: number;

@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TransactionServices } from "@/components/services/transactionServices";
 import { AlertCircle } from "lucide-react";
-import { Transaction } from "@/types/transaction";
+import { Transaction } from "@/types/paymentFlow/transaction";
 
 interface TransactionTableProps {
   limit?: number;

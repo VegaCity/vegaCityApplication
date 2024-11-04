@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { confirmOrder } from "@/components/services/orderuserServices";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
-import { ConfirmOrderData } from "@/types/orderUser";
+import { ConfirmOrderData } from "@/types/paymentFlow/orderUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const { toast } = useToast();

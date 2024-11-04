@@ -1,5 +1,5 @@
 import { API, apiKey } from "@/components/services/api";
-import { StoreOwnerPatch } from "@/types/storeOwner";
+import { StoreOwnerPatch } from "@/types/store/storeOwner";
 
 interface StorePageSize {
   // apiKey: string;

@@ -33,7 +33,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import paymentService from "@/components/services/paymentService";
-import { formSchema, FormValues, EtagDetailPageProps, EtagEditPageProps } from "@/lib/validation";
+import {
+  formSchema,
+  FormValues,
+  EtagDetailPageProps,
+  EtagEditPageProps,
+} from "@/lib/validation";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -45,7 +50,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { confirmOrder } from "@/components/services/orderuserServices";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
-import { ConfirmOrderData } from "@/types/orderUser";
+import { ConfirmOrderData } from "@/types/paymentFlow/orderUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const EtagEditPage = ({ params }: EtagEditPageProps) => {
   const { toast } = useToast();
@@ -54,13 +59,9 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const DEV_CONFIG = {
-  
     DEMO_ETAG_ID: "1d8f7fc6-0634-486a-9238-ec56b7aaa50e",
-    IS_DEVELOPMENT: true  
+    IS_DEVELOPMENT: true,
   };
-
-
-
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -138,7 +139,6 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
       if (!etagId) {
         throw new Error("No ETag ID available");
       }
-
 
       try {
         setIsLoading(true);
@@ -230,16 +230,11 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
     if (!etag) return;
 
     if (isEditing) {
-
       setIsEditing(false);
     } else {
       setIsEditing(true);
     }
   };
-
-
-
-
 
   const validImageUrl =
     etag.imageUrl && etag.imageUrl.startsWith("http")

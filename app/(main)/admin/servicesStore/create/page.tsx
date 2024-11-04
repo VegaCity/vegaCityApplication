@@ -25,8 +25,8 @@ import {
   serviceStoreFormSchema,
   ServiceStoreFormValues,
 } from "@/lib/validation";
-import { PostServicesStore } from "@/types/serviceStore/serviceStore";
-import { StoreOwner } from "@/types/storeOwner";
+import { PostServicesStore } from "@/types/store/serviceStore";
+import { StoreOwner } from "@/types/store/storeOwner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";

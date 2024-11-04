@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ZoneType } from "@/types/zone";
+import { ZoneType } from "@/types/zone/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { HouseTypeId } from "@/types/house";
 import Link from "next/link";

@@ -18,7 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { EtagType } from "@/types/etagtype";
-import { Package } from "@/types/package";
+import { Package } from "@/types/packageType/package";
 import { Pencil, Trash } from "lucide-react";
 import Link from "next/link";
 

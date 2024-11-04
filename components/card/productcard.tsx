@@ -1,5 +1,5 @@
 import React from "react";
-import { Store } from "@/types/store";
+import { Store } from "@/types/store/store";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -20,13 +20,10 @@ const StoreCard: React.FC<StoreCardProps> = ({ store: str }) => {
   //     .replace("₫", "đ");
   // };
 
-
   return (
     <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
       <div className="w-full flex justify-center p-4">
-        <div className="w-88 h-48 relative rounded-lg overflow-hidden shadow-sm">
-
-        </div>
+        <div className="w-88 h-48 relative rounded-lg overflow-hidden shadow-sm"></div>
       </div>
       <CardContent className="p-4">
         <h3 className="text-lg font-semibold mb-2">{str.name}</h3>

@@ -16,7 +16,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { isObject } from "@/lib/isObject";
 import { StoreHouseType } from "@/types/house";
-import { StoreOwner, StoreTypeEnum } from "@/types/storeOwner";
+import { StoreOwner, StoreTypeEnum } from "@/types/store/storeOwner";
 import { Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";

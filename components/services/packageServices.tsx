@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { PackagePostPatch } from "@/types/package";
+import { PackagePostPatch } from "@/types/packageType/package";
 
 interface PackagePageSize {
   page?: number;

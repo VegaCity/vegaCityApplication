@@ -1,5 +1,5 @@
 import React from "react";
-import { Package } from "@/types/package";
+import { Package } from "@/types/packageType/package";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";

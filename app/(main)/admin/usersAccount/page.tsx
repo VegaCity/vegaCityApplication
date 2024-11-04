@@ -8,7 +8,6 @@ import Link from "next/link";
 
 const UsersPage = () => {
   const { userRole, loading } = useUserRole(); //userRole is an object so that u should . to value like userRole.name, userRole.id
-  console.log(userRole?.name, "userRole");
 
   // if(userRole && userRole.name !== 'Admin'){
   //   return <div>You have denined to access this Page!</div>

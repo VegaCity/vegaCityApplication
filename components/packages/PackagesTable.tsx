@@ -12,7 +12,7 @@ import {
   TableCaption,
 } from "@/components/ui/table";
 import { PackageServices } from "@/components/services/packageServices";
-import { Package } from "@/types/package";
+import { Package } from "@/types/packageType/package";
 import { useToast } from "@/components/ui/use-toast";
 import {
   AlertDialog,

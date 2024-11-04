@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { OrderData, ConfirmOrderData } from "@/types/orderUser";
+import { OrderData, ConfirmOrderData } from "@/types/paymentFlow/orderUser";
 
 export const createOrder = async (orderData: OrderData) => {
   try {

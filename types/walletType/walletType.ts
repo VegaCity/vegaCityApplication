@@ -21,6 +21,8 @@ export interface GetWalletTypeById extends GetWalletType {
   ];
 }
 
+// export interface WalletTypeServiceStore {}
+
 export interface WalletTypePostPatch {
   name: string;
 }

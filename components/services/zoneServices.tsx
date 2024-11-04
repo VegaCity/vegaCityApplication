@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { ZoneType, ZoneTypePost, ZoneTypePatch } from "@/types/zone";
+import { ZoneType, ZoneTypePost, ZoneTypePatch } from "@/types/zone/zone";
 
 interface ZonePageSize {
   page?: number;

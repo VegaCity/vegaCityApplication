@@ -34,7 +34,7 @@ export function useAuthUser(): {
               localStorage.setItem("storeId", userStoreId);
               setStoreId(userStoreId);
             }
-            console.log(res.data.data);
+            console.log(res.data.data.wallets, "Auth User");
           })
           .catch((err) => {
             console.log(err.response.status, "error message");

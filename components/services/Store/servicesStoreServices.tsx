@@ -2,7 +2,7 @@ import { API } from "@/components/services/api";
 import {
   PatchServicesStore,
   PostServicesStore,
-} from "@/types/serviceStore/serviceStore";
+} from "@/types/store/serviceStore";
 
 interface ServiceStoresPageSize {
   page?: number;

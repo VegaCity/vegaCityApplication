@@ -8,10 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  StoreService,
-  ServiceResponse,
-} from "@/types/serviceStore/serviceStore";
+import { StoreService, ServiceResponse } from "@/types/store/serviceStore";
 import Link from "next/link";
 import {
   AlertDialog,

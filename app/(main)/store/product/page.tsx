@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import BackButton from "@/components/BackButton";
 import { useUserRole } from "@/components/hooks/useUserRole";
-import { Store } from "@/types/store";
+import { Store } from "@/types/store/store";
 import { StoreServices } from "@/components/services/Store/storeServices";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 

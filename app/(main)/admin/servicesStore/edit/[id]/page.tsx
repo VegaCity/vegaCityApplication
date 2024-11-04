@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { PatchServicesStore } from "@/types/serviceStore/serviceStore";
+import { PatchServicesStore } from "@/types/store/serviceStore";
 import { ServiceStoreServices } from "@/components/services/Store/servicesStoreServices";
 import { useRouter } from "next/navigation";
 

@@ -20,7 +20,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
 import { PackageServices } from "@/components/services/packageServices";
 import { register } from "module";
-import { Package } from "@/types/package";
+import { Package } from "@/types/packageType/package";
 import Image from "next/image";
 
 //firebase

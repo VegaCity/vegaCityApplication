@@ -68,9 +68,10 @@ export function AppSidebar() {
   const router = useRouter();
   const { userRole, loading } = useUserRole();
   const { user } = useAuthUser();
+  console.log(userRole, "user roleeee");
+  console.log(user?.wallets, "userrrr");
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
       ? `/admin/${routeName}`
@@ -223,11 +224,11 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map(
-                (item) =>
-                  item.roles.includes(userRole?.name || null) &&
+                (item, i) =>
+                  item.roles.includes(userRole?.name || "") &&
                   (item.child && item.child.length > 0 ? (
                     <Collapsible defaultOpen className="group/collapsible">
-                      <SidebarMenuItem>
+                      <SidebarMenuItem key={i}>
                         <CollapsibleTrigger
                           onClick={() => handleCollapsedTrigger(item.name)}
                           asChild
@@ -252,8 +253,8 @@ export function AppSidebar() {
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <SidebarMenuSub>
-                            {item.child?.map((itemChild) => (
-                              <SidebarMenuSubItem>
+                            {item.child?.map((itemChild, childIndex) => (
+                              <SidebarMenuSubItem key={childIndex}>
                                 <Link href={itemChild.href}>
                                   <div className="flex items-center gap-3">
                                     <itemChild.icon size={15} />
@@ -267,7 +268,7 @@ export function AppSidebar() {
                       </SidebarMenuItem>
                     </Collapsible>
                   ) : (
-                    <SidebarMenuItem key={item.name}>
+                    <SidebarMenuItem key={i}>
                       <SidebarMenuButton asChild>
                         <Link href={item.href ?? ""}>
                           <item.icon />
@@ -284,7 +285,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem key={user?.id}>
             <DropdownMenu>
               <div className="flex items-center w-full justify-between">
                 <DropdownMenuTrigger asChild>

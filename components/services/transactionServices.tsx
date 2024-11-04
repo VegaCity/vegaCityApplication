@@ -1,6 +1,6 @@
 import { API } from "@/components/services/api";
 
-import { Transaction } from "@/types/transaction";
+import { Transaction } from "@/types/paymentFlow/transaction";
 
 interface TrasactionPageSize {
   page?: number;

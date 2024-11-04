@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import BackButton from "@/components/BackButton";
 import { useUserRole } from "@/components/hooks/useUserRole";
 import { PackageServices } from "@/components/services/packageServices";
-import { Package } from "@/types/package";
+import { Package } from "@/types/packageType/package";
 import PackageCard from "@/components/card/packagecard";
 
 interface ApiResponse {

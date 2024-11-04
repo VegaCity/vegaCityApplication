@@ -23,12 +23,12 @@ export interface GetUserById extends Users {
     deflag: false;
     users: [null];
   };
-  // orders: [];
-  // reports: [];
-  // transactions: [];
-  // userRefreshTokens: [];
-  // userSessions: [];
-  // userStoreMappings: [];
+  orders: [];
+  reports: [];
+  transactions: [];
+  userRefreshTokens: [];
+  userSessions: [];
+  userStoreMappings: [];
   wallets: [
     {
       id: string;
@@ -41,6 +41,7 @@ export interface GetUserById extends Users {
     }
   ];
 }
+
 export interface UserProfileFormData {
   fullName: string;
   address: string;
@@ -50,6 +51,17 @@ export interface UserProfileFormData {
   gender: number;
   cccdPassport: string;
   imageUrl: string | null;
+}
+
+export interface UserPatch {
+  fullName: string;
+  address: string;
+  description: string;
+  phoneNumber: string;
+  birthday: string;
+  gender: number;
+  cccdPassport: string;
+  imageUrl: string;
 }
 
 export interface ApiResponse<T> {
