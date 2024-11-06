@@ -1,13 +1,13 @@
 export interface Package {
   id: string;
   name: string;
-  description: null;
+  description?: string | null;
   price: number;
   duration: number;
   crDate: string;
   upsDate: string;
   deflag: boolean;
-  imageUrl: null;
+  imageUrl?: string | null;
   marketZone: null;
   statusCode: number;
   // messageResponse: null;
@@ -16,9 +16,9 @@ export interface Package {
 
 export interface PackageDetail {
   id: string;
-  imageUrl: string | null;
+  imageUrl?: string | null;
   name: string;
-  description: string | null;
+  description?: string | null;
   price: number;
   crDate: string;
   upsDate: string;
@@ -80,9 +80,9 @@ export interface PackageDetail {
 }
 
 export interface PackagePost {
-  imageUrl: string;
+  imageUrl: string | null;
   name: string;
-  description: string;
+  description?: string | null;
   price: number;
   duration: number;
   packageTypeId: string;
@@ -91,9 +91,9 @@ export interface PackagePost {
 }
 
 export interface PackagePatch {
-  imageUrl: string;
+  imageUrl: string | null;
   name: string;
-  description: string;
+  description?: string | null;
   price: number;
   duration: number;
 }

@@ -11,7 +11,7 @@ import {
   TableRow,
   TableCaption,
 } from "@/components/ui/table";
-import { PackageServices } from "@/components/services/packageServices";
+import { PackageServices } from "@/components/services/Package/packageServices";
 import { Package } from "@/types/packageType/package";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -26,6 +26,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { Minus } from "lucide-react";
+import Image from "next/image";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 
 interface PackageTableProps {
   limit?: number;
@@ -112,7 +115,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
           <TableHeader>
-            <TableRow className="bg-slate-300 hover:bg-slate-300">
+            <TableRow>
               <TableHead>NO</TableHead>
               <TableHead>Name</TableHead>
               <TableHead className="hidden md:table-cell">Image</TableHead>
@@ -120,8 +123,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                 Description
               </TableHead>
               <TableHead className="hidden md:table-cell">Price</TableHead>
-              <TableHead className="hidden md:table-cell">Start Date</TableHead>
-              <TableHead className="hidden md:table-cell">End Date</TableHead>
+              <TableHead className="hidden md:table-cell">Duration</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -131,25 +133,22 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{pkg.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <img
-                    src={pkg?.imageUrl ?? "/images/placeholder.jpg"}
+                  <Image
+                    src={validImageUrl(pkg?.imageUrl || null)}
                     alt={pkg.name}
-                    width="100"
-                    height="auto"
+                    width={150}
+                    height={100}
                     className="object-cover"
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {pkg.description}
+                  {pkg.description ? pkg.description : <Minus />}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {formatPrice(pkg.price)}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {new Date(pkg.startDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {new Date(pkg.endDate).toLocaleDateString()}
+                  {pkg.duration} days
                 </TableCell>
                 <TableCell>
                   <PopoverActionTable

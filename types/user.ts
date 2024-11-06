@@ -2,25 +2,44 @@ export interface Users {
   id: string;
   fullName: string;
   phoneNumber: string;
-  birthday: string | null;
-  storeId: string | null;
+  birthday?: string | null;
+  storeId?: string | null;
   crDate: string;
   upsDate: string;
   gender: number;
   cccdPassport: string;
-  imageUrl: string | null;
+  imageUrl?: string | null;
   email: string;
   roleId: string;
-  description: string;
+  description?: string;
   address: string;
   status: number;
 }
 
-export interface GetUserById extends Users {
+export interface GetUserById {
+  id: string;
+  fullName?: string | null;
+  phoneNumber: string;
+  birthday?: string | null;
+  storeId?: string | null;
+  crDate: string;
+  upsDate: string;
+  gender: number;
+  cccdPassport: string;
+  imageUrl?: string | null;
+  marketZoneId: string;
+  email: string;
+  password?: string | null;
+  roleId: string;
+  description?: string | null;
+  isChange: boolean;
+  address: string;
+  status: 0;
+  marketZone: null;
   role: {
     id: string;
     name: string;
-    deflag: false;
+    deflag: boolean;
     users: [null];
   };
   orders: [];
@@ -35,9 +54,19 @@ export interface GetUserById extends Users {
       walletTypeId: string;
       crDate: string;
       upsDate: string;
-      balance: number;
-      balanceHistory: number;
-      deflag: false;
+      balance: 0;
+      balanceHistory: 0;
+      deflag: boolean;
+      userId: string;
+      storeId: null;
+      startDate: null;
+      endDate: null;
+      store: null;
+      user: null;
+      walletType: null;
+      deposits: [];
+      packageItems: [];
+      transactions: [];
     }
   ];
 }

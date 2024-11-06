@@ -1,4 +1,7 @@
-export const handlePlusOneDayFromBe = (date: string): string => {
+export const handlePlusOneDayFromBe = (date: string): string | null => {
+  if (!date) {
+    return null;
+  }
   const dateUI = new Date(date); // Parse the input date
   dateUI.setDate(dateUI.getDate() + 1); // Add one day
 

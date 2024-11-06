@@ -34,7 +34,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <>
         {/* <Navbar /> */}
-        <div className="flex w-full">
+        <div className="flex w-full justify-center">
           <div className="hidden md:block h-screen w-18">
             {/* <Sidebar /> */}
             <AppSidebar />
@@ -43,13 +43,13 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
             <div className="fixed left-29 top-1">
               <SidebarTrigger />
             </div>
-            <div className="overflow-y-auto">
-              <>
-                <div className="my-4">
-                  <Breadcrumb items={breadcrumbItems} />
-                </div>
-                {children}
-              </>
+            <div className="my-4">
+              <Breadcrumb items={breadcrumbItems} />
+            </div>
+            <div className="p-5 w-auto md:block">
+              <div className="overflow-y-auto">
+                <>{children}</>
+              </div>
             </div>
           </div>
           {/* <Toaster /> */}

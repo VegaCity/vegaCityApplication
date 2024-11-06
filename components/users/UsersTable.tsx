@@ -4,6 +4,7 @@ import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { HouseServices } from "@/components/services/houseServices";
 import { UserServices } from "@/components/services/User/userServices";
+import { ZoneServices } from "@/components/services/zoneServices";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,7 +59,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { userApproveFormSchema, UserApproveFormValues } from "@/lib/validation";
-import { HouseType } from "@/types/house";
 import {
   handleUserStatusFromBe,
   UserAccountGet,
@@ -66,6 +66,7 @@ import {
   UserApproveSubmit,
   UserStatus,
 } from "@/types/userAccount";
+import { Zone } from "@/types/zone/zone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { AxiosError } from "axios";
@@ -96,15 +97,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   const [userSearch, setUserSearch] = useState<UserAccountGet[]>([]);
   const [isUserFound, setIsUserFound] = useState<boolean>(false);
 
-  //get house api for approve user pending verify
-  const [housesList, setHousesList] = useState<HouseType[]>([]);
+  //get zone api for approve user pending verify
+  const [zoneList, setZoneList] = useState<Zone[]>([]);
 
   //User approve form
   const userApproveForm = useForm<UserApproveFormValues>({
     resolver: zodResolver(userApproveFormSchema),
     defaultValues: {
-      locationHouse: "",
-      addressHouse: "",
+      locationZone: "",
       storeName: "",
       storeAddress: "",
       phoneNumber: "",
@@ -113,32 +113,35 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     },
   });
   //get location house selection
-  const [selectionHouse, setSelectionHouse] = useState<string>("");
+  const [selectionZone, setSelectionZone] = useState<string>("");
 
   const handleApproveUser = async (data: UserApproveSubmit) => {
     console.log(data, "data approveee");
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
       const { approvalStatus, ...restData } = data;
       const response = await UserServices.approveUser(data.id, {
         ...restData,
         approvalStatus: "APPROVED",
       });
-
-      console.log(response, "Approve user successfully!");
-      setIsLoading(false);
-      toast({
-        title: "User is approved!",
-        description: `User - Store ${data.storeName} has been approved successfully.`,
-      });
+      if (response) {
+        console.log(response, "Approve user successfully!");
+        toast({
+          title: "User is approved!",
+          description: `User - Store ${data.storeName} has been approved successfully.`,
+        });
+        setIsLoading(false);
+      }
     } catch (error) {
       if (error instanceof AxiosError) {
         setIsLoading(false);
-        toast({
-          title: "Error",
-          description: error.message,
-        });
+        if (error.status === 500) {
+          toast({
+            title: "Error",
+            description: "Email was existed!",
+          });
+        }
+        console.error(error, "error approve user");
       }
     }
   };
@@ -146,21 +149,21 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   useEffect(() => {
     const fetchUsersAndHouses = async () => {
       try {
-        const [userResponse, houseResponse] = await Promise.all([
+        const [userResponse, zoneResponse] = await Promise.all([
           UserServices.getUsers({ page: 1, size: 100 }),
-          HouseServices.getHouses({ page: 1, size: 100 }),
+          ZoneServices.getZones({ page: 1, size: 100 }),
         ]);
         // console.log(response.data, "get users list"); // Log the response for debugging
-        console.log(houseResponse.data, "response houses"); // Log the response for debugging
+        // console.log(zoneResponse.data, "response zonessss"); // Log the response for debugging
 
         const users: UserAccountGet[] = Array.isArray(userResponse.data.data)
           ? userResponse.data.data
           : [];
-        const houses: HouseType[] = Array.isArray(houseResponse.data.data)
-          ? houseResponse.data.data
+        const zones: Zone[] = Array.isArray(zoneResponse.data.data)
+          ? zoneResponse.data.data
           : [];
         setUserList(users);
-        setHousesList(houses);
+        setZoneList(zones);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
@@ -317,7 +320,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>
                       Are you sure you want to delete this user -{" "}
-                      {userFound?.fullName}?
+                      {userFound?.fullName} -?
                     </AlertDialogTitle>
                     <AlertDialogDescription>
                       This action cannot be undone. This will delete the user
@@ -341,7 +344,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     ));
   };
 
-  console.log(housesList, "Houses List");
+  console.log(zoneList, "Houses List");
 
   const UserPendingVerifyPopUp = (userData: UserAccountGet) => {
     // const userApproveForm = useForm<UserApproveFormValues>({
@@ -358,8 +361,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     const handleOpenChange = (isOpen: boolean) => {
       if (isOpen) {
         userApproveForm.reset({
-          locationHouse: "",
-          addressHouse: "",
+          locationZone: "",
           storeName: "",
           storeAddress: "",
           phoneNumber: "",
@@ -369,10 +371,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       }
     };
 
-    const disableIfNoHouse = (house: HouseType): boolean => {
-      if (house.isRent) return true;
-      else return false;
-    };
+    // Disbale zone if isRent true
+    // const disableIfNoHouse = (house: HouseType): boolean => {
+    //   if (house.isRent) return true;
+    //   else return false;
+    // };
 
     return (
       <AlertDialog onOpenChange={handleOpenChange}>
@@ -395,62 +398,29 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
               <div className="my-3 space-y-6">
                 <FormField
                   control={userApproveForm.control}
-                  name="locationHouse"
+                  name="locationZone"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value);
-                            setSelectionHouse(value);
+                            setSelectionZone(value);
                           }}
                           {...field}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select location house" />
+                            <SelectValue placeholder="Select location zone" />
                           </SelectTrigger>
                           <SelectContent>
-                            {housesList
-                              ?.filter((house) => !house.isRent)
-                              .map((house, i) => (
+                            {zoneList
+                              // ?.filter((zone) => !zone.isRent)
+                              .map((zone, i) => (
                                 <SelectItem
                                   key={i}
-                                  value={house.location || "-"}
+                                  value={zone.location || "-"}
                                 >
-                                  {house.location || "-"}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  disabled={selectionHouse === ""}
-                  control={userApproveForm.control}
-                  // name="addressHouse"
-                  name="addressHouse"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange} //change value
-                          {...field} //get value
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select address house" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {housesList
-                              ?.filter((house) => !house.isRent)
-                              .map((house, i) => (
-                                <SelectItem
-                                  key={i}
-                                  value={house.address || "-"}
-                                >
-                                  {house.address || "-"}
+                                  {zone.location || "-"}
                                 </SelectItem>
                               ))}
                           </SelectContent>

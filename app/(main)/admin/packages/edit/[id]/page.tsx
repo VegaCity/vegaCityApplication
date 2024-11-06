@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import posts from "@/data/posts";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { PackageServices } from "@/components/services/packageServices";
+import { PackageServices } from "@/components/services/Package/packageServices";
 import { register } from "module";
 import { Package } from "@/types/packageType/package";
 import Image from "next/image";
@@ -27,33 +27,10 @@ import Image from "next/image";
 import getConfig from "next/config";
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getStorage, ref } from "firebase/storage";
-
-const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "Name is required",
-  }),
-  imageUrl: z.string().min(1, {
-    message: "Image Url is required",
-  }),
-  description: z.string().min(1, {
-    message: "Description is required",
-  }),
-  price: z.coerce
-    .number({
-      required_error: "Price is required!",
-      invalid_type_error: "Price must be a number!",
-    })
-    .refine((value) => value > 0 && value <= 10000000, {
-      message: "Price must be above zero and less than 10.000.000VND!",
-    }),
-  startDate: z.string().min(1, {
-    message: "Date is required",
-  }),
-  endDate: z.string().min(1, {
-    message: "Date is required",
-  }),
-});
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { EditPackageFormValues, editPackageFormSchema } from "@/lib/validation";
+import { useRouter } from "next/navigation";
+import handleImageFileChange from "@/components/uploadImageToFirebaseStorage/UploadImage";
 
 interface PackageEditPageProps {
   params: {
@@ -61,60 +38,72 @@ interface PackageEditPageProps {
   };
 }
 
-type FormValues = z.infer<typeof formSchema>;
-
 const PackageEditPage = ({ params }: PackageEditPageProps) => {
+  const router = useRouter();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [packageData, setPackageData] = useState<Package | null>(null);
-  const [uploadImage, setUploadImage] = useState<string | null>("");
-  //get store from firebase storage
-  const storage = getStorage();
-  // Points to the root reference
-  const storageRef = ref(storage);
-  //Points to images ref
-  const imagesRef = ref(storageRef, "images");
-  // Points to 'images/thien.jpg'
-  // Note that you can use variables to create child values
-  const fileName = "thien.png";
-  const thienRef = ref(imagesRef, fileName);
-
-  // File path is 'images/thien.jpg'
-  const path = thienRef.fullPath;
-
-  // File name is 'space.jpg'
-  const name = thienRef.name;
-
-  // Points to 'images'
-  const imagesRefAgain = thienRef.parent;
-
-  console.log(path, "pathhhhh");
-  console.log(name, "nameeeeee");
-  console.log(imagesRefAgain, "imagesRefAgainnnn");
+  const [imageUploaded, setImageUploaded] = useState<string | null>("");
 
   // const pkg = packageList.find((pkg) => pkg.id === params.id);
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<EditPackageFormValues>({
+    resolver: zodResolver(editPackageFormSchema),
     defaultValues: {
       name: "",
-      imageUrl: "",
+      imageUrl: null,
       description: "",
       price: 1,
-      startDate: "",
-      endDate: "",
+      duration: 1,
     },
   });
 
-  const handleSubmit = async (data: FormValues) => {
+  const uploadImage = async (file: File) => {
+    const storage = getStorage();
+    const storageRef = ref(storage, `images/${file.name}`);
+
+    try {
+      // Upload the file
+      await uploadBytes(storageRef, file);
+      // Get the download URL after upload on firebase storage
+      const imageUrl = await getDownloadURL(storageRef);
+      setImageUploaded(imageUrl); //set image to display on UI
+      return imageUrl; // Return the URL for use
+    } catch (error) {
+      console.error("Upload failed:", error);
+      return null;
+    }
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] || null;
+    if (file) {
+      const imageUrl = await uploadImage(file); // Upload and get the URL
+      // You can then use this URL to display the image
+      console.log("Image uploaded:", imageUrl);
+    }
+
+    // setIsLoadingImageUpload(false);
+
+    // setSelectedFile(file);
+    console.log(file, "handleFileChangeee");
+  };
+
+  const handleSubmit = async (data: EditPackageFormValues) => {
     try {
       // Assuming you have an update method in PackageServices
       console.log(data, "dataaaaaa");
-      await PackageServices.editPackage(params.id, data);
+      await PackageServices.editPackage(params.id, {
+        ...data,
+        imageUrl: imageUploaded,
+      });
       toast({
         title: "Package has been updated successfully",
         description: `Package ${data.name} was updated with price ${data.price} VND`,
       });
+      router.back();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
@@ -127,44 +116,54 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
       setIsLoading(true);
       try {
         const response = await PackageServices.getPackageById(params.id);
-        const pkgData: Package = response.data.data.package;
+        console.log(response.data.data, "Get package details");
+        const pkgData: Package = response.data.data;
+        setPackageData(pkgData);
         if (pkgData) {
-          setPackageData(pkgData);
-          if (
-            pkgData?.packageETagTypeMappings &&
-            pkgData?.packageETagTypeMappings.length > 0
-          ) {
-            const etagTypeMapping =
-              pkgData?.packageETagTypeMappings?.length > 0
-                ? pkgData.packageETagTypeMappings[0]
-                : undefined;
-            console.log(etagTypeMapping, "etagTypeMappingggg");
-
-            if (
-              etagTypeMapping &&
-              etagTypeMapping.etagType &&
-              etagTypeMapping?.etagTypeId
-            ) {
-              const etagId = etagTypeMapping?.etagType.id;
-              localStorage.setItem("etagTypeId", etagId);
-              console.log("EtagTypeId stored in localStorage:", etagId);
-            } else {
-              console.warn("EtagType or its ID is missing in the package data");
-              setError(
-                "EtagType information is incomplete. Please check the package configuration."
-              );
-            }
-          } else {
-            console.warn(
-              "No packageETagTypeMappings found in the package data"
-            );
-            setError(
-              "No E-Tag type information found for this package. Please check the package configuration."
-            );
-          }
-        } else {
-          throw new Error("Package data is missing in the response");
+          form.reset({
+            name: pkgData.name,
+            imageUrl: pkgData.imageUrl,
+            description: pkgData.description,
+            price: pkgData.price,
+            duration: pkgData.duration,
+          });
         }
+        // if (pkgData) {
+        //   if (
+        //     pkgData?.packageETagTypeMappings &&
+        //     pkgData?.packageETagTypeMappings.length > 0
+        //   ) {
+        //     const etagTypeMapping =
+        //       pkgData?.packageETagTypeMappings?.length > 0
+        //         ? pkgData.packageETagTypeMappings[0]
+        //         : undefined;
+        //     console.log(etagTypeMapping, "etagTypeMappingggg");
+
+        //     if (
+        //       etagTypeMapping &&
+        //       etagTypeMapping.etagType &&
+        //       etagTypeMapping?.etagTypeId
+        //     ) {
+        //       const etagId = etagTypeMapping?.etagType.id;
+        //       localStorage.setItem("etagTypeId", etagId);
+        //       console.log("EtagTypeId stored in localStorage:", etagId);
+        //     } else {
+        //       console.warn("EtagType or its ID is missing in the package data");
+        //       setError(
+        //         "EtagType information is incomplete. Please check the package configuration."
+        //       );
+        //     }
+        //   } else {
+        //     console.warn(
+        //       "No packageETagTypeMappings found in the package data"
+        //     );
+        //     setError(
+        //       "No E-Tag type information found for this package. Please check the package configuration."
+        //     );
+        //   }
+        // } else {
+        //   throw new Error("Package data is missing in the response");
+        // }
       } catch (err) {
         console.error("Error fetching package data:", err);
         setError(
@@ -233,54 +232,39 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
             )}
           />
 
+          {/* sửa ở đây Form React.children.only */}
           <FormField
             control={form.control}
             name="imageUrl"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Uploade Image
+                  Image URL
                 </FormLabel>
                 <FormControl>
                   <Input
                     type="file"
                     accept="image/*"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Upload image"
-                    {...field}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        const fileName = file.name;
-
-                        reader.onloadend = () => {
-                          // const imageDataUrl: ArrayBuffer | string | null = reader.result;
-                          setUploadImage(reader.result as string); // Save the image data to state
-                          field.onChange(""); // Update the form field with the file name
-                        };
-
-                        reader.readAsDataURL(file); // Read the file as a data URL (base64)
-                        console.log(`File name: ${fileName}`);
-                      }
-                    }}
+                    className=" w-30 bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                    placeholder="Upload Image"
+                    onChange={(event) =>
+                      handleImageFileChange({
+                        event: event,
+                        setImageUploaded: setImageUploaded,
+                      })
+                    } // Convert empty string back to null if needed
                   />
                 </FormControl>
+                <Image
+                  src={imageUploaded || field.value || ""}
+                  alt={field.value || "image"}
+                  width={300}
+                  height={250}
+                />
                 <FormMessage />
               </FormItem>
             )}
           />
-          {/* Image Preview */}
-          {uploadImage && (
-            <div className="image-preview">
-              <Image
-                src={uploadImage}
-                alt="Image Preview"
-                width={450}
-                height={350}
-              />
-            </div>
-          )}
 
           <FormField
             control={form.control}
@@ -294,7 +278,9 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Description"
-                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(event) => field.onChange(event)}
+                    // {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -325,36 +311,15 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
 
           <FormField
             control={form.control}
-            name="startDate"
+            name="duration"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Start Date
+                  Duration
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type="datetime-local"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Date"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  End Date
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="datetime-local"
+                    type="number"
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Date"
                     {...field}

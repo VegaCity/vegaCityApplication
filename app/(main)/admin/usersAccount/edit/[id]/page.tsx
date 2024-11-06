@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
+import handleImageFileChange from "@/components/uploadImageToFirebaseStorage/UploadImage";
 import { handlePlusOneDayFromBe } from "@/lib/utils/convertDatePlusOne";
 import { userAccountFormSchema, UserAccountFormValues } from "@/lib/validation";
 import { useFirebase } from "@/providers/FirebaseProvider";
@@ -87,8 +88,9 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
       setIsLoading(true);
       try {
         const response = await UserServices.getUserById(params.id);
-        const user = response.data.data.user;
-        console.log(user.birthday, "user birthday fetchhhh");
+        console.log(response.data.data, "edit user data");
+        const user = response.data.data;
+        console.log(user?.birthday, "user birthday fetchhhh");
         console.log(user, "user fetchhhhhhhh");
         if (user) {
           const convertGenderToDisplay = handleGenderToFe(user.gender);
@@ -98,7 +100,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
             address: user.address,
             description: user.description,
             phoneNumber: user.phoneNumber,
-            birthday: handlePlusOneDayFromBe(user.birthday),
+            birthday: handlePlusOneDayFromBe(user?.birthday) || null,
             gender: convertGenderToDisplay,
             cccdPassport: user.cccdPassport,
             imageUrl: user.imageUrl,
@@ -206,7 +208,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
 
   return (
     <>
-      <BackButton text="Back To Users" link="/admin/usersAccount/" />
+      <BackButton text="Back To Users" link="/admin/usersAccount" />
       <h3 className="text-2xl mb-4">Edit User</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
@@ -262,7 +264,8 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   <Textarea
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Description"
-                    {...field}
+                    value={field.value ?? ""}
+                    // {...field}
                   />
                 </FormControl>
                 <FormMessage />
@@ -408,7 +411,12 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                     accept="image/*"
                     className=" w-30 bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Image URL"
-                    onChange={handleFileChange} // Convert empty string back to null if needed
+                    onChange={(event) =>
+                      handleImageFileChange({
+                        event: event,
+                        setImageUploaded: setImageUploaded,
+                      })
+                    } // Convert empty string back to null if needed
                   />
                 </FormControl>
                 <Image
@@ -416,7 +424,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   alt={field.value || "image"}
                   width={300}
                   height={250}
-                  onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
+                  // onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
                 />
                 <FormMessage />
               </FormItem>

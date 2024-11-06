@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import BackButton from "@/components/BackButton";
 import { useUserRole } from "@/components/hooks/useUserRole";
-import { PackageServices } from "@/components/services/packageServices";
+import { PackageServices } from "@/components/services/Package/packageServices";
 import { Package } from "@/types/packageType/package";
 import PackageCard from "@/components/card/packagecard";
 

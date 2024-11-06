@@ -23,72 +23,78 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { PackageServices } from "@/components/services/packageServices";
+import { PackageServices } from "@/components/services/Package/packageServices";
 import { ETagTypeServices } from "@/components/services/etagtypeServices";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { EtagType } from "@/types/etagtype";
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  imageUrl: z.string().min(1, { message: "Image URL is required" }),
-  description: z.string().min(1, { message: "Description is required" }),
-  price: z.number().min(0, { message: "Price must be a positive number" }),
-  startDate: z
-    .string()
-    .min(1, { message: "Start date is required" })
-    .refine((val) => !isNaN(Date.parse(val)), {
-      message: "Invalid start date",
-    }),
-  endDate: z
-    .string()
-    .min(1, { message: "End date is required" })
-    .refine((val) => !isNaN(Date.parse(val)), { message: "Invalid end date" }),
-  etagTypeId: z.string().min(1, { message: "ETag Type is required" }),
-  quantityEtagType: z
-    .number()
-    .min(1, { message: "Quantity must be at least 1" }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import {
+  CreatePackageFormValues,
+  createPackageFormSchema,
+} from "@/lib/validation";
+import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
+import { PackageTypeServices } from "@/components/services/Package/packageTypeServices";
+import { GetWalletType } from "@/types/walletType/walletType";
+import { PackageType } from "@/types/packageType/packageType";
+import Image from "next/image";
+import handleImageFileChange from "@/components/uploadImageToFirebaseStorage/UploadImage";
+import { AxiosError } from "axios";
 
 const PackageCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const [etagTypes, setEtagTypes] = useState<EtagType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [etagTypeIds, setEtagTypeIds] = useState<string[]>([]);
-  const [selectedEtagType, setSelectedEtagType] = useState<{
+  const [walletTypes, setWalletTypes] = useState<GetWalletType[]>([]);
+  const [packageTypes, setPackageTypes] = useState<PackageType[]>([]);
+  const [selectedPackageType, setSelectedPackageType] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [selectedWalletType, setSelectedWalletType] = useState<{
     id: string;
     name: string;
   } | null>(null);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  //handleImage from local
+  const [imageUploaded, setImageUploaded] = useState<string | null>("");
+
+  const form = useForm<CreatePackageFormValues>({
+    resolver: zodResolver(createPackageFormSchema),
     defaultValues: {
+      imageUrl: null,
       name: "",
-      imageUrl: "",
       description: "",
       price: 0,
-      startDate: "",
-      endDate: "",
-      etagTypeId: "",
-      quantityEtagType: 1,
+      duration: 0,
+      packageTypeId: "",
+      walletTypeId: "",
+      moneyStart: 0,
     },
   });
 
   useEffect(() => {
-    const fetchETagTypes = async () => {
+    const fetchTypes = async () => {
       try {
         setIsLoading(true);
         console.log("Fetching ETag types...");
-        const res = await ETagTypeServices.getETagTypes({ page: 1, size: 50 });
-        console.log("ETag types response:", res);
+        const [walletTypeRes, packageTypeRes] = await Promise.all([
+          WalletTypesServices.getWalletTypes({ page: 1, size: 10 }),
+          PackageTypeServices.getPackageTypes({ page: 1, size: 10 }),
+        ]);
 
         // Kiểm tra và lưu danh sách ETag Types (bao gồm cả id và name)
-        const types = Array.isArray(res.data.data) ? res.data.data : [];
-        setEtagTypes(types); // Lưu danh sách ETag Types
-        console.log("ETag types set:", types);
+        const walletTypes = Array.isArray(walletTypeRes.data.data)
+          ? walletTypeRes.data.data
+          : [];
+        const packageTypes = Array.isArray(packageTypeRes.data.data)
+          ? packageTypeRes.data.data
+          : [];
+
+        setWalletTypes(walletTypes); // Lưu danh sách
+        setPackageTypes(packageTypes);
+
+        console.log("walletTypes set:", walletTypes);
+        console.log("packageTypes set:", packageTypes);
       } catch (err) {
         console.error("Error fetching ETag types", err);
         if (err instanceof Error) {
@@ -105,15 +111,25 @@ const PackageCreatePage = () => {
       }
     };
 
-    fetchETagTypes();
+    fetchTypes();
   }, [toast]);
 
-  const handleEtagTypeChange = async (id: string) => {
+  const handleTypeChange = async (
+    type: "packageType" | "walletType",
+    id: string
+  ) => {
+    console.log(id, "onchnage");
     try {
-      setIsLoading(true);
-      const res = await ETagTypeServices.getETagTypeById(id);
-      setSelectedEtagType(res.data);
-      form.setValue("etagTypeId", id);
+      if (type === "packageType") {
+        const res = await PackageTypeServices.getPackageTypeById(id);
+        setSelectedPackageType(res.data.data);
+        console.log(res.data, "res packageeee");
+        form.setValue("packageTypeId", res.data.data.id);
+      } else if (type === "walletType") {
+        const res = await WalletTypesServices.getWalletTypeById(id);
+        setSelectedWalletType(res.data.data);
+        form.setValue("walletTypeId", res.data.data.id);
+      }
     } catch (err) {
       console.error("Error fetching ETag type details", err);
       toast({
@@ -126,35 +142,47 @@ const PackageCreatePage = () => {
     }
   };
 
-  const handleSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: CreatePackageFormValues) => {
     try {
       // Tạo package và lấy packageId
-      const packageResponse = await PackageServices.uploadPackage(data);
+      const packageResponse = await PackageServices.uploadPackage({
+        ...data,
+        imageUrl: imageUploaded,
+      });
       console.log("Package response:", packageResponse);
-      const packageId = packageResponse?.data?.data?.packageId;
-      try {
-        const etagTypeResponse = await ETagTypeServices.addEtagTypeToPackage({
-          etagTypeId: data.etagTypeId,
-          packageId: packageId,
-          quantityEtagType: data.quantityEtagType,
-        });
-      } catch (error) {
-        console.error("Error adding ETag Type to package:", error);
-      }
+      // const packageId = packageResponse?.data?.data?.packageId;
+      // try {
+      //   const etagTypeResponse = await ETagTypeServices.addEtagTypeToPackage({
+      //     etagTypeId: data.etagTypeId,
+      //     packageId: packageId,
+      //     quantityEtagType: data.quantityEtagType,
+      //   });
+      // } catch (error) {
+      //   console.error("Error adding ETag Type to package:", error);
+      // }
 
       toast({
         title: "Success",
-        description: `Package "${data.name}" created successfully with ETag Type.`,
+        description: `Package "${data.name}" created successfully!`,
       });
 
-      router.push("/admin/packages");
+      router.back();
     } catch (error) {
-      console.error("Error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create package. Please try again.",
-        variant: "destructive",
-      });
+      if (error instanceof AxiosError) {
+        toast({
+          title: "Error",
+          description:
+            error.response?.data?.Error || "Failed to create package!",
+          variant: "destructive",
+        });
+        console.error("Error:", error.message);
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong!",
+          variant: "destructive",
+        });
+      }
     }
   };
 
@@ -191,10 +219,30 @@ const PackageCreatePage = () => {
               name="imageUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Image URL</FormLabel>
+                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                    Image URL
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="Upload image" {...field} />
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className=" w-30 bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                      placeholder="Enter Image URL"
+                      onChange={(event) =>
+                        handleImageFileChange({
+                          event: event,
+                          setImageUploaded: setImageUploaded,
+                        })
+                      } // Convert empty string back to null if needed
+                    />
                   </FormControl>
+                  <Image
+                    src={imageUploaded || field.value || ""}
+                    alt={field.value || "image"}
+                    width={300}
+                    height={250}
+                    // onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -210,7 +258,7 @@ const PackageCreatePage = () => {
                   <FormControl>
                     <Textarea
                       placeholder="Enter package description"
-                      {...field}
+                      onChange={(event) => field.onChange(event)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -240,68 +288,61 @@ const PackageCreatePage = () => {
               )}
             />
 
-            {/* Start Date */}
+            {/* Duration */}
             <FormField
               control={form.control}
-              name="startDate"
+              name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Start Date</FormLabel>
+                  <FormLabel>Duration</FormLabel>
                   <FormControl>
-                    <Input type="datetime-local" {...field} />
+                    <Input
+                      type="number"
+                      placeholder="Enter duration"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e.target.valueAsNumber);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* End Date */}
+            {/* Wallet Type */}
             <FormField
               control={form.control}
-              name="endDate"
+              name="walletTypeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>End Date</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="etagTypeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select ETag Type</FormLabel>
+                  <FormLabel>Select Wallet Type</FormLabel>
                   <FormControl>
                     <Select
                       onValueChange={(value) => {
                         field.onChange(value);
-                        handleEtagTypeChange(value);
+                        handleTypeChange("walletType", value);
                       }}
                       value={field.value}
                       disabled={isLoading}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select an ETag Type" />
+                        <SelectValue placeholder="Select an Wallet Type" />
                       </SelectTrigger>
                       <SelectContent>
                         {isLoading ? (
                           <SelectItem value="loading" disabled>
-                            Loading ETag Types...
+                            Loading Wallet Types...
                           </SelectItem>
-                        ) : etagTypes.length > 0 ? (
-                          etagTypes.map((etag) => (
-                            <SelectItem key={etag.id} value={etag.id}>
-                              {etag.name}
+                        ) : walletTypes.length > 0 ? (
+                          walletTypes.map((wallet) => (
+                            <SelectItem key={wallet.id} value={wallet.id}>
+                              {wallet.name}
                             </SelectItem>
                           ))
                         ) : (
-                          <SelectItem value="no-etags" disabled>
-                            No ETag Types available
+                          <SelectItem value="no-wallets" disabled>
+                            No Wallet Types available
                           </SelectItem>
                         )}
                       </SelectContent>
@@ -312,17 +353,60 @@ const PackageCreatePage = () => {
               )}
             />
 
-            {/* Quantity */}
+            {/* Package Type */}
             <FormField
               control={form.control}
-              name="quantityEtagType"
+              name="packageTypeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity</FormLabel>
+                  <FormLabel>Select Package Type</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        handleTypeChange("packageType", value);
+                      }}
+                      value={field.value}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an Package Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isLoading ? (
+                          <SelectItem value="loading" disabled>
+                            Loading Package Types...
+                          </SelectItem>
+                        ) : packageTypes.length > 0 ? (
+                          packageTypes.map((pkg) => (
+                            <SelectItem key={pkg.id} value={pkg.id}>
+                              {pkg.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-pkgs" disabled>
+                            No Package Types available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Money Start */}
+            <FormField
+              control={form.control}
+              name="moneyStart"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Money Start</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
-                      placeholder="Enter quantity"
+                      placeholder="Enter money start"
                       {...field}
                       onChange={(e) => {
                         field.onChange(e.target.valueAsNumber);

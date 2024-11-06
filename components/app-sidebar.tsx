@@ -99,12 +99,12 @@ export function AppSidebar() {
       href: navigatePage("packages"),
       roles: ["Admin", "CashierWeb"],
     },
-    {
-      name: "ETagTypes",
-      icon: Tag,
-      href: navigatePage("etagtypes"),
-      roles: ["Admin", "CashierWeb"],
-    },
+    // {
+    //   name: "ETagTypes",
+    //   icon: Tag,
+    //   href: navigatePage("etagtypes"),
+    //   roles: ["Admin", "CashierWeb"],
+    // },
     // {
     //   name: "Zones",
     //   icon: LandPlot,

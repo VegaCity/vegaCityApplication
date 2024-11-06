@@ -27,27 +27,17 @@ import {
 } from "@/components/ui/select";
 import { roles } from "@/types/role";
 import { UserAccountPostPatch } from "@/types/userAccount";
-
-const formSchema = z.object({
-  fullName: z.string().min(1, { message: "Full Name is required" }),
-  phoneNumber: z.string().min(1, { message: "Phone Number is required" }),
-  cccdPassport: z.string().min(1, { message: "cccdPassport is required" }),
-  address: z.string().min(1, { message: "Address is required" }),
-  email: z
-    .string()
-    .min(1, { message: "Email is required" })
-    .email({ message: "Invalid email format" }),
-  description: z.string().optional(),
-  roleName: z.string().min(1, { message: "Role Name is required" }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import {
+  CreateUserAccountFormValues,
+  createUserAccountFormSchema,
+} from "@/lib/validation";
+import { apiKey } from "@/components/services/api";
 
 const UserCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<CreateUserAccountFormValues>({
+    resolver: zodResolver(createUserAccountFormSchema),
     defaultValues: {
       fullName: "",
       phoneNumber: "",
@@ -59,29 +49,39 @@ const UserCreatePage = () => {
     },
   });
 
-  const handleSubmit = (data: FormValues) => {
+  const handleSubmit = (data: CreateUserAccountFormValues) => {
     // Create a new object that includes the apiKey
     const userData: UserAccountPostPatch | null = {
       ...data,
-      apiKey: "5f728deb-b2c3-4bac-9d9c-41a11e0acccc", // Add the apiKey here
+      apiKey: apiKey, // Add the apiKey here
     };
 
     console.log("New user data:", userData);
     if (userData) {
-      UserServices.createUser(userData).then((res) => {
-        console.log(res.data, "Create User");
-        toast({
-          title: "User has been created successfully",
-          description: `Created user: ${userData.fullName}`,
+      UserServices.createUser(userData)
+        .then((res) => {
+          console.log(res.data, "Create User");
+          toast({
+            title: "User has been created successfully",
+            description: `Created user: ${userData.fullName}`,
+          });
+          router.push("/admin/usersAccount");
+        })
+        .catch((err) => {
+          if (err.response.status === 400) {
+            toast({
+              title: "Error when creating!",
+              description: `Error: ${err.response.data.messageResponse}`,
+            });
+          }
+          console.error(err, "Error creating user");
         });
-        router.push("/admin/usersAccount");
-      });
     }
   };
 
   return (
     <>
-      <BackButton text="Back To Users" link="/admin/users" />
+      <BackButton text="Back To Users" link="/admin/usersAccount" />
       <h3 className="text-2xl mb-4">Create New User</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">

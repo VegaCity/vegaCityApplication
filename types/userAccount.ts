@@ -89,7 +89,7 @@ export interface UserAccountPost {
   phoneNumber: string;
   address: string;
   description?: string | null;
-  birthday: string;
+  birthday?: string | null;
   gender: number;
   cccdPassport: string;
   imageUrl?: string | null;
@@ -97,7 +97,7 @@ export interface UserAccountPost {
 
 export interface UserAccountGet extends UserAccount {
   id: string;
-  birthday: string | null;
+  birthday?: string | null;
   storeId: string;
   crDate: string;
   upsDate: string;
@@ -108,8 +108,7 @@ export interface UserAccountGet extends UserAccount {
 }
 
 export interface UserApprove {
-  locationHouse: string;
-  addressHouse: string;
+  locationZone: string;
   storeName: string;
   storeAddress: string;
   phoneNumber: string;

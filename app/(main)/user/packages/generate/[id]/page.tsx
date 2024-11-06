@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PackageServices } from "@/components/services/packageServices";
+import { PackageServices } from "@/components/services/Package/packageServices";
 import BackButton from "@/components/BackButton";
 import {
   Form,

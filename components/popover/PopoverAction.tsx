@@ -25,7 +25,8 @@ import Link from "next/link";
 interface BaseType {
   id: string;
   name?: string;
-  houseName?: string;
+  zoneName?: string;
+  fullName?: string;
 }
 
 interface PopoverActionProps<T extends BaseType> {
@@ -44,54 +45,55 @@ export const PopoverActionTable = <T extends BaseType>({
       <PopoverTrigger asChild>
         <Button variant="outline">...</Button>
       </PopoverTrigger>
-      <PopoverContent className="w-40">
-        <div className="grid gap-4">
-          <div className="space-y-2">
+      <PopoverContent className="w-30">
+        {/* <div> */}
+        {/* <div className="space-y-2">
             <h4 className="font-medium leading-none">Actions</h4>
             <p className="text-sm text-muted-foreground">
               Select your next actions...
             </p>
+          </div> */}
+        <div className="flex items-center w-full">
+          <div>
+            {/* <Label htmlFor="width">Edit</Label> */}
+            <Link href={editLink}>
+              <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded text-xs mr-2">
+                <Pencil />
+              </Button>
+            </Link>
           </div>
-          <div className="grid gap-2">
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="width">Edit</Label>
-              <Link href={editLink}>
-                <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded text-xs mr-2">
-                  <Pencil />
+          <div>
+            {/* <Label htmlFor="maxWidth">Delete</Label> */}
+            <AlertDialog>
+              <AlertDialogTrigger>
+                <Button
+                  variant={"destructive"}
+                  className="bg-red-500 hover:bg-red-700 text-white font-bold rounded text-xs"
+                >
+                  <Trash />
                 </Button>
-              </Link>
-            </div>
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="maxWidth">Delete</Label>
-              <AlertDialog>
-                <AlertDialogTrigger>
-                  <Button
-                    variant={"destructive"}
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold rounded text-xs"
-                  >
-                    <Trash />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Are sure for delete this -{item.name ?? item.houseName}-?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will deflag in list!
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => handleDelete(item)}>
-                      Confirm
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Are sure for delete this -
+                    {item.name ?? item.zoneName ?? item.fullName}-?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will deflag in list!
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => handleDelete(item)}>
+                    Confirm
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
+        {/* </div> */}
       </PopoverContent>
     </Popover>
   );

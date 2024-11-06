@@ -32,7 +32,7 @@ export const UserServices = {
     return API.delete(`/user/${userId}`);
   },
   approveUser(userId: string, userApproveData: UserApprove) {
-    return API.post(`/approve-user/${userId}`, userApproveData);
+    return API.post(`/user/${userId}/approve-user`, userApproveData);
   },
   uploadPackage(userData: Users) {
     return API.post("/user/", userData);
