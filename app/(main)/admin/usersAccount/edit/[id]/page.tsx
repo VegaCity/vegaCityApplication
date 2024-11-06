@@ -265,6 +265,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Description"
                     value={field.value ?? ""}
+                    onChange={field.onChange}
                     // {...field}
                   />
                 </FormControl>
