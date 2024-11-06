@@ -23,8 +23,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ETag } from "@/types/etag";
-import { ETagServices } from "../services/etagService";
+import { ETag } from "@/types/packageitem";
+import { ETagServices } from "../services/packageItemService";
 
 interface ETagTableProps {
   limit?: number;

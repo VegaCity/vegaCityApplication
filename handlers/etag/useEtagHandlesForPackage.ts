@@ -2,10 +2,15 @@ import { useCallback, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { useToast } from "@/components/ui/use-toast";
 import {
+  confirmOrder,
+  confirmOrderForCharge,
   createOrder,
   deleteOrder,
 } from "@/components/services/orderuserServices";
-import { ETagServices } from "@/components/services/etagService";
+import {
+  PackageItemServices,
+  GeneratePackageItem,
+} from "@/components/services/packageItemService";
 import paymentService from "@/components/services/paymentService";
 import {
   CustomerFormValues,
@@ -15,13 +20,12 @@ import {
 
 interface UseEtagHandlersProps {
   customerForm: UseFormReturn<CustomerFormValues>;
-  etagForm: UseFormReturn<EtagFormValues>;
+
   packageData: any;
 }
 
 export const useEtagHandlers = ({
   customerForm,
-  etagForm,
   packageData,
 }: UseEtagHandlersProps) => {
   const { toast } = useToast();
@@ -54,8 +58,7 @@ export const useEtagHandlers = ({
 
     // Reset forms
     customerForm.reset();
-    etagForm.reset();
-  }, [customerForm, etagForm]);
+  }, [customerForm]);
   const deleteExistingOrder = async () => {
     const storedOrderId = localStorage.getItem("orderId");
     if (storedOrderId) {
@@ -101,13 +104,14 @@ export const useEtagHandlers = ({
           address: data.address,
           gender: data.gender,
           cccdPassport: data.cccdPassport,
+          email: data.email,
         },
       };
       const response = await createOrder(orderData);
 
       localStorage.setItem("orderId", response.data.orderId);
       localStorage.setItem("invoiceId", response.data.invoiceId);
-
+      localStorage.setItem("transactionId", response.data.transactionId);
       setOrderId(response.data.invoiceId);
       setIsCustomerInfoConfirmed(true);
     } catch (err) {
@@ -119,61 +123,31 @@ export const useEtagHandlers = ({
     }
   };
 
-  const handleEtagSubmit = async (data: EtagFormValues) => {
+  const handleGenerateVCard = async (quantity: number) => {
     try {
-      const etagTypeId = localStorage.getItem("etagTypeId");
-      if (!etagTypeId) {
-        throw new Error("ETag type ID not found");
-      }
+      const packageId = localStorage.getItem("packageId") || "";
+      const response = await PackageItemServices.generatePackageItem(quantity);
 
-      const quantity = Number(customerForm.getValues("quantity"));
-      const generateEtagData: GenerateEtag = {
-        quantity,
-        etagTypeId,
-        generateEtagRequest: {
-          startDate: new Date(data.etagStartDate),
-          endDate: new Date(data.etagEndDate),
-        },
-      };
-
-      const response = await ETagServices.generateEtag(generateEtagData);
-
-      if (!response?.data) {
-        throw new Error("Failed to generate E-Tag");
-      }
-
-      setEtagData({
-        startDate: new Date(data.etagStartDate),
-        endDate: new Date(data.etagEndDate),
-      });
-
-      if (response.data.data.length > 0) {
-        localStorage.setItem("etagList", JSON.stringify(response.data.data));
-        console.log("etagList", response.data.data);
-        localStorage.setItem("etag", response.data.data.id);
-      } else if (response.data.data.etag?.id) {
-        localStorage.setItem("etag", response.data.data.id);
+      if (response.status === 201) {
+        const vcardData = response.data;
+        // Process the vcardData as needed
+        // toast.success('VCard generated successfully.');
+        toast({
+          title: "Success",
+          description: "VCard generated successfully.",
+        });
       } else {
-        throw new Error("No ETag IDs received");
+        throw new Error(
+          `Failed to generate VCard. Status code: ${response.status}`
+        );
       }
-
-      toast({
-        title: "Success",
-        description:
-          quantity === 1
-            ? "E-Tag generated and activated successfully!"
-            : "E-Tags generated successfully!",
-      });
-
-      return true;
-    } catch (err) {
-      console.error("Error in handleEtagSubmit:", err);
+    } catch (error) {
+      console.error("Error generating VCard:", error);
       toast({
         title: "Error",
-        description: "Failed to generate E-Tag. Please try again.",
-        variant: "destructive",
+        description: "Failed to generate VCard. Please try again.",
       });
-      return false;
+      // toast.error('Failed to generate VCard. Please try again.');
     }
   };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
@@ -232,37 +206,13 @@ export const useEtagHandlers = ({
     }
   };
 
-  const handleConfirmEtag = async () => {
-    const isValid = await etagForm.trigger();
-
-    if (isValid) {
-      setIsEtagInfoConfirmed(true);
-      setCachedEtagFormData(etagForm.getValues());
-      toast({
-        title: "E-tag Information Confirmed",
-        description: "You can now generate the E-tag.",
-      });
-    } else {
-      const errors = etagForm.formState.errors;
-      let errorMessage =
-        "Please fill in all required E-tag information fields correctly:";
-      if (errors.etagStartDate) errorMessage += " Start Date is invalid.";
-      if (errors.etagEndDate) errorMessage += " End Date is invalid.";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleCancelOrder = async () => {
     await deleteExistingOrder();
     setIsCustomerInfoConfirmed(false);
     setIsEtagInfoConfirmed(false);
     setIsCashPaymentConfirmed(false);
     customerForm.reset();
-    etagForm.reset();
+
     setOrderId(null);
     toast({
       title: "Order Cancelled",
@@ -285,15 +235,17 @@ export const useEtagHandlers = ({
 
     try {
       if (paymentMethod.toLowerCase() === "cash") {
-        const etagResult = await handleEtagSubmit(etagForm.getValues());
-        if (etagResult) {
-          setIsOrderConfirmed(true);
-        }
+        confirmOrderForCharge({
+          invoiceId: localStorage.getItem("invoiceId") || "",
+          transactionId: localStorage.getItem("transactionId") || "",
+          transactionChargeId:
+            localStorage.getItem("transactionChargeId") || "",
+        });
+        setIsOrderConfirmed(true);
+        await handleGenerateVCard(customerForm.getValues("quantity"));
       } else {
-        const etagResult = await handleEtagSubmit(etagForm.getValues());
-        if (etagResult) {
-          await initiatePayment(paymentMethod, invoiceId);
-        }
+        await initiatePayment(paymentMethod, invoiceId);
+        await handleGenerateVCard(customerForm.getValues("quantity"));
       }
     } catch (err) {
       console.error("Error in order confirmation:", err);
@@ -314,8 +266,8 @@ export const useEtagHandlers = ({
     etagData,
     packageData,
     handleCustomerInfoSubmit,
-    handleEtagSubmit,
-    handleConfirmEtag,
+    handleGenerateVCard,
+    customerForm,
     handleCancelOrder,
     handleConfirmOrder,
   };

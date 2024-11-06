@@ -105,6 +105,7 @@ export function AppSidebar() {
     //   href: navigatePage("etagtypes"),
     //   roles: ["Admin", "CashierWeb"],
     // },
+
     // {
     //   name: "Zones",
     //   icon: LandPlot,
@@ -134,9 +135,15 @@ export function AppSidebar() {
       ],
     },
     {
-      name: "Etags",
+      name: "VCards",
       icon: Tag,
-      href: navigatePage("etags"),
+      href: navigatePage("package-items"),
+      roles: ["CashierWeb"],
+    },
+    {
+      name: "Orders",
+      icon: Tag,
+      href: navigatePage("orders"),
       roles: ["CashierWeb"],
     },
     {

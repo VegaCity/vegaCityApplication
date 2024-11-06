@@ -2,9 +2,9 @@ export interface PackageItem {
   id: string;
   packageId: string;
   name: string;
-  cccdPassport: string;
+  cccdpassport: string;
   email: string;
-  status: string; //Active
+  status: string;
   gender: string;
   isAdult: true;
   walletId: string;
@@ -12,8 +12,7 @@ export interface PackageItem {
   upsDate: string;
   marketZone: null;
   statusCode: number;
-  //   messageResponse: null;
-  //   data: null;
+  phoneNumber: string;
 }
 
 export interface PackageItemDetail {
@@ -24,7 +23,7 @@ export interface PackageItemDetail {
   name: string | null;
   cccdpassport: string | null;
   email: string | null;
-  status: string | null; //Active
+  status: string | null;
   gender: string | null;
   isAdult: boolean;
   walletId: string | null;

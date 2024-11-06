@@ -11,33 +11,30 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+
 import { AlertCircle, ArrowDownToLine, Loader2, Wallet } from "lucide-react";
 import React, { useCallback, useState } from "react";
-
-interface EtagDetails {
+type PackageItemDetail = {
   id: string;
-  etagId: string;
-  fullName: string;
+  packageId: string;
+  name: string;
   phoneNumber: string;
-  cccdPassport: string;
-  birthday: string;
-  createAt: string;
-  updateAt: string;
-}
+  cccdpassport: string;
+};
 interface WalletInfo {
   id: string;
   balance: number;
 }
 
-const ETAG_CODE_PATTERN = /^VGC[0-9]{16,19}$/;
 const MIN_WITHDRAWAL = 50000;
 const FORMAT_LOCALE = "vi-VN";
 
 const WithdrawMoney = () => {
   const { toast } = useToast();
-  const [etagCode, setEtagCode] = useState("");
+  const [packageItemCode, setPackageItemCode] = useState("");
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
-  const [etagDetails, setEtagDetails] = useState<EtagDetails | null>(null);
+  const [packageItemDetails, setPackageItemDetails] =
+    useState<PackageItemDetail | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
@@ -45,10 +42,6 @@ const WithdrawMoney = () => {
   const [error, setError] = useState("");
   const [pendingTransactionId, setPendingTransactionId] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
-  const validateEtagCode = useCallback((code: string): boolean => {
-    return ETAG_CODE_PATTERN.test(code);
-  }, []);
 
   const validateWithdrawAmount = useCallback(
     (amount: number): string | null => {
@@ -81,77 +74,64 @@ const WithdrawMoney = () => {
     setError("");
   };
 
-  const fetchEtagInfo = useCallback(
-    async (code: string) => {
-      if (!validateEtagCode(code)) {
-        setError("Mã E-tag không hợp lệ. Vui lòng kiểm tra lại.");
-        setWalletInfo(null);
-        setEtagDetails(null);
-        return;
-      }
+  const fetchPackageItemInfo = useCallback(async (packageItemCode: string) => {
+    try {
+      setIsLoading(true);
+      setError("");
+      const response = await API.get(`/package-item/${packageItemCode}`);
+      console.log("Full API response:", response);
 
-      try {
-        setIsLoading(true);
-        setError("");
-        const response = await API.get("/etag", { params: { etagCode: code } });
+      // Check if the response has the expected structure
+      if (response.data?.statusCode === 200) {
+        const data = response.data.data;
 
-        if (response.data?.statusCode === 200) {
-          const { data } = response.data;
-
-          if (data?.etag) {
-            if (data.etag.wallet) {
-              setWalletInfo({
-                id: data.etag.wallet.id,
-                balance: data.etag.wallet.balance,
-              });
-            }
-
-            if (data.etag.etagDetail) {
-              setEtagDetails({
-                id: data.etag.etagDetail.id,
-                etagId: data.etag.etagDetail.etagId,
-                fullName: data.etag.etagDetail.fullName,
-                phoneNumber: data.etag.etagDetail.phoneNumber,
-                cccdPassport: data.etag.etagDetail.cccdPassport,
-                birthday: data.etag.etagDetail.birthday,
-                createAt: data.etag.etagDetail.createAt,
-                updateAt: data.etag.etagDetail.updateAt,
-              });
-            } else {
-              throw new Error("Không tìm thấy thông tin chi tiết E-tag");
-            }
-          } else {
-            throw new Error("Không tìm thấy thông tin E-tag");
+        if (data) {
+          // Assuming wallet information is part of the data object directly
+          if (data.wallet) {
+            setWalletInfo({
+              id: data.walletId,
+              balance: data.wallet.balance,
+            });
           }
-        } else {
-          throw new Error(
-            response.data?.messageResponse || "Không tìm thấy thông tin E-tag"
-          );
-        }
-      } catch (err) {
-        console.error("Error fetching etag info:", err);
-        setError("Đã có lỗi xảy ra. Vui lòng kiểm tra lại.");
-        setWalletInfo(null);
-        setEtagDetails(null);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [validateEtagCode]
-  );
 
-  const handleEtagChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const code = e.target.value.toUpperCase();
-      setEtagCode(code);
-      if (code.length >= 6) {
-        fetchEtagInfo(code);
+          // Set package item details based on the data structure
+          setPackageItemDetails({
+            id: data.id,
+            packageId: data.packageId,
+            name: data.name,
+            phoneNumber: data.phoneNumber,
+            cccdpassport: data.cccdpassport,
+          });
+        } else {
+          console.error(
+            "Expected 'data' structure is missing in response:",
+            response.data
+          );
+          throw new Error("Package-Item data structure is missing.");
+        }
       } else {
-        setWalletInfo(null);
-        setEtagDetails(null);
+        throw new Error(
+          response.data?.messageResponse ||
+            "Không tìm thấy thông tin Package-Item"
+        );
       }
+    } catch (err) {
+      console.error("Error fetching package item info:", err);
+      setError("Đã có lỗi xảy ra. Vui lòng kiểm tra lại.");
+      setWalletInfo(null);
+      setPackageItemDetails(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handlePackageItemChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const id = e.target.value;
+      setPackageItemCode(id);
+      fetchPackageItemInfo(id); // Only trigger API call if a valid ID is entered
     },
-    [fetchEtagInfo]
+    [fetchPackageItemInfo]
   );
 
   const handleRequestWithdraw = useCallback(async () => {
@@ -247,15 +227,15 @@ const WithdrawMoney = () => {
               htmlFor="etag-input"
               className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
             >
-              <span>E-tag Code</span>
+              <span>Package Item Id</span>
               {error && <AlertCircle className="w-4 h-4 text-red-500" />}
             </label>
             <Input
               id="etag-input"
               type="text"
-              value={etagCode}
-              onChange={handleEtagChange}
-              placeholder="VGCxxxxxxxxxx"
+              value={packageItemCode}
+              onChange={handlePackageItemChange}
+              placeholder="xxxxxxxxxxxx"
               className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               disabled={isLoading}
             />
@@ -276,7 +256,7 @@ const WithdrawMoney = () => {
             <div className="flex justify-center py-6">
               <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
             </div>
-          ) : walletInfo && etagDetails ? (
+          ) : walletInfo && packageItemDetails ? (
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
                 <div className="space-y-2">
@@ -287,19 +267,19 @@ const WithdrawMoney = () => {
                     <p className="text-sm text-gray-600">
                       Name:{" "}
                       <span className="font-semibold text-gray-900">
-                        {etagDetails.fullName}
+                        {packageItemDetails.name}
                       </span>
                     </p>
                     <p className="text-sm text-gray-600">
                       Phone:{" "}
                       <span className="font-semibold text-gray-900">
-                        {etagDetails.phoneNumber}
+                        {packageItemDetails.phoneNumber}
                       </span>
                     </p>
                     <p className="text-sm text-gray-600">
                       ID/Passport:{" "}
                       <span className="font-semibold text-gray-900">
-                        {etagDetails.cccdPassport}
+                        {packageItemDetails.cccdpassport}
                       </span>
                     </p>
                   </div>
@@ -354,7 +334,6 @@ const WithdrawMoney = () => {
           ) : null}
         </div>
       </div>
-
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="sm:max-w-lg rounded-xl p-6">
           <DialogHeader>
@@ -363,24 +342,24 @@ const WithdrawMoney = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="text-center space-y-4 py-6">
-            {etagDetails && (
+            {packageItemDetails && (
               <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">
                   Customer:{" "}
                   <span className="font-semibold text-gray-900">
-                    {etagDetails.fullName}
+                    {packageItemDetails.name}
                   </span>
                 </p>
                 <p className="text-sm text-gray-600">
                   Phone:{" "}
                   <span className="font-semibold text-gray-900">
-                    {etagDetails.phoneNumber}
+                    {packageItemDetails.phoneNumber}
                   </span>
                 </p>
                 <p className="text-sm text-gray-600">
                   ID/Passport:{" "}
                   <span className="font-semibold text-gray-900">
-                    {etagDetails.cccdPassport}
+                    {packageItemDetails.cccdpassport}
                   </span>
                 </p>
               </div>

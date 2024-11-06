@@ -1,5 +1,18 @@
 import { API } from "@/components/services/api";
-import { OrderData, ConfirmOrderData } from "@/types/paymentFlow/orderUser";
+import {
+  OrderData,
+  ConfirmOrderData,
+  ConfirmOrderForChargeData,
+} from "@/types/paymentFlow/orderUser";
+export const GetOrders = async (page: number) => {
+  try {
+    const response = await API.get(`/orders?page=${page}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting orders:", error);
+    throw error;
+  }
+};
 
 export const createOrder = async (orderData: OrderData) => {
   try {
@@ -11,9 +24,20 @@ export const createOrder = async (orderData: OrderData) => {
   }
 };
 
-export const confirmOrder = async (confirmData: ConfirmOrderData) => {
+export const confirmOrderForCharge = async (
+  confirmData: ConfirmOrderForChargeData
+) => {
   try {
     const response = await API.post("/order/cashier/confirm", confirmData);
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming order:", error);
+    throw error;
+  }
+};
+export const confirmOrder = async (confirmData: ConfirmOrderData) => {
+  try {
+    const response = await API.post("/order/confirm", confirmData);
     return response.data;
   } catch (error) {
     console.error("Error confirming order:", error);
