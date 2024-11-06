@@ -1,9 +1,10 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { PackageServices } from "@/components/services/Package/packageServices";
+import { PackageTypeServices } from "@/components/services/Package/packageTypeServices";
+import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -13,8 +14,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -22,23 +21,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { PackageServices } from "@/components/services/Package/packageServices";
-import { ETagTypeServices } from "@/components/services/etagtypeServices";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { EtagType } from "@/types/etagtype";
+import handleImageFileChange from "@/components/uploadImageToFirebaseStorage/UploadImage";
 import {
   CreatePackageFormValues,
   createPackageFormSchema,
 } from "@/lib/validation";
-import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
-import { PackageTypeServices } from "@/components/services/Package/packageTypeServices";
-import { GetWalletType } from "@/types/walletType/walletType";
 import { PackageType } from "@/types/packageType/packageType";
-import Image from "next/image";
-import handleImageFileChange from "@/components/uploadImageToFirebaseStorage/UploadImage";
+import { GetWalletType } from "@/types/walletType/walletType";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
 const PackageCreatePage = () => {
   const { toast } = useToast();
