@@ -42,6 +42,9 @@ export const customerFormSchema = z.object({
     .number()
     .min(1000, { message: "Giá phải ít nhất là 1.000 VND" })
     .max(10000000, { message: "Giá không được vượt quá 10 triệu VND" }),
+  email: z
+    .string()
+    .email("Email của không hợp lệ. Vui lý sử dụng email hợp lệ"),
 });
 
 export const etagFormSchema = z
@@ -87,7 +90,7 @@ export interface GenerateEtag {
 }
 export const formSchema = z
   .object({
-    fullName: z
+    name: z
       .string()
       .min(2, { message: "Tên phải có ít nhất 2 ký tự" })
       .max(100, { message: "Tên không được vượt quá 100 ký tự" })
@@ -112,8 +115,10 @@ export const formSchema = z
     // cccdPassport: z
     //   .string()
     //   .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
-
-    cccdPassport: z
+    email: z
+      .string()
+      .email("Email của không hợp lệ. Vui lý sử dụng email hợp lệ"),
+    cccdpassport: z
       .string()
       .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
 
@@ -126,8 +131,9 @@ export const formSchema = z
       return age >= minAge && age <= maxAge;
     }, "Ngày sinh phải từ 16 đến 100 năm trước"),
 
-    gender: z.enum(["0", "1", "2"], {
-      errorMap: () => ({ message: "Vui lòng chọn giới tính hợp lệ" }),
+    gender: z.enum(["Male", "Female", "Other"], {
+      required_error: "Giới tính là bắt buộc",
+      invalid_type_error: "Giới tính không hợp lệ",
     }),
 
     startDate: z
@@ -361,7 +367,7 @@ export type StoreFormValues = z.infer<typeof storeFormSchema>;
 export type EtagTypeFormValues = z.infer<typeof etagTypeFormSchema>;
 export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;
 
-export interface EtagDetailPageProps {
+export interface PackageItemDetailPageProps {
   params: { id: string };
 }
 export interface EtagEditPageProps {

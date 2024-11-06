@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { ETagServices } from "@/components/services/etagService";
-import { ETag } from "@/types/etag";
+import { ETagServices } from "@/components/services/packageItemService";
+import { ETag } from "@/types/packageitem";
 import Image from "next/image";
 import {
   Select,

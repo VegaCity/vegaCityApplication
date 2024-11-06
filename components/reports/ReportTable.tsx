@@ -224,7 +224,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
 
       const reportData = response.data.data;
       const updatedReports = await Promise.all(
-        reportData.map(async (report: ReportData) => ({
+        reportData?.map(async (report: ReportData) => ({
           ...report,
           storeName: await fetchStoreName(report.storeId),
         }))

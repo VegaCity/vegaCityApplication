@@ -11,7 +11,7 @@ import {
   createOrder,
   deleteOrder,
 } from "@/components/services/orderuserServices";
-import { ETagServices } from "@/components/services/etagService";
+import { ETagServices } from "@/components/services/packageItemService";
 import paymentService from "@/components/services/paymentService";
 
 interface UseEtagHandlersProps {

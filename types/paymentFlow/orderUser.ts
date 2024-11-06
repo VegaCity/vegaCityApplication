@@ -12,6 +12,7 @@ export interface CustomerInfo {
   address: string;
   gender: string;
   cccdPassport: string;
+  email: string;
 }
 
 export interface OrderData {
@@ -24,4 +25,19 @@ export interface OrderData {
 
 export interface ConfirmOrderData {
   invoiceId: string;
+  transactionId: string;
+}
+export interface ConfirmOrderForChargeData {
+  invoiceId: string;
+  transactionChargeId: string;
+  transactionId: string;
+}
+export interface Order {
+  id: string;
+  paymentType: string;
+  totalAmount: number;
+  saleType: string;
+  name: string;
+  invoiceId: string;
+  status: string;
 }

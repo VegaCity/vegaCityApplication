@@ -14,8 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { ETagServices } from "@/components/services/etagService";
-import { ETag } from "@/types/etag";
+import { PackageItemServices } from "@/components/services/packageItemService";
+import { PackageItem } from "@/types/packageitem";
 import Image from "next/image";
 import {
   Select,
@@ -33,7 +33,11 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import paymentService from "@/components/services/paymentService";
-import { formSchema, FormValues, EtagDetailPageProps } from "@/lib/validation";
+import {
+  formSchema,
+  FormValues,
+  PackageItemDetailPageProps,
+} from "@/lib/validation";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -43,13 +47,17 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { confirmOrder } from "@/components/services/orderuserServices";
+import {
+  confirmOrder,
+  confirmOrderForCharge,
+} from "@/components/services/orderuserServices";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { ConfirmOrderData } from "@/types/paymentFlow/orderUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
+const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
-  const [etag, setEtag] = useState<ETag | null>(null);
+  const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -59,25 +67,28 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const [shouldShowAlertDialog, setShouldShowAlertDialog] = useState(false);
   const [pendingInvoiceId, setPendingInvoiceId] = useState<string | null>(null);
   const handleChargeMoney = async (data: {
-    etagCode: any;
+    packageItemId: string;
     chargeAmount: number;
-    cccdPassport: any;
+    cccdpassport: any;
     paymentType: string;
   }) => {
     try {
       setIsLoading(true);
-      const response = await ETagServices.chargeMoney({
-        etagCode: data.etagCode,
+      const response = await PackageItemServices.chargeMoney({
+        packageItemId: params.id,
         chargeAmount: data.chargeAmount,
-        cccdPassport: data.cccdPassport,
+        cccdPassport: data.cccdpassport,
         paymentType: data.paymentType,
       });
 
       if (response.status === 200) {
         const responseData = response.data;
         if (responseData && responseData.data) {
-          const { urlDirect, invoiceId } = responseData.data;
+          const { urlDirect, invoiceId, transactionChargeId } =
+            responseData.data;
           localStorage.setItem("pendingInvoiceId", invoiceId);
+          localStorage.setItem("transactionChargeId", transactionChargeId);
+          localStorage.setItem("transactionId", responseData.transactionId);
 
           if (!urlDirect || !invoiceId) {
             toast({
@@ -187,10 +198,12 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     try {
       const confirmData = {
         invoiceId: pendingInvoiceId,
+        transactionChargeId: localStorage.getItem("transactionChargeId") || "",
+        transactionId: localStorage.getItem("transactionId") || "",
       };
 
       console.log("Đang xác nhận đơn hàng với dữ liệu:", confirmData);
-      const result = await confirmOrder(confirmData);
+      const result = await confirmOrderForCharge(confirmData);
       console.log("Kết quả xác nhận:", result);
 
       if (result.statusCode === 200 || result.statusCode === "200") {
@@ -229,14 +242,15 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      fullName: "",
+      name: "",
       etagCode: "",
       phoneNumber: "",
-      cccdPassport: "",
+      cccdpassport: "",
       birthday: "",
-      gender: "0",
+      gender: "" as "Male" | "Female" | "Other" | undefined,
       startDate: "",
       endDate: "",
+      email: "",
       status: 0,
       imageUrl: "",
       etagType: {
@@ -252,12 +266,13 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   });
   const formCharge = useForm({
     defaultValues: {
-      etagCode: form.getValues("etagCode"),
+      promoCode: "",
       chargeAmount: 0,
-      cccdPassport: form.getValues("cccdPassport"),
+      cccdpassport: form.getValues("cccdpassport"),
       paymentType: "Cash",
-      startDate: form.getValues("startDate"),
-      endDate: form.getValues("endDate"),
+      packageItemId: params.id,
+      // startDate: form.getValues("startDate"),
+      // endDate: form.getValues("endDate"),
     },
   });
 
@@ -299,42 +314,37 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
 
       try {
         setIsLoading(true);
-        const response = await ETagServices.getETagById(params.id);
-        const etagData = response.data?.data?.etag;
-        console.log(etagData, "etagData");
-        if (!etagData) {
+        const response = await PackageItemServices.getPackageItemById(
+          params.id
+        );
+        const packageitemData = response.data?.data;
+        console.log(packageitemData, "packageitemData");
+        setPackageItem(packageitemData);
+        if (!packageitemData) {
           throw new Error("No etag data received");
         }
-        const etagDetails = etagData.etagDetail;
-        console.log(etagDetails, "etagDetails");
-        setEtag(etagData);
+
         form.reset({
-          fullName: etagDetails.fullName || "",
-          etagCode: etagData.etagCode || "",
-          phoneNumber: etagDetails.phoneNumber || "",
-          cccdPassport: etagDetails.cccdPassport || "",
-          birthday: formatDateForInput(etagDetails.birthday) || "",
-          startDate: formatDateTimeForInput(etagData.startDate) || "",
-          endDate: formatDateTimeForInput(etagData.endDate) || "",
-          gender: (etagDetails.gender || 0).toString(),
-          status: etagData.status || 0,
-          imageUrl: etagData.imageUrl || "",
-          etagType: {
-            name: etagData.etagType?.name || "N/A",
-            bonusRate: etagData.etagType?.bonusRate || 0,
-            amount: etagData.etagType?.amount || 0,
-          },
+          name: packageitemData.name || "",
+          phoneNumber: packageitemData.phoneNumber || "",
+          cccdpassport: packageitemData.cccdpassport || "",
+          birthday: formatDateForInput(packageitemData.birthday) || "",
+          startDate: formatDateTimeForInput(packageitemData.startDate) || "",
+          endDate: formatDateTimeForInput(packageitemData.endDate) || "",
+          gender: packageitemData.gender,
+          status: packageitemData.status || 0,
+          imageUrl: packageitemData.imageUrl || "",
+          email: packageitemData.email || "",
           wallet: {
-            balance: etagData.wallet?.balance || 0,
-            balanceHistory: etagData.wallet?.balanceHistory || 0,
+            balance: packageitemData.wallet?.balance || 0,
+            balanceHistory: packageitemData.wallet?.balanceHistory || 0,
           },
         });
-
         // Reset charge form
         formCharge.reset({
-          etagCode: etagData.etagCode || "",
+          // promoCode: "",
           chargeAmount: 0,
-          cccdPassport: (etagDetails.cccdPassport || "").trim(),
+          cccdpassport: (packageitemData.cccdpassport || "").trim(),
           paymentType: "Cash",
         });
       } catch (err) {
@@ -356,7 +366,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-  if (!etag) return <div>Loading ...</div>;
 
   const getStatusString = (status: number) => {
     switch (status) {
@@ -368,21 +377,8 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         return "Block";
     }
   };
-
-  const getGenderString = (gender: number) => {
-    switch (gender) {
-      case 0:
-        return "Male";
-      case 1:
-        return "Female";
-      case 2:
-        return "Other";
-      default:
-        return "Unknown";
-    }
-  };
   const handleActivateEtag = async () => {
-    if (!etag) return;
+    if (!packageItem) return;
 
     if (isEditing) {
       setIsConfirming(true);
@@ -393,24 +389,25 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   };
 
   const handleConfirmActivation = async () => {
-    if (!etag) return;
+    if (!packageItem) return;
 
     setIsLoading(true);
     try {
       const formData = form.getValues();
       const activateData = {
-        cccdPassport: formData.cccdPassport,
-        name: formData.fullName,
-        phone: formData.phoneNumber,
+        cccdPassport: formData.cccdpassport,
+        name: formData.name,
+        phoneNumber: formData.phoneNumber,
         gender: formData.gender,
         birthday: formData.birthday || new Date().toISOString(),
-        startDate: formData.startDate || new Date().toISOString(),
-        endDate:
-          formData.endDate ||
-          new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        isAdult: true,
+        email: formData.email,
       };
 
-      await ETagServices.activateEtag(etag.id, activateData);
+      await PackageItemServices.activatePackageItem(
+        packageItem.id,
+        activateData
+      );
       toast({
         title: "ETag Activated",
         description: "The ETag has been successfully activated.",
@@ -434,25 +431,25 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
     form.reset();
   };
 
-  const validImageUrl =
-    etag.imageUrl && etag.imageUrl.startsWith("http")
-      ? etag.imageUrl
-      : "/default-image.png";
+  // const validImageUrl =
+  //   packageItem.imageUrl && packageItem.imageUrl.startsWith("http")
+  //     ? packageItem.imageUrl
+  //     : "/default-image.png";
   return (
     <>
-      <BackButton text="Back To Etag List" link="/user/etags" />
+      <BackButton text="Back To Etag List" link="/user/package-items" />
       <h3 className="text-2xl mb-4">Etag Detail</h3>
 
       <Form {...form}>
         <form className="space-y-4">
           <div className="relative w-full h-48">
-            <Image
+            {/* <Image
               src={validImageUrl}
               alt={"Image"}
               layout="fill"
               objectFit="cover"
               className="rounded-lg justify-center items-center"
-            />
+            /> */}
           </div>
 
           <Card className="w-full max-w-5xl mx-auto">
@@ -475,13 +472,13 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                         <FormControl>
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("fullName")}
+                            {...form.register("name")}
                             readOnly={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
 
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                      {/* <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           Etag Code :
                         </FormLabel>
@@ -490,6 +487,18 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                             {...form.register("etagCode")}
                             readOnly
+                          />
+                        </FormControl>
+                      </FormItem> */}
+                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                          Email:
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            {...form.register("email")}
+                            readOnly={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
@@ -516,7 +525,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                         <FormControl>
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("cccdPassport")}
+                            {...form.register("cccdpassport")}
                             readOnly={!isEditing}
                           />
                         </FormControl>
@@ -524,7 +533,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                      {/* <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           Ngày sinh:
                         </FormLabel>
@@ -536,7 +545,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                             readOnly={!isEditing}
                           />
                         </FormControl>
-                      </FormItem>
+                      </FormItem> */}
 
                       <FormField
                         control={form.control}
@@ -555,9 +564,9 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                                 <SelectValue placeholder="Select gender" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="0">Nam</SelectItem>
-                                <SelectItem value="1">Nữ</SelectItem>
-                                <SelectItem value="2">Khác</SelectItem>
+                                <SelectItem value="Male">Nam</SelectItem>
+                                <SelectItem value="Female">Nữ</SelectItem>
+                                <SelectItem value="Other">Khác</SelectItem>
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -624,48 +633,14 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                       <FormControl>
                         <Input
                           className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          value={getStatusString(etag.status)}
-                          readOnly
+                          {...form.register("status")}
+                          readOnly={!isEditing}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   </div>
                 </div>
-                {/* ETag Type Information */}
-                <div>
-                  <h4 className="text-lg font-semibold mb-2">
-                    Thông tin ETag Type
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        ETag Type:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("etagType.name")}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Giá trị:
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("etagType.amount")}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
-                </div>
-
                 {/* Wallet Information */}
                 <div>
                   <h4 className="text-lg font-semibold mb-2">Thông tin Ví</h4>
@@ -711,7 +686,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
             }}
           >
             <DialogTrigger asChild>
-              {etag && etag.status === 1 && (
+              {packageItem && packageItem.status === "Active" && (
                 <div className="flex justify-end mt-4">
                   <Button type="button" onClick={() => setIsPopupOpen(true)}>
                     Nạp Tiền
@@ -733,13 +708,6 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
               >
                 {/* Grid layout with labels aligned to the left */}
                 <div className="grid grid-cols-2 gap-x-4 gap-y-6 p-6 items-center">
-                  <label className="font-medium">Etag Code</label>
-                  <Input
-                    type="text"
-                    {...formCharge.register("etagCode")}
-                    readOnly
-                  />
-
                   <label className="font-medium">Số Tiền (đ)</label>
                   <Input
                     type="number"
@@ -751,7 +719,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
                   <label className="font-medium">CCCD</label>
                   <Input
                     type="text"
-                    {...formCharge.register("cccdPassport")}
+                    {...formCharge.register("cccdpassport")}
                     readOnly
                   />
 
@@ -836,7 +804,7 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
         </form>
       </Form>
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
-        {etag && etag.status === 0 && !isConfirming && (
+        {packageItem && packageItem.status === "Inactive" && !isConfirming && (
           <Button
             className="mt-12 px-6 py-2"
             onClick={handleActivateEtag}
@@ -873,4 +841,4 @@ const EtagDetailPage = ({ params }: EtagDetailPageProps) => {
   );
 };
 
-export default EtagDetailPage;
+export default PackageItemDetailPage;
