@@ -230,7 +230,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems.map(
                 (item) =>
-                  item.roles.includes(userRole?.name || null) &&
+                  item.roles.includes(userRole?.name || "") &&
                   (item.child && item.child.length > 0 ? (
                     <Collapsible defaultOpen className="group/collapsible">
                       <SidebarMenuItem>

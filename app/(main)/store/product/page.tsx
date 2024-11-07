@@ -1,15 +1,9 @@
 // StoreDetailPage.tsx
 "use client";
 
-<<<<<<< Updated upstream
-import React, { useState, useEffect } from "react";
-import BackButton from "@/components/BackButton";
-import { useUserRole } from "@/components/hooks/useUserRole";
-=======
 import React, { useState, useEffect, useMemo, useRef } from "react";
->>>>>>> Stashed changes
 import { Store } from "@/types/store";
-import { StoreServices } from "@/components/services/storeServices";
+import { StoreServices } from "@/components/services/Store/storeServices"; 
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 import {
   Dialog,
@@ -21,12 +15,6 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import ShoppingCartComponent, { CartRef } from '@/components/cart/cart';
 
-<<<<<<< Updated upstream
-interface ApiResponse {
-  statusCode: number;
-  messageResponse: string;
-  data: Store;  // Changed from Store[] to Store for single store
-=======
 export interface Product {
   id: number;
   title: string;
@@ -34,7 +22,6 @@ export interface Product {
   price: number;
   thumbnail: string;
   description: string;
->>>>>>> Stashed changes
 }
 
 interface StoreDetailPageProps {
@@ -47,43 +34,16 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
   const cartRef = useRef<CartRef>(null);
   const { storeId, loading: userRoleLoading } = useAuthUser();
   const [store, setStore] = useState<Store | null>(null);
-<<<<<<< Updated upstream
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // const storeId: string | null = localStorage.getItem("storeId");
-  console.log(storeId, "storeId")
-
-
-=======
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
->>>>>>> Stashed changes
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-<<<<<<< Updated upstream
-        if(storeId){
-          const response = await StoreServices.getStoreById(storeId);
-          console.log(response, "responseeeeee")
-          const apiResponse = response.data.data.store;
-          console.log(apiResponse, "nguu")
-          
-          if (apiResponse) {
-            setStore(apiResponse);
-          } else {
-            throw new Error("Invalid response format");
-          }
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching product.:", error);
-        setError("Failed to load product details");
-=======
         const response = await fetch('https://dummyjson.com/products');
         const data = await response.json();
         
@@ -96,7 +56,6 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
       } catch (error) {
         console.error("Error fetching products:", error);
         setError("Failed to load products");
->>>>>>> Stashed changes
         setLoading(false);
       }
     };
@@ -104,13 +63,6 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
     fetchProducts();
   }, []);
 
-<<<<<<< Updated upstream
-  console.log(store, "storeeee")
-
-  // if (userRoleLoading || loading) {
-  //   return <div>Loading product details...</div>;
-  // }
-=======
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(
       new Set(products.map((product) => product.category))
@@ -133,7 +85,6 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
   const handleAddToCart = (product: Product) => {
     cartRef.current?.addToCart(product);
   };
->>>>>>> Stashed changes
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -145,27 +96,6 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
 
   return (
     <div className="container mx-auto p-4">
-<<<<<<< Updated upstream
-      <div className="flex justify-between items-center mb-4">
-        <BackButton text="Go Back" link="/stores" />
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-2xl font-bold mb-4">{store.name}</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Store Details</h2>
-            <div className="space-y-2">
-              <p><span className="font-medium">ID:</span> {store.id}</p>
-              <p><span className="font-medium">Address:</span> {store.address}</p>
-              <p><span className="font-medium">Phone:</span> {store.phoneNumber}</p>
-              {/* <p><span className="font-medium">Status:</span> 
-                <span className={`ml-2 px-2 py-1 rounded ${
-                  store.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                }`}>
-                  {store.status}
-=======
       <div className="mb-6 overflow-x-auto">
         <div className="flex space-x-2 min-w-max pb-2">
           {categories.map((category) => (
@@ -213,17 +143,10 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
               <div className="flex justify-between items-center">
                 <span className="text-primary font-medium">
                   {product.price.toLocaleString("vi-VN")} đ
->>>>>>> Stashed changes
                 </span>
-              </p> */}
+              </div>
             </div>
           </div>
-<<<<<<< Updated upstream
-          
-          {/* Add more store details sections as needed */}
-        </div>
-      </div>
-=======
         ))}
       </div>
 
@@ -284,7 +207,6 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
       )}
       
       <ShoppingCartComponent ref={cartRef} />
->>>>>>> Stashed changes
     </div>
   );
 };
