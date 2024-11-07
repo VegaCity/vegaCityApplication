@@ -68,10 +68,9 @@ export function AppSidebar() {
   const router = useRouter();
   const { userRole, loading } = useUserRole();
   const { user } = useAuthUser();
-  console.log(userRole, "user roleeee");
-  console.log(user?.wallets, "userrrr");
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
       ? `/admin/${routeName}`
@@ -99,13 +98,13 @@ export function AppSidebar() {
       href: navigatePage("packages"),
       roles: ["Admin", "CashierWeb"],
     },
-    // {
-    //   name: "ETagTypes",
-    //   icon: Tag,
-    //   href: navigatePage("etagtypes"),
-    //   roles: ["Admin", "CashierWeb"],
-    // },
 
+    {
+      name: "Orders",
+      icon: Tag,
+      href: navigatePage("order"),
+      roles: ["Store"],
+    },
     // {
     //   name: "Zones",
     //   icon: LandPlot,
