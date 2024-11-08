@@ -3,26 +3,27 @@ import { GetServicesStore } from "@/types/store/serviceStore";
 // Interface definitions for Store and related entities
 export interface Store {
   id: string;
-  storeType: string | null;
+  storeType: number; // changed to number based on response
   name: string;
   address: string;
   crDate: string;
   upsDate: string;
   deflag: boolean;
   phoneNumber: string;
-  shortName: string | null;
+  shortName: string;
   email: string;
-  houseId: string;
+  zoneId: string;
   marketZoneId: string;
-  description: string | null;
+  description: string;
   status: number;
-  zone: null;
-  disputeReports: any[];
+  zone: any | null;
   menus: Menu[];
+  disputeReports?: any[];
   orders: any[];
+  storeMoneyTransfers: any[];
   storeServices: GetServicesStore[];
   transactions: any[];
-  users: User[];
+  userStoreMappings: any[];
   wallets: any[];
 }
 
@@ -30,63 +31,41 @@ export interface Menu {
   id: string;
   name: string;
   crDate: string;
+  upsDate: string;
   deflag: boolean;
   storeId: string;
   imageUrl: string;
   address: string;
   phoneNumber: string;
-  menuJson: any;
+  menuJson: string;
   store: Store | null;
-  orderDetails: any[];
-  productCategories: ProductCategory[];
+  products: Product[];
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  productCategoryId: string;
+  menuId: string;
+  price: number;
+  crDate: string;
+  upsDate: string;
+  status: string;
+  imageUrl: string;
+  menu: Menu | null;
+  productCategory: ProductCategory | null;
+  orderDetails: any[];
+}
 export interface ProductCategory {
   id: string;
   name: string;
   crDate: string;
-  upsDate: string;
-  productJson: string;
-  menuId: string;
-  menu: Menu | null;
-}
-
-export interface User {
-  id: string;
-  fullName: string;
-  phoneNumber: string;
-  birthday: string;
-  storeId: string | null;
-  crDate: string;
-  upsDate: string;
-  gender: number;
-  cccd: string;
-  imageUrl: string;
-  marketZoneId: string;
-  email: string;
-  password: string | null;
-  roleId: string;
+  deflag: boolean;
   description: string;
-  isChange: boolean;
-  address: string;
-  status: number;
-  marketZone: any | null;
-  role: any | null;
-  store: Store | null;
-  orders: any[];
-  userRefreshTokens: any[];
-  wallets: any[];
+  products: Product[] | null;
+  upsDate: string;
+  walletTypeMappings: any[];
 }
-
-export interface Product {
-  Id: string;
-  Name: string;
-  ProductCategory?: string;
-  Price: number;
-  ImgUrl: string;
-}
-
-// Response type for the API
 export interface StoreResponse {
   statusCode: number;
   messageResponse: string;
@@ -94,23 +73,3 @@ export interface StoreResponse {
     store: Store;
   };
 }
-
-// Helper function to parse menu JSON
-export const parseMenuJson = (menuJson: string): Product[] => {
-  try {
-    return JSON.parse(menuJson);
-  } catch (error) {
-    console.error("Error parsing menu JSON:", error);
-    return [];
-  }
-};
-
-// Helper function to parse product JSON
-export const parseProductJson = (productJson: string): Product[] => {
-  try {
-    return JSON.parse(productJson);
-  } catch (error) {
-    console.error("Error parsing product JSON:", error);
-    return [];
-  }
-};

@@ -5,6 +5,14 @@ export interface ProductData {
   imgUrl: string;
   quantity: number;
 }
+export interface ProductStoreData {
+  id: string;
+  name: string;
+  price: number;
+  imgUrl: string;
+  quantity: number;
+  productCategory: string | undefined;
+}
 
 export interface CustomerInfo {
   fullName: string;
@@ -40,4 +48,11 @@ export interface Order {
   name: string;
   invoiceId: string;
   status: string;
+}
+export interface OrderStoreData {
+  saleType: string;
+  storeId: string;
+  totalAmount: number;
+  packageItemId: string;
+  productData: ProductStoreData[];
 }

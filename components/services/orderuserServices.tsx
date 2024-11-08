@@ -3,6 +3,7 @@ import {
   OrderData,
   ConfirmOrderData,
   ConfirmOrderForChargeData,
+  OrderStoreData,
 } from "@/types/paymentFlow/orderUser";
 export const GetOrders = async (page: number) => {
   try {
@@ -13,10 +14,28 @@ export const GetOrders = async (page: number) => {
     throw error;
   }
 };
+export const GetOrdersById = async (id: string) => {
+  try {
+    const response = await API.get(`/orders?id=${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting orders:", error);
+    throw error;
+  }
+};
 
 export const createOrder = async (orderData: OrderData) => {
   try {
     const response = await API.post("/order/cashier", orderData);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating order:", error);
+    throw error;
+  }
+};
+export const createOrderStore = async (orderStoreData: OrderStoreData) => {
+  try {
+    const response = await API.post("/order", orderStoreData);
     return response.data;
   } catch (error) {
     console.error("Error creating order:", error);

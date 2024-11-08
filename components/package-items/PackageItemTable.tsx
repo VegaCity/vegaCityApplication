@@ -45,11 +45,12 @@ interface PackageItem {
   phoneNumber: string | null;
   rfid: string | null;
   status: string;
-  createDate: string;
+  crDate: string;
   updateDate: string;
   walletId: string;
   isChanged: boolean;
   isAdult: boolean | null;
+  endDate: string | null;
 }
 
 interface PackageItemTableProps {
@@ -57,7 +58,7 @@ interface PackageItemTableProps {
   title?: string;
 }
 
-type SortField = "createDate" | "updateDate" | "status";
+type SortField = "crDate" | "updateDate" | "status";
 type SortOrder = "asc" | "desc";
 
 type StatusTab = "all" | "Active" | "Inactive" | "Expired" | "Block";
@@ -70,7 +71,8 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<SortField>("createDate");
+  const [sortField, setSortField] = useState<SortField>("crDate");
+
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -367,8 +369,9 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
               <TableHead>Name</TableHead>
               <TableHead>Phone Number</TableHead>
               <TableHead>
-                <SortButton field="createDate" label="Created Date" />
+                <SortButton field="crDate" label="Created Date" />
               </TableHead>
+              <TableHead>End Date</TableHead>
               <TableHead>
                 <SortButton field="status" label="Status" />
               </TableHead>
@@ -384,7 +387,8 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
                 <TableCell>{item.cccdpassport || "-"}</TableCell>
                 <TableCell>{item.name || "-"}</TableCell>
                 <TableCell>{item.phoneNumber || "-"}</TableCell>
-                <TableCell>{formatDate(item.createDate)}</TableCell>
+                <TableCell>{formatDate(item.crDate)}</TableCell>
+                <TableCell>{formatDate(item.endDate ?? "")}</TableCell>
                 <TableCell>
                   <span
                     className={`inline-block text-white px-2 py-1 rounded ${getStatusColor(
