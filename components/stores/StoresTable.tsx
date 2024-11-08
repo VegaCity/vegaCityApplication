@@ -95,7 +95,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
   <Loader isLoading={deleteLoading} />;
 
   return (
-    <div className="mt-10">
+    <div className="mt-5">
       <h3 className="text-2xl mb-4 font-semibold">
         {houseId ? "Stores by House" : "All Stores"}
       </h3>
@@ -146,7 +146,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
         <Table>
           <TableCaption>A list of all stores</TableCaption>
           <TableHeader>
-            <TableRow className="bg-slate-300 hover:bg-slate-300">
+            <TableRow>
               <TableHead>No.</TableHead>
               <TableHead>Store Name</TableHead>
               <TableHead>Email</TableHead>
@@ -160,7 +160,13 @@ const StoresTable = ({ params }: StoreTableProps) => {
           </TableHeader>
           <TableBody>
             {stores.map((store, index) => (
-              <TableRow key={store.id}>
+              <TableRow
+                onClick={() =>
+                  router.push(`/admin/stores/storeDetail/${store.id}`)
+                }
+                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
+                key={store.id}
+              >
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{store.name}</TableCell>
                 <TableCell>{store.email}</TableCell>
@@ -175,7 +181,9 @@ const StoresTable = ({ params }: StoreTableProps) => {
                 <TableCell>
                   {store.storeType ? store.storeType : <Minus />}
                 </TableCell>
-                <TableCell>
+                <TableCell
+                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                >
                   <PopoverActionTable
                     item={store}
                     editLink={`/admin/stores/edit/${store.id}`}

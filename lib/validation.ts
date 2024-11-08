@@ -429,6 +429,51 @@ export const createPackageFormSchema = z.object({
   moneyStart: z.number().min(50000, "Money start at least 50.000 VND"),
 });
 
+export const createPromotionFormSchema = z.object({
+  promotionCode: z.string().min(1, "Promotion code is required!"),
+  name: z.string().min(1, "Name is required!"),
+  description: z.string().min(1).nullable(),
+  maxDiscount: z
+    .number()
+    .max(100, "Max discount does not exceed 100%")
+    .nullable(),
+  quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
+  discountPercent: z
+    .number()
+    .max(100, "Max discount does not exceed 100%")
+    .nullable(),
+  requireAmount: z
+    .number()
+    .max(100, "Require amount does not exceed 100%")
+    .nullable(),
+  startDate: z.string().min(1, "Start Date is required!"),
+  endDate: z.string().min(1, "End Date is required"),
+});
+
+export const editPromotionFormSchema = z.object({
+  name: z.string().min(1, "Name is required!"),
+  description: z.string().min(1).nullable(),
+  maxDiscount: z
+    .number()
+    .max(1000000000, "Max discount does not exceed 10 millions VND")
+    .nullable(),
+  quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
+  discountPercent: z
+    .number()
+    .max(100, "Max discount does not exceed 100%")
+    .nullable(),
+  requireAmount: z
+    .number()
+    .max(1000000000, "Require amount does not exceed 10 millions VND")
+    .nullable(),
+  startDate: z.string().min(1, "Start Date is required!"),
+  endDate: z.string().min(1, "End Date is required"),
+});
+
+export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
+export type CreatePromotionFormValues = z.infer<
+  typeof createPromotionFormSchema
+>;
 export type CreatePackageFormValues = z.infer<typeof createPackageFormSchema>;
 export type EditPackageFormValues = z.infer<typeof editPackageFormSchema>;
 export type ChargeFormValues = z.infer<typeof chargeFormSchema>;

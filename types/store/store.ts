@@ -1,3 +1,5 @@
+import { GetServicesStore } from "@/types/store/serviceStore";
+
 // Interface definitions for Store and related entities
 export interface Store {
   id: string;
@@ -14,12 +16,11 @@ export interface Store {
   marketZoneId: string;
   description: string | null;
   status: number;
-  house: any | null;
-  marketZone: any | null;
+  zone: null;
   disputeReports: any[];
   menus: Menu[];
   orders: any[];
-  storeServices: any[];
+  storeServices: GetServicesStore[];
   transactions: any[];
   users: User[];
   wallets: any[];

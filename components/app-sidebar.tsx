@@ -21,6 +21,7 @@ import {
   Pizza,
   Wallet,
   User,
+  Sparkle,
 } from "lucide-react";
 
 import {
@@ -192,6 +193,12 @@ export function AppSidebar() {
       icon: ArrowRightLeft,
       href: navigatePage("withdraws"),
       roles: ["CashierWeb"],
+    },
+    {
+      name: "Promotions",
+      icon: Sparkle,
+      href: navigatePage("promotions"),
+      roles: ["Admin"],
     },
   ];
 

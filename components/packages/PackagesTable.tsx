@@ -109,7 +109,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
   };
 
   return (
-    <div className="mt-10">
+    <div className="mt-5">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
       {filteredPackages.length > 0 ? (
         <Table>

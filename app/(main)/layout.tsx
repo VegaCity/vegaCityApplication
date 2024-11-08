@@ -35,7 +35,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <>
         {/* <Navbar /> */}
         <div className="flex w-full justify-center">
-          <div className="hidden md:block h-screen w-18">
+          <div className="hidden xl:block h-screen w-18">
             {/* <Sidebar /> */}
             <AppSidebar />
           </div>

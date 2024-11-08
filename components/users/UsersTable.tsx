@@ -73,6 +73,7 @@ import { AxiosError } from "axios";
 import { CheckIcon, PenLine, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -82,10 +83,12 @@ interface UsersTableProps {
 }
 
 const UsersTable = ({ limit, title }: UsersTableProps) => {
+  const router = useRouter();
   const { toast } = useToast();
   const [userList, setUserList] = useState<UserAccountGet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [approveLoading, setApproveLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   //fitler user by status
@@ -117,24 +120,23 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   const handleApproveUser = async (data: UserApproveSubmit) => {
     console.log(data, "data approveee");
-    setIsLoading(true);
+    setApproveLoading(true);
     try {
       const { approvalStatus, ...restData } = data;
       const response = await UserServices.approveUser(data.id, {
         ...restData,
         approvalStatus: "APPROVED",
       });
-      if (response) {
-        console.log(response, "Approve user successfully!");
-        toast({
-          title: "User is approved!",
-          description: `User - Store ${data.storeName} has been approved successfully.`,
-        });
-        setIsLoading(false);
-      }
+
+      console.log(response, "Approve user successfully!");
+      toast({
+        title: "User is approved!",
+        description: `User - Store ${data.storeName} has been approved successfully.`,
+      });
+      setApproveLoading(false);
     } catch (error) {
       if (error instanceof AxiosError) {
-        setIsLoading(false);
+        setApproveLoading(false);
         if (error.status === 500) {
           toast({
             title: "Error",
@@ -174,7 +176,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     };
 
     fetchUsersAndHouses();
-  }, [isLoading, deleteLoading]);
+  }, [isLoading, deleteLoading, approveLoading]);
 
   const handleDeleteUser = (user: UserAccountGet) => {
     setDeleteLoading(true);
@@ -589,7 +591,13 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
               {searchTerm && userSearch
                 ? UserFound()
                 : filteredUsers?.map((user, i) => (
-                    <TableRow key={user.id}>
+                    <TableRow
+                      onClick={() =>
+                        router.push(`/admin/usersAccount/detail/${user.id}`)
+                      }
+                      className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
+                      key={user.id}
+                    >
                       <TableCell>{i + 1}</TableCell>
                       <TableCell>
                         <div className="flex items-center">
