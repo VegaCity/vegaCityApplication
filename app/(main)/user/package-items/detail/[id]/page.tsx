@@ -243,7 +243,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
-      etagCode: "",
       phoneNumber: "",
       cccdpassport: "",
       birthday: "",

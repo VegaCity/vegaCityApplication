@@ -21,12 +21,14 @@ export interface ActivatePackageItemRequest {
   email?: string;
   isAdult: boolean;
 }
+
 interface ChargeMoneyRequest {
   chargeAmount: number;
   cccdPassport: string;
   paymentType: string;
   packageItemId: string;
 }
+
 interface ChargeMoneyResponse {
   statusCode: number;
   messageResponse: string;
@@ -38,6 +40,14 @@ interface ChargeMoneyResponse {
     urlIpn: string;
   };
 }
+
+interface PaymentRequestBody {
+  productId: string;
+  quantity: number;
+  note: string;
+  price: number;
+}
+
 export const PackageItemServices = {
   getPackageItems({ page, size }: PackageItemPageSize) {
     return API.get("/package-items", {
@@ -47,22 +57,27 @@ export const PackageItemServices = {
       },
     });
   },
+
   getPackageItemById(id: string) {
-    return API.get(`/package-item/${id}`);
+    return API.get(`/package-item/?id=${id}`);
   },
 
   uploadPackageItem(PackageItem: PackageItem) {
     return API.post("/package-item/", PackageItem);
   },
+
   editPackageItem(id: string, PackageItem: PackageItem) {
     return API.patch(`/package-item/${id}`, PackageItem);
   },
+
   editInfoPackageItem(id: string, PackageItem: PackageItemHandleUpdate) {
     return API.patch(`/package-item/${id}`, PackageItem);
   },
+
   deletePackageItemById(id: string) {
     return API.delete(`/package-item/${id}`);
   },
+
   generatePackageItem(quantity: number) {
     const packageId = localStorage.getItem("packageId");
     if (!packageId) {
@@ -77,6 +92,7 @@ export const PackageItemServices = {
   activatePackageItem(id: string, activateData: ActivatePackageItemRequest) {
     return API.patch(`/package-item/${id}/activate`, activateData);
   },
+
   chargeMoney({
     packageItemId,
     chargeAmount,

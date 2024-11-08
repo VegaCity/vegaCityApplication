@@ -4,6 +4,7 @@ import { useAuthUser } from "@/components/hooks/useAuthUser";
 import { GetOrders } from "@/components/services/orderuserServices";
 import { Order } from "@/types/paymentFlow/orderUser";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import {
   Table,
   TableHeader,
@@ -13,7 +14,8 @@ import {
   TableBody,
   TableHead,
 } from "@/components/ui/table";
-
+import { useRouter } from "next/navigation";
+import { Eye } from "lucide-react";
 // In Pagination component file, define the props
 interface PaginationProps {
   page: number;
@@ -80,7 +82,7 @@ const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
+  const router = useRouter();
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -107,7 +109,9 @@ const OrdersPage = () => {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
-
+  const handleViewDetail = (orderId: string) => {
+    router.push(`/orders?id=${orderId}`);
+  };
   return (
     <>
       <Table>
@@ -117,6 +121,7 @@ const OrdersPage = () => {
             <TableHead>Payment Type</TableHead>
             <TableHead>Total Amount</TableHead>
             <TableHead>Status</TableHead>
+            {/* <TableHead>Actions</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -139,6 +144,15 @@ const OrdersPage = () => {
                   {order.status}
                 </span>
               </TableCell>
+              {/* <TableCell>
+                <div className="flex space-x-2">
+                  <Link href={`/user/orders/detail/${order.id}`}>
+                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
+                      Details
+                    </button>
+                  </Link>
+                </div>
+              </TableCell> */}
             </TableRow>
           ))}
           {orders.length === 0 && (

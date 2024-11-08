@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PackageServices } from "@/components/services/Package/packageServices";
@@ -30,13 +30,14 @@ import {
 } from "@/lib/validation";
 import { Card } from "@/components/ui/card";
 import { useEtagHandlers } from "@/handlers/etag/useEtagHandlesForPackage";
+import CountdownTimer from "@/components/countdown/countdown";
 
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [packageData, setPackageData] = useState<any>(null);
-
+  const [showTimer, setShowTimer] = useState(false);
   const customerForm = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
@@ -94,14 +95,35 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     };
     fetchPackageData();
   }, [params.id, toast]);
-
+  const handleTimeout = useCallback(() => {
+    if (!isOrderConfirmed) {
+      handleCancelOrder();
+      toast({
+        title: "Order Cancelled",
+        description:
+          "Order has been automatically cancelled due to payment timeout.",
+        variant: "destructive",
+      });
+    }
+  }, [isOrderConfirmed, handleCancelOrder, toast]);
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="container mx-auto p-4">
       <BackButton text="Back To Packages" link="/user/packages" />
-      <h3 className="text-2xl mb-4">Generate E-Tag</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-2xl">Generate E-Tag</h3>
+        {showTimer && !isOrderConfirmed && (
+          <div className="w-1/3">
+            <CountdownTimer
+              duration={300}
+              onTimeout={handleTimeout}
+              isActive={isCustomerInfoConfirmed && !isOrderConfirmed}
+            />
+          </div>
+        )}
+      </div>
       <div className="mb-8 flex justify-center">
         <Card className="overflow-hidden w-full max-w-4xl">
           {packageData && (

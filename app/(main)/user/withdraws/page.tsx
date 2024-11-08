@@ -78,7 +78,7 @@ const WithdrawMoney = () => {
     try {
       setIsLoading(true);
       setError("");
-      const response = await API.get(`/package-item/${packageItemCode}`);
+      const response = await API.get(`/package-item/?id=${packageItemCode}`);
       console.log("Full API response:", response);
 
       // Check if the response has the expected structure
