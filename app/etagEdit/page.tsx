@@ -132,10 +132,10 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
   };
   useEffect(() => {
     const fetchEtag = async () => {
-      const etagId = DEV_CONFIG.IS_DEVELOPMENT
-        ? DEV_CONFIG.DEMO_ETAG_ID
-        : params?.id;
-
+      // const etagId = DEV_CONFIG.IS_DEVELOPMENT
+      //   ? DEV_CONFIG.DEMO_ETAG_ID
+      //   : params?.id;
+      const etagId = params?.id;
       if (!etagId) {
         throw new Error("No ETag ID available");
       }
