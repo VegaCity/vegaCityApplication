@@ -20,13 +20,14 @@ import {
 
 interface UseEtagHandlersProps {
   customerForm: UseFormReturn<CustomerFormValues>;
-
   packageData: any;
+  setShowTimer: any;
 }
-
+import { useRouter } from "next/navigation";
 export const useEtagHandlers = ({
   customerForm,
   packageData,
+  setShowTimer,
 }: UseEtagHandlersProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -35,10 +36,8 @@ export const useEtagHandlers = ({
   const [isCashPaymentConfirmed, setIsCashPaymentConfirmed] = useState(false);
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [etagData, setEtagData] = useState<{
-    startDate: Date;
-    endDate: Date;
-  } | null>(null);
+  const router = useRouter();
+
   const [cachedEtagFormData, setCachedEtagFormData] = useState({});
   const resetAllStates = useCallback(() => {
     setError(null);
@@ -47,7 +46,6 @@ export const useEtagHandlers = ({
     setIsEtagInfoConfirmed(false);
     setIsCashPaymentConfirmed(false);
     setIsOrderConfirmed(false);
-    setEtagData(null);
 
     // Clear relevant localStorage items
     // localStorage.removeItem("orderId");
@@ -103,7 +101,7 @@ export const useEtagHandlers = ({
           phoneNumber: data.phoneNumber,
           address: data.address,
           gender: data.gender,
-          cccdPassport: data.cccdPassport,
+          cccdPassport: data.cccdpassport,
           email: data.email,
         },
       };
@@ -113,6 +111,7 @@ export const useEtagHandlers = ({
       localStorage.setItem("invoiceId", response.data.invoiceId);
       localStorage.setItem("transactionId", response.data.transactionId);
       setOrderId(response.data.invoiceId);
+      setShowTimer(true);
       setIsCustomerInfoConfirmed(true);
     } catch (err) {
       setError(
@@ -122,7 +121,9 @@ export const useEtagHandlers = ({
       );
     }
   };
-
+  const handleGenerateChildrenVCard = async () => {
+    // Generate Children VCard
+  };
   const handleGenerateVCard = async (quantity: number) => {
     try {
       const packageId = localStorage.getItem("packageId") || "";
@@ -136,6 +137,9 @@ export const useEtagHandlers = ({
           title: "Success",
           description: "VCard generated successfully.",
         });
+        setTimeout(() => {
+          router.push("/user/package-items");
+        }, 3000);
       } else {
         throw new Error(
           `Failed to generate VCard. Status code: ${response.status}`
@@ -212,7 +216,6 @@ export const useEtagHandlers = ({
     setIsEtagInfoConfirmed(false);
     setIsCashPaymentConfirmed(false);
     customerForm.reset();
-
     setOrderId(null);
     toast({
       title: "Order Cancelled",
@@ -263,7 +266,6 @@ export const useEtagHandlers = ({
     isCashPaymentConfirmed,
     isOrderConfirmed,
     orderId,
-    etagData,
     packageData,
     handleCustomerInfoSubmit,
     handleGenerateVCard,

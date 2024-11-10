@@ -26,27 +26,30 @@ import {
 import {
   customerFormSchema,
   CustomerFormValues,
+  FormValues,
   GenerateEtagProps,
 } from "@/lib/validation";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useEtagHandlers } from "@/handlers/etag/useEtagHandlesForPackage";
 import CountdownTimer from "@/components/countdown/countdown";
-
+import { Clock, Package, Wallet } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [packageData, setPackageData] = useState<any>(null);
   const [showTimer, setShowTimer] = useState(false);
+
   const customerForm = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
       customerName: "",
       phoneNumber: "",
       address: "",
-      cccdPassport: "",
+      cccdpassport: "",
       paymentMethod: "Cash",
-      gender: "0",
+      gender: "Male",
       email: "",
       quantity: 1,
       price: 0,
@@ -70,8 +73,14 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   } = useEtagHandlers({
     customerForm,
     packageData,
+    setShowTimer,
   });
-
+  useEffect(() => {
+    if (packageData?.price) {
+      customerForm.setValue("price", packageData.price);
+      customerForm.setValue("quantity", 1);
+    }
+  }, [packageData, customerForm]);
   useEffect(() => {
     const fetchPackageData = async () => {
       setIsLoading(true);
@@ -104,6 +113,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           "Order has been automatically cancelled due to payment timeout.",
         variant: "destructive",
       });
+      window.location.reload();
     }
   }, [isOrderConfirmed, handleCancelOrder, toast]);
   if (isLoading) return <div>Loading...</div>;
@@ -114,50 +124,92 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       <BackButton text="Back To Packages" link="/user/packages" />
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-2xl">Generate E-Tag</h3>
-        {showTimer && !isOrderConfirmed && (
-          <div className="w-1/3">
-            <CountdownTimer
-              duration={300}
-              onTimeout={handleTimeout}
-              isActive={isCustomerInfoConfirmed && !isOrderConfirmed}
-            />
-          </div>
-        )}
       </div>
       <div className="mb-8 flex justify-center">
-        <Card className="overflow-hidden w-full max-w-4xl">
-          {packageData && (
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-1/2">
-                <img
-                  src={packageData.imageUrl}
-                  alt={packageData.name}
-                  className="w-80 h-100 rounded-lg shadow-lg"
-                />
-              </div>
-              <div className="md:w-1/2 p-8 flex flex-col justify-center">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
-                    {packageData.name}
-                  </h2>
-                  <p className="text-xl text-red-600 dark:text-red-400 mt-6">
-                    {formatCurrency(packageData.price)}
-                  </p>
+        <Card className="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-xl">
+          <CardContent className="p-0">
+            <div className="flex flex-col lg:flex-row">
+              {/* Image Section */}
+              <div className="lg:w-2/5 relative">
+                <div className="aspect-square relative overflow-hidden">
+                  <img
+                    src={packageData?.imageUrl || "/default-image.png"}
+                    alt={packageData?.name}
+                    className="object-cover w-full h-full transform transition-transform duration-300 hover:scale-105"
+                  />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2 mt-4">
-                    Type
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {packageData.packageType?.name}
-                  </p>
+                <Badge
+                  className={`absolute top-4 right-4 ${
+                    packageData?.deflag
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-green-500 hover:bg-green-600"
+                  }`}
+                >
+                  {packageData?.deflag ? "Inactive" : "Active"}
+                </Badge>
+              </div>
+
+              {/* Content Section */}
+              <div className="lg:w-3/5 p-6 lg:p-8">
+                <div className="space-y-6">
+                  {/* Header */}
+                  <div>
+                    <h2 className="text-1xl font-bold text-gray-900 dark:text-white">
+                      {packageData?.name}
+                    </h2>
+                    <p className="text-2xl font-semibold text-red-600 dark:text-red-400 mt-2">
+                      {formatCurrency(packageData?.price)}
+                    </p>
+                  </div>
+
+                  {/* Package Type */}
+                  <div className="flex items-center space-x-2">
+                    <Package className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {packageData?.packageType?.name}
+                    </span>
+                  </div>
+
+                  {/* Duration */}
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {packageData?.duration} Days
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                      Description
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {packageData?.description}
+                    </p>
+                  </div>
+
+                  {/* Wallet Type */}
+                  <div className="flex items-center space-x-2">
+                    <Wallet className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {packageData?.packageDetails[0].walletType?.name}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
+          </CardContent>
         </Card>
       </div>
-
+      {showTimer && !isOrderConfirmed && (
+        <div className="w-1/3">
+          <CountdownTimer
+            duration={300}
+            onTimeout={handleTimeout}
+            isActive={isCustomerInfoConfirmed && !isOrderConfirmed}
+          />
+        </div>
+      )}
       <div className="container mx-auto px-4 w-full max-w-5xl">
         <Form {...customerForm}>
           <form
@@ -166,7 +218,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           >
             <div className="space-y-4 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
               <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-14 text-center">
-                Thông Tin Khách Hàng
+                Customer Information
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -175,12 +227,12 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium dark:text-gray-300">
-                        Họ và Tên
+                        FullName
                       </FormLabel>
                       <FormControl>
                         <Input
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Nhập họ và tên"
+                          placeholder="Please enter full name"
                           {...field}
                           disabled={isCustomerInfoConfirmed}
                         />
@@ -195,12 +247,12 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Số điện thoại
+                        Phone Number
                       </FormLabel>
                       <FormControl>
                         <Input
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Nhập số điện thoại"
+                          placeholder="Please enter phone number"
                           {...field}
                           disabled={isCustomerInfoConfirmed}
                         />
@@ -213,7 +265,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={customerForm.control}
-                  name="cccdPassport"
+                  name="cccdpassport"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -222,7 +274,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       <FormControl>
                         <Input
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Nhập CCCD"
+                          placeholder="Please enter CCCD/PassPort"
                           {...field}
                           disabled={isCustomerInfoConfirmed}
                         />
@@ -237,7 +289,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Giới tính
+                        Gender
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -246,13 +298,13 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Chọn giới tính" />
+                            <SelectValue placeholder="Please select gender" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="0">Nam</SelectItem>
-                          <SelectItem value="1">Nữ</SelectItem>
-                          <SelectItem value="2">Khác</SelectItem>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -267,16 +319,53 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Số lượng
+                        Quantity
                       </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
+                          min="1"
                           {...field}
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
                           disabled={isCustomerInfoConfirmed}
                           onChange={(e) => {
-                            field.onChange(e.target.valueAsNumber);
+                            const inputValue = e.target.value;
+
+                            // Nếu input trống
+                            if (inputValue === "") {
+                              field.onChange(0);
+                              customerForm.setValue("price", 0);
+                              return;
+                            }
+
+                            // Xử lý khi có giá trị nhập vào
+                            let newQuantity = Math.max(
+                              0,
+                              Math.floor(e.target.valueAsNumber || 0)
+                            );
+                            if (isNaN(newQuantity)) newQuantity = 0;
+
+                            field.onChange(newQuantity);
+
+                            if (packageData?.price) {
+                              customerForm.setValue(
+                                "price",
+                                packageData.price * newQuantity
+                              );
+                            }
+                          }}
+                          onBlur={(e) => {
+                            const value = e.target.value;
+                            if (value === "" || value === "0") {
+                              field.onChange(0);
+                              customerForm.setValue("price", 0);
+                            }
+                            field.onBlur();
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "-" || e.key === "+") {
+                              e.preventDefault();
+                            }
                           }}
                         />
                       </FormControl>
@@ -290,7 +379,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Giá tiền
+                        Price
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -318,12 +407,12 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Địa chỉ
+                        Address
                       </FormLabel>
                       <FormControl>
                         <Input
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Nhập địa chỉ"
+                          placeholder="Please enter address"
                           {...field}
                           disabled={isCustomerInfoConfirmed}
                         />
@@ -352,7 +441,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Cash">Tiền mặt</SelectItem>
+                          <SelectItem value="Cash">Cash</SelectItem>
                           <SelectItem value="Momo">Momo</SelectItem>
                           <SelectItem value="VnPay">VNPay</SelectItem>
                           <SelectItem value="PayOS">PayOs</SelectItem>
@@ -374,7 +463,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                       <FormControl>
                         <Input
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Nhập email"
+                          placeholder="Please enter email"
                           {...field}
                           disabled={isCustomerInfoConfirmed}
                         />

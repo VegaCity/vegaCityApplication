@@ -34,7 +34,11 @@ const PackagesPage = () => {
         });
         const apiResponse = response.data as ApiResponse;
         if (apiResponse.statusCode === 200 && Array.isArray(apiResponse.data)) {
-          setPackages(apiResponse.data);
+          // Filter out packages where deflag is true
+          const filteredPackages = apiResponse.data.filter(
+            (pkg) => !pkg.deflag
+          );
+          setPackages(filteredPackages);
         } else {
           throw new Error("Invalid response format");
         }
@@ -63,9 +67,6 @@ const PackagesPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <BackButton text="Go Back" link="/" />
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {packages?.length > 0 ? (
           packages.map((pkg) => <PackageCard key={pkg.id} package={pkg} />)

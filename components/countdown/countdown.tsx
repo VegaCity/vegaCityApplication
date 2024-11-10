@@ -50,8 +50,8 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   };
 
   return (
-    <Alert variant={getAlertVariant()} className="mt-4">
-      <AlertCircle className="h-4 w-4" />
+    <Alert variant={getAlertVariant()} className="mt-4 ">
+      <AlertCircle className="h-4 w-3" />
       <AlertTitle>Order Timer</AlertTitle>
       <AlertDescription>
         Time remaining to complete payment: {formatTime(timeLeft)}

@@ -37,7 +37,6 @@ export function useAuthUser(): {
             console.log(res.data.data.wallets, "Auth User");
           })
           .catch((err) => {
-            console.log(err.response.status, "error message");
             setLoading(false);
             const error401 = err.response.status;
             const fetchLogoutUser = async () => {

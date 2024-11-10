@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 import {
   Table,
   TableBody,
@@ -19,13 +21,25 @@ import {
 } from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { TransactionServices } from "@/components/services/transactionServices";
 import { AlertCircle } from "lucide-react";
 import { Transaction } from "@/types/paymentFlow/transaction";
+import DateRangePicker from "../ui/date-picker";
 
 interface TransactionTableProps {
   limit?: number;
   title?: string;
+}
+
+interface TransactionPageSize {
+  page?: number;
+  size?: number;
+}
+
+interface TransactionPageSizeWithDates extends TransactionPageSize {
+  startDate?: string;
+  endDate?: string;
 }
 
 const TransactionTable = ({ limit, title }: TransactionTableProps) => {
@@ -34,11 +48,40 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const pageSize = limit || 10; // Use the limit prop if provided, otherwise default to 10
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const pageSize = limit || 10;
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: currency || "VND",
+    }).format(amount);
+  };
 
   useEffect(() => {
     fetchTransactions();
-  }, [currentPage, limit]); // Add limit to dependency array
+  }, [currentPage, limit]);
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "SUCCESS":
+        return "text-green-600";
+      case "FAILED":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   const fetchTransactions = async () => {
     try {
@@ -47,22 +90,29 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
 
       const response = await TransactionServices.getTransactions({
         page: currentPage,
-        size: pageSize, // Use the pageSize variable here
-      });
+        size: pageSize,
+        startDate: dateRange?.from
+          ? format(dateRange.from, "yyyy-MM-dd")
+          : undefined,
+        endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
+      } as TransactionPageSizeWithDates);
 
       if (response?.data?.data && response?.data?.metaData) {
         const transactionsData = Array.isArray(response.data?.data)
           ? response.data.data
           : response.data.data.content || [];
 
-        // If limit is provided, slice the transactions array
+        const sortedTransactions = transactionsData.sort(
+          (a: Transaction, b: Transaction) =>
+            new Date(b.crDate).getTime() - new Date(a.crDate).getTime()
+        );
+
         const limitedTransactions = limit
-          ? transactionsData.slice(0, limit)
-          : transactionsData;
+          ? sortedTransactions.slice(0, limit)
+          : sortedTransactions;
 
         setTransactions(limitedTransactions);
 
-        // Calculate total pages based on limit if provided
         const { total } = response.data.metaData;
         const calculatedTotalPages = limit
           ? Math.ceil(Math.min(total, limit) / pageSize)
@@ -82,38 +132,10 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: currency || "VND",
-    }).format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toUpperCase()) {
-      case "SUCCESS":
-        return "text-green-600";
-      case "FAILED":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{title || "Lịch sử giao dịch"}</CardTitle>
+        <CardTitle>{title || "Transactions History"}</CardTitle>
       </CardHeader>
       <CardContent>
         {error && (
@@ -122,6 +144,21 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
+        <div className="mb-4 flex items-center space-x-2">
+          <div className="w-[200px]">
+            <DateRangePicker
+              dateRange={dateRange}
+              onDateRangeChange={(newDateRange) => {
+                setDateRange(newDateRange);
+                if (newDateRange?.from && newDateRange?.to) {
+                  setCurrentPage(100);
+                  fetchTransactions();
+                }
+              }}
+            />
+          </div>
+        </div>
 
         {isLoading ? (
           <div className="space-y-3">
