@@ -1,7 +1,9 @@
 "use client";
+import React, { useCallback, useState } from "react";
 import { API } from "@/components/services/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -11,16 +13,24 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertCircle,
+  ArrowDownToLine,
+  Loader2,
+  Store,
+  User,
+  Wallet,
+} from "lucide-react";
 
-import { AlertCircle, ArrowDownToLine, Loader2, Wallet } from "lucide-react";
-import React, { useCallback, useState } from "react";
 type PackageItemDetail = {
   id: string;
   packageId: string;
   name: string;
   phoneNumber: string;
   cccdpassport: string;
+  type?: "CUSTOMER" | "STORE";
 };
+
 interface WalletInfo {
   id: string;
   balance: number;
@@ -31,6 +41,7 @@ const FORMAT_LOCALE = "vi-VN";
 
 const WithdrawMoney = () => {
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("customer");
   const [packageItemCode, setPackageItemCode] = useState("");
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
   const [packageItemDetails, setPackageItemDetails] =
@@ -41,7 +52,6 @@ const WithdrawMoney = () => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState("");
   const [pendingTransactionId, setPendingTransactionId] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
 
   const validateWithdrawAmount = useCallback(
     (amount: number): string | null => {
@@ -74,62 +84,61 @@ const WithdrawMoney = () => {
     setError("");
   };
 
-  const fetchPackageItemInfo = useCallback(async (packageItemCode: string) => {
-    try {
-      setIsLoading(true);
-      setError("");
-      const response = await API.get(`/package-item/?id=${packageItemCode}`);
-      console.log("Full API response:", response);
-
-      // Check if the response has the expected structure
-      if (response.data?.statusCode === 200) {
-        const data = response.data.data;
-
-        if (data) {
-          // Assuming wallet information is part of the data object directly
-          if (data.wallet) {
-            setWalletInfo({
-              id: data.walletId,
-              balance: data.wallet.balance,
-            });
-          }
-
-          // Set package item details based on the data structure
-          setPackageItemDetails({
-            id: data.id,
-            packageId: data.packageId,
-            name: data.name,
-            phoneNumber: data.phoneNumber,
-            cccdpassport: data.cccdpassport,
-          });
-        } else {
-          console.error(
-            "Expected 'data' structure is missing in response:",
-            response.data
-          );
-          throw new Error("Package-Item data structure is missing.");
-        }
-      } else {
-        throw new Error(
-          response.data?.messageResponse ||
-            "Không tìm thấy thông tin Package-Item"
+  const fetchPackageItemInfo = useCallback(
+    async (packageItemCode: string) => {
+      try {
+        setIsLoading(true);
+        setError("");
+        // Add type parameter to the API call based on active tab
+        const response = await API.get(
+          `/package-item/?id=${packageItemCode}&type=${activeTab.toUpperCase()}`
         );
+
+        if (response.data?.statusCode === 200) {
+          const data = response.data.data;
+
+          if (data) {
+            if (data.wallet) {
+              setWalletInfo({
+                id: data.walletId,
+                balance: data.wallet.balance,
+              });
+            }
+
+            setPackageItemDetails({
+              id: data.id,
+              packageId: data.packageId,
+              name: data.name,
+              phoneNumber: data.phoneNumber,
+              cccdpassport: data.cccdpassport,
+              type: activeTab.toUpperCase() as "CUSTOMER" | "STORE",
+            });
+          } else {
+            throw new Error("Package-Item data structure is missing.");
+          }
+        } else {
+          throw new Error(
+            response.data?.messageResponse ||
+              "Không tìm thấy thông tin Package-Item"
+          );
+        }
+      } catch (err) {
+        console.error("Error fetching package item info:", err);
+        setError("Đã có lỗi xảy ra. Vui lòng kiểm tra lại.");
+        setWalletInfo(null);
+        setPackageItemDetails(null);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching package item info:", err);
-      setError("Đã có lỗi xảy ra. Vui lòng kiểm tra lại.");
-      setWalletInfo(null);
-      setPackageItemDetails(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    [activeTab]
+  );
 
   const handlePackageItemChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const id = e.target.value;
       setPackageItemCode(id);
-      fetchPackageItemInfo(id); // Only trigger API call if a valid ID is entered
+      if (id) fetchPackageItemInfo(id);
     },
     [fetchPackageItemInfo]
   );
@@ -153,6 +162,7 @@ const WithdrawMoney = () => {
         `/wallet/${walletInfo.id}/request-withdraw-money`,
         {
           amount,
+          type: activeTab.toUpperCase(),
         }
       );
 
@@ -172,7 +182,7 @@ const WithdrawMoney = () => {
     } finally {
       setIsWithdrawing(false);
     }
-  }, [walletInfo?.id, withdrawAmount, validateWithdrawAmount]);
+  }, [walletInfo?.id, withdrawAmount, validateWithdrawAmount, activeTab]);
 
   const handleConfirmWithdraw = useCallback(async () => {
     if (!walletInfo?.id || !pendingTransactionId) return;
@@ -182,7 +192,9 @@ const WithdrawMoney = () => {
       setError("");
 
       const response = await API.patch(
-        `/wallet/${walletInfo.id}/withdraw-money?transactionId=${pendingTransactionId}`
+        `/wallet/${
+          walletInfo.id
+        }/withdraw-money?transactionId=${pendingTransactionId}&type=${activeTab.toUpperCase()}`
       );
 
       if (response.data.statusCode === 200) {
@@ -210,7 +222,130 @@ const WithdrawMoney = () => {
     } finally {
       setIsWithdrawing(false);
     }
-  }, [walletInfo?.id, pendingTransactionId, toast]);
+  }, [walletInfo?.id, pendingTransactionId, toast, activeTab]);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setPackageItemCode("");
+    setWalletInfo(null);
+    setPackageItemDetails(null);
+    setWithdrawAmount("");
+    setError("");
+  };
+
+  const renderWithdrawForm = () => (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <label
+          htmlFor="etag-input"
+          className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+        >
+          <span>Package Item Id</span>
+          {error && <AlertCircle className="w-4 h-4 text-red-500" />}
+        </label>
+        <Input
+          id="etag-input"
+          type="text"
+          value={packageItemCode}
+          onChange={handlePackageItemChange}
+          placeholder="xxxxxxxxxxxx"
+          className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          disabled={isLoading}
+        />
+      </div>
+
+      {error && (
+        <Alert
+          variant="destructive"
+          className="rounded-xl border-2 border-red-200"
+        >
+          <AlertDescription className="text-base">{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {isLoading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      ) : walletInfo && packageItemDetails ? (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
+            <div className="space-y-2">
+              <p className="font-medium text-gray-700 text-center text-lg">
+                {activeTab === "customer"
+                  ? "Customer Information"
+                  : "Store Information"}
+              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-600">
+                  Name:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {packageItemDetails.name}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Phone:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {packageItemDetails.phoneNumber}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  ID/Passport:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {packageItemDetails.cccdpassport}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-blue-100">
+              <p className="text-base font-medium text-gray-700">
+                Available Balance
+              </p>
+              <div className="flex items-center space-x-2">
+                <p className="text-3xl font-bold text-gray-900">
+                  {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
+                </p>
+                <span className="text-xl font-semibold text-gray-600">VND</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label
+              htmlFor="amount-input"
+              className="text-sm font-semibold text-gray-700"
+            >
+              Withdrawal Amount (VND)
+            </label>
+            <Input
+              id="amount-input"
+              type="text"
+              value={formatAmount(withdrawAmount)}
+              onChange={handleAmountChange}
+              placeholder="0"
+              className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
+            />
+          </div>
+
+          <Button
+            className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
+            onClick={handleRequestWithdraw}
+            disabled={!withdrawAmount || isWithdrawing}
+          >
+            {isWithdrawing ? (
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            ) : (
+              <>
+                <ArrowDownToLine className="w-5 h-5" />
+                <span>Withdraw Funds</span>
+              </>
+            )}
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <div className="min-h-screen p-6 flex items-center justify-center">
       <div className="w-full max-w-xl rounded-2xl shadow-lg p-8 space-y-8">
@@ -220,123 +355,35 @@ const WithdrawMoney = () => {
             <h1 className="text-3xl font-bold text-gray-900">Withdraw Money</h1>
           </div>
           <p className="text-base text-center text-gray-600">
-            Enter your E-tag code to access your wallet and withdraw funds
+            Select your account type and enter your ID to withdraw funds
           </p>
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <label
-              htmlFor="etag-input"
-              className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
+          <TabsList className="grid w-full grid-cols-2 mb-8">
+            <TabsTrigger
+              value="customer"
+              className="flex items-center space-x-2"
             >
-              <span>Package Item Id</span>
-              {error && <AlertCircle className="w-4 h-4 text-red-500" />}
-            </label>
-            <Input
-              id="etag-input"
-              type="text"
-              value={packageItemCode}
-              onChange={handlePackageItemChange}
-              placeholder="xxxxxxxxxxxx"
-              className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              disabled={isLoading}
-            />
-          </div>
+              <User className="w-4 h-4" />
+              <span>Customer</span>
+            </TabsTrigger>
+            <TabsTrigger value="store" className="flex items-center space-x-2">
+              <Store className="w-4 h-4" />
+              <span>Store</span>
+            </TabsTrigger>
+          </TabsList>
 
-          {(error || successMessage) && (
-            <Alert
-              variant={successMessage ? "default" : "destructive"}
-              className="rounded-xl border-2 border-blue-200"
-            >
-              <AlertDescription className="text-base">
-                {successMessage || error}
-              </AlertDescription>
-            </Alert>
-          )}
+          <TabsContent value="customer">{renderWithdrawForm()}</TabsContent>
 
-          {isLoading ? (
-            <div className="flex justify-center py-6">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            </div>
-          ) : walletInfo && packageItemDetails ? (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
-                <div className="space-y-2">
-                  <p className=" font-medium text-gray-700 text-center text-lg">
-                    Customer Information
-                  </p>
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-600">
-                      Name:{" "}
-                      <span className="font-semibold text-gray-900">
-                        {packageItemDetails.name}
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Phone:{" "}
-                      <span className="font-semibold text-gray-900">
-                        {packageItemDetails.phoneNumber}
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      ID/Passport:{" "}
-                      <span className="font-semibold text-gray-900">
-                        {packageItemDetails.cccdpassport}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-2 border-t border-blue-100">
-                  <p className="text-base font-medium text-gray-700">
-                    Available Balance
-                  </p>
-                  <div className="flex items-center space-x-2">
-                    <p className="text-3xl font-bold text-gray-900">
-                      {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
-                    </p>
-                    <span className="text-xl font-semibold text-gray-600">
-                      VND
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label
-                  htmlFor="amount-input"
-                  className="text-sm font-semibold text-gray-700"
-                >
-                  Withdrawal Amount (VND)
-                </label>
-                <Input
-                  id="amount-input"
-                  type="text"
-                  value={formatAmount(withdrawAmount)}
-                  onChange={handleAmountChange}
-                  placeholder="0"
-                  className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
-                />
-              </div>
-
-              <Button
-                className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
-                onClick={handleRequestWithdraw}
-                disabled={!withdrawAmount || isWithdrawing}
-              >
-                {isWithdrawing ? (
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                ) : (
-                  <>
-                    <ArrowDownToLine className="w-5 h-5" />
-                    <span>Withdraw Funds</span>
-                  </>
-                )}
-              </Button>
-            </div>
-          ) : null}
-        </div>
+          <TabsContent value="store">{renderWithdrawForm()}</TabsContent>
+        </Tabs>
       </div>
+
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent className="sm:max-w-lg rounded-xl p-6">
           <DialogHeader>
@@ -348,7 +395,7 @@ const WithdrawMoney = () => {
             {packageItemDetails && (
               <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600">
-                  Customer:{" "}
+                  {activeTab === "customer" ? "Customer" : "Store"}:{" "}
                   <span className="font-semibold text-gray-900">
                     {packageItemDetails.name}
                   </span>

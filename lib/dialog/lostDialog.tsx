@@ -74,8 +74,8 @@ const LostPackageItemDialog = ({
 
       if (response.status === 200) {
         toast({
-          title: "Báo cáo thành công",
-          description: "Đã ghi nhận báo cáo mất hàng của bạn.",
+          title: "Reported Successfully",
+          description: "The package item has been reported successfully.",
           variant: "default",
         });
         localStorage.setItem(
@@ -90,11 +90,11 @@ const LostPackageItemDialog = ({
     } catch (error) {
       console.error("Error reporting lost package item:", error);
       toast({
-        title: "Có lỗi xảy ra",
+        title: "Report Failed",
         description:
           error instanceof Error
             ? error.message
-            : "Không thể báo cáo mất hàng. Vui lòng thử lại sau.",
+            : "Failed to report lost package item. Please try again later.",
         variant: "destructive",
       });
     }
