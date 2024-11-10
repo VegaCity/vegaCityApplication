@@ -59,7 +59,7 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const DEV_CONFIG = {
-    DEMO_ETAG_ID: "1d8f7fc6-0634-486a-9238-ec56b7aaa50e",
+    DEMO_ETAG_ID: "2a957542-92ee-429f-bdcd-63e34a8f2bb7",
     IS_DEVELOPMENT: true,
   };
 
@@ -154,7 +154,7 @@ const EtagEditPage = ({ params }: EtagEditPageProps) => {
 
         // Reset form with fetched data
         form.reset({
-          fullName: etagDetails.fullName || "",
+          fullName: etagDetails.name || "",
           etagCode: etagData.etagCode || "",
           phoneNumber: etagDetails.phoneNumber || "",
           cccdPassport: etagDetails.cccdPassport || "",

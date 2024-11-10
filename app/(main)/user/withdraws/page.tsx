@@ -188,29 +188,32 @@ const WithdrawMoney = () => {
       if (response.data.statusCode === 200) {
         setShowConfirmDialog(false);
         toast({
-          title: "Thành công",
-          description: "Rút tiền thành công!",
+          title: "Success",
+          description: "Withdrawal successfully processed.",
         });
         setTimeout(() => window.location.reload(), 2500);
       } else {
         throw new Error(
-          response.data.messageResponse || "Không thể thực hiện giao dịch"
+          response.data.messageResponse || "Cannot process withdrawal"
         );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
       toast({
         variant: "destructive",
-        title: "Lỗi",
-        description: err instanceof Error ? err.message : "Đã có lỗi xảy ra",
+        title: "Error",
+        description:
+          err instanceof Error ? err.message : "An unknown error occurred",
       });
     } finally {
       setIsWithdrawing(false);
     }
   }, [walletInfo?.id, pendingTransactionId, toast]);
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-6 flex items-center justify-center">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-lg p-8 space-y-8">
+    <div className="min-h-screen p-6 flex items-center justify-center">
+      <div className="w-full max-w-xl rounded-2xl shadow-lg p-8 space-y-8">
         <div className="space-y-3">
           <div className="flex items-center justify-center space-x-3">
             <Wallet className="w-8 h-8 text-blue-600" />

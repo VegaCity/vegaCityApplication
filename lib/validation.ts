@@ -18,7 +18,7 @@ export const customerFormSchema = z.object({
     .min(5, { message: "Address at least 5 characters" })
     .max(200, { message: "Address at least 5 characters" }),
 
-  cccdPassport: z
+  cccdpassport: z
     .string()
     .regex(
       /(^\d{12}$)|(^[A-Z]\d{7}$)/,
@@ -30,7 +30,7 @@ export const customerFormSchema = z.object({
     invalid_type_error: "Your payment method is invalid!",
   }),
 
-  gender: z.enum(["0", "1", "2"], {
+  gender: z.enum(["Male", "Female", "Other"], {
     required_error: "Gender is required!",
     invalid_type_error: "Gender is invalid!",
   }),
@@ -112,7 +112,7 @@ export const formSchema = z
         /^(\+84|0)[3|5|7|8|9][0-9]{8}$/,
         "Phone number is invalid. Please use Vietnam phone number!"
       ),
-
+    isAdult: z.boolean(),
     // cccdPassport: z
     //   .string()
     //   .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
@@ -428,7 +428,7 @@ export const createPackageFormSchema = z.object({
   walletTypeId: z.string().min(1),
   moneyStart: z.number().min(50000, "Money start at least 50.000 VND"),
 });
-
+export type FormValues = z.infer<typeof formSchema>;
 export type CreatePackageFormValues = z.infer<typeof createPackageFormSchema>;
 export type EditPackageFormValues = z.infer<typeof editPackageFormSchema>;
 export type ChargeFormValues = z.infer<typeof chargeFormSchema>;

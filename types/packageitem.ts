@@ -8,8 +8,15 @@ export interface Wallet {
   balance: number;
   balanceHistory: number;
   deflag: boolean;
+  walletType: WalletType;
 }
-
+export interface WalletType {
+  id: string;
+  name: string;
+  crDate: string;
+  upsDate: string;
+  deflag: boolean;
+}
 export interface PackageItem {
   id: string;
   packageId: string;
@@ -21,7 +28,7 @@ export interface PackageItem {
   email: string;
   imageUrl: string;
   gender: string;
-  isAldult: boolean;
+  isAdult: boolean;
   birthday: string | null;
   deflag: boolean;
   status: string;
