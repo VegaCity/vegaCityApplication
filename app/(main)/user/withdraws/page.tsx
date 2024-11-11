@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { API } from "@/components/services/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import {
   User,
   Wallet,
 } from "lucide-react";
+import { StoreServices } from "@/components/services/Store/storeServices";
+import { StoreDetail } from "@/types/store/store";
 
 type PackageItemDetail = {
   id: string;
@@ -46,15 +48,96 @@ const WithdrawMoney = () => {
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
   const [packageItemDetails, setPackageItemDetails] =
     useState<PackageItemDetail | null>(null);
+  const [storeDetails, setStoreDetails] = useState<StoreDetail | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState("");
   const [pendingTransactionId, setPendingTransactionId] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [storePhone, setStorePhone] = useState("");
+  const handleStoreTabChange = () => {
+    setActiveTab("store");
+    setPackageItemCode("");
+    setStoreName("");
+    setStorePhone("");
+    setWalletInfo(null);
+    setPackageItemDetails(null);
+    setWithdrawAmount("");
+    setError("");
+  };
+  const handleStoreNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStoreName(e.target.value);
+  };
+
+  const handleStorePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStorePhone(e.target.value);
+  };
+  const handleFindStoreWallet = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(""); // Clear previous errors
+
+      const response = await StoreServices.getWalletForStore(
+        storeName,
+        storePhone
+      );
+
+      if (response.data?.statusCode === 200) {
+        const data = response.data.data;
+
+        if (data) {
+          if (data.wallets && data.wallets.length > 0) {
+            const wallet = data.wallets[0];
+            setWalletInfo({
+              id: wallet.id,
+              balance: wallet.balance,
+            });
+            setStoreDetails({
+              id: data.id,
+              name: data.name,
+              address: data.address,
+              shortName: data.shortName,
+              wallets: wallet,
+            });
+          } else {
+            throw new Error("Không có ví trong dữ liệu cửa hàng.");
+          }
+        } else {
+          throw new Error("Dữ liệu cửa hàng bị thiếu.");
+        }
+      } else {
+        throw new Error(
+          response.data?.messageResponse || "Không thể lấy thông tin cửa hàng"
+        );
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy thông tin cửa hàng:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Đã có lỗi xảy ra. Vui lòng thử lại."
+      );
+      setWalletInfo(null);
+      setStoreDetails(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [storeName, storePhone]);
+
+  // Optionally, log the updated state (using useEffect or other methods)
+  useEffect(() => {
+    if (walletInfo) {
+      console.log(walletInfo, "walletInfo updated");
+    }
+    if (storeDetails) {
+      console.log(storeDetails, "storeDetails updated");
+    }
+  }, [walletInfo, storeDetails]);
 
   const validateWithdrawAmount = useCallback(
-    (amount: number): string | null => {
+    (amount: number, balance: number | null): string | null => {
       if (isNaN(amount) || amount <= 0) {
         return "Money must be a positive number";
       }
@@ -63,7 +146,7 @@ const WithdrawMoney = () => {
           FORMAT_LOCALE
         )} VND`;
       }
-      if (!walletInfo?.balance || amount > walletInfo.balance) {
+      if (!balance || amount > balance) {
         return "Money must be less than or equal to your balance";
       }
       if (amount % 10000 !== 0) {
@@ -71,7 +154,7 @@ const WithdrawMoney = () => {
       }
       return null;
     },
-    [walletInfo?.balance]
+    []
   );
 
   const formatAmount = (value: string): string => {
@@ -147,7 +230,12 @@ const WithdrawMoney = () => {
     if (!walletInfo?.id) return;
 
     const amount = parseInt(withdrawAmount.replace(/,/g, ""));
-    const validationError = validateWithdrawAmount(amount);
+    const validationError = validateWithdrawAmount(
+      amount,
+      activeTab === "customer"
+        ? walletInfo.balance
+        : storeDetails?.wallets?.balance || null
+    );
 
     if (validationError) {
       setError(validationError);
@@ -223,15 +311,6 @@ const WithdrawMoney = () => {
       setIsWithdrawing(false);
     }
   }, [walletInfo?.id, pendingTransactionId, toast, activeTab]);
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setPackageItemCode("");
-    setWalletInfo(null);
-    setPackageItemDetails(null);
-    setWithdrawAmount("");
-    setError("");
-  };
 
   const renderWithdrawForm = () => (
     <div className="space-y-6">
@@ -345,7 +424,149 @@ const WithdrawMoney = () => {
       ) : null}
     </div>
   );
+  const renderStoreTab = () => (
+    <div className="space-y-6">
+      <div className="space-y-3">
+        <label
+          htmlFor="store-name"
+          className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+        >
+          <span>Store Name</span>
+          {error && <AlertCircle className="w-4 h-4 text-red-500" />}
+        </label>
+        <Input
+          id="store-name"
+          type="text"
+          value={storeName}
+          onChange={handleStoreNameChange}
+          placeholder="Store Name"
+          className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          disabled={isLoading}
+        />
+      </div>
+      <div className="space-y-3">
+        <label
+          htmlFor="store-phone"
+          className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+        >
+          <span>Store Phone</span>
+          {error && <AlertCircle className="w-4 h-4 text-red-500" />}
+        </label>
 
+        <Input
+          id="store-phone"
+          type="text"
+          value={storePhone}
+          onChange={handleStorePhoneChange}
+          placeholder="Store Phone"
+          className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+          disabled={isLoading}
+        />
+      </div>
+      <Button
+        className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
+        onClick={handleFindStoreWallet}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <Loader2 className="h-5 w-5 animate-spin mr-2" />
+        ) : (
+          <>
+            <Store className="w-5 h-5" />
+            <span>Find Store Wallet</span>
+          </>
+        )}
+      </Button>
+      {error && (
+        <Alert
+          variant="destructive"
+          className="rounded-xl border-2 border-red-200"
+        >
+          <AlertDescription className="text-base">{error}</AlertDescription>
+        </Alert>
+      )}
+      {isLoading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      ) : walletInfo && storeDetails ? (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
+            <div className="space-y-2">
+              <p className="font-medium text-gray-700 text-center text-lg">
+                {activeTab === "customer"
+                  ? "Customer Information"
+                  : "Store Information"}
+              </p>
+              <div className="space-y-1">
+                <p className="text-sm text-gray-600">
+                  Name:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {storeDetails.name}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Phone:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {storeDetails.shortName}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Address:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {storeDetails.address}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="pt-2 border-t border-blue-100">
+              <p className="text-base font-medium text-gray-700">
+                Available Balance
+              </p>
+              <div className="flex items-center space-x-2">
+                <p className="text-3xl font-bold text-gray-900">
+                  {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
+                </p>
+                <span className="text-xl font-semibold text-gray-600">VND</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label
+              htmlFor="amount-input"
+              className="text-sm font-semibold text-gray-700"
+            >
+              Withdrawal Amount (VND)
+            </label>
+
+            <Input
+              id="amount-input"
+              type="text"
+              value={formatAmount(withdrawAmount)}
+              onChange={handleAmountChange}
+              placeholder="0"
+              className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
+            />
+          </div>
+          <Button
+            className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
+            onClick={handleRequestWithdraw}
+            disabled={!withdrawAmount || isWithdrawing}
+          >
+            {isWithdrawing ? (
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            ) : (
+              <>
+                <ArrowDownToLine className="w-5 h-5" />
+                <span>Withdraw Funds</span>
+              </>
+            )}
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
   return (
     <div className="min-h-screen p-6 flex items-center justify-center">
       <div className="w-full max-w-xl rounded-2xl shadow-lg p-8 space-y-8">
@@ -361,7 +582,13 @@ const WithdrawMoney = () => {
 
         <Tabs
           value={activeTab}
-          onValueChange={handleTabChange}
+          onValueChange={(value) => {
+            if (value === "store") {
+              handleStoreTabChange();
+            } else {
+              setActiveTab(value);
+            }
+          }}
           className="w-full"
         >
           <TabsList className="grid w-full grid-cols-2 mb-8">
@@ -380,7 +607,7 @@ const WithdrawMoney = () => {
 
           <TabsContent value="customer">{renderWithdrawForm()}</TabsContent>
 
-          <TabsContent value="store">{renderWithdrawForm()}</TabsContent>
+          <TabsContent value="store">{renderStoreTab()}</TabsContent>
         </Tabs>
       </div>
 
@@ -410,6 +637,28 @@ const WithdrawMoney = () => {
                   ID/Passport:{" "}
                   <span className="font-semibold text-gray-900">
                     {packageItemDetails.cccdpassport}
+                  </span>
+                </p>
+              </div>
+            )}
+            {storeDetails && (
+              <div className="text-left space-y-2 bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  Store:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {storeDetails.name}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Phone:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {storeDetails.shortName}
+                  </span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  Address:{" "}
+                  <span className="font-semibold text-gray-900">
+                    {storeDetails.address}
                   </span>
                 </p>
               </div>

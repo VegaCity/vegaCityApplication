@@ -61,6 +61,7 @@ import { Promotion } from "@/types/promotion/Promotion";
 import { GenerateChildrenVCardDialog } from "@/lib/dialog/GenerateChildrenVCardDialog";
 import { ChargeMoneyDialog } from "@/lib/dialog/ChargeMoneyDialog";
 import { ProcessingDialog } from "@/lib/dialog/ProcessingDialog";
+import { UpdateRFIDAlertDialog } from "@/lib/dialog/UpdateRFIDDialog";
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -76,6 +77,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [isLoadingPromotions, setIsLoadingPromotions] = useState(false);
   const [promotionError, setPromotionError] = useState<string | null>(null);
+  const [isUpdateRFIDDialogOpen, setIsUpdateRFIDDialogOpen] = useState(false);
   const [isChildrenVCardDialogOpen, setIsChildrenVCardDialogOpen] =
     useState(false);
   const childrenVCardForm = useForm({
@@ -84,7 +86,24 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       packageItemId: "",
     },
   });
-
+  const handleUpdateRFID = async (rfid: string) => {
+    try {
+      // Call API to update RFID
+      await PackageItemServices.updateRFID(packageItem!.id, rfid);
+      toast({
+        title: "RFID Updated",
+        description: "RFID has been updated successfully",
+      });
+      setIsUpdateRFIDDialogOpen(false);
+    } catch (error) {
+      console.error("Error updating RFID:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update RFID",
+        variant: "destructive",
+      });
+    }
+  };
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Chỉ cho phép nhập số
     const value = e.target.value.replace(/[^0-9]/g, "");
@@ -434,9 +453,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       }
       try {
         setIsLoading(true);
-        const response = await PackageItemServices.getPackageItemById(
-          params.id
-        );
+        const response = await PackageItemServices.getPackageItemById({
+          id: params.id,
+        });
         const packageitemData = response.data?.data;
         console.log(packageitemData, "packageitemData");
         setPackageItem(packageitemData);
@@ -547,7 +566,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   return (
     <>
       <BackButton text="Back To Etag List" link="/user/package-items" />
-      <h3 className="text-2xl mb-4">Etag Detail</h3>
+      <h3 className="text-2xl mb-4">VCard Detail</h3>
 
       <Form {...form}>
         <form className="space-y-4">
@@ -565,17 +584,30 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle>VCard Detail</CardTitle>
-                {packageItem &&
-                  packageItem.status === "Active" &&
-                  packageItem.isAdult === true && (
+                <div>
+                  {" "}
+                  {packageItem &&
+                    packageItem.status === "Active" &&
+                    packageItem.isAdult === true && (
+                      <Button
+                        type="button"
+                        onClick={() => setIsChildrenVCardDialogOpen(true)}
+                        variant="outline"
+                      >
+                        Generate Children VCard
+                      </Button>
+                    )}
+                  {packageItem && packageItem.status === "Active" && (
                     <Button
                       type="button"
-                      onClick={() => setIsChildrenVCardDialogOpen(true)}
+                      onClick={() => setIsUpdateRFIDDialogOpen(true)}
                       variant="outline"
+                      className="ml-2"
                     >
-                      Generate Children VCard
+                      Update RFID
                     </Button>
                   )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -757,7 +789,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
               </div>
             </CardContent>
           </Card>
-
+          <UpdateRFIDAlertDialog
+            isOpen={isUpdateRFIDDialogOpen}
+            onOpenChange={setIsUpdateRFIDDialogOpen}
+            onConfirm={handleUpdateRFID}
+            isLoading={isLoading}
+            packageItem={packageItem}
+          />
           <GenerateChildrenVCardDialog
             isOpen={isChildrenVCardDialogOpen}
             onOpenChange={setIsChildrenVCardDialogOpen}

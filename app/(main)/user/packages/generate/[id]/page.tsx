@@ -123,19 +123,19 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     <div className="container mx-auto p-4">
       <BackButton text="Back To Packages" link="/user/packages" />
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-2xl">Generate VCard</h3>
+        <h3 className="text-2xl font-bold">Generate VCard</h3>
       </div>
       <div className="mb-8 flex justify-center">
-        <Card className="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-xl">
+        <Card className="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-md">
           <CardContent className="p-0">
             <div className="flex flex-col lg:flex-row">
               {/* Image Section */}
               <div className="lg:w-2/5 relative">
-                <div className="aspect-square relative overflow-hidden">
+                <div className="aspect-square relative overflow-hidden rounded ">
                   <img
                     src={packageData?.imageUrl || "/default-image.png"}
                     alt={packageData?.name}
-                    className="object-cover w-full h-full transform transition-transform duration-300 hover:scale-105"
+                    className="object-cover w-full h-full transform transition-transform duration-300 hover:scale-105 "
                   />
                 </div>
                 <Badge
@@ -210,7 +210,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
           />
         </div>
       )}
-      <div className="container mx-auto px-4 w-full max-w-5xl">
+      <div className="container mx-auto px-4 w-full max-w-5xl mt-8">
         <Form {...customerForm}>
           <form
             onSubmit={customerForm.handleSubmit(handleCustomerInfoSubmit)}

@@ -112,21 +112,36 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
   };
   const handleSearchChange = async (value: string) => {
     setSearchTerm(value);
-    if (isValidUUID(value.trim())) {
-      try {
-        const response = await PackageItemServices.getPackageItemById(
-          value.trim()
-        );
-        if (response.data) {
-          router.push(`/user/package-items/detail/${value.trim()}`);
-          return;
-        }
-      } catch (error) {
-        console.log("ID not found, continuing with normal search");
+
+    try {
+      // Gọi API để lấy thông tin package item dựa trên ID
+      const responseById = await PackageItemServices.getPackageItemById({
+        id: value.trim(),
+      });
+
+      // Nếu có dữ liệu trả về, chuyển hướng đến trang chi tiết của package item
+      if (responseById.data) {
+        router.push(`/user/package-items/detail/${value.trim()}`);
+        return;
       }
+    } catch (error) {
+      console.log("ID không tồn tại, tiếp tục tìm kiếm bằng RFID");
+    }
+
+    try {
+      const responseByRfId = await PackageItemServices.getPackageItemById({
+        rfId: value.trim(),
+      });
+      if (responseByRfId.data) {
+        router.push(
+          `/user/package-items/detail/${responseByRfId.data.data.id}`
+        );
+        return;
+      }
+    } catch (error) {
+      console.log("RFID không tồn tại, tiếp tục tìm kiếm thông thường");
     }
   };
-
   const debouncedHandleSearch = debounce(handleSearchChange, 300);
   const fetchPackageItems = async (page: number) => {
     setIsLoading(true);

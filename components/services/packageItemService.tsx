@@ -48,7 +48,10 @@ interface PaymentRequestBody {
   note: string;
   price: number;
 }
-
+interface GetPackageItemByIdParams {
+  id?: string;
+  rfId?: string;
+}
 export const PackageItemServices = {
   getPackageItems({ page, size }: PackageItemPageSize) {
     return API.get("/package-items", {
@@ -59,8 +62,14 @@ export const PackageItemServices = {
     });
   },
 
-  getPackageItemById(id: string) {
-    return API.get(`/package-item/?id=${id}`);
+  getPackageItemById({ id, rfId }: GetPackageItemByIdParams) {
+    if (id) {
+      return API.get(`/package-item/?id=${id}`);
+    } else if (rfId) {
+      return API.get(`/package-item/?rfId=${rfId}`);
+    } else {
+      throw new Error("Either 'id' or 'rfId' must be provided.");
+    }
   },
 
   uploadPackageItem(PackageItem: PackageItem) {
@@ -111,7 +120,12 @@ export const PackageItemServices = {
   activatePackageItem(id: string, activateData: ActivatePackageItemRequest) {
     return API.patch(`/package-item/${id}/activate`, activateData);
   },
-
+  updateRFID(id: string, rfId: string) {
+    return API.patch(`/package-item/${id}/rfid?rfId=${rfId}`, {
+      id: id,
+      rfId: rfId,
+    });
+  },
   chargeMoney({
     packageItemId,
     chargeAmount,

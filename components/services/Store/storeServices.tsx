@@ -27,4 +27,10 @@ export const StoreServices = {
   deleteStoreById(id: string) {
     return API.delete(`/store/${id}`);
   },
+  getWalletForStore(storeName: string, phoneNumber: string) {
+    return API.post("/store/wallet", {
+      storeName,
+      phoneNumber,
+    });
+  },
 };
