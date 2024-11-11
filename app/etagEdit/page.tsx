@@ -18,22 +18,18 @@ import { PackageItemServices } from "@/components/services/packageItemService";
 import { PackageItem } from "@/types/packageitem";
 import Image from "next/image";
 import {
+  PackageItemEditPageProps,
+  formSchema,
+  FormValues,
+} from "@/lib/validation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-import {
-  PackageItemEditPageProps,
-  formSchema,
-  FormValues,
-
-  PackageItemDetailPageProps,
-} from "@/lib/validation";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
@@ -42,12 +38,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  ;
   const DEV_CONFIG = {
-    DEMO_ETAG_ID: "3fc971d3-5404-4a7b-af92-c28dc472512a",
+    DEMO_ETAG_ID: "52530045-9ca1-4e37-b7ab-6162577def65",
     IS_DEVELOPMENT: true,
   };
-
 
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
@@ -58,17 +52,18 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     },
   });
 
-
   const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return "";
     return new Date(dateString).toISOString().split("T")[0];
   };
+
   const formatDateTimeForInput = (dateString: string | null) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     date.setHours(date.getHours() + 7);
     return date.toISOString().slice(0, 16);
   };
+
   const formatDateTimeForDisplay = (dateString: string | null) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -83,6 +78,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     hours = hours ? hours : 12;
     return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
   };
+
   useEffect(() => {
     const fetchEtag = async () => {
       const etagId = DEV_CONFIG.IS_DEVELOPMENT
@@ -95,11 +91,8 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       }
       try {
         setIsLoading(true);
-        const response = await PackageItemServices.getPackageItemById(
-          etagId
-        );
+        const response = await PackageItemServices.getPackageItemById(etagId);
         const packageitemData = response.data?.data;
-        console.log(packageitemData, "packageitemData");
         setPackageItem(packageitemData);
         if (!packageitemData) {
           throw new Error("No etag data received");
@@ -138,41 +131,47 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     fetchEtag();
   }, [params?.id, form, toast]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  const handleUpdate = async () => {
+    if (!packageItem) return;
+    const updatedData = form.getValues();
 
-  const handleSubmit = async (values: FormValues) => {
     try {
       setIsLoading(true);
-      await PackageItemServices.editInfoPackageItem(packageItem?.id!, {
-        name: values.name,
-        gender: values.gender,
-        imageUrl: values.imageUrl || null,
+      const response = await PackageItemServices.editInfoPackageItem(
+        packageItem.id,
+        updatedData
+      );
+      const messageResponse = response.data.messageResponse;
+      toast({
+        title: "Success",
+        description: messageResponse,
       });
       setIsEditing(false);
-      toast({
-        title: 'Package Item Updated',
-        description: 'The package item has been updated successfully.',
-        variant: 'default',
-      });
     } catch (err) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update the package item.',
-        variant: 'destructive',
-      });
+      if (err instanceof Error) {
+        const errorMessage = (err as any).response?.data?.Error;
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        console.error("Unexpected error:", err);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <>
-      <BackButton text="Back To Etag List" link="/user/package-items" />
-      <h3 className="text-2xl mb-4">Vcard Detail</h3>
+      <h3 className="text-2xl mb-4">VCard Detail</h3>
 
       <Form {...form}>
-        <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
+        <form className="space-y-4">
           <div className="relative w-full h-48">
             <Image
               src={packageItem?.imageUrl ?? ""}
@@ -187,6 +186,9 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle>VCard Detail</CardTitle>
+                <Button type="button" onClick={() => setIsEditing(!isEditing)}>
+                  {isEditing ? "Cancel Edit" : "Edit"}
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -206,7 +208,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                             {...form.register("name")}
-                            readOnly
+                            readOnly={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
@@ -219,7 +221,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                             {...form.register("email")}
-                            readOnly={!isEditing}
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -234,7 +236,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                             {...form.register("phoneNumber")}
-                          readOnly
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -247,7 +249,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                             {...form.register("cccdpassport")}
-                            readOnly={!isEditing}
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -282,6 +284,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                     </div>
                   </div>
                 </div>
+
                 <div>
                   <h4 className="text-lg font-semibold mb-2">
                     Duration Information
@@ -325,13 +328,14 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <Input
                           className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                           {...form.register("status")}
-                          readOnly={!isEditing}
+                          readOnly
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   </div>
                 </div>
+
                 {/* Wallet Information */}
                 <div>
                   <h4 className="text-lg font-semibold mb-2">
@@ -365,29 +369,18 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                     </FormItem>
                   </div>
                 </div>
+                {isEditing && (
+                  <div className="flex justify-end">
+                    <Button onClick={handleUpdate} className="bg-blue-600">
+                      Save Changes
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
-          <div className="flex justify-end space-x-2">
-            {isEditing ? (
-              <>
-                <Button type="button" onClick={form.handleSubmit(handleSubmit)} disabled={isLoading}>
-                  Save
-                </Button>
-                <Button variant="ghost" onClick={() => setIsEditing(false)} disabled={isLoading}>
-                  Cancel
-                </Button>
-              </>
-            ) : (
-              <Button variant="outline" onClick={() => setIsEditing(true)} disabled={isLoading}>
-                Edit
-              </Button>
-            )}
-          </div>
-
         </form>
       </Form>
-
     </>
   );
 };

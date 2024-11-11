@@ -41,5 +41,4 @@ export interface PackageItemHandleUpdate {
   name: string;
   imageUrl: string | null;
   gender: string;
-  // email: string;
 }

@@ -378,11 +378,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       status: 0,
       imageUrl: "",
       isAdult: true,
-      etagType: {
-        name: "",
-        bonusRate: 0,
-        amount: 0,
-      },
+
       wallet: {
         balance: 0,
         balanceHistory: 0,
