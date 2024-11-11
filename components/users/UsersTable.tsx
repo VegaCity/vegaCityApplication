@@ -592,9 +592,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                 ? UserFound()
                 : filteredUsers?.map((user, i) => (
                     <TableRow
-                      onClick={() =>
-                        router.push(`/admin/usersAccount/detail/${user.id}`)
-                      }
+                      // onClick={() =>
+                      //   router.push(`/admin/usersAccount/detail/${user.id}`)
+                      // }
                       className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                       key={user.id}
                     >

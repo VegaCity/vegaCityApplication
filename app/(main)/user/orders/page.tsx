@@ -154,6 +154,7 @@ const OrdersPage = () => {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>No</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Payment Type</TableHead>
             <TableHead>Total Amount</TableHead>
@@ -162,8 +163,9 @@ const OrdersPage = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
+          {orders.map((order, index) => (
             <TableRow key={order.id}>
+              <TableCell>{index + 1}</TableCell>
               <TableCell>{order.name}</TableCell>
               <TableCell>{order.paymentType}</TableCell>
               <TableCell>{order.totalAmount.toLocaleString()} VND</TableCell>

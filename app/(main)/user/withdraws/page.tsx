@@ -56,18 +56,18 @@ const WithdrawMoney = () => {
   const validateWithdrawAmount = useCallback(
     (amount: number): string | null => {
       if (isNaN(amount) || amount <= 0) {
-        return "Số tiền rút phải lớn hơn 0";
+        return "Money must be a positive number";
       }
       if (amount < MIN_WITHDRAWAL) {
-        return `Số tiền rút tối thiểu là ${MIN_WITHDRAWAL.toLocaleString(
+        return `Money must be at least ${MIN_WITHDRAWAL.toLocaleString(
           FORMAT_LOCALE
         )} VND`;
       }
       if (!walletInfo?.balance || amount > walletInfo.balance) {
-        return "Số tiền rút không được vượt quá số dư hiện tại";
+        return "Money must be less than or equal to your balance";
       }
-      if (amount % 1000 !== 0) {
-        return "Số tiền rút phải là bội số của 1,000 VND";
+      if (amount % 10000 !== 0) {
+        return "Money must be a multiple of 10,000 VND";
       }
       return null;
     },

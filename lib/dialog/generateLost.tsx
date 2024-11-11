@@ -74,7 +74,7 @@ const GenerateNewCardDialog = ({
 
   const handleConfirmPayment = async () => {
     try {
-      const invoiceId = localStorage.getItem("newInvoiceId");
+      const invoiceId = localStorage.getItem("invoiceId");
       const transactionId = localStorage.getItem("transactionId");
 
       if (!invoiceId || !transactionId) {
@@ -130,7 +130,7 @@ const GenerateNewCardDialog = ({
       } else if (response.status === 200) {
         // Case 2: Insufficient balance
         console.log(response.data);
-        localStorage.setItem("newInvoiceId", response.data.data.newInvoiceId);
+        localStorage.setItem("invoiceId", response.data.data.invoiceId);
         localStorage.setItem("transactionId", response.data.data.transactionId);
 
         toast({

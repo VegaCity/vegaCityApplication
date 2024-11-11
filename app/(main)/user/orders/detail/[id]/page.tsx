@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { OrderDetailResponse } from "@/types/paymentFlow/orderUser";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ArrowLeft,
   Calendar,
@@ -10,6 +11,11 @@ import {
   Package,
   Receipt,
   AlertCircle,
+  Mail,
+  Phone,
+  CreditCard as PaymentIcon,
+  User,
+  FileText,
 } from "lucide-react";
 import { GetOrdersById } from "@/components/services/orderuserServices";
 
@@ -47,23 +53,35 @@ const OrderDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="w-20 h-20 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="w-16 h-16 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container max-w-6xl mx-auto px-6 py-8">
-        <div className="bg-white rounded-lg p-8 text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <div className="text-xl font-medium text-red-500 mb-6">{error}</div>
-          <Button variant="outline" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-5 w-5" />
-            Back to Orders
-          </Button>
-        </div>
+      <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
+        <Card className="max-w-lg mx-auto">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <AlertCircle className="mx-auto h-12 w-12 text-red-500" />
+              <h3 className="mt-2 text-lg font-medium text-gray-900">
+                {error}
+              </h3>
+              <div className="mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => router.back()}
+                  className="inline-flex items-center"
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Orders
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -91,159 +109,171 @@ const OrderDetailPage = () => {
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case "COMPLETED":
-        return "bg-green-50 text-green-700 border-green-200";
+        return "bg-green-50 text-green-700 ring-1 ring-green-600/20";
       case "PENDING":
-        return "bg-yellow-50 text-yellow-700 border-yellow-200";
+        return "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/20";
       case "CANCELED":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "bg-red-50 text-red-700 ring-1 ring-red-600/20";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-gray-50 text-gray-700 ring-1 ring-gray-600/20";
     }
   };
 
   return (
-    <div className="max-h-screen">
-      <div className="container max-w-6xl mx-auto py-8 px-4 ">
-        <div className="bg-white rounded-lg shadow-sm">
-          {/* Header Section */}
-          <div className="border-b border-gray-100 p-8">
-            <div className="flex justify-between items-start">
+    <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="mb-6 text-gray-600 hover:text-gray-900"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Orders
+        </Button>
+
+        <Card className="mb-6">
+          <CardHeader className="border-b border-gray-100">
+            <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Order Details
-                </h1>
-                <p className="text-gray-500 mt-2 text-lg">#{order.invoiceId}</p>
+                <CardTitle className="text-2xl">Order Details</CardTitle>
+                <p className="text-gray-500 mt-1">#{order.invoiceId}</p>
               </div>
-              <div
-                className={`px-6 py-3 rounded-full border ${getStatusColor(
+              <span
+                className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${getStatusColor(
                   order.status
-                )} text-lg font-medium`}
+                )}`}
               >
                 {order.status}
-              </div>
+              </span>
             </div>
-          </div>
+          </CardHeader>
 
-          {/* Order Details Section */}
-          <div className="p-8  box-border  border-2">
-            <div className="grid grid-cols-2 gap-12 mb-12">
-              <div className="space-y-8">
-                <div className="flex items-start gap-4">
-                  <Receipt className="w-6 h-6 text-gray-400 mt-1" />
-                  <div>
-                    <p className="text-base font-medium text-gray-500">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <Receipt className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
                       Order Name
                     </p>
-                    <p className="mt-1 text-xl text-gray-900">{order.name}</p>
+                    <p className="mt-1 text-base text-gray-900">{order.name}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <Calendar className="w-6 h-6 text-gray-400 mt-1" />
-                  <div>
-                    <p className="text-base font-medium text-gray-500">
+                <div className="flex items-start">
+                  <Calendar className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
                       Create Date
                     </p>
-                    <p className="mt-1 text-xl text-gray-900">
+                    <p className="mt-1 text-base text-gray-900">
                       {formatDate(order.crDate)}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-8">
-                <div className="flex items-start gap-4">
-                  <CreditCard className="w-6 h-6 text-gray-400 mt-1" />
-                  <div>
-                    <p className="text-base font-medium text-gray-500">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <PaymentIcon className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
                       Payment Type
                     </p>
-                    <p className="mt-1 text-xl text-gray-900">
+                    <p className="mt-1 text-base text-gray-900">
                       {order.paymentType}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <Package className="w-6 h-6 text-gray-400 mt-1" />
-                  <div>
-                    <p className="text-base font-medium text-gray-500">
+                <div className="flex items-start">
+                  <Package className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
                       Sale Type
                     </p>
-                    <p className="mt-1 text-xl text-gray-900">
+                    <p className="mt-1 text-base text-gray-900">
                       {order.saleType}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        {/* Total Amount Section */}
+          </CardContent>
+        </Card>
 
-        <div className="flex items-start gap-4 mt-4 mb-4 box-border  border-2 p-4 ">
-          <div className="grid grid-cols-2 gap-12 mb-12">
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <Receipt className="w-6 h-6 text-gray-400 mt-1" />
-                <div>
-                  <p className="text-base font-medium text-gray-500">
-                    Customer Name
-                  </p>
-                  <p className="mt-1 text-xl text-gray-900">
-                    {order.packageOrders[0].cusName}
-                  </p>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl">Customer Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <User className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Customer Name
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.packageOrders[0].cusName}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Mail className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Customer Email
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.packageOrders[0].cusEmail}
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <Receipt className="w-6 h-6 text-gray-400 mt-1" />
-                <div>
-                  <p className="text-base font-medium text-gray-500">
-                    Customer Email
-                  </p>
-                  <p className="mt-1 text-xl text-gray-900">
-                    {order.packageOrders[0].cusEmail}
-                  </p>
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <Phone className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Customer Phone
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.packageOrders[0].phoneNumber}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <FileText className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      CCCD/Passport
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.packageOrders[0].cusCccdpassport}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="space-y-8">
-              <div className="flex items-start gap-4">
-                <CreditCard className="w-6 h-6 text-gray-400 mt-1" />
-                <div>
-                  <p className="text-base font-medium text-gray-500">
-                    Customer Phone
-                  </p>
-                  <p className="mt-1 text-xl text-gray-900">
-                    {order.packageOrders[0].phoneNumber}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <Package className="w-6 h-6 text-gray-400 mt-1" />
-                <div>
-                  <p className="text-base font-medium text-gray-500">
-                    Customer CCCD/Passport
-                  </p>
-                  <p className="mt-1 text-xl text-gray-900">
-                    {order.packageOrders[0].cusCccdpassport}
-                  </p>
-                </div>
-              </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <p className="text-lg font-medium text-gray-900">Total Amount</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {formatAmount(order.totalAmount)}
+              </p>
             </div>
-          </div>
-        </div>
-      </div>
-      <div className="border-t-4 border-gray-100 pt-8 ">
-        <div className="flex justify-between items-center">
-          <p className="text-2xl font-medium text-gray-900">Total Amount</p>
-          <p className="text-3xl font-bold text-gray-900">
-            {formatAmount(order.totalAmount)}
-          </p>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

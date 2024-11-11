@@ -93,7 +93,41 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
     { value: "Expired", label: "Expired" },
     { value: "Blocked", label: "Blocked" },
   ];
+  const isValidUUID = (str: string) => {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  };
 
+  const debounce = (func: Function, wait: number) => {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+  const handleSearchChange = async (value: string) => {
+    setSearchTerm(value);
+    if (isValidUUID(value.trim())) {
+      try {
+        const response = await PackageItemServices.getPackageItemById(
+          value.trim()
+        );
+        if (response.data) {
+          router.push(`/user/package-items/detail/${value.trim()}`);
+          return;
+        }
+      } catch (error) {
+        console.log("ID not found, continuing with normal search");
+      }
+    }
+  };
+
+  const debouncedHandleSearch = debounce(handleSearchChange, 300);
   const fetchPackageItems = async (page: number) => {
     setIsLoading(true);
     try {
@@ -300,9 +334,9 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
           />
           <input
             type="text"
-            placeholder="Search by CCCD, Name, or Phone"
+            placeholder="Search by ID, CCCD, Name, or Phone"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => debouncedHandleSearch(e.target.value)}
             className="pl-10 pr-4 py-2 w-full border rounded-md"
           />
         </div>

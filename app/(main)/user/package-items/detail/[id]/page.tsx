@@ -56,6 +56,11 @@ import {
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { ConfirmOrderData } from "@/types/paymentFlow/orderUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PromotionServices } from "@/components/services/Promotion/promotionServices";
+import { Promotion } from "@/types/promotion/Promotion";
+import { GenerateChildrenVCardDialog } from "@/lib/dialog/GenerateChildrenVCardDialog";
+import { ChargeMoneyDialog } from "@/lib/dialog/ChargeMoneyDialog";
+import { ProcessingDialog } from "@/lib/dialog/ProcessingDialog";
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -67,6 +72,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const [isProcessingPopupOpen, setIsProcessingPopupOpen] = useState(false);
   const [shouldShowAlertDialog, setShouldShowAlertDialog] = useState(false);
   const [pendingInvoiceId, setPendingInvoiceId] = useState<string | null>(null);
+  const [amount, setAmount] = useState("");
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [isLoadingPromotions, setIsLoadingPromotions] = useState(false);
+  const [promotionError, setPromotionError] = useState<string | null>(null);
   const [isChildrenVCardDialogOpen, setIsChildrenVCardDialogOpen] =
     useState(false);
   const childrenVCardForm = useForm({
@@ -76,6 +85,18 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     },
   });
 
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Chỉ cho phép nhập số
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setAmount(value);
+    setError("");
+
+    // Cập nhật giá trị vào form
+    formCharge.setValue("chargeAmount", parseInt(value) || 0);
+  };
+  const formatAmount = (value: string): string => {
+    return value ? parseInt(value).toLocaleString("vi-VN") : "";
+  };
   // Cập nhật form khi component mount
   useEffect(() => {
     if (packageItem) {
@@ -85,6 +106,45 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       });
     }
   }, [packageItem, childrenVCardForm]);
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      setIsLoadingPromotions(true);
+      setPromotionError(null);
+      try {
+        const response = await PromotionServices.getPromotions({
+          page: 1,
+          size: 10,
+        });
+
+        // Ensure we're handling the response data structure correctly
+        if (response.data?.data) {
+          // Check if data is an array
+          const promotionsData = Array.isArray(response.data.data)
+            ? response.data.data
+            : Array.isArray(response.data.data[0])
+            ? response.data.data[0]
+            : [];
+
+          setPromotions(promotionsData);
+        } else {
+          setPromotions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching promotions:", error);
+        setPromotionError("Failed to load promotions");
+        toast({
+          title: "Error",
+          description: "Failed to load promotions",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingPromotions(false);
+      }
+    };
+
+    fetchPromotions();
+  }, [toast]);
+
   const handleGenerateChildrenVCard = async (data: any) => {
     try {
       setIsLoading(true);
@@ -131,12 +191,24 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   }) => {
     try {
       setIsLoading(true);
+      // Đảm bảo chargeAmount là số từ giá trị amount đã nhập
+      const chargeAmount = parseInt(amount) || 0;
+
+      // Kiểm tra số tiền hợp lệ
+      if (chargeAmount <= 0) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid amount",
+          variant: "destructive",
+        });
+        return;
+      }
       const response = await PackageItemServices.chargeMoney({
         packageItemId: params.id,
         chargeAmount: data.chargeAmount,
         cccdPassport: data.cccdpassport,
         paymentType: data.paymentType,
-        promoCode: "",
+        promoCode: "no_promotion",
       });
 
       if (response.status === 200) {
@@ -686,161 +758,37 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             </CardContent>
           </Card>
 
-          <Dialog
-            open={isChildrenVCardDialogOpen}
-            onOpenChange={(open) => {
-              setIsChildrenVCardDialogOpen(open);
-              if (!open) {
-                childrenVCardForm.reset({
-                  quantity: 1,
-                  packageItemId: localStorage.getItem("packageItemId") || "",
-                });
-              }
-            }}
-          >
-            <DialogContent className="w-[500px] max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="font-bold text-center">
-                  Generate Children VCards
-                </DialogTitle>
-                <DialogDescription className="text-center">
-                  Specify how many children VCards you want to generate
-                </DialogDescription>
-              </DialogHeader>
-              <form
-                onSubmit={childrenVCardForm.handleSubmit(
-                  handleGenerateChildrenVCard
-                )}
-              >
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <FormLabel className="text-right">Quantity</FormLabel>
-                    <Input
-                      type="number"
-                      min="1"
-                      max="10"
-                      {...childrenVCardForm.register("quantity")}
-                      className="col-span-3"
-                      placeholder="Number of children VCards"
-                    />
-                  </div>
-
-                  {/* Hidden inputs for required data */}
-                  <Input
-                    type="hidden"
-                    {...childrenVCardForm.register("packageItemId")}
-                  />
-                </div>
-
-                <DialogFooter className="mt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsChildrenVCardDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Generating..." : "Generate"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
-          <Dialog
-            open={isPopupOpen}
-            onOpenChange={(open) => {
-              setIsPopupOpen(open);
-              if (!open) {
-                setShouldShowAlertDialog(false);
-                formCharge.reset();
-              }
-            }}
-          >
-            <DialogTrigger asChild>
-              {packageItem &&
-                packageItem.status === "Active" &&
-                packageItem.wallet.walletType.name === "ServiceWallet" && (
-                  <div className="flex justify-end mt-4">
-                    <Button type="button" onClick={() => setIsPopupOpen(true)}>
-                      Charge Money
-                    </Button>
-                  </div>
-                )}
-            </DialogTrigger>
-            <DialogContent className="w-[600px] h-[400px] max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="font-bold text-center">
+          <GenerateChildrenVCardDialog
+            isOpen={isChildrenVCardDialogOpen}
+            onOpenChange={setIsChildrenVCardDialogOpen}
+            form={childrenVCardForm}
+            onSubmit={handleGenerateChildrenVCard}
+            isLoading={isLoading}
+          />
+          <div className="flex justify-end mt-4">
+            {packageItem &&
+              packageItem.status === "Active" &&
+              packageItem.wallet.walletType.name === "ServiceWallet" && (
+                <Button type="button" onClick={() => setIsPopupOpen(true)}>
                   Charge Money
-                </DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  formCharge.handleSubmit(handleChargeMoney)(e);
-                }}
-              >
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6 p-6 items-center">
-                  <label className="font-medium">Amount (đ)</label>
-                  <Input
-                    type="number"
-                    {...formCharge.register("chargeAmount")}
-                    placeholder="Enter amount"
-                    required
-                  />
+                </Button>
+              )}
+          </div>
 
-                  <label className="font-medium">CCCD/Passport</label>
-                  <Input
-                    type="text"
-                    {...formCharge.register("cccdpassport")}
-                    readOnly
-                  />
+          <ChargeMoneyDialog
+            isOpen={isPopupOpen}
+            onOpenChange={setIsPopupOpen}
+            form={formCharge}
+            onSubmit={handleChargeMoney}
+            amount={amount}
+            onAmountChange={handleAmountChange}
+            formatAmount={formatAmount}
+            promotions={promotions}
+            isLoadingPromotions={isLoadingPromotions}
+          />
 
-                  <label className="font-medium">Payment Type</label>
-                  <Select
-                    defaultValue={formCharge.getValues("paymentType")}
-                    onValueChange={(value) =>
-                      formCharge.setValue("paymentType", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Payment Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Cash">Cash</SelectItem>
-                      <SelectItem value="Momo">MoMo</SelectItem>
-                      <SelectItem value="VnPay">VnPay</SelectItem>
-                      <SelectItem value="PayOS">PayOs</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <label className="font-medium">Promo Code (Optional)</label>
-                  <Input
-                    type="text"
-                    {...formCharge.register("promoCode")}
-                    placeholder="Enter promo code"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 mt-4 pr-6">
-                  <Button type="submit">Submit</Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsPopupOpen(false);
-                      formCharge.reset();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-
-          <AlertDialog
-            open={isProcessingPopupOpen && shouldShowAlertDialog}
+          <ProcessingDialog
+            isOpen={isProcessingPopupOpen && shouldShowAlertDialog}
             onOpenChange={(open) => {
               setIsProcessingPopupOpen(open);
               if (!open) {
@@ -851,32 +799,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                 setIsPopupOpen(false);
               }
             }}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Order Processing</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Please wait for the order to be processed
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel
-                  onClick={() => {
-                    setIsProcessingPopupOpen(false);
-                    setPendingInvoiceId(null);
-                  }}
-                >
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleConfirmPayment}
-                  disabled={isConfirming || !pendingInvoiceId}
-                >
-                  {isConfirming ? "Confirming..." : "Confirm Payment"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            onConfirm={handleConfirmPayment}
+            isConfirming={isConfirming}
+            pendingInvoiceId={pendingInvoiceId}
+          />
         </form>
       </Form>
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">

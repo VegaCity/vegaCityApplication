@@ -110,6 +110,7 @@ export const useEtagHandlers = ({
       localStorage.setItem("orderId", response.data.orderId);
       localStorage.setItem("invoiceId", response.data.invoiceId);
       localStorage.setItem("transactionId", response.data.transactionId);
+
       setOrderId(response.data.invoiceId);
       setShowTimer(true);
       setIsCustomerInfoConfirmed(true);
@@ -121,9 +122,7 @@ export const useEtagHandlers = ({
       );
     }
   };
-  const handleGenerateChildrenVCard = async () => {
-    // Generate Children VCard
-  };
+
   const handleGenerateVCard = async (quantity: number) => {
     try {
       const packageId = localStorage.getItem("packageId") || "";
@@ -137,9 +136,10 @@ export const useEtagHandlers = ({
           title: "Success",
           description: "VCard generated successfully.",
         });
-        setTimeout(() => {
-          router.push("/user/package-items");
-        }, 3000);
+        localStorage.setItem("packageItemIdNew", response.data.data[0].id);
+        // setTimeout(() => {
+        //   router.push("/user/package-items");
+        // }, 3000);
       } else {
         throw new Error(
           `Failed to generate VCard. Status code: ${response.status}`

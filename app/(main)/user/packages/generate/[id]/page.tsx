@@ -123,7 +123,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     <div className="container mx-auto p-4">
       <BackButton text="Back To Packages" link="/user/packages" />
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-2xl">Generate E-Tag</h3>
+        <h3 className="text-2xl">Generate VCard</h3>
       </div>
       <div className="mb-8 flex justify-center">
         <Card className="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-xl">

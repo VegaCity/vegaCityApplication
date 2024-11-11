@@ -26,19 +26,19 @@ function OrderStatusContent() {
   const router = useRouter();
 
   const continueEtag = () => {
-    const etagId = localStorage.getItem("etag");
+    const etagId = localStorage.getItem("packageItemIdNew");
     if (etagId) {
       // router.push(`/user/etags/detail/${etagId}`);
-      router.push(`/order/detail/${etagId}`);
+      router.push(`/user/package-items/detail/${etagId}`);
     } else {
-      router.push("/user/etags");
+      router.push("/user/package-items");
     }
   };
   const orderId = localStorage.getItem("orderId");
   const invoiceId = localStorage.getItem("invoiceId");
 
   const handleFailure = () => {
-    router.push("/user/etags");
+    router.push("/user/package-items");
   };
 
   return (
@@ -56,11 +56,11 @@ function OrderStatusContent() {
               <p className="text-gray-600 mb-4">
                 Đơn hàng #{invoiceId} đã được thanh toán thành công.
               </p>
-              {orderDetails.total && (
+              {/* {orderDetails.total && (
                 <p className="text-sm text-gray-500">
                   Số tiền đã thanh toán: {orderDetails.total}
                 </p>
-              )}
+              )} */}
             </>
           ) : (
             <>
@@ -74,7 +74,7 @@ function OrderStatusContent() {
         </CardContent>
         <CardFooter className="justify-center">
           {isSuccess ? (
-            <Button onClick={continueEtag}>Thông tin etag</Button>
+            <Button onClick={continueEtag}>Thông tin VCard</Button>
           ) : (
             <Button onClick={handleFailure} variant="destructive">
               Quay lại

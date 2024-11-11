@@ -26,6 +26,7 @@ import { TransactionServices } from "@/components/services/transactionServices";
 import { AlertCircle } from "lucide-react";
 import { Transaction } from "@/types/paymentFlow/transaction";
 import DateRangePicker from "../ui/date-picker";
+import EnhancedPagination from "@/lib/EnhancedPagination";
 
 interface TransactionTableProps {
   limit?: number;
@@ -222,48 +223,11 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
 
             {transactions && transactions.length > 0 && !limit && (
               <div className="mt-4 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() =>
-                          setCurrentPage((prev) => Math.max(prev - 1, 1))
-                        }
-                        className={
-                          currentPage === 1
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                        }
-                      />
-                    </PaginationItem>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => setCurrentPage(page)}
-                            isActive={currentPage === page}
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    )}
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() =>
-                          setCurrentPage((prev) =>
-                            Math.min(prev + 1, totalPages)
-                          )
-                        }
-                        className={
-                          currentPage === totalPages
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                        }
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+                <EnhancedPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </div>
             )}
           </>
