@@ -38,7 +38,7 @@ export interface PackageItem {
 }
 
 export interface PackageItemHandleUpdate {
-  phoneNumber: string;
+  name: string;
+  imageUrl: string | null;
   gender: string;
-  birthday: string;
 }
