@@ -428,7 +428,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Phương thức Thanh Toán
+                        Payment Method
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}

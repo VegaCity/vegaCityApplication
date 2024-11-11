@@ -91,7 +91,9 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       }
       try {
         setIsLoading(true);
-        const response = await PackageItemServices.getPackageItemById(etagId);
+        const response = await PackageItemServices.getPackageItemById({
+          id: etagId,
+        });
         const packageitemData = response.data?.data;
         setPackageItem(packageitemData);
         if (!packageitemData) {
