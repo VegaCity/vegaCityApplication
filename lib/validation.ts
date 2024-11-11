@@ -99,12 +99,6 @@ export const formSchema = z
         message: "Name have not special character and space!",
       }),
 
-    etagCode: z
-      .string()
-      .regex(
-        /^[A-Z0-9]{10}$/,
-        "Mã ETag phải có 10 ký tự và chỉ chứa chữ cái in hoa và số"
-      ),
 
     phoneNumber: z
       .string()
@@ -156,21 +150,21 @@ export const formSchema = z
 
     imageUrl: z.string().url("Your URL image is invalid").optional(),
 
-    etagType: z.object({
-      name: z
-        .string()
-        .min(1, "Tên loại ETag là bắt buộc")
-        .max(50, "Tên loại ETag không được vượt quá 50 ký tự"),
-      bonusRate: z
-        .number()
-        .min(0, "Tỷ lệ thưởng phải là số không âm")
-        .max(100, "Tỷ lệ thưởng không được vượt quá 100%"),
-      amount: z
-        .number()
-        .min(0, "Số tiền phải là số không âm")
-        .min(1000, { message: "Price must at least 1.000 VND" })
-        .max(10000000, { message: "Price does not exceed 10 triệu VND" }),
-    }),
+    // etagType: z.object({
+    //   name: z
+    //     .string()
+    //     .min(1, "Tên loại ETag là bắt buộc")
+    //     .max(50, "Tên loại ETag không được vượt quá 50 ký tự"),
+    //   bonusRate: z
+    //     .number()
+    //     .min(0, "Tỷ lệ thưởng phải là số không âm")
+    //     .max(100, "Tỷ lệ thưởng không được vượt quá 100%"),
+    //   amount: z
+    //     .number()
+    //     .min(0, "Số tiền phải là số không âm")
+    //     .min(1000, { message: "Price must at least 1.000 VND" })
+    //     .max(10000000, { message: "Price does not exceed 10 triệu VND" }),
+    // }),
 
     marketZone: z.object({
       name: z
@@ -493,7 +487,7 @@ export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;
 export interface PackageItemDetailPageProps {
   params: { id: string };
 }
-export interface EtagEditPageProps {
+export interface PackageItemEditPageProps {
   params: { id: string };
 }
 
