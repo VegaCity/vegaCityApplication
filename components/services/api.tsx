@@ -4,11 +4,13 @@ import axios from "axios";
 const BASE_URL = "https://api.vegacity.id.vn/api/v1";
 // const BASE_URL = "https://localhost:7127/api/v1";
 export const apiKey = "5f728deb-b2c3-4bac-9d9c-41a11e0acccc";
-
+const BASE_URL_LOCAL = "https://localhost:7127/api/v1";
 export const API = axios.create({
   baseURL: BASE_URL,
 });
-
+export const API_LOCAL = axios.create({
+  baseURL: BASE_URL_LOCAL,
+});
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");

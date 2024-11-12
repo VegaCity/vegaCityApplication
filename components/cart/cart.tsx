@@ -1,6 +1,6 @@
 import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -188,7 +188,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                       variant="destructive"
                       onClick={() => removeFromCart(item.id)}
                     >
-                      Remove
+                      <Trash />
                     </Button>
                   </div>
                 ))}

@@ -10,9 +10,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, RefreshCw } from "lucide-react";
 import ShoppingCartComponent from "@/components/cart/cart";
 import { CartRef } from "@/components/cart/cart";
+import { toast } from "@/components/ui/use-toast";
 
 interface StoreDetailPageProps {
   params: {
@@ -30,7 +31,8 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const cartRef = useRef<CartRef>(null);
   const [storeId, setStoreId] = useState<string | null>(null);
-
+  const [updating, setUpdating] = useState(false);
+  const [storeType, setStoreType] = useState<string | null>(null);
   useEffect(() => {
     const storedStoreId = localStorage.getItem("storeId");
     if (storedStoreId) {
@@ -46,7 +48,11 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
         try {
           setLoading(true);
           const { data } = await StoreServices.getStoreById(storeId);
-          setStore(data.store);
+          setStore(data.data.store);
+          console.log(data.data.storeType, "store data4");
+          setStoreType(data.data.storeType);
+          console.log(data.data.store.phoneNumber, "store data");
+          localStorage.setItem("phone", data.data.store.phoneNumber);
           setProducts(
             Array.isArray(data.data.store.menus[0].products)
               ? data.data.store.menus[0].products
@@ -61,6 +67,45 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
     };
     fetchStoreDetails();
   }, [storeId]);
+
+  const handleUpdateMenu = async () => {
+    const phone = localStorage.getItem("phone");
+    if (!phone) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Phone number not found in localStorage",
+      });
+      return;
+    }
+
+    try {
+      setUpdating(true);
+      await StoreServices.updateMenu(phone);
+      toast({
+        title: "Success",
+        description: "Menu updated successfully",
+      });
+      // Refresh store details after update
+
+      const { data } = await StoreServices.getStoreById(storeId!);
+      setStore(data.store);
+
+      setProducts(
+        Array.isArray(data.data.store.menus[0].products)
+          ? data.data.store.menus[0].products
+          : []
+      );
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update menu",
+      });
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -82,9 +127,25 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">{store?.name}</h1>
-      <p className="text-gray-500 mb-6">{store?.address}</p>
-
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h1 className="text-2xl font-bold">{store?.name}</h1>
+          <p className="text-gray-500">{store?.address}</p>
+        </div>
+        {storeType === "Food" && (
+          <Button
+            onClick={handleUpdateMenu}
+            disabled={updating}
+            className="bg-primary text-white"
+            type="button"
+          >
+            <RefreshCw
+              className={`mr-2 h-4 w-4 ${updating ? "animate-spin" : ""}`}
+            />
+            {updating ? "Updating Menu..." : "Update Menu"}
+          </Button>
+        )}
+      </div>
       {/* Category Filter */}
       <div className="mb-4">
         <label className="font-semibold">Filter by Category: </label>
@@ -102,8 +163,6 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
             ))}
         </select>
       </div>
-
-      {/* Product Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
@@ -114,7 +173,7 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
             >
               <div className="relative h-48">
                 <img
-                  src={product.imageUrl || "/api/placeholder/400/320"}
+                  src={product.imageUrl ?? "img/side.png"}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />

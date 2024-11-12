@@ -10,12 +10,17 @@ export interface Users {
   cccdPassport: string;
   imageUrl?: string | null;
   email: string;
-  roleId: string;
+  role: Role;
   description?: string;
   address: string;
   status: number;
 }
-
+export interface Role {
+  id: string;
+  name: string;
+  deflag: boolean;
+  users: [null];
+}
 export interface GetUserById {
   id: string;
   fullName?: string | null;
