@@ -1,9 +1,8 @@
 import { GetServicesStore } from "@/types/store/serviceStore";
 
-// Interface definitions for Store and related entities
 export interface Store {
   id: string;
-  storeType: number; // changed to number based on response
+  storeType: number;
   name: string;
   address: string;
   crDate: string;
@@ -26,7 +25,16 @@ export interface Store {
   userStoreMappings: any[];
   wallets: any[];
 }
-
+export interface StoreDetail {
+  id: string;
+  name: string;
+  address: string;
+  shortName: string;
+  wallets: Wallet;
+}
+export interface Wallet {
+  balance: number;
+}
 export interface Menu {
   id: string;
   name: string;

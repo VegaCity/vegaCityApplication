@@ -78,7 +78,7 @@ const StoreDetailPage = ({ params }: StoreDetailPageProps) => {
     : products;
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div>No products found</div>;
 
   return (
     <div className="container mx-auto p-4">

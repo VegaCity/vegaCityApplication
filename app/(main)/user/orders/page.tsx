@@ -15,8 +15,10 @@ import {
   TableHead,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
-import { Eye } from "lucide-react";
-// In Pagination component file, define the props
+import { Eye, Search } from "lucide-react";
+import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
+import { Input } from "@/components/ui/input";
+
 interface PaginationProps {
   page: number;
   perPage: number;
@@ -32,18 +34,6 @@ const Pagination: React.FC<PaginationProps> = ({
 }) => {
   const totalPages = Math.ceil(total / perPage);
 
-  const handlePrev = () => {
-    if (page > 1) {
-      onPageChange(page - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (page < totalPages) {
-      onPageChange(page + 1);
-    }
-  };
-
   return (
     <div className="flex items-center justify-center gap-4 py-4">
       <button
@@ -52,7 +42,7 @@ const Pagination: React.FC<PaginationProps> = ({
             ? "bg-gray-300 cursor-not-allowed"
             : "bg-blue-500 text-white hover:bg-blue-600"
         }`}
-        onClick={handlePrev}
+        onClick={() => page > 1 && onPageChange(page - 1)}
         disabled={page <= 1}
       >
         Prev
@@ -68,7 +58,7 @@ const Pagination: React.FC<PaginationProps> = ({
             ? "bg-gray-300 cursor-not-allowed"
             : "bg-blue-500 text-white hover:bg-blue-600"
         }`}
-        onClick={handleNext}
+        onClick={() => page < totalPages && onPageChange(page + 1)}
         disabled={page >= totalPages}
       >
         Next
@@ -83,6 +73,18 @@ const OrdersPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [open, setOpen] = useState(false);
+  const [filterValue, setFilterValue] = useState("");
+
+  const filterList = [
+    { value: "ALL", label: "All" },
+    { value: "COMPLETED", label: "Completed" },
+    { value: "PENDING", label: "Pending" },
+    { value: "CANCELED", label: "Canceled" },
+  ];
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -90,7 +92,23 @@ const OrdersPage = () => {
         console.log("response:", response);
 
         if (response.statusCode === 200 && Array.isArray(response.data)) {
-          setOrders(response.data);
+          let processedOrders = [...response.data];
+
+          // Áp dụng filter theo status
+          if (filterValue && filterValue !== "ALL") {
+            processedOrders = processedOrders.filter(
+              (order) => order.status === filterValue
+            );
+          }
+
+          // Áp dụng filter theo search term
+          if (searchTerm.trim()) {
+            processedOrders = processedOrders.filter((order) =>
+              order.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          }
+
+          setOrders(processedOrders);
           setTotalPages(response.metaData.totalPage);
         } else {
           setOrders([]);
@@ -104,71 +122,99 @@ const OrdersPage = () => {
     };
 
     fetchOrders();
-  }, [page]);
+  }, [page, filterValue, searchTerm]);
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
-  const handleViewDetail = (orderId: string) => {
-    router.push(`/orders?id=${orderId}`);
-  };
+
   return (
-    <>
+    <div className="space-y-4">
+      <div className="flex items-center gap-4 mb-4">
+        <ComboboxCustom
+          open={open}
+          setOpen={setOpen}
+          value={filterValue}
+          setValue={setFilterValue}
+          filterList={filterList}
+          placeholder="Filter by Status"
+        />
+
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>No</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Payment Type</TableHead>
             <TableHead>Total Amount</TableHead>
             <TableHead>Status</TableHead>
-            {/* <TableHead>Actions</TableHead> */}
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
+          {orders.map((order, index) => (
             <TableRow key={order.id}>
+              <TableCell>{index + 1}</TableCell>
               <TableCell>{order.name}</TableCell>
               <TableCell>{order.paymentType}</TableCell>
               <TableCell>{order.totalAmount.toLocaleString()} VND</TableCell>
               <TableCell>
                 <span
-                  style={{
-                    color:
-                      order.status === "COMPLETED"
-                        ? "green"
-                        : order.status === "PENDING"
-                        ? "red"
-                        : "gray",
-                  }}
+                  className={`font-medium ${
+                    order.status === "COMPLETED"
+                      ? "text-green-600"
+                      : order.status === "PENDING"
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                  }`}
                 >
                   {order.status}
                 </span>
               </TableCell>
-              {/* <TableCell>
+              <TableCell>
                 <div className="flex space-x-2">
                   <Link href={`/user/orders/detail/${order.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex items-center gap-2"
+                    >
+                      <Eye className="h-4 w-4" />
                       Details
-                    </button>
+                    </Button>
                   </Link>
                 </div>
-              </TableCell> */}
+              </TableCell>
             </TableRow>
           ))}
           {orders.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7}>No orders found</TableCell>
+              <TableCell colSpan={5} className="text-center py-8">
+                No orders found
+              </TableCell>
             </TableRow>
           )}
         </TableBody>
       </Table>
+
       <Pagination
         page={page}
         perPage={10}
         total={totalPages * 10}
         onPageChange={handlePageChange}
       />
-    </>
+    </div>
   );
 };
 

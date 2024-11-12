@@ -18,7 +18,7 @@ export const customerFormSchema = z.object({
     .min(5, { message: "Address at least 5 characters" })
     .max(200, { message: "Address at least 5 characters" }),
 
-  cccdPassport: z
+  cccdpassport: z
     .string()
     .regex(
       /(^\d{12}$)|(^[A-Z]\d{7}$)/,
@@ -30,7 +30,7 @@ export const customerFormSchema = z.object({
     invalid_type_error: "Your payment method is invalid!",
   }),
 
-  gender: z.enum(["0", "1", "2"], {
+  gender: z.enum(["Male", "Female", "Other"], {
     required_error: "Gender is required!",
     invalid_type_error: "Gender is invalid!",
   }),
@@ -99,12 +99,6 @@ export const formSchema = z
         message: "Name have not special character and space!",
       }),
 
-    etagCode: z
-      .string()
-      .regex(
-        /^[A-Z0-9]{10}$/,
-        "Mã ETag phải có 10 ký tự và chỉ chứa chữ cái in hoa và số"
-      ),
 
     phoneNumber: z
       .string()
@@ -112,7 +106,7 @@ export const formSchema = z
         /^(\+84|0)[3|5|7|8|9][0-9]{8}$/,
         "Phone number is invalid. Please use Vietnam phone number!"
       ),
-
+    isAdult: z.boolean(),
     // cccdPassport: z
     //   .string()
     //   .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
@@ -156,21 +150,21 @@ export const formSchema = z
 
     imageUrl: z.string().url("Your URL image is invalid").optional(),
 
-    etagType: z.object({
-      name: z
-        .string()
-        .min(1, "Tên loại ETag là bắt buộc")
-        .max(50, "Tên loại ETag không được vượt quá 50 ký tự"),
-      bonusRate: z
-        .number()
-        .min(0, "Tỷ lệ thưởng phải là số không âm")
-        .max(100, "Tỷ lệ thưởng không được vượt quá 100%"),
-      amount: z
-        .number()
-        .min(0, "Số tiền phải là số không âm")
-        .min(1000, { message: "Price must at least 1.000 VND" })
-        .max(10000000, { message: "Price does not exceed 10 triệu VND" }),
-    }),
+    // etagType: z.object({
+    //   name: z
+    //     .string()
+    //     .min(1, "Tên loại ETag là bắt buộc")
+    //     .max(50, "Tên loại ETag không được vượt quá 50 ký tự"),
+    //   bonusRate: z
+    //     .number()
+    //     .min(0, "Tỷ lệ thưởng phải là số không âm")
+    //     .max(100, "Tỷ lệ thưởng không được vượt quá 100%"),
+    //   amount: z
+    //     .number()
+    //     .min(0, "Số tiền phải là số không âm")
+    //     .min(1000, { message: "Price must at least 1.000 VND" })
+    //     .max(10000000, { message: "Price does not exceed 10 triệu VND" }),
+    // }),
 
     marketZone: z.object({
       name: z
@@ -512,6 +506,7 @@ export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
 export type CreatePromotionFormValues = z.infer<
   typeof createPromotionFormSchema
 >;
+export type FormValues = z.infer<typeof formSchema>;
 export type CreatePackageFormValues = z.infer<typeof createPackageFormSchema>;
 export type EditPackageFormValues = z.infer<typeof editPackageFormSchema>;
 export type ChargeFormValues = z.infer<typeof chargeFormSchema>;
@@ -533,7 +528,7 @@ export type UserReAssignEmailValues = z.infer<
 export interface PackageItemDetailPageProps {
   params: { id: string };
 }
-export interface EtagEditPageProps {
+export interface PackageItemEditPageProps {
   params: { id: string };
 }
 

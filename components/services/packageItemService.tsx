@@ -27,6 +27,7 @@ interface ChargeMoneyRequest {
   cccdPassport: string;
   paymentType: string;
   packageItemId: string;
+  promoCode: string;
 }
 
 interface ChargeMoneyResponse {
@@ -47,7 +48,10 @@ interface PaymentRequestBody {
   note: string;
   price: number;
 }
-
+interface GetPackageItemByIdParams {
+  id?: string;
+  rfId?: string;
+}
 export const PackageItemServices = {
   getPackageItems({ page, size }: PackageItemPageSize) {
     return API.get("/package-items", {
@@ -58,8 +62,14 @@ export const PackageItemServices = {
     });
   },
 
-  getPackageItemById(id: string) {
-    return API.get(`/package-item/?id=${id}`);
+  getPackageItemById({ id, rfId }: GetPackageItemByIdParams) {
+    if (id) {
+      return API.get(`/package-item/?id=${id}`);
+    } else if (rfId) {
+      return API.get(`/package-item/?rfId=${rfId}`);
+    } else {
+      throw new Error("Either 'id' or 'rfId' must be provided.");
+    }
   },
 
   uploadPackageItem(PackageItem: PackageItem) {
@@ -88,11 +98,34 @@ export const PackageItemServices = {
       packageId: packageId,
     });
   },
+  generatePackageItemForChild(quantity: number) {
+    const packageId = localStorage.getItem("packageIdCurrent");
+    if (!packageId) {
+      throw new Error("Package ID not found in localStorage");
+    }
+
+    return API.post(`/package-item?quantity=${quantity}`, {
+      packageId: localStorage.getItem("packageIdCurrent"),
+      startDate: localStorage.getItem("startDate"),
+      endDate: localStorage.getItem("endDate"),
+      packageItemId: localStorage.getItem("packageItemId"),
+    });
+  },
+  generatePackageItemLost(quantity: number) {
+    return API.post(`/package-item?quantity=${quantity}`, {
+      packageItemId: localStorage.getItem("packageItemIdLost"),
+    });
+  },
 
   activatePackageItem(id: string, activateData: ActivatePackageItemRequest) {
     return API.patch(`/package-item/${id}/activate`, activateData);
   },
-
+  updateRFID(id: string, rfId: string) {
+    return API.patch(`/package-item/${id}/rfid?rfId=${rfId}`, {
+      id: id,
+      rfId: rfId,
+    });
+  },
   chargeMoney({
     packageItemId,
     chargeAmount,
@@ -112,5 +145,13 @@ export const PackageItemServices = {
     };
 
     return API.post("/package-item/charge-money", chargeData);
+  },
+  lostPackageItem(data: {
+    fullName: string;
+    cccdpassport: string;
+    email: string;
+    phoneNumber: string;
+  }) {
+    return API.post("/package-item/mark-lost", data);
   },
 };

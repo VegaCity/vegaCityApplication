@@ -31,11 +31,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import paymentService from "@/components/services/paymentService";
 import {
   formSchema,
   FormValues,
+  customerFormSchema,
   PackageItemDetailPageProps,
 } from "@/lib/validation";
 import {
@@ -54,10 +56,15 @@ import {
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { ConfirmOrderData } from "@/types/paymentFlow/orderUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PromotionServices } from "@/components/services/Promotion/promotionServices";
+import { Promotion } from "@/types/promotion/Promotion";
+import { GenerateChildrenVCardDialog } from "@/lib/dialog/GenerateChildrenVCardDialog";
+import { ChargeMoneyDialog } from "@/lib/dialog/ChargeMoneyDialog";
+import { ProcessingDialog } from "@/lib/dialog/ProcessingDialog";
+import { UpdateRFIDAlertDialog } from "@/lib/dialog/UpdateRFIDDialog";
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
-
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -66,6 +73,135 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const [isProcessingPopupOpen, setIsProcessingPopupOpen] = useState(false);
   const [shouldShowAlertDialog, setShouldShowAlertDialog] = useState(false);
   const [pendingInvoiceId, setPendingInvoiceId] = useState<string | null>(null);
+  const [amount, setAmount] = useState("");
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [isLoadingPromotions, setIsLoadingPromotions] = useState(false);
+  const [promotionError, setPromotionError] = useState<string | null>(null);
+  const [isUpdateRFIDDialogOpen, setIsUpdateRFIDDialogOpen] = useState(false);
+  const [isChildrenVCardDialogOpen, setIsChildrenVCardDialogOpen] =
+    useState(false);
+  const childrenVCardForm = useForm({
+    defaultValues: {
+      quantity: 1,
+      packageItemId: "",
+    },
+  });
+  const handleUpdateRFID = async (rfid: string) => {
+    try {
+      // Call API to update RFID
+      await PackageItemServices.updateRFID(packageItem!.id, rfid);
+      toast({
+        title: "RFID Updated",
+        description: "RFID has been updated successfully",
+      });
+      setIsUpdateRFIDDialogOpen(false);
+    } catch (error) {
+      console.error("Error updating RFID:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update RFID",
+        variant: "destructive",
+      });
+    }
+  };
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Chỉ cho phép nhập số
+    const value = e.target.value.replace(/[^0-9]/g, "");
+    setAmount(value);
+    setError("");
+
+    // Cập nhật giá trị vào form
+    formCharge.setValue("chargeAmount", parseInt(value) || 0);
+  };
+  const formatAmount = (value: string): string => {
+    return value ? parseInt(value).toLocaleString("vi-VN") : "";
+  };
+  // Cập nhật form khi component mount
+  useEffect(() => {
+    if (packageItem) {
+      childrenVCardForm.reset({
+        quantity: 1,
+        packageItemId: localStorage.getItem("packageItemId") || "",
+      });
+    }
+  }, [packageItem, childrenVCardForm]);
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      setIsLoadingPromotions(true);
+      setPromotionError(null);
+      try {
+        const response = await PromotionServices.getPromotions({
+          page: 1,
+          size: 10,
+        });
+
+        // Ensure we're handling the response data structure correctly
+        if (response.data?.data) {
+          // Check if data is an array
+          const promotionsData = Array.isArray(response.data.data)
+            ? response.data.data
+            : Array.isArray(response.data.data[0])
+            ? response.data.data[0]
+            : [];
+
+          setPromotions(promotionsData);
+        } else {
+          setPromotions([]);
+        }
+      } catch (error) {
+        console.error("Error fetching promotions:", error);
+        setPromotionError("Failed to load promotions");
+        toast({
+          title: "Error",
+          description: "Failed to load promotions",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingPromotions(false);
+      }
+    };
+
+    fetchPromotions();
+  }, [toast]);
+
+  const handleGenerateChildrenVCard = async (data: any) => {
+    try {
+      setIsLoading(true);
+
+      const generateData = {
+        packageItemId: data.packageItemId,
+        quantity: data.quantity,
+      };
+
+      // Gọi API để generate children VCards
+      const response = await PackageItemServices.generatePackageItemForChild(
+        generateData.quantity
+      );
+
+      if (response.status === 201) {
+        toast({
+          title: "Success",
+          description: `Successfully generated ${data.quantity} children VCards`,
+        });
+        setIsChildrenVCardDialogOpen(false);
+        childrenVCardForm.reset();
+
+        // Tùy chọn: refresh page hoặc cập nhật UI
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Error generating children VCards:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate children VCards",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const handleChargeMoney = async (data: {
     packageItemId: string;
     chargeAmount: number;
@@ -74,11 +210,24 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   }) => {
     try {
       setIsLoading(true);
+      // Đảm bảo chargeAmount là số từ giá trị amount đã nhập
+      const chargeAmount = parseInt(amount) || 0;
+
+      // Kiểm tra số tiền hợp lệ
+      if (chargeAmount <= 0) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid amount",
+          variant: "destructive",
+        });
+        return;
+      }
       const response = await PackageItemServices.chargeMoney({
         packageItemId: params.id,
         chargeAmount: data.chargeAmount,
         cccdPassport: data.cccdpassport,
         paymentType: data.paymentType,
+        promoCode: "no_promotion",
       });
 
       if (response.status === 200) {
@@ -184,11 +333,12 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         return null;
     }
   };
+
   const handleConfirmPayment = async () => {
     if (!pendingInvoiceId) {
       toast({
-        title: "Lỗi",
-        description: "Không có hóa đơn chờ xác nhận",
+        title: "Error",
+        description: "No pending invoice ID found. Please try again later.",
         variant: "destructive",
       });
       return;
@@ -201,15 +351,11 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         transactionChargeId: localStorage.getItem("transactionChargeId") || "",
         transactionId: localStorage.getItem("transactionId") || "",
       };
-
-      console.log("Đang xác nhận đơn hàng với dữ liệu:", confirmData);
       const result = await confirmOrderForCharge(confirmData);
-      console.log("Kết quả xác nhận:", result);
-
       if (result.statusCode === 200 || result.statusCode === "200") {
         toast({
-          title: "Thanh toán thành công",
-          description: "Đơn hàng đã được xác nhận",
+          title: "Payment Confirmed",
+          description: "Payment confirmed successfully",
         });
         setShouldShowAlertDialog(false);
         setIsProcessingPopupOpen(false);
@@ -218,20 +364,18 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           window.location.reload();
         }, 4000);
       } else {
-        throw new Error(
-          result.messageResponse || "Không thể xác nhận đơn hàng"
-        );
+        throw new Error(result.messageResponse || "Failed to confirm payment");
       }
     } catch (error) {
-      console.error("Lỗi khi xác nhận đơn hàng:", error);
-      let errorMessage = "Có lỗi xảy ra khi xác nhận đơn hàng";
+      console.error("Error confirming payment:", error);
+      let errorMessage = "An unknown error occurred";
       if (error instanceof Error) {
         errorMessage = error.message;
       } else if (typeof error === "object" && error !== null) {
         errorMessage = JSON.stringify(error);
       }
       toast({
-        title: "Lỗi xác nhận",
+        title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
@@ -252,11 +396,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       email: "",
       status: 0,
       imageUrl: "",
-      etagType: {
-        name: "",
-        bonusRate: 0,
-        amount: 0,
-      },
+      isAdult: true,
+
       wallet: {
         balance: 0,
         balanceHistory: 0,
@@ -289,18 +430,14 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     date.setHours(date.getHours());
-
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
-
     let hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
-
     hours = hours % 12;
     hours = hours ? hours : 12;
-
     return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
   };
   useEffect(() => {
@@ -310,15 +447,18 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         setIsLoading(false);
         return;
       }
-
       try {
         setIsLoading(true);
-        const response = await PackageItemServices.getPackageItemById(
-          params.id
-        );
+        const response = await PackageItemServices.getPackageItemById({
+          id: params.id,
+        });
         const packageitemData = response.data?.data;
         console.log(packageitemData, "packageitemData");
         setPackageItem(packageitemData);
+        localStorage.setItem("packageItemId", packageitemData.id);
+        localStorage.setItem("packageIdCurrent", packageitemData.packageId);
+        localStorage.setItem("startDateCustomer", packageitemData.startDate);
+        localStorage.setItem("endDateCustomer", packageitemData.endDate);
         if (!packageitemData) {
           throw new Error("No etag data received");
         }
@@ -365,17 +505,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
-
-  const getStatusString = (status: number) => {
-    switch (status) {
-      case 0:
-        return "Inactive";
-      case 1:
-        return "Active";
-      default:
-        return "Block";
-    }
-  };
   const handleActivateEtag = async () => {
     if (!packageItem) return;
 
@@ -430,43 +559,65 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     form.reset();
   };
 
-  // const validImageUrl =
-  //   packageItem.imageUrl && packageItem.imageUrl.startsWith("http")
-  //     ? packageItem.imageUrl
-  //     : "/default-image.png";
   return (
     <>
       <BackButton text="Back To Etag List" link="/user/package-items" />
-      <h3 className="text-2xl mb-4">Etag Detail</h3>
+      <h3 className="text-2xl mb-4">VCard Detail</h3>
 
       <Form {...form}>
         <form className="space-y-4">
           <div className="relative w-full h-48">
-            {/* <Image
-              src={validImageUrl}
+            <Image
+              src={packageItem?.imageUrl ?? ""}
               alt={"Image"}
               layout="fill"
               objectFit="cover"
               className="rounded-lg justify-center items-center"
-            /> */}
+            />
           </div>
 
           <Card className="w-full max-w-5xl mx-auto">
             <CardHeader className="pb-2">
-              <CardTitle>Thông tin ETag</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle>VCard Detail</CardTitle>
+                <div>
+                  {" "}
+                  {packageItem &&
+                    packageItem.status === "Active" &&
+                    packageItem.isAdult === true && (
+                      <Button
+                        type="button"
+                        onClick={() => setIsChildrenVCardDialogOpen(true)}
+                        variant="outline"
+                      >
+                        Generate Children VCard
+                      </Button>
+                    )}
+                  {packageItem && packageItem.status === "Active" && (
+                    <Button
+                      type="button"
+                      onClick={() => setIsUpdateRFIDDialogOpen(true)}
+                      variant="outline"
+                      className="ml-2"
+                    >
+                      Update RFID
+                    </Button>
+                  )}
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="max-w-4xl mx-auto pl-20 space-y-12">
                 {/* Personal Details */}
                 <div className="space-y-4 ">
                   <h4 className="text-lg font-semibold mb-2 mt-10">
-                    Thông tin cá nhân
+                    Customer Information
                   </h4>
                   <div className="space-y-2 mr-14">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center items-center ">
                       <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12 ">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Họ tên :
+                          FullName
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -477,18 +628,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormControl>
                       </FormItem>
 
-                      {/* <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Etag Code :
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("etagCode")}
-                            readOnly
-                          />
-                        </FormControl>
-                      </FormItem> */}
                       <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           Email:
@@ -506,7 +645,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Số điện thoại :
+                          Phone Number:
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -532,27 +671,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {/* <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Ngày sinh:
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("birthday")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem> */}
-
                       <FormField
                         control={form.control}
                         name="gender"
                         render={({ field }) => (
                           <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1  md:w-10/12">
                             <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                              Giới tính:
+                              Gender
                             </FormLabel>
                             <Select
                               onValueChange={(value) => field.onChange(value)}
@@ -563,9 +688,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                                 <SelectValue placeholder="Select gender" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Male">Nam</SelectItem>
-                                <SelectItem value="Female">Nữ</SelectItem>
-                                <SelectItem value="Other">Khác</SelectItem>
+                                <SelectItem value="Male">Male</SelectItem>
+                                <SelectItem value="Female">Female</SelectItem>
+                                <SelectItem value="Other">Other</SelectItem>
                               </SelectContent>
                             </Select>
                           </FormItem>
@@ -575,55 +700,39 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-lg font-semibold mb-2">Thời hạn thẻ</h4>
+                  <h4 className="text-lg font-semibold mb-2">
+                    Duration Information
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Ngày bắt đầu:
+                        Start Date:
                       </FormLabel>
-                      {isEditing ? (
-                        <FormControl>
-                          <Input
-                            type="datetime-local"
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("startDate")}
-                          />
-                        </FormControl>
-                      ) : (
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            value={formatDateTimeForDisplay(
-                              form.getValues("startDate")
-                            )}
-                            readOnly
-                          />
-                        </FormControl>
-                      )}
+
+                      <FormControl>
+                        <Input
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          value={formatDateTimeForDisplay(
+                            form.getValues("startDate")
+                          )}
+                          readOnly
+                        />
+                      </FormControl>
                     </FormItem>
                     <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Ngày kết thúc:
+                        End Date:
                       </FormLabel>
-                      {isEditing ? (
-                        <FormControl>
-                          <Input
-                            type="datetime-local"
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("endDate")}
-                          />
-                        </FormControl>
-                      ) : (
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            value={formatDateTimeForDisplay(
-                              form.getValues("endDate")
-                            )}
-                            readOnly
-                          />
-                        </FormControl>
-                      )}
+
+                      <FormControl>
+                        <Input
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          value={formatDateTimeForDisplay(
+                            form.getValues("endDate")
+                          )}
+                          readOnly
+                        />
+                      </FormControl>
                     </FormItem>
                     <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
@@ -642,11 +751,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                 </div>
                 {/* Wallet Information */}
                 <div>
-                  <h4 className="text-lg font-semibold mb-2">Thông tin Ví</h4>
+                  <h4 className="text-lg font-semibold mb-2">
+                    Wallet Information
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Số dư:
+                        Balance
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -657,9 +768,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormControl>
                     </FormItem>
 
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12 ">
+                    <FormItem className="grid grid-cols-[150px_1fr] items-center gap-1 md:w-8/12 ">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Lịch sử số dư:
+                        Balance History:
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -674,96 +785,44 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
               </div>
             </CardContent>
           </Card>
-          <Dialog
-            open={isPopupOpen}
-            onOpenChange={(open) => {
-              setIsPopupOpen(open);
-              if (!open) {
-                setShouldShowAlertDialog(false);
-                formCharge.reset();
-              }
-            }}
-          >
-            <DialogTrigger asChild>
-              {packageItem && packageItem.status === "Active" && (
-                <div className="flex justify-end mt-4">
-                  <Button type="button" onClick={() => setIsPopupOpen(true)}>
-                    Nạp Tiền
-                  </Button>
-                </div>
+          <UpdateRFIDAlertDialog
+            isOpen={isUpdateRFIDDialogOpen}
+            onOpenChange={setIsUpdateRFIDDialogOpen}
+            onConfirm={handleUpdateRFID}
+            isLoading={isLoading}
+            packageItem={packageItem}
+          />
+          <GenerateChildrenVCardDialog
+            isOpen={isChildrenVCardDialogOpen}
+            onOpenChange={setIsChildrenVCardDialogOpen}
+            form={childrenVCardForm}
+            onSubmit={handleGenerateChildrenVCard}
+            isLoading={isLoading}
+          />
+          <div className="flex justify-end mt-4">
+            {packageItem &&
+              packageItem.status === "Active" &&
+              packageItem.wallet.walletType.name === "ServiceWallet" && (
+                <Button type="button" onClick={() => setIsPopupOpen(true)}>
+                  Charge Money
+                </Button>
               )}
-            </DialogTrigger>
-            <DialogContent className="w-[600px] h-[500px] max-w-2xl">
-              <DialogHeader>
-                <DialogTitle className="font-bold text-center">
-                  Nạp Tiền
-                </DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  formCharge.handleSubmit(handleChargeMoney)(e);
-                }}
-              >
-                {/* Grid layout with labels aligned to the left */}
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6 p-6 items-center">
-                  <label className="font-medium">Số Tiền (đ)</label>
-                  <Input
-                    type="number"
-                    {...formCharge.register("chargeAmount")}
-                    placeholder="Enter amount"
-                    required
-                  />
+          </div>
 
-                  <label className="font-medium">CCCD</label>
-                  <Input
-                    type="text"
-                    {...formCharge.register("cccdpassport")}
-                    readOnly
-                  />
+          <ChargeMoneyDialog
+            isOpen={isPopupOpen}
+            onOpenChange={setIsPopupOpen}
+            form={formCharge}
+            onSubmit={handleChargeMoney}
+            amount={amount}
+            onAmountChange={handleAmountChange}
+            formatAmount={formatAmount}
+            promotions={promotions}
+            isLoadingPromotions={isLoadingPromotions}
+          />
 
-                  <label className="font-medium">Phương thức thanh toán</label>
-                  <Select
-                    defaultValue={formCharge.getValues("paymentType")}
-                    onValueChange={(value) =>
-                      formCharge.setValue("paymentType", value)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Payment Type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Cash">Tiền mặt</SelectItem>
-                      <SelectItem value="Momo">MoMo</SelectItem>
-                      <SelectItem value="VnPay">VnPay</SelectItem>
-                      <SelectItem value="PayOS">PayOs</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Submit button aligned to the right */}
-                <div className="flex justify-end mt-4 pr-6">
-                  <Button type="submit">Submit</Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setIsPopupOpen(false);
-                      formCharge.reset();
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-
-              {/* Cancel button aligned with Submit button */}
-              <div className="flex justify-end mt-2 pr-6 space-x-2"></div>
-            </DialogContent>
-          </Dialog>
-
-          <AlertDialog
-            open={isProcessingPopupOpen && shouldShowAlertDialog}
+          <ProcessingDialog
+            isOpen={isProcessingPopupOpen && shouldShowAlertDialog}
             onOpenChange={(open) => {
               setIsProcessingPopupOpen(open);
               if (!open) {
@@ -774,32 +833,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                 setIsPopupOpen(false);
               }
             }}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Đơn hàng đang chờ xác nhận</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Vui lòng xác nhận khi đã nhận được tiền mặt.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel
-                  onClick={() => {
-                    setIsProcessingPopupOpen(false);
-                    setPendingInvoiceId(null);
-                  }}
-                >
-                  Hủy
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleConfirmPayment}
-                  disabled={isConfirming || !pendingInvoiceId}
-                >
-                  {isConfirming ? "Đang xác nhận..." : "Xác nhận đã thanh toán"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+            onConfirm={handleConfirmPayment}
+            isConfirming={isConfirming}
+            pendingInvoiceId={pendingInvoiceId}
+          />
         </form>
       </Form>
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">

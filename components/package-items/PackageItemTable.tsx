@@ -34,7 +34,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
-
+import { ComboboxCustom } from "../ComboboxCustomize/ComboboxCustom";
+import LostPackageItemDialog from "@/lib/dialog/lostDialog";
+import GenerateNewCardDialog from "@/lib/dialog/generateLost";
+import PackageItemAction from "../popover/PackageAction";
 interface PackageItem {
   id: string;
   packageId: string;
@@ -57,12 +60,8 @@ interface PackageItemTableProps {
   limit?: number;
   title?: string;
 }
-
 type SortField = "crDate" | "updateDate" | "status";
 type SortOrder = "asc" | "desc";
-
-type StatusTab = "all" | "Active" | "Inactive" | "Expired" | "Block";
-
 const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
   const [packageItems, setPackageItems] = useState<PackageItem[]>([]);
   const [filteredPackageItems, setFilteredPackageItems] = useState<
@@ -72,38 +71,78 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("crDate");
-
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(50);
-  const [activeTab, setActiveTab] = useState<StatusTab>("all");
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deletingPackageItemId, setDeletingPackageItemId] = useState<
     string | null
   >(null);
   const router = useRouter();
-
-  const statusTabs = [
-    { value: "all", label: "All", count: 0 },
-    { value: "Active", label: "Active", count: 0 },
-    { value: "Inactive", label: "Inactive", count: 0 },
-    { value: "Expired", label: "Expired", count: 0 },
-    { value: "Block", label: "Blocked", count: 0 },
+  const [isLostDialogOpen, setIsLostDialogOpen] = useState(false);
+  const [selectedPackageItem, setSelectedPackageItem] =
+    useState<PackageItem | null>(null);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+  const statusOptions = [
+    { value: "", label: "All" },
+    { value: "Active", label: "Active" },
+    { value: "Inactive", label: "Inactive" },
+    { value: "Expired", label: "Expired" },
+    { value: "Blocked", label: "Blocked" },
   ];
-
-  const getStatusCounts = (items: PackageItem[]) => {
-    return statusTabs.map((tab) => ({
-      ...tab,
-      count:
-        tab.value === "all"
-          ? items.length
-          : items.filter((item) => item.status === tab.value).length,
-    }));
+  const isValidUUID = (str: string) => {
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
   };
 
-  const [tabsWithCounts, setTabsWithCounts] = useState(statusTabs);
+  const debounce = (func: Function, wait: number) => {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+  const handleSearchChange = async (value: string) => {
+    setSearchTerm(value);
 
+    try {
+      // Gọi API để lấy thông tin package item dựa trên ID
+      const responseById = await PackageItemServices.getPackageItemById({
+        id: value.trim(),
+      });
+
+      // Nếu có dữ liệu trả về, chuyển hướng đến trang chi tiết của package item
+      if (responseById.data) {
+        router.push(`/user/package-items/detail/${value.trim()}`);
+        return;
+      }
+    } catch (error) {
+      console.log("ID không tồn tại, tiếp tục tìm kiếm bằng RFID");
+    }
+
+    try {
+      const responseByRfId = await PackageItemServices.getPackageItemById({
+        rfId: value.trim(),
+      });
+      if (responseByRfId.data) {
+        router.push(
+          `/user/package-items/detail/${responseByRfId.data.data.id}`
+        );
+        return;
+      }
+    } catch (error) {
+      console.log("RFID không tồn tại, tiếp tục tìm kiếm thông thường");
+    }
+  };
+  const debouncedHandleSearch = debounce(handleSearchChange, 300);
   const fetchPackageItems = async (page: number) => {
     setIsLoading(true);
     try {
@@ -114,7 +153,6 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       const items = response.data.data;
       setPackageItems(items);
       setFilteredPackageItems(items);
-      setTabsWithCounts(getStatusCounts(items));
       setTotalPages(response.data.metaData.totalPage);
     } catch (err) {
       setError(
@@ -131,7 +169,7 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
 
   useEffect(() => {
     const filtered = packageItems.filter((item) => {
-      const matchesStatus = activeTab === "all" || item.status === activeTab;
+      const matchesStatus = !selectedStatus || item.status === selectedStatus;
       const matchesSearch =
         !searchTerm ||
         item.cccdpassport?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -153,7 +191,7 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
     });
 
     setFilteredPackageItems(sorted);
-  }, [searchTerm, activeTab, packageItems, sortField, sortOrder]);
+  }, [searchTerm, selectedStatus, packageItems, sortField, sortOrder]);
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
@@ -163,30 +201,6 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       setSortOrder("asc");
     }
   };
-
-  const handleDeleteClick = (id: string) => {
-    setDeletingPackageItemId(id);
-    setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deletingPackageItemId) return;
-
-    try {
-      await PackageItemServices.deletePackageItemById(deletingPackageItemId);
-      await fetchPackageItems(currentPage);
-      setIsDeleteDialogOpen(false);
-      setDeletingPackageItemId(null);
-    } catch (err) {
-      setError("Failed to delete package item. Please try again.");
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setIsDeleteDialogOpen(false);
-    setDeletingPackageItemId(null);
-  };
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-US", {
@@ -204,11 +218,11 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       case "Active":
         return "bg-green-500";
       case "Inactive":
-        return "bg-gray-500";
-      case "Expired":
         return "bg-yellow-500";
-      case "Block":
+      case "Expired":
         return "bg-red-500";
+      case "Blocked":
+        return "bg-gray-500";
       default:
         return "bg-gray-500";
     }
@@ -326,7 +340,8 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       <h3 className="text-2xl mb-4 font-semibold">
         {title || "Package Items"}
       </h3>
-      <div className="relative flex items-center space-x-4 mb-4">
+
+      <div className="flex items-center space-x-4 mb-4">
         <div className="relative flex-1 md:max-w-xs" style={{ width: "300px" }}>
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -334,120 +349,102 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
           />
           <input
             type="text"
-            placeholder="Search by CCCD, Name, or Phone"
+            placeholder="Search by ID, CCCD, Name, or Phone"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => debouncedHandleSearch(e.target.value)}
             className="pl-10 pr-4 py-2 w-full border rounded-md"
           />
         </div>
+
+        <ComboboxCustom
+          open={statusOpen}
+          setOpen={setStatusOpen}
+          value={selectedStatus}
+          setValue={setSelectedStatus}
+          filterList={statusOptions}
+          placeholder="Select Status"
+        />
       </div>
 
-      <Tabs
-        defaultValue="all"
-        className="w-full"
-        onValueChange={(value) => setActiveTab(value as StatusTab)}
-      >
-        <TabsList className="mb-4 w-full h-12 bg-gray-100 p-1 rounded-lg grid grid-cols-5 gap-1">
-          {tabsWithCounts.map((tab) => (
-            <TabsTrigger key={tab.value} value={tab.value} className="w-full">
-              {tab.label}
-              <span className={`ml-2 px-2 py-0.5 rounded-full bg-gray-200`}>
-                {tab.count}
-              </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
 
-        {error && <p className="text-red-500 mt-2">{error}</p>}
+      <Table>
+        <TableCaption>A list of Package Items</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>No</TableHead>
+            <TableHead>CCCD/Passport</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Phone Number</TableHead>
+            <TableHead>Is Adult</TableHead>
+            <TableHead>
+              <SortButton field="crDate" label="Created Date" />
+            </TableHead>
 
-        <Table>
-          <TableCaption>A list of Package Items</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>No</TableHead>
-              <TableHead>CCCD/Passport</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Phone Number</TableHead>
-              <TableHead>
-                <SortButton field="crDate" label="Created Date" />
-              </TableHead>
-              <TableHead>End Date</TableHead>
-              <TableHead>
-                <SortButton field="status" label="Status" />
-              </TableHead>
-              <TableHead>Action</TableHead>
+            <TableHead>
+              <SortButton field="status" label="Status" />
+            </TableHead>
+            <TableHead>Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredPackageItems.map((item, index) => (
+            <TableRow key={item.id}>
+              <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
+              <TableCell>{item.cccdpassport || "-"}</TableCell>
+              <TableCell>{item.name || "-"}</TableCell>
+              <TableCell>{item.phoneNumber || "-"}</TableCell>
+              <TableCell>{item.isAdult ? "Adult" : "Child"}</TableCell>
+              <TableCell>{formatDate(item.crDate)}</TableCell>
+
+              <TableCell>
+                <span
+                  className={`inline-block text-white px-2 py-1 rounded ${getStatusColor(
+                    item.status
+                  )}`}
+                >
+                  {item.status}
+                </span>
+              </TableCell>
+              <TableCell>
+                <PackageItemAction
+                  packageItem={item}
+                  onLost={(item) => {
+                    setSelectedPackageItem(item);
+                    setIsLostDialogOpen(true);
+                  }}
+                  onGenerateNewCard={(item) => {
+                    setSelectedPackageItem(item);
+                    setIsGenerateDialogOpen(true);
+                  }}
+                />
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredPackageItems.map((item, index) => (
-              <TableRow key={item.id}>
-                <TableCell>
-                  {(currentPage - 1) * pageSize + index + 1}
-                </TableCell>
-                <TableCell>{item.cccdpassport || "-"}</TableCell>
-                <TableCell>{item.name || "-"}</TableCell>
-                <TableCell>{item.phoneNumber || "-"}</TableCell>
-                <TableCell>{formatDate(item.crDate)}</TableCell>
-                <TableCell>{formatDate(item.endDate ?? "")}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-block text-white px-2 py-1 rounded ${getStatusColor(
-                      item.status
-                    )}`}
-                  >
-                    {item.status}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-2">
-                    <Link href={`/user/package-items/detail/${item.id}`}>
-                      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs">
-                        Details
-                      </button>
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteClick(item.id)}
-                      className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <div className="mt-4">
-          <PackageItemPagination />
-        </div>
-      </Tabs>
-
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              package item.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleDeleteCancel}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-500 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          ))}
+        </TableBody>
+      </Table>
+      <div className="mt-4">
+        <PackageItemPagination />
+      </div>
+      <LostPackageItemDialog
+        isOpen={isLostDialogOpen}
+        onClose={() => {
+          setIsLostDialogOpen(false);
+          setSelectedPackageItem(null);
+        }}
+        packageItem={selectedPackageItem}
+        onSuccess={() => {
+          fetchPackageItems(currentPage);
+        }}
+      />
+      <GenerateNewCardDialog
+        isOpen={isGenerateDialogOpen}
+        onClose={() => setIsGenerateDialogOpen(false)}
+        packageItem={selectedPackageItem}
+        onSuccess={() => {
+          fetchPackageItems(currentPage);
+        }}
+      />
     </div>
   );
 };
