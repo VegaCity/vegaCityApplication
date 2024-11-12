@@ -190,7 +190,7 @@ const ChangePasswordForm = () => {
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Đang xử lý..." : "Đổi mật khẩu"}
+            {loading ? "Processing..." : "Change Password"}
           </Button>
         </form>
       </CardContent>
