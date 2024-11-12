@@ -22,6 +22,9 @@ import {
   Wallet,
   User,
   Sparkle,
+  Tags,
+  LucideProps,
+  UserCheck2,
 } from "lucide-react";
 
 import {
@@ -80,7 +83,23 @@ export function AppSidebar() {
       : `/user/${routeName}`;
   };
 
-  const menuItems = [
+  interface MenuItems {
+    name: string;
+    icon: React.ExoticComponent<
+      Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+    >;
+    roles: string[];
+    href?: string;
+    child?: {
+      name: string;
+      icon: React.ExoticComponent<
+        Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+      >;
+      href: string;
+    }[];
+  }
+
+  const menuItems: MenuItems[] = [
     {
       name: "Dashboard",
       icon: LayoutDashboard,
@@ -97,9 +116,25 @@ export function AppSidebar() {
       name: "Packages",
       icon: Package,
       href: navigatePage("packages"),
-      roles: ["Admin", "CashierWeb"],
+      roles: ["CashierWeb"],
     },
-
+    {
+      name: "Manage Packages",
+      icon: Package,
+      roles: ["Admin"],
+      child: [
+        {
+          name: "Packages",
+          icon: Package,
+          href: navigatePage("packages"),
+        },
+        {
+          name: "Package Types",
+          icon: Tags,
+          href: navigatePage("packageTypes"),
+        },
+      ],
+    },
     {
       name: "Orders",
       icon: Tag,
@@ -185,6 +220,11 @@ export function AppSidebar() {
           icon: Wallet,
           href: navigatePage("walletTypes"),
         },
+        {
+          name: "User Session",
+          icon: UserCheck2,
+          href: navigatePage("userSessions"),
+        },
       ],
     },
     {
@@ -266,16 +306,18 @@ export function AppSidebar() {
                         </CollapsibleTrigger>
                         <CollapsibleContent>
                           <SidebarMenuSub>
-                            {item.child?.map((itemChild, childIndex) => (
-                              <SidebarMenuSubItem key={childIndex}>
-                                <Link href={itemChild.href}>
-                                  <div className="flex items-center gap-3">
-                                    <itemChild.icon size={15} />
-                                    {itemChild.name}
-                                  </div>
-                                </Link>
-                              </SidebarMenuSubItem>
-                            ))}
+                            {Array.isArray(item.child) &&
+                              item.child.length > 0 &&
+                              item.child.map((itemChild, childIndex) => (
+                                <SidebarMenuSubItem key={childIndex}>
+                                  <Link href={itemChild?.href || ""}>
+                                    <div className="flex items-center gap-3">
+                                      <itemChild.icon size={15} />
+                                      {itemChild?.name}
+                                    </div>
+                                  </Link>
+                                </SidebarMenuSubItem>
+                              ))}
                           </SidebarMenuSub>
                         </CollapsibleContent>
                       </SidebarMenuItem>

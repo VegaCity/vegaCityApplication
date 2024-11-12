@@ -1,10 +1,10 @@
 import { API } from "@/components/services/api";
-import { Users } from "@/types/user";
+import { Users } from "@/types/user/user";
 import {
   UserAccountPostPatch,
   UserAccountPost,
   UserApprove,
-} from "@/types/userAccount";
+} from "@/types/user/userAccount";
 
 interface UserPageSize {
   page?: number;
@@ -30,6 +30,9 @@ export const UserServices = {
   },
   deleteUserById(userId: string) {
     return API.delete(`/user/${userId}`);
+  },
+  userReassignEmail(userId: string, email: string) {
+    return API.post(`/user/${userId}/re-assign-email`, email);
   },
   approveUser(userId: string, userApproveData: UserApprove) {
     return API.post(`/user/${userId}/approve-user`, userApproveData);

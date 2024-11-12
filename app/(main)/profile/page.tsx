@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Loader2, Camera, X } from "lucide-react";
-import { Users, ApiResponse } from "@/types/user";
-import { UserAccountPost } from "@/types/userAccount";
+import { Users, ApiResponse } from "@/types/user/user";
+import { UserAccountPost } from "@/types/user/userAccount";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 

@@ -79,7 +79,7 @@ const PackageCreatePage = () => {
           PackageTypeServices.getPackageTypes({ page: 1, size: 10 }),
         ]);
 
-        // Kiểm tra và lưu danh sách ETag Types (bao gồm cả id và name)
+        // Check isArray and set
         const walletTypes = Array.isArray(walletTypeRes.data.data)
           ? walletTypeRes.data.data
           : [];
@@ -414,10 +414,11 @@ const PackageCreatePage = () => {
                 </FormItem>
               )}
             />
-
-            <Button type="submit" className="w-full">
-              Create Package
-            </Button>
+            <div className="flex justify-end items-end w-full mt-4">
+              <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+                Create Package
+              </Button>
+            </div>
           </form>
         </Form>
       )}

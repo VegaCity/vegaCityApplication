@@ -29,7 +29,8 @@ import { Minus } from "lucide-react";
 import { splitDateTime } from "@/lib/utils/dateTimeUtils";
 import { cn } from "@/lib/utils";
 import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
-import { handleUserStatusFromBe } from "@/types/userAccount";
+import { useRouter } from "next/navigation";
+import { handleUserStatusFromBe } from "@/types/user/userAccount";
 import { Badge } from "@/components/ui/badge";
 
 interface PromotionTableProps {
@@ -42,6 +43,7 @@ interface GetPromotion extends Promotion {
 }
 
 const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
+  const router = useRouter();
   const [promotionList, setPromotionList] = useState<GetPromotion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -138,16 +140,32 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
           </TableHeader>
           <TableBody>
             {filteredPromotions.map((promo, i) => (
-              <TableRow key={promo.id}>
+              <TableRow
+                onClick={() =>
+                  router.push(`/admin/promotions/detail/${promo.id}`)
+                }
+                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
+                key={promo.id}
+              >
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{promo.name}</TableCell>
-                <TableCell>{promo.promotionCode}</TableCell>
+                <TableCell>
+                  <Badge className="bg-slate-500 text-white">
+                    {promo.promotionCode}
+                  </Badge>
+                </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {promo.description ? promo.description : <Minus />}
+                  {promo.description ? (
+                    <p className="text-slate-500">{promo.description}</p>
+                  ) : (
+                    <Minus />
+                  )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {promo.maxDiscount ? (
-                    formatCurrency(promo.maxDiscount)
+                    <p className="font-bold">
+                      {formatCurrency(promo.maxDiscount)}
+                    </p>
                   ) : (
                     <Minus />
                   )}
@@ -157,14 +175,18 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {promo.discountPercent !== null ? (
-                    `${promo.discountPercent.toFixed(2)}%`
+                    <p className="font-bold">
+                      {`${promo.discountPercent.toFixed(2)}%`}
+                    </p>
                   ) : (
                     <Minus />
                   )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {promo.requireAmount !== null ? (
-                    promo.requireAmount
+                    <p className="font-bold">
+                      {formatCurrency(promo.requireAmount)}
+                    </p>
                   ) : (
                     <Minus />
                   )}
@@ -180,7 +202,9 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 <TableCell className="hidden md:table-cell">
                   {splitDateTime({ type: "date", dateTime: promo.endDate })}
                 </TableCell>
-                <TableCell>
+                <TableCell
+                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                >
                   <PopoverActionTable
                     item={promo}
                     editLink={`/admin/promotions/edit/${promo.id}`}

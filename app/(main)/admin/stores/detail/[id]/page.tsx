@@ -19,7 +19,7 @@ const StoreDetailPage = ({ params }: StoreDetailProps) => {
       <div className="flex justify-between items-center mb-4">
         <BackButton text="Go Back" link="/admin/stores" />
       </div>
-      {/* <h1>StoreId: {storeId}</h1> */}
+      {/* <h1>storeId: {storeId}</h1> */}
       <StoreDetail params={{ id: storeId }} />
     </div>
   );

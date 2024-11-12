@@ -31,7 +31,7 @@ import {
   handleGenderToBe,
   handleGenderToFe,
   UserAccount,
-} from "@/types/userAccount";
+} from "@/types/user/userAccount";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   getDownloadURL,
@@ -203,7 +203,12 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   return (

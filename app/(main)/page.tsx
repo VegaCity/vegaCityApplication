@@ -89,7 +89,7 @@ const Home = () => {
           icon={<Store className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Total E-Tags"
+          title="Total V-Cards"
           count={formatNumber(totals.totalEtags)}
           icon={<Tag className="text-slate-500" size={72} />}
         />

@@ -8,11 +8,18 @@ import { Loader } from "@/components/loader/Loader";
 import { useToast } from "@/components/ui/use-toast";
 import { StoreServices } from "@/components/services/Store/storeServices";
 import { useRouter } from "next/navigation";
-import { parseMenuJson, Store } from "@/types/store/store";
+import { Store } from "@/types/store/store";
 import { cn } from "@/lib/utils";
 
 interface StoreDetailProps {
   params: { id: string };
+}
+
+interface StoreMenu {
+  Name: string;
+  ImgUrl: string;
+  Price: number;
+  ProductCategory: string;
 }
 
 const StoreDetail = ({ params }: StoreDetailProps) => {
@@ -43,11 +50,13 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
       try {
         const response = await StoreServices.getStoreById(storeId);
         setStoreDetail(response.data.data.store);
+        console.log(response.data.data, "storeeee");
       } catch (err) {
         toast({
           title: "Error",
           description: "Failed to load store details",
         });
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
@@ -67,9 +76,9 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
             {storeDetail.name}
           </CardTitle>
           <Badge
-            className={cn(handleBadgeStatusColor(storeDetail.status), "w-14")}
+            className={cn(handleBadgeStatusColor(storeDetail.status), "w-auto")}
           >
-            {storeDetail.deflag ? "Inactive" : "Active"}
+            {storeDetail.status ? "Inactive" : "Active"}
           </Badge>
         </CardHeader>
         <CardContent>
@@ -154,15 +163,17 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
                 {storeDetail.menus.map((menu, index) => (
                   <TableRow key={index}>
                     <TableCell>Report {index + 1}</TableCell>
-                    {parseMenuJson(menu.menuJson).map((storeMenu, index) => (
-                      <TableRow key={index}>
-                        <TableCell>Item: {index + 1}</TableCell>
-                        <TableCell>{storeMenu.Name}</TableCell>
-                        <TableCell>{storeMenu.ImgUrl}</TableCell>
-                        <TableCell>{storeMenu.Price}</TableCell>
-                        <TableCell>{storeMenu.ProductCategory}</TableCell>
-                      </TableRow>
-                    ))}
+                    {(JSON.parse(menu.menuJson) as StoreMenu[]).map(
+                      (storeMenu, index) => (
+                        <TableRow key={index}>
+                          <TableCell>Item: {index + 1}</TableCell>
+                          <TableCell>{storeMenu.Name}</TableCell>
+                          <TableCell>{storeMenu.ImgUrl}</TableCell>
+                          <TableCell>{storeMenu.Price}</TableCell>
+                          <TableCell>{storeMenu.ProductCategory}</TableCell>
+                        </TableRow>
+                      )
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -210,7 +221,8 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
           <CardTitle>Dispute Reports</CardTitle>
         </CardHeader>
         <CardContent>
-          {storeDetail.disputeReports?.length > 0 ? (
+          {storeDetail.disputeReports &&
+          storeDetail.disputeReports?.length > 0 ? (
             <Table>
               <TableBody>
                 {storeDetail.disputeReports.map((report, index) => (

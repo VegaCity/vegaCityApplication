@@ -35,23 +35,30 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
       <>
         {/* <Navbar /> */}
         <div className="flex w-full justify-center">
+          {/* Sidebar on the left */}
           <div className="hidden xl:block h-screen w-18">
             {/* <Sidebar /> */}
             <AppSidebar />
           </div>
-          <div className="p-5 w-full md:block">
+
+          {/* Main content area */}
+          <div className="p-5 w-full max-w-7xl md:block">
             <div className="fixed left-29 top-1">
               <SidebarTrigger />
             </div>
+
+            {/* Breadcrumb */}
             <div className="my-4">
               <Breadcrumb items={breadcrumbItems} />
             </div>
-            <div className="p-5 w-auto md:block">
-              <div className="overflow-y-auto">
-                <>{children}</>
-              </div>
+
+            {/* Centered children content */}
+            <div className="flex p-5 items-center justify-center">
+              <div className="w-full max-w-7xl px-4">{children}</div>{" "}
+              {/* Adjust the max-width as per your preference */}
             </div>
           </div>
+
           {/* <Toaster /> */}
         </div>
       </>

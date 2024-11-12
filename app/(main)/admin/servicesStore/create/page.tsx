@@ -143,9 +143,11 @@ const ServiceStoreCreatePage = () => {
             )}
           />
 
-          <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Create Store's service
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button className="bg-blue-500 hover:bg-blue-700">
+              Create Store's service
+            </Button>
+          </div>
         </form>
       </Form>
     </>

@@ -1,34 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  TableCaption,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { ZoneType } from "@/types/zone/zone";
-import { ZoneServices } from "@/components/services/zoneServices";
-import { useRouter } from "next/navigation";
 import { GetWalletType } from "@/types/walletType/walletType";
-import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
-import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface WalletTypeTableProps {
   limit?: number;
@@ -123,14 +109,15 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
           </TableHeader>
           <TableBody>
             {filteredWalletTypes.map((walletType, i) => (
-              <TableRow key={walletType.id}>
+              <TableRow
+                onClick={() =>
+                  router.push(`/admin/walletTypes/detail/${walletType.id}`)
+                }
+                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
+                key={walletType.id}
+              >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell
-                  className="hover:bg-blue-300 hover:text-cyan-50 hover:underline cursor-pointer transition-colors"
-                  // onClick={() => handleZoneDetails(walletType.id)}
-                >
-                  {walletType.name}
-                </TableCell>
+                <TableCell>{walletType.name}</TableCell>
                 {/* {zns.houses.map((house) => (
                   <React.Fragment key={house.id}>
                     <TableCell className='hidden md:table-cell'>{house.id}</TableCell>
@@ -138,7 +125,9 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
                     <TableCell className='hidden md:table-cell'>{house.location}</TableCell>
                   </React.Fragment>
                 ))} */}
-                <TableCell>
+                <TableCell
+                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                >
                   <PopoverActionTable
                     item={walletType}
                     editLink={`/admin/walletTypes/edit/${walletType.id}`}

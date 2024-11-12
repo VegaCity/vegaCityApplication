@@ -77,7 +77,7 @@ export const etagFormSchema = z
       return endDate > startDate;
     },
     {
-      message: "The end date must higher thaan the begin date",
+      message: "The end date must higher than the begin date",
       path: ["etagEndDate"],
     }
   );
@@ -204,7 +204,7 @@ export const formSchema = z
       return endDate > startDate;
     },
     {
-      message: "The end date must higher thaan the begin date",
+      message: "The end date must higher than the begin date",
       path: ["endDate"],
     }
   );
@@ -391,6 +391,10 @@ export const userApproveFormSchema = z.object({
   approvalStatus: z.string().min(1, "Approve status is invalid!"),
 });
 
+export const userReAssignEmailFormSchema = z.object({
+  email: z.string().email("Your email is invalid! Please try again!"),
+});
+
 export const editPackageFormSchema = z.object({
   name: z
     .string()
@@ -429,46 +433,80 @@ export const createPackageFormSchema = z.object({
   moneyStart: z.number().min(50000, "Money start at least 50.000 VND"),
 });
 
-export const createPromotionFormSchema = z.object({
-  promotionCode: z.string().min(1, "Promotion code is required!"),
-  name: z.string().min(1, "Name is required!"),
-  description: z.string().min(1).nullable(),
-  maxDiscount: z
-    .number()
-    .max(100, "Max discount does not exceed 100%")
-    .nullable(),
-  quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
-  discountPercent: z
-    .number()
-    .max(100, "Max discount does not exceed 100%")
-    .nullable(),
-  requireAmount: z
-    .number()
-    .max(100, "Require amount does not exceed 100%")
-    .nullable(),
-  startDate: z.string().min(1, "Start Date is required!"),
-  endDate: z.string().min(1, "End Date is required"),
-});
+export const createPromotionFormSchema = z
+  .object({
+    promotionCode: z.string().min(1, "Promotion code is required!"),
+    name: z.string().min(1, "Name is required!"),
+    description: z.string().min(1).nullable(),
+    maxDiscount: z
+      .number()
+      .max(1000000000, "Max discount does not exceed 10 millions VND")
+      .nullable(),
+    quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
+    discountPercent: z
+      .number()
+      .max(100, "Max discount does not exceed 100%")
+      .nullable(),
+    requireAmount: z
+      .number()
+      .max(100, "Require amount does not exceed 100%")
+      .nullable(),
+    startDate: z
+      .string()
+      .refine(
+        (date) => new Date(date) >= new Date(),
+        "The begin date must be the following day!"
+      ),
+    endDate: z.string(),
+  })
+  .refine(
+    (data) => {
+      const endDate = new Date(data.endDate);
+      const startDate = new Date(data.startDate);
+      return endDate > startDate;
+    },
+    {
+      message: "The end date must higher than the begin date!",
+      path: ["endDate"],
+    }
+  );
 
-export const editPromotionFormSchema = z.object({
-  name: z.string().min(1, "Name is required!"),
-  description: z.string().min(1).nullable(),
-  maxDiscount: z
-    .number()
-    .max(1000000000, "Max discount does not exceed 10 millions VND")
-    .nullable(),
-  quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
-  discountPercent: z
-    .number()
-    .max(100, "Max discount does not exceed 100%")
-    .nullable(),
-  requireAmount: z
-    .number()
-    .max(1000000000, "Require amount does not exceed 10 millions VND")
-    .nullable(),
-  startDate: z.string().min(1, "Start Date is required!"),
-  endDate: z.string().min(1, "End Date is required"),
-});
+export const editPromotionFormSchema = z
+  .object({
+    name: z.string().min(1, "Name is required!"),
+    description: z.string().min(1).nullable(),
+    maxDiscount: z
+      .number()
+      .max(1000000000, "Max discount does not exceed 10 millions VND")
+      .nullable(),
+    quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
+    discountPercent: z
+      .number()
+      .max(100, "Max discount does not exceed 100%")
+      .nullable(),
+    requireAmount: z
+      .number()
+      .max(1000000000, "Require amount does not exceed 10 millions VND")
+      .nullable(),
+    startDate: z
+      .string()
+      .refine(
+        (date) => new Date(date) >= new Date(),
+        "The begin date must be today or the following day!"
+      ),
+    endDate: z.string(),
+  })
+  .refine(
+    (data) => {
+      const endDate = new Date(data.endDate);
+      const startDate = new Date(data.startDate);
+      return endDate > startDate;
+    },
+    {
+      message: "The end date must higher than the begin date!",
+      path: ["endDate"],
+    }
+  );
 
 export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
 export type CreatePromotionFormValues = z.infer<
@@ -488,6 +526,9 @@ export type ServiceStoreFormValues = z.infer<typeof serviceStoreFormSchema>;
 export type StoreFormValues = z.infer<typeof storeFormSchema>;
 export type EtagTypeFormValues = z.infer<typeof etagTypeFormSchema>;
 export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;
+export type UserReAssignEmailValues = z.infer<
+  typeof userReAssignEmailFormSchema
+>;
 
 export interface PackageItemDetailPageProps {
   params: { id: string };

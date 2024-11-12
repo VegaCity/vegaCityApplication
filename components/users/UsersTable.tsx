@@ -56,16 +56,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
+import { ReassignEmailPopover } from "@/components/users/ReassignEmailPopover";
 import { cn } from "@/lib/utils";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
-import { userApproveFormSchema, UserApproveFormValues } from "@/lib/validation";
+import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import {
+  userApproveFormSchema,
+  UserApproveFormValues,
+  userReAssignEmailFormSchema,
+  UserReAssignEmailValues,
+} from "@/lib/validation";
 import {
   handleUserStatusFromBe,
   UserAccountGet,
   UserApprove,
   UserApproveSubmit,
   UserStatus,
-} from "@/types/userAccount";
+} from "@/types/user/userAccount";
 import { Zone } from "@/types/zone/zone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretSortIcon } from "@radix-ui/react-icons";
@@ -115,6 +122,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       approvalStatus: "APPROVED",
     },
   });
+
   //get location house selection
   const [selectionZone, setSelectionZone] = useState<string>("");
 
@@ -196,21 +204,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             description: "Some errors have occurred!",
           });
         });
-    }
-  };
-
-  const handleBadgeStatusColor = (status: number): string => {
-    switch (status) {
-      case 0: // Active
-        return "bg-green-400 hover:bg-green-500";
-      case 1: // Inactive
-        return "bg-slate-400 hover:bg-slate-500";
-      case 2: // Ban
-        return "bg-red-400 hover:bg-red-500";
-      case 3: // PendingVerify
-        return "bg-blue-400 hover:bg-blue-500";
-      default:
-        return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
     }
   };
 
@@ -583,6 +576,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                 CCCD/Passport
               </TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="hidden md:table-cell">Re-assign</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -612,13 +606,13 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        {user.email}
+                        <p className="text-slate-500">{user.email}</p>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {user.phoneNumber}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        {user.address}
+                        <p className="text-slate-500">{user.address}</p>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {user.cccdPassport}
@@ -630,7 +624,12 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           {handleUserStatusFromBe(user.status)}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell onClick={(event) => event.stopPropagation()}>
+                        <ReassignEmailPopover userId={user.id} />
+                      </TableCell>
+                      <TableCell
+                        onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                      >
                         {user.status !== 3 && (
                           <PopoverActionTable
                             item={user}

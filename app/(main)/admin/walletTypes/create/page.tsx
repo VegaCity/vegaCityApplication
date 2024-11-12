@@ -82,9 +82,15 @@ const WalletCreatePage = () => {
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create Wallet"}
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700"
+              disabled={isLoading}
+            >
+              {isLoading ? "Creating..." : "Create Wallet"}
+            </Button>
+          </div>
         </form>
       </Form>
     </>

@@ -161,9 +161,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
           <TableBody>
             {stores.map((store, index) => (
               <TableRow
-                onClick={() =>
-                  router.push(`/admin/stores/storeDetail/${store.id}`)
-                }
+                onClick={() => router.push(`/admin/stores/detail/${store.id}`)}
                 className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                 key={store.id}
               >

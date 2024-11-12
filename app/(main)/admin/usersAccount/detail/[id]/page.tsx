@@ -1,26 +1,26 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
-import StoreDetail from "@/components/stores/StoreDetail";
+import UserDetail from "@/components/users/UserDetail";
 
-interface StoreDetailProps {
+interface UserDetailProps {
   params: { id: string };
 }
 
-const UserDetailPage = ({ params }: StoreDetailProps) => {
-  const { id: storeId } = params; // Assuming you're passing the house ID in the params
+const UserDetailPage = ({ params }: UserDetailProps) => {
+  const { id: userId } = params;
 
-  if (!storeId) {
+  if (!userId) {
     return <div>Loading...</div>; // Display loading state while fetching data
   }
 
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <BackButton text="Go Back" link="/admin/stores" />
+        <BackButton text="Go Back" link="/admin/usersAccount" />
       </div>
-      {/* <h1>StoreId: {storeId}</h1> */}
-      <StoreDetail params={{ id: storeId }} />
+      {/* <h1>userId: {userId}</h1> */}
+      <UserDetail params={{ id: userId }} />
     </div>
   );
 };

@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ZoneType } from "@/types/zone/zone";
+import { Zone } from "@/types/zone/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { useRouter } from "next/navigation";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
@@ -34,7 +34,7 @@ interface ZoneTableProps {
 }
 
 const ZoneTable = ({ limit, title }: ZoneTableProps) => {
-  const [zoneList, setZoneList] = useState<ZoneType[]>([]);
+  const [zoneList, setZoneList] = useState<Zone[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +75,7 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
     }
   };
 
-  const handleDeleteZone = (zone: ZoneType) => {
+  const handleDeleteZone = (zone: Zone) => {
     setDeleteLoading(true);
     if (zone.id) {
       ZoneServices.deleteZoneById(zone.id)
@@ -125,14 +125,13 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
           </TableHeader>
           <TableBody>
             {filteredZones.map((zns, i) => (
-              <TableRow key={zns.id}>
+              <TableRow
+                onClick={() => router.push(`/admin/zones/detail/${zns.id}`)}
+                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
+                key={zns.id}
+              >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell
-                  className="hover:bg-blue-300 hover:text-cyan-50 hover:underline cursor-pointer transition-colors"
-                  onClick={() => handleZoneDetails(zns.id)}
-                >
-                  {zns.name}
-                </TableCell>
+                <TableCell>{zns.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   {zns.location}
                 </TableCell>
@@ -143,7 +142,9 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
                     <TableCell className='hidden md:table-cell'>{house.location}</TableCell>
                   </React.Fragment>
                 ))} */}
-                <TableCell>
+                <TableCell
+                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                >
                   <PopoverActionTable
                     item={zns}
                     editLink={`/admin/zones/edit/${zns.id}`}

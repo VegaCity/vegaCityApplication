@@ -97,14 +97,14 @@ const AnalyticsChart = () => {
       <div className="flex flex-wrap w-full gap-4">
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle>Analytics Etag For This Year</CardTitle>
+            <CardTitle>Analytics V-Card For This Year</CardTitle>
             <CardDescription>Views Per Month</CardDescription>
           </CardHeader>
           <CardContent>
             <div style={{ width: "70%", height: 300 }}>
               <ResponsiveContainer>
                 <LineChart width={1100} height={300} data={analyticsData}>
-                  <Line type="monotone" dataKey="etagCount" stroke="#8884d8" />
+                  <Line type="monotone" dataKey="V-Card" stroke="#8884d8" />
                   <CartesianGrid stroke="#ccc" />
                   <XAxis dataKey="name" />
                   <YAxis />

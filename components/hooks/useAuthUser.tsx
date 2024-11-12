@@ -2,7 +2,7 @@
 import { AuthServices } from "@/components/services/authServices";
 import { UserServices } from "@/components/services/User/userServices";
 import { useToast } from "@/components/ui/use-toast";
-import { Users, GetUserById } from "@/types/user";
+import { Users, GetUserById } from "@/types/user/user";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 

@@ -28,7 +28,9 @@ import {
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { Minus } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import { Badge } from "@/components/ui/badge";
 
 interface PackageTableProps {
   limit?: number;
@@ -40,6 +42,7 @@ interface GetPackage extends Package {
 }
 
 const PackageTable = ({ limit, title }: PackageTableProps) => {
+  const router = useRouter();
   const [packageList, setPackageList] = useState<GetPackage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -129,9 +132,15 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
           </TableHeader>
           <TableBody>
             {filteredPackages.map((pkg, i) => (
-              <TableRow key={pkg.id}>
+              <TableRow
+                onClick={() => router.push(`/admin/packages/detail/${pkg.id}`)}
+                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
+                key={pkg.id}
+              >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{pkg.name}</TableCell>
+                <TableCell>
+                  <p className="font-bold">{pkg.name}</p>
+                </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Image
                     src={validImageUrl(pkg?.imageUrl || null)}
@@ -142,15 +151,23 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {pkg.description ? pkg.description : <Minus />}
+                  {pkg.description ? (
+                    <p className="text-slate-500">{pkg.description}</p>
+                  ) : (
+                    <Minus />
+                  )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {formatPrice(pkg.price)}
+                  <p className="font-bold">{formatPrice(pkg.price)}</p>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {pkg.duration} days
+                  <Badge className="bg-slate-500 text-white">
+                    {pkg.duration} days
+                  </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell
+                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                >
                   <PopoverActionTable
                     item={pkg}
                     editLink={`/admin/packages/edit/${pkg.id}`}
