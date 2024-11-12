@@ -35,8 +35,8 @@ const ChangePasswordForm = () => {
     // Validation
     if (!email || !oldPassword || !newPassword || !confirmPassword) {
       toast({
-        title: "Lỗi",
-        description: "Vui lòng điền đầy đủ thông tin",
+        title: "Error",
+        description: "Please fill in all fields",
         variant: "destructive",
       });
       return;
@@ -44,8 +44,8 @@ const ChangePasswordForm = () => {
 
     if (!validateEmail(email)) {
       toast({
-        title: "Lỗi",
-        description: "Email không hợp lệ",
+        title: "Error",
+        description: "Please enter a valid email address",
         variant: "destructive",
       });
       return;
@@ -53,8 +53,8 @@ const ChangePasswordForm = () => {
 
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Lỗi",
-        description: "Mật khẩu mới không khớp",
+        title: "Error",
+        description: "New password and confirm password do not match",
         variant: "destructive",
       });
       return;
@@ -62,8 +62,8 @@ const ChangePasswordForm = () => {
 
     if (newPassword.length < 6) {
       toast({
-        title: "Lỗi",
-        description: "Mật khẩu mới phải có ít nhất 6 ký tự",
+        title: "Error",
+        description: "New password must be at least 6 characters long",
         variant: "destructive",
       });
       return;
@@ -79,8 +79,8 @@ const ChangePasswordForm = () => {
       });
 
       toast({
-        title: "Thành công",
-        description: "Đổi mật khẩu thành công",
+        title: "Success",
+        description: "Change Passwork Successfully",
       });
 
       // Clear form
@@ -89,8 +89,8 @@ const ChangePasswordForm = () => {
       setConfirmPassword("");
     } catch (error) {
       toast({
-        title: "Lỗi",
-        description: "Đổi mật khẩu thất bại. Vui lòng thử lại",
+        title: "Error",
+        description: "Change Password Failed",
         variant: "destructive",
       });
     } finally {
@@ -101,10 +101,8 @@ const ChangePasswordForm = () => {
   return (
     <Card className="w-full max-w-md mx-auto mt-14">
       <CardHeader>
-        <CardTitle>Đổi mật khẩu</CardTitle>
-        <CardDescription>
-          Vui lòng nhập email và mật khẩu của bạn
-        </CardDescription>
+        <CardTitle>Change Password</CardTitle>
+        <CardDescription>Please enter your email and password</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -120,7 +118,7 @@ const ChangePasswordForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="oldPassword">Mật khẩu cũ</Label>
+            <Label htmlFor="oldPassword">Old Password</Label>
             <div className="relative">
               <Input
                 id="oldPassword"
@@ -144,7 +142,7 @@ const ChangePasswordForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="newPassword">Mật khẩu mới</Label>
+            <Label htmlFor="newPassword">New Password</Label>
             <div className="relative">
               <Input
                 id="newPassword"
@@ -168,7 +166,7 @@ const ChangePasswordForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Xác nhận mật khẩu mới</Label>
+            <Label htmlFor="confirmPassword">Confirm New Password</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"

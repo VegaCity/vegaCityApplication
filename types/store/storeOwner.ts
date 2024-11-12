@@ -30,6 +30,16 @@ export interface StoreOwnerPatch {
   storeStatus: number;
 }
 
+export interface StoreOwnerPatchStore {
+  name: string;
+  address: string;
+  phoneNumber: string;
+  shortName: string;
+  email: string;
+  description: string;
+  storeStatus: number;
+}
+
 export interface StoreInHouse {
   address: string;
   crDate: string;
