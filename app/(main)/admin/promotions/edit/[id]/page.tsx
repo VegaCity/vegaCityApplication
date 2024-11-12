@@ -55,7 +55,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
   });
 
   const convertDiscountPercent = (discountPercent: number) => {
-    return discountPercent.toFixed(2) * 100;
+    return parseFloat(discountPercent.toFixed(2)) * 100;
   };
 
   const roundToOneDecimal = (number: number) => {
@@ -95,9 +95,10 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
         const response = await PromotionServices.getPromotionById(params.id);
         const promoData: Promotion = response.data.data.promotion;
         setPromotionData(promoData);
-        const roundDiscountPercent = convertDiscountPercent(
+        const roundDiscountPercent: number = convertDiscountPercent(
           promoData.discountPercent || 0
         );
+
         if (promoData) {
           form.reset({ ...promoData, discountPercent: roundDiscountPercent });
         }

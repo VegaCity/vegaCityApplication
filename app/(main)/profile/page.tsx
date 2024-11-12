@@ -313,7 +313,7 @@ const UserProfileComponent: React.FC = () => {
         cccdPassport: user.cccdPassport || "",
         imageUrl: user.imageUrl || null,
       });
-      setImagePreview(user.imageUrl || null);
+      setImagePreview(user.imageUrl || "");
     }
     setEditMode(false);
     setValidationErrors({});
@@ -429,7 +429,7 @@ const UserProfileComponent: React.FC = () => {
               <SelectContent>
                 <SelectItem value="0">Opened</SelectItem>
                 <SelectItem value="1">Closed</SelectItem>
-                <SelectItem value="2">InActive</SelectItem>
+                <SelectItem value="2">In Active</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -567,13 +567,14 @@ const UserProfileComponent: React.FC = () => {
                   )}
                 </div>
 
+                {/* Birthday */}
                 <div className="space-y-2">
                   <Label htmlFor="birthday">Birthday</Label>
                   <Input
                     id="birthday"
                     name="birthday"
                     type="date"
-                    value={formData.birthday || ""}
+                    value={formData.birthday ?? ""}
                     onChange={handleInputChange}
                     disabled={!editMode}
                     max={format(new Date(), "yyyy-MM-dd")}

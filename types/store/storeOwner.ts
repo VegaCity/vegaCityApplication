@@ -25,7 +25,7 @@ export interface StoreOwnerPatch {
   phoneNumber: string;
   shortName: string;
   email: string;
-  description: string;
+  description: string | null;
   storeType: number;
   storeStatus: number;
 }

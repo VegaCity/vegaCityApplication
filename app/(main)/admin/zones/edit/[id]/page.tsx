@@ -20,8 +20,8 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 const zoneSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  location: z.string().min(1, { message: "Location is required" }),
+  zoneName: z.string().min(1, { message: "Name is required" }),
+  zoneLocation: z.string().min(1, { message: "Location is required" }),
 });
 
 interface ZoneEditPageProps {
@@ -41,8 +41,8 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(zoneSchema),
     defaultValues: {
-      name: "",
-      location: "",
+      zoneName: "",
+      zoneLocation: "",
     },
   });
 
@@ -56,8 +56,8 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
         console.log(zoneData, "Get package by Id"); // Log the response for debugging
         if (zoneData) {
           form.reset({
-            name: zoneData.name,
-            location: zoneData.location,
+            zoneName: zoneData.zoneName,
+            zoneLocation: zoneData.zoneLocation,
           });
         }
       } catch (err) {
@@ -78,7 +78,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
       await ZoneServices.editZone(params.id, data);
       toast({
         title: "Zone has been updated successfully",
-        description: `Zone ${data.name} was updated!`,
+        description: `Zone ${data.zoneName} was updated!`,
       });
     } catch (err) {
       setError(
@@ -99,7 +99,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
           <FormField
             control={form.control}
             disabled
-            name="name"
+            name="zoneName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
@@ -120,7 +120,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
           <FormField
             control={form.control}
             disabled
-            name="location"
+            name="zoneLocation"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">

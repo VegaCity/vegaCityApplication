@@ -99,7 +99,6 @@ export const formSchema = z
         message: "Name have not special character and space!",
       }),
 
-
     phoneNumber: z
       .string()
       .regex(
@@ -355,7 +354,7 @@ export const storeFormSchema = z.object({
     required_error: "Store Type is required!",
     invalid_type_error: "Store Type must be a number!",
   }),
-  status: z.coerce.number({
+  storeStatus: z.coerce.number({
     required_error: "Store Status is required!",
     invalid_type_error: "Store Status must be a number!",
   }),
@@ -439,11 +438,11 @@ export const createPromotionFormSchema = z
     quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
     discountPercent: z
       .number()
-      .max(100, "Max discount does not exceed 100%")
+      .max(1000000000, "Discount percent does not exceed 10 millions VND")
       .nullable(),
     requireAmount: z
       .number()
-      .max(100, "Require amount does not exceed 100%")
+      .max(1000000000, "Require amount does not exceed 10 millions VND")
       .nullable(),
     startDate: z
       .string()
@@ -476,7 +475,7 @@ export const editPromotionFormSchema = z
     quantity: z.number().max(100, "Quantity does not exceed 100").nullable(),
     discountPercent: z
       .number()
-      .max(100, "Max discount does not exceed 100%")
+      .max(1000000000, "Discount percent does not exceed 10 millions VND")
       .nullable(),
     requireAmount: z
       .number()

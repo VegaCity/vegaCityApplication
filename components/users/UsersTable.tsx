@@ -576,7 +576,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                 CCCD/Passport
               </TableHead>
               <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden md:table-cell">Re-assign</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -624,9 +623,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           {handleUserStatusFromBe(user.status)}
                         </Badge>
                       </TableCell>
-                      <TableCell onClick={(event) => event.stopPropagation()}>
-                        <ReassignEmailPopover userId={user.id} />
-                      </TableCell>
                       <TableCell
                         onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
                       >
@@ -637,9 +633,18 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                             handleDelete={handleDeleteUser}
                           />
                         )}
-                        {/* Could handle Delete Button here */}
-                        {/* Approve user button */}
-                        {user.status === 3 && UserPendingVerifyPopUp(user)}
+                        {/* Approve user button and Re-assign email button */}
+                        {user.status === 3 && (
+                          <div className="flex items-center justify-between w-min gap-2">
+                            <div className="flex-row items-end justify-end">
+                              {UserPendingVerifyPopUp(user)}
+                              <Button className="w-auto bg-red-500 hover:bg-red-700 text-white font-bold">
+                                Delete
+                              </Button>
+                            </div>
+                            <ReassignEmailPopover userId={user.id} />
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

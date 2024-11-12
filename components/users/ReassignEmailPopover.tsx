@@ -54,7 +54,9 @@ export const ReassignEmailPopover: React.FC<ReassignEmailPopoverProps> = ({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">Re-assign Email</Button>
+        <Button className="font-bold" variant="outline">
+          Re-assign Email
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="p-4 w-64">
         <Form {...form}>

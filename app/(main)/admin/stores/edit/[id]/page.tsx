@@ -44,7 +44,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
       email: "",
       description: "",
       storeType: 0,
-      status: 0,
+      storeStatus: 0,
     },
   });
 
@@ -64,7 +64,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
             email: storeData.email,
             description: storeData.description,
             storeType: storeData.storeType,
-            status: storeData.status,
+            storeStatus: storeData.storeStatus,
           });
         }
       } catch (err) {
@@ -82,11 +82,11 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
   const handleSubmit = async (data: StoreFormValues) => {
     try {
       const storeType = 0;
-      const status = 0;
+      const storeStatus = 0;
       await StoreServices.editStore(params.id, {
         ...data,
         storeType: storeType,
-        storeStatus: status,
+        storeStatus: storeStatus,
       });
       toast({
         title: "Store has been updated successfully",
@@ -222,7 +222,8 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Description"
-                    {...field}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />
