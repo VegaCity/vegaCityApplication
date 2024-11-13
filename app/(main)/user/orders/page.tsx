@@ -154,12 +154,24 @@ const OrdersPage = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>No</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Payment Type</TableHead>
-            <TableHead>Total Amount</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              No
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Name
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Payment Type
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Total Amount
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Status
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

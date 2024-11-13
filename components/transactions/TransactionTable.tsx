@@ -177,12 +177,24 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>No.</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>CreateDate</TableHead>
-                  <TableHead>Amount</TableHead>
+                  <TableHead className="font-bold text-white whitespace-nowrap">
+                    No.
+                  </TableHead>
+                  <TableHead className="font-bold text-white whitespace-nowrap">
+                    Type
+                  </TableHead>
+                  <TableHead className="font-bold text-white whitespace-nowrap">
+                    Description
+                  </TableHead>
+                  <TableHead className="font-bold text-white whitespace-nowrap">
+                    Status
+                  </TableHead>
+                  <TableHead className="font-bold text-white whitespace-nowrap">
+                    CreateDate
+                  </TableHead>
+                  <TableHead className="font-bold text-white whitespace-nowrap">
+                    Amount
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
