@@ -123,7 +123,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
         <Table>
           <TableCaption>User session details with actions</TableCaption>
           <TableHeader>
-            <TableRow className="bg-blue-400 hover:bg-blue-500">
+            <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">User ID</TableHead>
               <TableHead className="hidden md:table-cell text-white">
@@ -146,7 +146,6 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
             {filteredSessions.map((session, i) => (
               <TableRow
                 onClick={() => handleSessionDetails(session.id)}
-                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                 key={session.id}
               >
                 <TableCell>{i + 1}</TableCell>

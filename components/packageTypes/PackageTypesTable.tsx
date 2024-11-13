@@ -93,7 +93,7 @@ const PackageTypesTable = ({ limit, title }: PackageTypeTableProps) => {
         <Table>
           <TableCaption>A list of recent package types</TableCaption>
           <TableHeader>
-            <TableRow className="bg-blue-400 hover:bg-blue-500">
+            <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="hidden md:table-cell text-white">
@@ -112,7 +112,6 @@ const PackageTypesTable = ({ limit, title }: PackageTypeTableProps) => {
                 onClick={() =>
                   router.push(`/admin/packageTypes/detail/${packageType.id}`)
                 }
-                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                 key={packageType.id}
               >
                 <TableCell>{i + 1}</TableCell>

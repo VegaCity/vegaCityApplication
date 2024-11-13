@@ -101,7 +101,7 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
         <Table>
           <TableCaption>A list of recent Zones</TableCaption>
           <TableHeader>
-            <TableRow className="bg-blue-400 hover:bg-blue-500">
+            <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="text-white">Actions</TableHead>
@@ -113,7 +113,6 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
                 onClick={() =>
                   router.push(`/admin/walletTypes/detail/${walletType.id}`)
                 }
-                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                 key={walletType.id}
               >
                 <TableCell>{i + 1}</TableCell>

@@ -103,7 +103,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
         <Table>
           <TableCaption>Stores associated with the house</TableCaption>
           <TableHeader>
-            <TableRow className="bg-blue-400 hover:bg-blue-500">
+            <TableRow>
               <TableHead>House Name</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Address</TableHead>
@@ -146,7 +146,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
         <Table>
           <TableCaption>A list of all stores</TableCaption>
           <TableHeader>
-            <TableRow className="bg-blue-400 hover:bg-blue-500">
+            <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Store Name</TableHead>
               <TableHead className="hidden md:table-cell text-white">
@@ -172,7 +172,6 @@ const StoresTable = ({ params }: StoreTableProps) => {
             {stores.map((store, index) => (
               <TableRow
                 onClick={() => router.push(`/admin/stores/detail/${store.id}`)}
-                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                 key={store.id}
               >
                 <TableCell>{index + 1}</TableCell>

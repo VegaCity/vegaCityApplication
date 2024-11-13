@@ -108,7 +108,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
         <Table>
           <TableCaption>A list of recent promotions</TableCaption>
           <TableHeader>
-            <TableRow className="bg-blue-400 hover:bg-blue-500">
+            <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="text-white">Code</TableHead>
@@ -142,7 +142,6 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 onClick={() =>
                   router.push(`/admin/promotions/detail/${promo.id}`)
                 }
-                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                 key={promo.id}
               >
                 <TableCell>{i + 1}</TableCell>

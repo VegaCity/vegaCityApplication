@@ -116,7 +116,7 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
         <Table>
           <TableCaption>A list of recent zones</TableCaption>
           <TableHeader>
-            <TableRow className="bg-blue-400 hover:bg-blue-500 text-white">
+            <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="hidden md:table-cell text-white">
@@ -129,7 +129,6 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
             {filteredZones.map((zns, i) => (
               <TableRow
                 onClick={() => router.push(`/admin/zones/detail/${zns.id}`)}
-                className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                 key={zns.id}
               >
                 <TableCell>{i + 1}</TableCell>
