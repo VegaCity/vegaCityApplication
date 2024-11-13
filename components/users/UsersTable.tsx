@@ -443,6 +443,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                   )}
                 />
                 <FormField
+                  disabled={true}
                   control={userApproveForm.control}
                   name="storeEmail"
                   render={({ field }) => (
@@ -548,35 +549,45 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
               placeholder="Select User Status..."
             />
 
-            <div className="flex w-full max-w-sm items-center space-x-2">
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <SearchIcon size={15} className="text-gray-400" />
+              </span>
               <Input
                 type="text"
                 placeholder="Search by Email | Phone | cccdPassport"
                 value={searchTerm}
                 onChange={handleInputChange}
+                className="pl-10" // Adds padding for the icon
               />
-              <Button type="button" onClick={() => handleSearch(searchTerm)}>
+              {/* <Button type="button" onClick={() => handleSearch(searchTerm)}>
                 <SearchIcon size={15} /> &nbsp; Search
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
         <Table>
           <TableCaption>A list of recent users</TableCaption>
           <TableHeader>
-            <TableRow className="bg-slate-300 hover:bg-slate-300">
-              <TableHead>No.</TableHead>
-              <TableHead>Full Name</TableHead>
-              <TableHead className="hidden md:table-cell">Email</TableHead>
-              <TableHead className="hidden md:table-cell">
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Full Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Email
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
                 Phone Number
               </TableHead>
-              <TableHead className="hidden md:table-cell">Address</TableHead>
-              <TableHead className="hidden md:table-cell">
+              <TableHead className="hidden md:table-cell text-white">
+                Address
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
                 CCCD/Passport
               </TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Status
+              </TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -585,9 +596,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                 ? UserFound()
                 : filteredUsers?.map((user, i) => (
                     <TableRow
-                      // onClick={() =>
-                      //   router.push(`/admin/usersAccount/detail/${user.id}`)
-                      // }
+                      onClick={() =>
+                        router.push(`/admin/usersAccount/detail/${user.id}`)
+                      }
                       className="cursor-pointer hover:outline hover:outline-1 hover:outline-blue-500"
                       key={user.id}
                     >
@@ -606,6 +617,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <p className="text-slate-500">{user.email}</p>
+                        {user.status === 3 && (
+                          <ReassignEmailPopover userId={user.id} />
+                        )}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {user.phoneNumber}
@@ -642,7 +656,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                                 Delete
                               </Button>
                             </div>
-                            <ReassignEmailPopover userId={user.id} />
                           </div>
                         )}
                       </TableCell>

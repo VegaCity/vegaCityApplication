@@ -123,15 +123,23 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
         <Table>
           <TableCaption>User session details with actions</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>NO</TableHead>
-              <TableHead>User ID</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
-              <TableHead>Total Cash Received</TableHead>
-              <TableHead>Total Final Amount Order</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">User ID</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Start Date
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                End Date
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Total Cash Received
+              </TableHead>
+              <TableHead className="text-white">
+                Total Final Amount Order
+              </TableHead>
+              <TableHead className="text-white">Status</TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

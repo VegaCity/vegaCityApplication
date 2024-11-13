@@ -269,16 +269,26 @@ const PackageCreatePage = () => {
               name="price"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Price</FormLabel>
+                  <FormLabel>Price(VND)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter price"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.valueAsNumber);
-                      }}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        placeholder="Enter Price"
+                        value={field.value?.toLocaleString("vi-VN") ?? 0}
+                        onChange={(e) => {
+                          //convert string to number
+                          const input = e.target.value;
+                          const numericValue = parseFloat(
+                            input.replace(/[.]/g, "")
+                          );
+                          field.onChange(numericValue || 0);
+                        }}
+                      />
+                      <span className="absolute inset-y-0 right-2 text-gray-400 pointer-events-none">
+                        VND
+                      </span>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -399,21 +409,32 @@ const PackageCreatePage = () => {
               name="moneyStart"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Money Start</FormLabel>
+                  <FormLabel>Money Start(VND)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter money start"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.valueAsNumber);
-                      }}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        placeholder="Enter Money Start"
+                        value={field.value?.toLocaleString("vi-VN") ?? 0}
+                        onChange={(e) => {
+                          //convert string to number
+                          const input = e.target.value;
+                          const numericValue = parseFloat(
+                            input.replace(/[.]/g, "")
+                          );
+                          field.onChange(numericValue || 0);
+                        }}
+                      />
+                      <span className="absolute inset-y-0 right-2 text-gray-400 pointer-events-none">
+                        VND
+                      </span>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <div className="flex justify-end items-end w-full mt-4">
               <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
                 Create Package

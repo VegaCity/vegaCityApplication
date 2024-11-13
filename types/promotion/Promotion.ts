@@ -1,3 +1,23 @@
+export enum PromotionStatus {
+  Active = 0,
+  Inactive = 1,
+  Expired = 2,
+  Automation = 3,
+}
+
+//handle User status from number to string
+export const handlePromotionStatusFromBe = (status: number): string => {
+  switch (status) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+      return PromotionStatus[status]; //Returns the enum label as string
+    default:
+      throw new Error("Invalid promotions input"); // Optional: handle invalid input
+  }
+};
+
 export interface Promotion {
   id: string;
   marketZoneId: string;
@@ -26,6 +46,7 @@ export interface PromotionPatch {
   discountPercent: number | null;
   startDate: string;
   endDate: string;
+  status: string | null;
 }
 
 export interface PromotionPost extends PromotionPatch {

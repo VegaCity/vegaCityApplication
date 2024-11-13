@@ -223,7 +223,7 @@ export function AppSidebar() {
         {
           name: "User Session",
           icon: UserCheck2,
-          href: navigatePage("userSessions"),
+          href: navigatePage("userSession"),
         },
       ],
     },

@@ -101,10 +101,10 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
         <Table>
           <TableCaption>A list of recent Zones</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>#</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Actions</TableHead>
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Name</TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

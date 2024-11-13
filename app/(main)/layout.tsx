@@ -4,10 +4,8 @@ import { AppSidebar } from "@/components/app-sidebar";
 import Breadcrumb from "@/components/Breadcrumb";
 
 import { useAuthUser } from "@/components/hooks/useAuthUser";
-import { Button } from "@/components/ui/button";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { redirect, usePathname } from "next/navigation";
-import { useEffect } from "react";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();

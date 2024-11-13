@@ -93,13 +93,17 @@ const PackageTypesTable = ({ limit, title }: PackageTypeTableProps) => {
         <Table>
           <TableCaption>A list of recent package types</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>NO</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Created Date</TableHead>
-              <TableHead>Updated Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Created Date
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Updated Date
+              </TableHead>
+              <TableHead className="text-white">Status</TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

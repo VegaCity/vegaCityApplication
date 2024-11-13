@@ -1,37 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { PromotionServices } from "@/components/services/Promotion/promotionServices";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-  TableCaption,
 } from "@/components/ui/table";
-import { PromotionServices } from "@/components/services/Promotion/promotionServices";
-import { Promotion } from "@/types/promotion/Promotion";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { PopoverActionTable } from "@/components/popover/PopoverAction";
-import { Minus } from "lucide-react";
-import { splitDateTime } from "@/lib/utils/dateTimeUtils";
 import { cn } from "@/lib/utils";
+import { splitDateTime } from "@/lib/utils/dateTimeUtils";
 import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import {
+  handlePromotionStatusFromBe,
+  Promotion,
+} from "@/types/promotion/Promotion";
+import { Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { handleUserStatusFromBe } from "@/types/user/userAccount";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from "react";
 
 interface PromotionTableProps {
   limit?: number;
@@ -117,25 +108,32 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
         <Table>
           <TableCaption>A list of recent promotions</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>NO</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead className="hidden md:table-cell">
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Name</TableHead>
+              <TableHead className="text-white">Code</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
                 Description
               </TableHead>
-              <TableHead className="hidden md:table-cell">
+              <TableHead className="hidden md:table-cell text-white">
                 Max Discount
               </TableHead>
-              <TableHead className="hidden md:table-cell">Quantity</TableHead>
-              <TableHead className="hidden md:table-cell">Discount %</TableHead>
-              <TableHead className="hidden md:table-cell">
+              <TableHead className="hidden md:table-cell text-white">
+                Quantity
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Discount %
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
                 Require Amount
               </TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden md:table-cell">Start Date</TableHead>
-              <TableHead className="hidden md:table-cell">End Date</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Status
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                End Date
+              </TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -193,12 +191,12 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Badge className={cn(handleBadgeStatusColor(promo.status))}>
-                    {handleUserStatusFromBe(promo.status)}
+                    {handlePromotionStatusFromBe(promo.status)}
                   </Badge>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
+                {/* <TableCell className="hidden md:table-cell">
                   {splitDateTime({ type: "date", dateTime: promo.startDate })}
-                </TableCell>
+                </TableCell> */}
                 <TableCell className="hidden md:table-cell">
                   {splitDateTime({ type: "date", dateTime: promo.endDate })}
                 </TableCell>

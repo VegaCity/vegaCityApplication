@@ -288,21 +288,32 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
             )}
           />
 
+          {/* Price */}
           <FormField
             control={form.control}
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Price
-                </FormLabel>
+                <FormLabel>Price(VND)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Price"
-                    {...field}
-                  />
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Enter Price"
+                      value={field.value?.toLocaleString("vi-VN") ?? 0}
+                      onChange={(e) => {
+                        //convert string to number
+                        const input = e.target.value;
+                        const numericValue = parseFloat(
+                          input.replace(/[.]/g, "")
+                        );
+                        field.onChange(numericValue || 0);
+                      }}
+                    />
+                    <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                      VND
+                    </span>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

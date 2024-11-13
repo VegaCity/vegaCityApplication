@@ -103,7 +103,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
         <Table>
           <TableCaption>Stores associated with the house</TableCaption>
           <TableHeader>
-            <TableRow className="bg-slate-300 hover:bg-slate-300">
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
               <TableHead>House Name</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Address</TableHead>
@@ -146,16 +146,26 @@ const StoresTable = ({ params }: StoreTableProps) => {
         <Table>
           <TableCaption>A list of all stores</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>No.</TableHead>
-              <TableHead>Store Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>PhoneNumber</TableHead>
-              <TableHead>ShortName</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>StoreType</TableHead>
-              <TableHead>Actions</TableHead>
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Store Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Email
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                PhoneNumber
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                ShortName
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Address
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Description
+              </TableHead>
+              <TableHead className="text-white">StoreType</TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

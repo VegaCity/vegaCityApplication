@@ -2,7 +2,7 @@
 
 import BackButton from "@/components/BackButton";
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -22,10 +22,12 @@ import {
   CreatePromotionFormValues,
   createPromotionFormSchema,
 } from "@/lib/validation";
+import { useEffect, useState } from "react";
 
 const PromotionCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
+  const [isAutomationEnabled, setIsAutomationEnabled] = useState(false);
 
   const form = useForm<CreatePromotionFormValues>({
     resolver: zodResolver(createPromotionFormSchema),
@@ -39,6 +41,7 @@ const PromotionCreatePage = () => {
       requireAmount: 0,
       startDate: "",
       endDate: "",
+      status: "",
     },
   });
 
@@ -53,6 +56,9 @@ const PromotionCreatePage = () => {
     console.log("New promotion data:", data);
     console.log("Max discount:", data.maxDiscount);
 
+    const { status, ...restPromoData } = data;
+    console.log(status, "status ne");
+
     const converDiscountPercentToBe = Number(
       (data?.discountPercent ?? 0) / 100
     );
@@ -62,25 +68,53 @@ const PromotionCreatePage = () => {
       discountPercent: converDiscountPercentToBe,
     };
 
-    // PromotionServices.uploadPromotion(promotionData)
-    //   .then((res) => {
-    //     console.log(res.data, "Create Promotion");
-    //     toast({
-    //       title: "Promotion has been created successfully",
-    //       description: `Created promotion: ${promotionData.name}`,
-    //     });
-    //     router.push("/admin/promotions");
-    //   })
-    //   .catch((err) => {
-    //     if (err.response.status === 400) {
-    //       toast({
-    //         title: "Error when creating!",
-    //         description: `Error: ${err.response.data.messageResponse}`,
-    //       });
-    //     }
-    //     console.error(err, "Error creating promotion");
-    //   });
+    PromotionServices.uploadPromotion(promotionData)
+      .then((res) => {
+        console.log(res.data, "Create Promotion");
+        toast({
+          title: "Promotion has been created successfully",
+          description: `Created promotion: ${promotionData.name}`,
+        });
+        router.push("/admin/promotions");
+      })
+      .catch((err) => {
+        if (err.response.status === 400) {
+          toast({
+            title: "Error when creating!",
+            description: `Error: ${err.response.data.messageResponse}`,
+          });
+        }
+        console.error(err, "Error creating promotion");
+      });
   };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    setIsAutomationEnabled(isChecked);
+    if (isChecked) {
+      // Set Automation
+      form.setValue("status", "Automation");
+    } else {
+      form.setValue("status", null);
+    }
+  };
+
+  // // Watch for changes in requireAmount and discountPercent
+  // const requireAmount = useWatch({
+  //   control: form.control,
+  //   name: "requireAmount",
+  // });
+  // const discountPercent = useWatch({
+  //   control: form.control,
+  //   name: "discountPercent",
+  // });
+
+  // // Update maxDiscount when requireAmount or discountPercent changes
+  // useEffect(() => {
+  //   const calculatedMaxDiscount =
+  //     (requireAmount || 0) * ((discountPercent || 0) / 100);
+  //   form.setValue("maxDiscount", calculatedMaxDiscount);
+  // }, [requireAmount, discountPercent, form]);
 
   return (
     <>
@@ -144,16 +178,15 @@ const PromotionCreatePage = () => {
 
           <FormField
             control={form.control}
-            name="maxDiscount"
+            name="requireAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Max Discount(VND)</FormLabel>
+                <FormLabel>Require Amount(VND)</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type="text"
-                      placeholder="Enter max discount"
-                      className="pr-8" // Padding for unit suffix
+                      placeholder="Enter require amount"
                       value={field.value?.toLocaleString("vi-VN") ?? 0}
                       onChange={(e) => {
                         //convert string to number
@@ -166,6 +199,37 @@ const PromotionCreatePage = () => {
                     />
                     <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
                       VND
+                    </span>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="discountPercent"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Discount Percent(%)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      placeholder="Enter discount percent"
+                      value={field.value ?? 0}
+                      onChange={(e) => {
+                        // Ensure only positive values
+                        let value = e.target.valueAsNumber;
+                        if (value < 0) value = 0;
+                        if (value > 100) value = 100;
+
+                        field.onChange(value);
+                      }}
+                    />
+                    <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                      %
                     </span>
                   </div>
                 </FormControl>
@@ -198,48 +262,17 @@ const PromotionCreatePage = () => {
 
           <FormField
             control={form.control}
-            name="discountPercent"
+            name="maxDiscount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Discount Percent(%)</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      placeholder="Enter discount percent"
-                      value={field.value ?? 0}
-                      onChange={(e) => {
-                        // Ensure only positive values
-                        const value = e.target.valueAsNumber;
-                        if (value >= 0) {
-                          field.onChange(value);
-                        } else {
-                          field.onChange(0);
-                        }
-                      }}
-                    />
-                    <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
-                      %
-                    </span>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="requireAmount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Require Amount(VND)</FormLabel>
+                <FormLabel>Max Discount(VND)</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       type="text"
-                      placeholder="Enter require amount"
-                      value={field.value?.toLocaleString("vi-VN") ?? 0}
+                      placeholder="Enter max discount"
+                      className="pr-8" // Padding for unit suffix
+                      value={field.value?.toLocaleString("vi-VN") || 0}
                       onChange={(e) => {
                         //convert string to number
                         const input = e.target.value;
@@ -259,6 +292,24 @@ const PromotionCreatePage = () => {
             )}
           />
 
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Auto Promotion</FormLabel>
+                <FormControl>
+                  <Input
+                    type="checkbox"
+                    // checked={field.value || ""} // Ensure `checked` reflects the form state
+                    onChange={handleCheckboxChange} // Set the field value to true/false
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="flex items-center justify-start gap-44">
             <FormField
               control={form.control}
@@ -267,7 +318,7 @@ const PromotionCreatePage = () => {
                 <FormItem>
                   <FormLabel>Start Date</FormLabel>
                   <FormControl>
-                    <Input className="w-min" type="date" {...field} />
+                    <Input className="w-min" type="datetime-local" {...field} />
                   </FormControl>
                   <div className="absolute bottom w-full">
                     <FormMessage className="min-h-min" />
@@ -283,7 +334,7 @@ const PromotionCreatePage = () => {
                 <FormItem>
                   <FormLabel>End Date</FormLabel>
                   <FormControl>
-                    <Input className="w-min" type="date" {...field} />
+                    <Input className="w-min" type="datetime-local" {...field} />
                   </FormControl>
                   {/* Ensure the message has a minimum height to prevent layout shifts */}
                   <div className="absolute bottom w-full">

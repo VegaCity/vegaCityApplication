@@ -393,8 +393,8 @@ export const editPackageFormSchema = z.object({
     .string()
     .min(2, { message: "Name must include at least 2 characters" })
     .max(100, { message: "Name does not exceed 100 characters" })
-    .regex(/^[\p{L}\s]+$/u, {
-      message: "Name have not special character and space!",
+    .regex(/^(.*[()]).*$/u, {
+      message: "Name must have (...day)!",
     }),
 
   price: z.coerce
@@ -411,8 +411,8 @@ export const createPackageFormSchema = z.object({
     .string()
     .min(2, { message: "Name must include at least 2 characters" })
     .max(100, { message: "Name does not exceed 100 characters" })
-    .regex(/^[\p{L}\s]+$/u, {
-      message: "Name have not special character and space!",
+    .regex(/^(.*[()]).*$/u, {
+      message: "Name must have (...day)!",
     }),
   imageUrl: z.string().nullable(),
   description: z.string().min(1).nullable(),
@@ -451,6 +451,7 @@ export const createPromotionFormSchema = z
         "The begin date must be the following day!"
       ),
     endDate: z.string(),
+    status: z.string().nullable(),
   })
   .refine(
     (data) => {

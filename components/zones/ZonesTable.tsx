@@ -114,13 +114,15 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
       <h3 className="text-2xl mb-4 font-semibold">{title || "Zones"}</h3>
       {filteredZones.length > 0 ? (
         <Table>
-          <TableCaption>Select Zone if you want to create Store</TableCaption>
+          <TableCaption>A list of recent zones</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>NO</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden md:table-cell">Location</TableHead>
-              <TableHead>Actions</TableHead>
+            <TableRow className="bg-blue-400 hover:bg-blue-500 text-white">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Location
+              </TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

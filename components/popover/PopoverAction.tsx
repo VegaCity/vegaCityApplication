@@ -43,9 +43,11 @@ export const PopoverActionTable = <T extends BaseType>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline">...</Button>
+        <Button variant="outline" className="border-none">
+          ...
+        </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-30">
+      <PopoverContent className="w-30 bg-blue-200 bg-transparent opacity-85">
         {/* <div> */}
         {/* <div className="space-y-2">
             <h4 className="font-medium leading-none">Actions</h4>

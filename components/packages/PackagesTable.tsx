@@ -118,16 +118,22 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead>NO</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden md:table-cell">Image</TableHead>
-              <TableHead className="hidden md:table-cell">
+            <TableRow className="bg-blue-400 hover:bg-blue-500">
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Image
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
                 Description
               </TableHead>
-              <TableHead className="hidden md:table-cell">Price</TableHead>
-              <TableHead className="hidden md:table-cell">Duration</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Price
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Duration
+              </TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -7,6 +7,7 @@ import { ZoneServices } from "@/components/services/zoneServices";
 import { HouseTypeId } from "@/types/house";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import BackButton from "@/components/BackButton";
 
 interface ZoneDetailPageProps {
   params: {
@@ -88,7 +89,10 @@ const ZoneDetailsPage = ({ params }: ZoneDetailPageProps) => {
           )} */}
         </>
       ) : (
-        <div>No zone details available.</div>
+        <div>
+          <BackButton text="Back To Zones" link="/admin/zones" />
+          No zone details available.
+        </div>
       )}
     </div>
   );
