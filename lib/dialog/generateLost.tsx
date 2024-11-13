@@ -17,7 +17,7 @@ import {
   confirmOrderForCharge,
   confirmOrderForGenerateNewVCard,
 } from "@/components/services/orderuserServices";
-
+import axios, { AxiosResponse } from "axios";
 interface PackageItem {
   id: string;
   packageId: string;
@@ -28,7 +28,16 @@ interface PackageItem {
   rfid: string | null;
   status: string;
 }
-
+interface GeneratePackageItemResponse {
+  statusCode: number;
+  messageResponse: string;
+  data: {
+    packageItemIIId: string;
+    invoiceId: string;
+    transactionId: string;
+  };
+  parentName: null;
+}
 interface GenerateNewCardDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -110,7 +119,10 @@ const GenerateNewCardDialog = ({
       });
     }
   };
-
+  const walletBalance: number = parseFloat(
+    localStorage.getItem("walletBalance") || "0"
+  );
+  console.log(walletBalance, "walletBalance");
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
@@ -118,28 +130,36 @@ const GenerateNewCardDialog = ({
         quantity
       );
 
-      if (response.status === 201) {
-        // Case 1: Sufficient balance
-        toast({
-          title: "Success",
-          description: `Successfully generated ${quantity} new card(s)`,
-          variant: "default",
-        });
-        onSuccess();
-        onClose();
-      } else if (response.status === 200) {
-        // Case 2: Insufficient balance
-        console.log(response.data);
-        localStorage.setItem("invoiceId", response.data.data.invoiceId);
-        localStorage.setItem("transactionId", response.data.data.transactionId);
+      if (response.data.statusCode === 200) {
+        if (
+          response.data.messageResponse.includes(
+            "Successfully Create New PackageItem , proceed Pay to Active!!"
+          )
+        ) {
+          // Case 2: Cần thanh toán để kích hoạt
+          console.log(response.data);
+          localStorage.setItem("invoiceId", response.data.data.invoiceId);
+          localStorage.setItem(
+            "transactionId",
+            response.data.data.transactionId
+          );
 
-        toast({
-          title: "Payment Required",
-          description:
-            "Your balance is insufficient. Please proceed with the payment of 50,000 VND",
-        });
-
-        setShowPaymentDialog(true);
+          toast({
+            title: "Payment Required",
+            description:
+              "Your balance is insufficient. Please proceed with the payment of 50,000 VND",
+          });
+          setShowPaymentDialog(true);
+        } else {
+          // Case 1: Tạo thành công và không cần thanh toán thêm
+          toast({
+            title: "Success",
+            description: `Successfully generated ${quantity} new card(s)`,
+            variant: "default",
+          });
+          onSuccess();
+          onClose();
+        }
       }
     } catch (error) {
       console.error("Error generating new card:", error);
@@ -155,7 +175,6 @@ const GenerateNewCardDialog = ({
       setIsLoading(false);
     }
   };
-
   return (
     <>
       <AlertDialog open={isOpen} onOpenChange={onClose}>

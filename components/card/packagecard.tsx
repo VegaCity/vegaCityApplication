@@ -28,7 +28,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg }) => {
   return (
     <Card className="flex flex-col justify-between overflow-hidden shadow-lg rounded-lg">
       <div className="w-full flex justify-center p-4">
-        <div className="w-88 h-48 relative rounded-lg overflow-hidden shadow-sm">
+        <div className="w-88 h-88 relative rounded-lg overflow-hidden shadow-sm">
           <img
             src={validImageUrl}
             alt={pkg.name || "Package Image"}

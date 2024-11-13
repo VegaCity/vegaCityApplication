@@ -34,25 +34,36 @@ import { useEtagHandlers } from "@/handlers/etag/useEtagHandlesForPackage";
 import CountdownTimer from "@/components/countdown/countdown";
 import { Clock, Package, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [packageData, setPackageData] = useState<any>(null);
   const [showTimer, setShowTimer] = useState(false);
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+
+  const customerName = searchParams.get("customerName");
+  const gender = searchParams.get("gender");
+  const phoneNumber = searchParams.get("phoneNumber");
+  const email = searchParams.get("email");
+  const cccdpassport = searchParams.get("cccdpassport");
 
   const customerForm = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
-      customerName: "",
-      phoneNumber: "",
+      customerName: customerName || "",
+      phoneNumber: phoneNumber || "",
       address: "",
-      cccdpassport: "",
+      cccdpassport: cccdpassport || "",
       paymentMethod: "Cash",
-      gender: "Male",
-      email: "",
+      gender: (gender as "Male" | "Female" | "Other") || "",
+      email: email || "",
       quantity: 1,
       price: 0,
+      isAdult: true,
     },
   });
 
@@ -138,15 +149,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                     className="object-cover w-full h-full transform transition-transform duration-300 hover:scale-105 "
                   />
                 </div>
-                <Badge
-                  className={`absolute top-4 right-4 ${
-                    packageData?.deflag
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-green-500 hover:bg-green-600"
-                  }`}
-                >
-                  {packageData?.deflag ? "Inactive" : "Active"}
-                </Badge>
               </div>
 
               {/* Content Section */}
@@ -154,6 +156,15 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 <div className="space-y-6">
                   {/* Header */}
                   <div>
+                    <Badge
+                      className={`-mr-5 ${
+                        packageData?.deflag
+                          ? "bg-red-500 hover:bg-red-600"
+                          : "bg-green-500 hover:bg-green-600"
+                      }`}
+                    >
+                      {packageData?.deflag ? "Inactive" : "Active"}
+                    </Badge>
                     <h2 className="text-1xl font-bold text-gray-900 dark:text-white">
                       {packageData?.name}
                     </h2>

@@ -372,19 +372,31 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
         <TableCaption>A list of Package Items</TableCaption>
         <TableHeader>
           <TableRow>
-            <TableHead>No</TableHead>
-            <TableHead>CCCD/Passport</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Phone Number</TableHead>
-            <TableHead>Is Adult</TableHead>
-            <TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              No
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              CCCD/Passport
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Name
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Phone Number
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Is Adult
+            </TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
               <SortButton field="crDate" label="Created Date" />
             </TableHead>
 
-            <TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap">
               <SortButton field="status" label="Status" />
             </TableHead>
-            <TableHead>Action</TableHead>
+            <TableHead className="font-bold text-white whitespace-nowrap ">
+              Action
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -46,6 +46,7 @@ export const customerFormSchema = z.object({
     .min(1000, { message: "Price must at least 1.000 VND" })
     .max(10000000, { message: "Price does not exceed 10 millions VND" }),
   email: z.string().email("Your email is invalid! Please try again!"),
+  isAdult: z.boolean().default(true),
 });
 
 export const etagFormSchema = z

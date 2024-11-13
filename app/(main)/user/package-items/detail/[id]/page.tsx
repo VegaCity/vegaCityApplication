@@ -39,6 +39,7 @@ import {
   FormValues,
   customerFormSchema,
   PackageItemDetailPageProps,
+  CustomerFormValues,
 } from "@/lib/validation";
 import {
   AlertDialog,
@@ -61,7 +62,9 @@ import { Promotion } from "@/types/promotion/Promotion";
 import { GenerateChildrenVCardDialog } from "@/lib/dialog/GenerateChildrenVCardDialog";
 import { ChargeMoneyDialog } from "@/lib/dialog/ChargeMoneyDialog";
 import { ProcessingDialog } from "@/lib/dialog/ProcessingDialog";
+import { QRCodeDialog } from "@/lib/dialog/QRCodeDialog";
 import { UpdateRFIDAlertDialog } from "@/lib/dialog/UpdateRFIDDialog";
+import { useRouter } from "next/navigation";
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -78,12 +81,28 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const [isLoadingPromotions, setIsLoadingPromotions] = useState(false);
   const [promotionError, setPromotionError] = useState<string | null>(null);
   const [isUpdateRFIDDialogOpen, setIsUpdateRFIDDialogOpen] = useState(false);
+  const router = useRouter();
   const [isChildrenVCardDialogOpen, setIsChildrenVCardDialogOpen] =
     useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
   const childrenVCardForm = useForm({
     defaultValues: {
       quantity: 1,
       packageItemId: "",
+    },
+  });
+  const customerForm = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues: {
+      customerName: "",
+      phoneNumber: "",
+      address: "",
+      cccdpassport: "",
+      paymentMethod: "Cash",
+      gender: "Male",
+      email: "",
+      quantity: 1,
+      price: 0,
     },
   });
   const handleUpdateRFID = async (rfid: string) => {
@@ -164,43 +183,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     fetchPromotions();
   }, [toast]);
 
-  const handleGenerateChildrenVCard = async (data: any) => {
-    try {
-      setIsLoading(true);
+  const handleGenerateChildrenVCard = () => {
+    const { name, gender, phoneNumber, email, cccdpassport } = form.getValues();
+    const packageId = localStorage.getItem("packageIdCurrent");
 
-      const generateData = {
-        packageItemId: data.packageItemId,
-        quantity: data.quantity,
-      };
-
-      // Gọi API để generate children VCards
-      const response = await PackageItemServices.generatePackageItemForChild(
-        generateData.quantity
-      );
-
-      if (response.status === 201) {
-        toast({
-          title: "Success",
-          description: `Successfully generated ${data.quantity} children VCards`,
-        });
-        setIsChildrenVCardDialogOpen(false);
-        childrenVCardForm.reset();
-
-        // Tùy chọn: refresh page hoặc cập nhật UI
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      }
-    } catch (error) {
-      console.error("Error generating children VCards:", error);
-      toast({
-        title: "Error",
-        description: "Failed to generate children VCards",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    router.push(
+      `/user/packages/generate/${packageId}?customerName=${name}&gender=${gender}&phoneNumber=${phoneNumber}&email=${email}&cccdpassport=${cccdpassport}`
+    );
   };
   const handleChargeMoney = async (data: {
     packageItemId: string;
@@ -453,8 +442,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           id: params.id,
         });
         const packageitemData = response.data?.data;
-        console.log(packageitemData, "packageitemData");
+        const qrCodeData = response.data?.qrCode;
+        console.log(response.data.qrCode, "QRcode");
         setPackageItem(packageitemData);
+        setQrCode(qrCodeData);
         localStorage.setItem("packageItemId", packageitemData.id);
         localStorage.setItem("packageIdCurrent", packageitemData.packageId);
         localStorage.setItem("startDateCustomer", packageitemData.startDate);
@@ -479,6 +470,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             balanceHistory: packageitemData.wallet?.balanceHistory || 0,
           },
         });
+        localStorage.setItem(
+          "walletBalance",
+          packageitemData.wallet?.balance || 0
+        );
         // Reset charge form
         formCharge.reset({
           // promoCode: "",
@@ -566,39 +561,49 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
       <Form {...form}>
         <form className="space-y-4">
-          <div className="relative w-full h-48">
-            <Image
-              src={packageItem?.imageUrl ?? ""}
-              alt={"Image"}
-              layout="fill"
-              objectFit="cover"
-              className="rounded-lg justify-center items-center"
-            />
+          <div className="flex flex-col items-center space-y-4 w-full">
+            <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
+              {packageItem?.imageUrl ? (
+                <Image
+                  src={packageItem?.imageUrl || ""}
+                  alt="Profile Image"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-gray-400">No image uploaded</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <Card className="w-full max-w-5xl mx-auto">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <CardTitle>VCard Detail</CardTitle>
-                <div>
-                  {" "}
-                  {packageItem &&
-                    packageItem.status === "Active" &&
+              <div className="flex justify-between items-center p-4 bg-white ">
+                <CardTitle className="text-xl font-semibold text-gray-800">
+                  VCard Detail
+                </CardTitle>
+                <div className="flex items-center space-x-3">
+                  <QRCodeDialog qrCode={qrCode ?? undefined} />
+                  {packageItem?.status === "Active" &&
                     packageItem.isAdult === true && (
                       <Button
                         type="button"
-                        onClick={() => setIsChildrenVCardDialogOpen(true)}
+                        onClick={handleGenerateChildrenVCard}
                         variant="outline"
+                        className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
                       >
                         Generate Children VCard
                       </Button>
                     )}
-                  {packageItem && packageItem.status === "Active" && (
+                  {packageItem?.status === "Active" && (
                     <Button
                       type="button"
                       onClick={() => setIsUpdateRFIDDialogOpen(true)}
                       variant="outline"
-                      className="ml-2"
+                      className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
                     >
                       Update RFID
                     </Button>
@@ -704,7 +709,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     Duration Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Start Date:
                       </FormLabel>
@@ -719,7 +724,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         End Date:
                       </FormLabel>
@@ -734,7 +739,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Status
                       </FormLabel>
@@ -792,13 +797,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             isLoading={isLoading}
             packageItem={packageItem}
           />
-          <GenerateChildrenVCardDialog
+          {/* <GenerateChildrenVCardDialog
             isOpen={isChildrenVCardDialogOpen}
             onOpenChange={setIsChildrenVCardDialogOpen}
             form={childrenVCardForm}
             onSubmit={handleGenerateChildrenVCard}
             isLoading={isLoading}
-          />
+          /> */}
           <div className="flex justify-end mt-4">
             {packageItem &&
               packageItem.status === "Active" &&
