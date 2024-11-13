@@ -442,11 +442,17 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           id: params.id,
         });
         const packageitemData = response.data?.data;
+        console.log(packageitemData, "packageitemData");
         const qrCodeData = response.data?.qrCode;
         console.log(response.data.qrCode, "QRcode");
         setPackageItem(packageitemData);
         setQrCode(qrCodeData);
-        localStorage.setItem("packageItemId", packageitemData.id);
+        if (packageitemData.isAdult === false) {
+          // Remove packageItemId from localStorage
+          localStorage.removeItem("packageItemId");
+        } else {
+          localStorage.setItem("packageItemId", packageitemData.id);
+        }
         localStorage.setItem("packageIdCurrent", packageitemData.packageId);
         localStorage.setItem("startDateCustomer", packageitemData.startDate);
         localStorage.setItem("endDateCustomer", packageitemData.endDate);

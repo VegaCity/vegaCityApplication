@@ -126,7 +126,9 @@ export const useEtagHandlers = ({
   const handleGenerateVCard = async (quantity: number) => {
     try {
       const packageId = localStorage.getItem("packageId") || "";
-      const response = await PackageItemServices.generatePackageItem(quantity);
+      const response = await PackageItemServices.generatePackageItemForChild(
+        quantity
+      );
 
       if (response.status === 201) {
         const vcardData = response.data;
@@ -136,7 +138,7 @@ export const useEtagHandlers = ({
           title: "Success",
           description: "VCard generated successfully.",
         });
-        localStorage.setItem("packageItemIdNew", response.data.data[0].id);
+        // localStorage.setItem("packageItemIdNew", response.data.data[0].id);
         // setTimeout(() => {
         //   router.push("/user/package-items");
         // }, 3000);
@@ -250,6 +252,9 @@ export const useEtagHandlers = ({
         await initiatePayment(paymentMethod, invoiceId);
         await handleGenerateVCard(customerForm.getValues("quantity"));
       }
+
+      // Clear packageItemId from localStorage on successful confirmation
+      localStorage.removeItem("packageItemId");
     } catch (err) {
       console.error("Error in order confirmation:", err);
       toast({
