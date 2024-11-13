@@ -55,7 +55,7 @@ const PackageItemAction: React.FC<PackageItemActionProps> = ({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="h-8 w-8 p-0">
+        <Button variant="outline" className="h-8 w-8 p-4 gap-1">
           ...
         </Button>
       </PopoverTrigger>

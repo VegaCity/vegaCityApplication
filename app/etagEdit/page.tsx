@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import SearchPackageItem from "@/components/search/searchPackageItem";
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -40,10 +41,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
-  const DEV_CONFIG = {
-    DEMO_ETAG_ID: "52530045-9ca1-4e37-b7ab-6162577def65",
-    IS_DEVELOPMENT: true,
-  };
+  // const DEV_CONFIG = {
+  //   DEMO_ETAG_ID: "52530045-9ca1-4e37-b7ab-6162577def65",
+  //   IS_DEVELOPMENT: true,
+  // };
 
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
@@ -83,21 +84,24 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
 
   useEffect(() => {
     const fetchEtag = async () => {
-      const etagId = DEV_CONFIG.IS_DEVELOPMENT
-        ? DEV_CONFIG.DEMO_ETAG_ID
-        : params?.id;
+      const etagId = params?.id || localStorage.getItem("packageItemId");
+
+      // Kiểm tra xem có etagId không
       if (!etagId) {
-        setError("No ID provided");
         setIsLoading(false);
         return;
       }
+
       try {
         setIsLoading(true);
         const response = await PackageItemServices.getPackageItemById({
           id: etagId,
         });
         const packageitemData = response.data?.data;
+
+        // Cập nhật dữ liệu khi có kết quả
         setPackageItem(packageitemData);
+
         if (!packageitemData) {
           throw new Error("No etag data received");
         }
@@ -133,7 +137,8 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     };
 
     fetchEtag();
-  }, [params?.id, form, toast]);
+  }, [params?.id, form, toast]); // Lắng nghe sự thay đổi của params?.id
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -202,16 +207,24 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   };
 
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) {
+    return (
+      <div>
+        <SearchPackageItem />
+        <div className="text-center mt-4 text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
+
+  if (!packageItem) {
+    return <SearchPackageItem />;
+  }
 
   return (
     <>
-      <h3 className="text-2xl mb-4">VCard Detail</h3>
-
       <Form {...form}>
         <form className="space-y-4">
           <div className="flex flex-col items-center space-y-4 w-full">
-            {/* Container cho hình ảnh */}
             <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
               {packageItem?.imageUrl || imagePreview ? (
                 <Image
