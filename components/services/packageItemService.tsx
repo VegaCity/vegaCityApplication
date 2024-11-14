@@ -97,13 +97,8 @@ export const PackageItemServices = {
     });
   },
   generatePackageItemForChild(quantity: number) {
-    const packageId = localStorage.getItem("packageIdCurrent");
-    if (!packageId) {
-      throw new Error("Package ID not found in localStorage");
-    }
-
     return API.post(`/package-item?quantity=${quantity}`, {
-      packageId: localStorage.getItem("packageIdCurrent"),
+      packageId: localStorage.getItem("packageId"),
       startDate: localStorage.getItem("startDate"),
       endDate: localStorage.getItem("endDate"),
       packageItemId: localStorage.getItem("packageItemId"),
