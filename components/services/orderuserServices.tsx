@@ -16,14 +16,25 @@ export const GetOrders = async (page: number) => {
   }
 };
 export const GetOrdersById = async (id: string) => {
-  try {
-    const response = await API.get(`/order?id=${id}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error getting orders:", error);
-    throw error;
+  const storedInvoiceId = localStorage.getItem("invoiceId");
+  if (storedInvoiceId) {
+    return API.get(`/order/?invoiceId=${storedInvoiceId}`);
+  } else if (id) {
+    return API.get(`/order/?id=${id}`);
+  } else {
+    throw new Error("Either 'id' or 'rfId' must be provided.");
   }
 };
+
+// getPackageItemById({ id, rfId }: GetPackageItemByIdParams) {
+//   if (id) {
+//     return API.get(`/package-item/?id=${id}`);
+//   } else if (rfId) {
+//     return API.get(`/package-item/?rfId=${rfId}`);
+//   } else {
+//     throw new Error("Either 'id' or 'rfId' must be provided.");
+//   }
+// },
 
 export const createOrder = async (orderData: OrderData) => {
   try {

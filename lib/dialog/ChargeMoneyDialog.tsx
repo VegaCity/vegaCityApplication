@@ -120,7 +120,7 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
             </div>
 
             {/* Promotion Code with icon and loading state */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="flex items-center text-sm font-semibold text-gray-700">
                 <Tag className="mr-2" size={18} />
                 Promotion Code
@@ -162,7 +162,7 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
                     ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
 
           {/* Action Buttons with gradient background */}
@@ -174,10 +174,14 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
               onClick={() => {
                 onOpenChange(false);
                 form.reset();
+                onAmountChange({
+                  target: { value: "" },
+                } as React.ChangeEvent<HTMLInputElement>); // Reset amount
               }}
             >
               Cancel
             </Button>
+
             <Button
               type="submit"
               className="h-11 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium"

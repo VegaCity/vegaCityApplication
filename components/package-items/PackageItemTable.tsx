@@ -54,6 +54,7 @@ interface PackageItem {
   isChanged: boolean;
   isAdult: boolean | null;
   endDate: string | null;
+  walletTypeName: string;
 }
 
 interface PackageItemTableProps {
@@ -180,14 +181,14 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
 
     const sorted = [...filtered].sort((a, b) => {
       if (sortField === "status") {
-        return sortOrder === "asc"
+        return sortOrder === "desc"
           ? a.status.localeCompare(b.status)
           : b.status.localeCompare(a.status);
       }
 
       const aDate = new Date(a[sortField]).getTime();
       const bDate = new Date(b[sortField]).getTime();
-      return sortOrder === "asc" ? aDate - bDate : bDate - aDate;
+      return sortOrder === "desc" ? aDate - bDate : bDate - aDate;
     });
 
     setFilteredPackageItems(sorted);
@@ -195,10 +196,10 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === "desc" ? "asc" : "desc");
     } else {
       setSortField(field);
-      setSortOrder("asc");
+      setSortOrder("desc");
     }
   };
   const formatDate = (dateString: string) => {
@@ -390,7 +391,9 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
             <TableHead className="font-bold text-white whitespace-nowrap">
               <SortButton field="crDate" label="Created Date" />
             </TableHead>
-
+            <TableHead className="font-bold text-white whitespace-nowrap">
+              Type Wallet
+            </TableHead>
             <TableHead className="font-bold text-white whitespace-nowrap">
               <SortButton field="status" label="Status" />
             </TableHead>
@@ -408,7 +411,7 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
               <TableCell>{item.phoneNumber || "-"}</TableCell>
               <TableCell>{item.isAdult ? "Adult" : "Child"}</TableCell>
               <TableCell>{formatDate(item.crDate)}</TableCell>
-
+              <TableCell>{item.walletTypeName}</TableCell>
               <TableCell>
                 <span
                   className={`inline-block text-white px-2 py-1 rounded ${getStatusColor(
@@ -420,13 +423,13 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
               </TableCell>
               <TableCell>
                 <PackageItemAction
-                  packageItem={item}
+                  packageItem={item as PackageItem} // Cast item to PackageItem
                   onLost={(item) => {
-                    setSelectedPackageItem(item);
+                    setSelectedPackageItem(item as PackageItem); // Cast item to PackageItem
                     setIsLostDialogOpen(true);
                   }}
                   onGenerateNewCard={(item) => {
-                    setSelectedPackageItem(item);
+                    setSelectedPackageItem(item as PackageItem); // Cast item to PackageItem
                     setIsGenerateDialogOpen(true);
                   }}
                 />
