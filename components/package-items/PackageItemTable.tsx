@@ -181,14 +181,14 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
 
     const sorted = [...filtered].sort((a, b) => {
       if (sortField === "status") {
-        return sortOrder === "asc"
+        return sortOrder === "desc"
           ? a.status.localeCompare(b.status)
           : b.status.localeCompare(a.status);
       }
 
       const aDate = new Date(a[sortField]).getTime();
       const bDate = new Date(b[sortField]).getTime();
-      return sortOrder === "asc" ? aDate - bDate : bDate - aDate;
+      return sortOrder === "desc" ? aDate - bDate : bDate - aDate;
     });
 
     setFilteredPackageItems(sorted);
@@ -196,10 +196,10 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
 
   const handleSort = (field: SortField) => {
     if (field === sortField) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === "desc" ? "asc" : "desc");
     } else {
       setSortField(field);
-      setSortOrder("asc");
+      setSortOrder("desc");
     }
   };
   const formatDate = (dateString: string) => {

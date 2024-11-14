@@ -174,10 +174,14 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
               onClick={() => {
                 onOpenChange(false);
                 form.reset();
+                onAmountChange({
+                  target: { value: "" },
+                } as React.ChangeEvent<HTMLInputElement>); // Reset amount
               }}
             >
               Cancel
             </Button>
+
             <Button
               type="submit"
               className="h-11 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium"

@@ -89,10 +89,7 @@ export const PackageItemServices = {
   },
 
   generatePackageItem(quantity: number) {
-    const packageItemId = localStorage.getItem("packageItemId");
-
     return API.post(`/package-item?quantity=${quantity}`, {
-      packageItemId: packageItemId || "",
       packageId: localStorage.getItem("packageId"),
     });
   },

@@ -34,25 +34,36 @@ import { useEtagHandlers } from "@/handlers/etag/useEtagHandlesForPackage";
 import CountdownTimer from "@/components/countdown/countdown";
 import { Clock, Package, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useRouter, useSearchParams } from "next/navigation";
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [packageData, setPackageData] = useState<any>(null);
   const [showTimer, setShowTimer] = useState(false);
+  const router = useRouter();
 
+  const searchParams = useSearchParams();
+
+  const customerName = searchParams.get("customerName");
+  const gender = searchParams.get("gender");
+  const phoneNumber = searchParams.get("phoneNumber");
+  const email = searchParams.get("email");
+  const cccdpassport = searchParams.get("cccdpassport");
+  const isAdultParam = searchParams.get("isAdult");
   const customerForm = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
-      customerName: "",
-      phoneNumber: "",
+      customerName: customerName || "",
+      phoneNumber: phoneNumber || "",
       address: "",
-      cccdpassport: "",
+      cccdpassport: cccdpassport || "",
       paymentMethod: "Cash",
-      gender: "Male",
-      email: "",
+      gender: (gender as "Male" | "Female" | "Other") || "",
+      email: email || "",
       quantity: 1,
       price: 0,
+      isAdult: isAdultParam === "true",
     },
   });
 

@@ -53,6 +53,7 @@ import {
 import {
   confirmOrder,
   confirmOrderForCharge,
+  GetOrdersById,
 } from "@/components/services/orderuserServices";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
 import { ConfirmOrderData } from "@/types/paymentFlow/orderUser";
@@ -65,6 +66,7 @@ import { ProcessingDialog } from "@/lib/dialog/ProcessingDialog";
 import { QRCodeDialog } from "@/lib/dialog/QRCodeDialog";
 import { UpdateRFIDAlertDialog } from "@/lib/dialog/UpdateRFIDDialog";
 import { useRouter } from "next/navigation";
+import CustomerStatusField from "@/components/field/customerField";
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -131,51 +133,14 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       });
     }
   }, [packageItem, childrenVCardForm]);
-  useEffect(() => {
-    const fetchPromotions = async () => {
-      setIsLoadingPromotions(true);
-      setPromotionError(null);
-      try {
-        const response = await PromotionServices.getPromotions({
-          page: 1,
-          size: 10,
-        });
-
-        // Ensure we're handling the response data structure correctly
-        if (response.data?.data) {
-          // Check if data is an array
-          const promotionsData = Array.isArray(response.data.data)
-            ? response.data.data
-            : Array.isArray(response.data.data[0])
-            ? response.data.data[0]
-            : [];
-
-          setPromotions(promotionsData);
-        } else {
-          setPromotions([]);
-        }
-      } catch (error) {
-        console.error("Error fetching promotions:", error);
-        setPromotionError("Failed to load promotions");
-        toast({
-          title: "Error",
-          description: "Failed to load promotions",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoadingPromotions(false);
-      }
-    };
-
-    fetchPromotions();
-  }, [toast]);
 
   const handleGenerateChildrenVCard = () => {
-    const { name, gender, phoneNumber, email, cccdpassport } = form.getValues();
+    const { name, gender, phoneNumber, email, cccdpassport, isAdult } =
+      form.getValues();
     const packageId = localStorage.getItem("packageIdCurrent");
 
     router.push(
-      `/user/packages/generate/${packageId}?customerName=${name}&gender=${gender}&phoneNumber=${phoneNumber}&email=${email}&cccdpassport=${cccdpassport}`
+      `/user/packages/generate/${packageId}?customerName=${name}&gender=${gender}&phoneNumber=${phoneNumber}&email=${email}&cccdpassport=${cccdpassport}&isAdult=${isAdult}`
     );
   };
   const handleChargeMoney = async (data: {
@@ -186,10 +151,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   }) => {
     try {
       setIsLoading(true);
-      // Đảm bảo chargeAmount là số từ giá trị amount đã nhập
+      // Ensure charge amount is valid
       const chargeAmount = parseInt(amount) || 0;
 
-      // Kiểm tra số tiền hợp lệ
       if (chargeAmount <= 0) {
         toast({
           title: "Error",
@@ -198,6 +162,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         });
         return;
       }
+
       const response = await PackageItemServices.chargeMoney({
         packageItemId: params.id,
         chargeAmount: data.chargeAmount,
@@ -206,20 +171,48 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         promoCode: "no_promotion",
       });
 
-      if (response.status === 200) {
-        const responseData = response.data;
-        if (responseData && responseData.data) {
-          const { urlDirect, invoiceId, transactionChargeId } =
-            responseData.data;
-          localStorage.setItem("pendingInvoiceId", invoiceId);
-          localStorage.setItem("transactionChargeId", transactionChargeId);
-          localStorage.setItem("transactionId", responseData.transactionId);
+      if (response.status === 200 && response.data?.data) {
+        const { urlDirect, invoiceId, transactionChargeId } =
+          response.data.data;
 
-          if (!urlDirect || !invoiceId) {
+        // Store necessary data in localStorage
+        localStorage.setItem("pendingInvoiceId", invoiceId);
+        localStorage.setItem("transactionChargeId", transactionChargeId);
+        localStorage.setItem("transactionId", response.data.transactionId);
+        localStorage.setItem("balance", response.data.data.balance);
+        localStorage.setItem(
+          "packageItemIdCharge",
+          response.data.data.packageItemId
+        );
+        localStorage.setItem("invoiceId", response.data.data.invoiceId);
+
+        if (invoiceId) {
+          try {
+            const responseOrder = await GetOrdersById(invoiceId);
+            const orderData = responseOrder.data?.data?.orderExist;
+
+            if (orderData) {
+              // Safely access nested properties
+              const discountAmount =
+                orderData.promotionOrders?.[0]?.discountAmount ?? 0;
+              const totalAmount = orderData.totalAmount ?? 0;
+              const cusName = orderData.packageOrders?.[0]?.cusName ?? "";
+              const seller = responseOrder.data?.data?.seller ?? "";
+
+              localStorage.setItem("discountAmount", discountAmount.toString());
+              localStorage.setItem("totalAmount", totalAmount.toString());
+              localStorage.setItem("cusName", cusName);
+              localStorage.setItem("seller", seller);
+            }
+          } catch (orderError) {
+            console.error("Error fetching order details:", orderError);
+            // Continue with the process even if order details fetch fails
+          }
+
+          if (!urlDirect) {
             toast({
               title: "Error",
-              description:
-                "Critical data missing from response. Please try again later.",
+              description: "Payment URL is missing from response",
               variant: "destructive",
             });
             return;
@@ -234,11 +227,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           }
         }
       } else {
-        toast({
-          title: "Error",
-          description: `Failed to charge money. Status code: ${response.status}`,
-          variant: "destructive",
-        });
+        throw new Error(
+          `Failed to charge money. Status code: ${response.status}`
+        );
       }
     } catch (error) {
       console.error("Error charging money:", error);
@@ -440,6 +431,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         localStorage.setItem("packageIdCurrent", packageitemData.packageId);
         localStorage.setItem("startDateCustomer", packageitemData.startDate);
         localStorage.setItem("endDateCustomer", packageitemData.endDate);
+        localStorage.setItem("packageId", packageitemData.packageId);
         if (!packageitemData) {
           throw new Error("No etag data received");
         }
@@ -455,6 +447,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           status: packageitemData.status || 0,
           imageUrl: packageitemData.imageUrl || "",
           email: packageitemData.email || "",
+          isAdult: packageitemData.isAdult,
           wallet: {
             balance: packageitemData.wallet?.balance || 0,
             balanceHistory: packageitemData.wallet?.balanceHistory || 0,
@@ -691,6 +684,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                           </FormItem>
                         )}
                       />
+                      <CustomerStatusField
+                        isAdult={form.getValues("isAdult")}
+                      />
                     </div>
                   </div>
                 </div>
@@ -830,7 +826,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             }}
             onConfirm={handleConfirmPayment}
             isConfirming={isConfirming}
-            pendingInvoiceId={pendingInvoiceId}
           />
         </form>
       </Form>

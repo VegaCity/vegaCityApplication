@@ -194,7 +194,7 @@ const GenerateNewCardDialog = ({
               <Input
                 id="quantity"
                 type="number"
-                min="1"
+                max="1"
                 value={quantity}
                 onChange={(e) =>
                   setQuantity(Math.max(1, Number(e.target.value)))
