@@ -26,7 +26,7 @@ const PackagesPage = () => {
           </Link>
         </Button>
       </div>
-      <ZoneTable title="Select Zone to create Store" />
+      <ZoneTable />
       <ZonesPagination />
     </div>
   );

@@ -359,7 +359,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           locationZone: "",
           storeName: "",
           storeAddress: "",
-          phoneNumber: "",
+          phoneNumber: userData.phoneNumber,
           storeEmail: userData.email,
           approvalStatus: "APPROVED",
         }); // Reset form fields when the popup is reopened
@@ -481,7 +481,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                     <FormItem>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0 pointer-events-none"
                           placeholder="Enter Phone Number"
                           {...field}
                         />

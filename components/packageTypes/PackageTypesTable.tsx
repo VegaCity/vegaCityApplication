@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { handleUserStatusFromBe } from "@/types/user/userAccount";
 import { useRouter } from "next/navigation";
 import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 
 interface PackageTypeTableProps {
   limit?: number;
@@ -117,10 +118,16 @@ const PackageTypesTable = ({ limit, title }: PackageTypeTableProps) => {
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{packageType.name}</TableCell>
                 <TableCell>
-                  {new Date(packageType.crDate).toLocaleDateString()}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: packageType.crDate,
+                  })}
                 </TableCell>
                 <TableCell>
-                  {new Date(packageType.upsDate).toLocaleDateString()}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: packageType.upsDate,
+                  })}
                 </TableCell>
                 <TableCell>
                   <Badge

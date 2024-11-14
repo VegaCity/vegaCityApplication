@@ -33,6 +33,8 @@ import {
   handleBadgeStatusColor,
   handleBadgeStatusColorString,
 } from "@/lib/utils/statusUtils";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 interface UserSessionTableProps {
   limit?: number;
@@ -106,14 +108,6 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
 
   const filteredSessions = limit ? sessionList.slice(0, limit) : sessionList;
 
-  // Function to format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
   return (
     <div className="mt-10">
       <h3 className="text-2xl mb-4 font-semibold">
@@ -151,16 +145,22 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{session.userId}</TableCell>
                 <TableCell>
-                  {new Date(session.startDate).toLocaleDateString()}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: session.startDate,
+                  })}
                 </TableCell>
                 <TableCell>
-                  {new Date(session.endDate).toLocaleDateString()}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: session.endDate,
+                  })}
                 </TableCell>
                 <TableCell>
-                  {formatCurrency(session.totalCashReceive)}
+                  {formatVNDCurrencyValue(session.totalCashReceive)}
                 </TableCell>
                 <TableCell>
-                  {formatCurrency(session.totalFinalAmountOrder)}
+                  {formatVNDCurrencyValue(session.totalFinalAmountOrder)}
                 </TableCell>
                 <TableCell>
                   <Badge

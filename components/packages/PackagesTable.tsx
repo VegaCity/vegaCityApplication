@@ -31,6 +31,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { Badge } from "@/components/ui/badge";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 interface PackageTableProps {
   limit?: number;
@@ -103,14 +104,6 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
 
   const filteredPackages = limit ? packageList.slice(0, limit) : packageList;
 
-  // Function to format price
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
   return (
     <div className="mt-5">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
@@ -163,7 +156,9 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                   )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <p className="font-bold">{formatPrice(pkg.price)}</p>
+                  <p className="font-bold">
+                    {formatVNDCurrencyValue(pkg.price)}
+                  </p>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Badge className="bg-slate-500 text-white">

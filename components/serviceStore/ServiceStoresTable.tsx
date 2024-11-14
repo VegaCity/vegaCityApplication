@@ -8,7 +8,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { StoreService, ServiceResponse } from "@/types/store/serviceStore";
+import {
+  StoreService,
+  ServiceResponse,
+  GetServicesStore,
+} from "@/types/store/serviceStore";
 import Link from "next/link";
 import {
   AlertDialog,
@@ -25,9 +29,11 @@ import { ServiceStoreServices } from "@/components/services/Store/servicesStoreS
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { Loader } from "@/components/loader/Loader";
 import { toast } from "@/components/ui/use-toast";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 
 const ServiceStoresTable = () => {
-  const [stores, setStores] = useState<StoreService[]>([]);
+  const [stores, setStores] = useState<GetServicesStore[]>([]);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -43,7 +49,7 @@ const ServiceStoresTable = () => {
         page: currentPage,
         size: 10,
       });
-      const serviceResponse: ServiceResponse = response.data;
+      const serviceResponse = response.data;
       setStores(serviceResponse.data);
       setTotalPages(serviceResponse.metaData.totalPage);
     } catch (error) {
@@ -83,9 +89,8 @@ const ServiceStoresTable = () => {
           <TableRow>
             <TableHead>NO</TableHead>
             <TableHead>Name</TableHead>
-            <TableHead>Created Date</TableHead>
+            <TableHead>Price</TableHead>
             <TableHead>Updated Date</TableHead>
-            <TableHead>Active</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -94,9 +99,10 @@ const ServiceStoresTable = () => {
             <TableRow key={store.id}>
               <TableCell>{i + 1}</TableCell>
               <TableCell>{store.name}</TableCell>
-              <TableCell>{new Date(store.crDate).toLocaleString()}</TableCell>
-              <TableCell>{new Date(store.upsDate).toLocaleString()}</TableCell>
-              <TableCell>{store.deflag ? "No" : "Yes"}</TableCell>
+              <TableCell>{formatVNDCurrencyValue(store.price || 0)}</TableCell>
+              <TableCell>
+                {formatDateTime({ type: "date", dateTime: store.upsDate })}
+              </TableCell>
               <TableCell>
                 <PopoverActionTable
                   item={store}

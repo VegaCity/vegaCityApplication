@@ -5,6 +5,8 @@ export interface GetServicesStore {
   crDate: string;
   upsDate: string;
   deflag: boolean;
+  price: number;
+  imageUrl?: string | null;
 }
 
 export interface PatchServicesStore {
@@ -14,6 +16,8 @@ export interface PatchServicesStore {
 export interface PostServicesStore {
   name: string;
   storeId: string;
+  imageUrl?: string | null;
+  price: number;
 }
 
 export interface StoreService {

@@ -16,15 +16,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { PatchServicesStore } from "@/types/store/serviceStore";
+import { PostServicesStore } from "@/types/store/serviceStore";
 import { ServiceStoreServices } from "@/components/services/Store/servicesStoreServices";
 import { useRouter } from "next/navigation";
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import {
+  EditServiceStoreFormValues,
+  editServiceStoreFormSchema,
+} from "@/lib/validation";
 
 interface StoreEditPageProps {
   params: {
@@ -39,10 +37,11 @@ const ServiceStoreEditPage = ({ params }: StoreEditPageProps) => {
   const [isForbidden, setIsForbidden] = useState(false);
   const router = useRouter();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<EditServiceStoreFormValues>({
+    resolver: zodResolver(editServiceStoreFormSchema),
     defaultValues: {
       name: "",
+      price: 0,
     },
   });
 
@@ -53,10 +52,13 @@ const ServiceStoreEditPage = ({ params }: StoreEditPageProps) => {
         const response = await ServiceStoreServices.getServicesStoreById(
           params.id
         );
-        const storeData = response.data.data;
+        const storeData: PostServicesStore = Array.isArray(response.data.data)
+          ? response.data.data
+          : [];
         if (storeData) {
           form.reset({
             name: storeData.name,
+            price: storeData.price,
           });
         }
       } catch (err) {
@@ -76,11 +78,9 @@ const ServiceStoreEditPage = ({ params }: StoreEditPageProps) => {
     fetchStore();
   }, [params.id, form]);
 
-  const handleSubmit = async (data: { name: string }) => {
+  const handleSubmit = async (data: EditServiceStoreFormValues) => {
     try {
-      const updatedStore: PatchServicesStore = {
-        name: data.name,
-      };
+      const updatedStore = data;
 
       await ServiceStoreServices.editServiceStore(params.id, updatedStore);
 
@@ -126,7 +126,7 @@ const ServiceStoreEditPage = ({ params }: StoreEditPageProps) => {
   return (
     <>
       <BackButton text="Back To Stores" link="/admin/servicesStore" />
-      <h3 className="text-2xl mb-4">Edit Store</h3>
+      <h3 className="text-2xl mb-4">Edit Service Store</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           <FormField
@@ -135,14 +135,45 @@ const ServiceStoreEditPage = ({ params }: StoreEditPageProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Store Name
+                  Service Name
                 </FormLabel>
                 <FormControl>
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Store Name"
+                    placeholder="Enter Service Name"
                     {...field}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Price(VND)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Enter Service Price"
+                      value={field.value?.toLocaleString("vi-VN") ?? 0}
+                      onChange={(e) => {
+                        //convert string to number
+                        const input = e.target.value;
+                        const numericValue = parseFloat(
+                          input.replace(/[.]/g, "")
+                        );
+                        field.onChange(numericValue || 0);
+                      }}
+                    />
+                    <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                      VND
+                    </span>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -10,6 +10,8 @@ import { StoreServices } from "@/components/services/Store/storeServices";
 import { useRouter } from "next/navigation";
 import { Store } from "@/types/store/store";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 
 interface StoreDetailProps {
   params: { id: string };
@@ -162,13 +164,20 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
               <TableBody>
                 {storeDetail.menus.map((menu, index) => (
                   <TableRow key={index}>
-                    <TableCell>Report {index + 1}</TableCell>
+                    <TableCell>Menu {index + 1}</TableCell>
                     {(JSON.parse(menu.menuJson) as StoreMenu[]).map(
                       (storeMenu, index) => (
                         <TableRow key={index}>
                           <TableCell>Item: {index + 1}</TableCell>
                           <TableCell>{storeMenu.Name}</TableCell>
-                          <TableCell>{storeMenu.ImgUrl}</TableCell>
+                          <TableCell>
+                            <Image
+                              src={validImageUrl(storeMenu.ImgUrl)}
+                              width={200}
+                              height={150}
+                              alt="menuImage"
+                            />
+                          </TableCell>
                           <TableCell>{storeMenu.Price}</TableCell>
                           <TableCell>{storeMenu.ProductCategory}</TableCell>
                         </TableRow>

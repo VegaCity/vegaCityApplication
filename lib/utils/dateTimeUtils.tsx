@@ -3,11 +3,14 @@ interface SelectType {
   dateTime: string;
 }
 
-export const splitDateTime = ({ type, dateTime }: SelectType) => {
-  const splitDateTime = dateTime.split("T");
+export const formatDateTime = ({ type, dateTime }: SelectType) => {
+  const splitDateTime = dateTime?.split("T");
+  const formatVNDate = new Date(dateTime).toLocaleDateString("vi-VN");
+  const formatVNTime = new Date(dateTime).toLocaleTimeString("vi-VN");
+
+  console.log(formatVNTime, "timeee");
   if (type === "date") {
-    // return dateTime.split("T", 1);
-    return splitDateTime[0];
+    return formatVNDate;
   } else if (type === "time") {
     return splitDateTime[1];
   } else {

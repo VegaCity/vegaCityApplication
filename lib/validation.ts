@@ -284,8 +284,20 @@ export const createUserAccountFormSchema = z.object({
 });
 
 export const serviceStoreFormSchema = z.object({
-  name: z.string().min(1, "Tên phải ít nhất 1 ký tự"),
-  storeId: z.string().min(1, "Cần trường StoreId"),
+  name: z.string().min(1, "Name must at least one character"),
+  storeId: z.string().min(1, "StoreId is required!"),
+  price: z
+    .number()
+    .min(1000, { message: "Price must at least 1.000 VND" })
+    .max(10000000, { message: "Price does not exceed 10 millions VND" }),
+});
+
+export const editServiceStoreFormSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  price: z
+    .number()
+    .min(1000, { message: "Price must at least 1.000 VND" })
+    .max(10000000, { message: "Price does not exceed 10 millions VND" }),
 });
 
 export const loginFormSchema = z.object({
@@ -519,6 +531,9 @@ export type EtagFormValues = z.infer<typeof etagFormSchema>;
 export type UserAccountFormValues = z.infer<typeof userAccountFormSchema>;
 export type loginFormValues = z.infer<typeof loginFormSchema>;
 export type ServiceStoreFormValues = z.infer<typeof serviceStoreFormSchema>;
+export type EditServiceStoreFormValues = z.infer<
+  typeof editServiceStoreFormSchema
+>;
 export type StoreFormValues = z.infer<typeof storeFormSchema>;
 export type EtagTypeFormValues = z.infer<typeof etagTypeFormSchema>;
 export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;

@@ -44,6 +44,7 @@ const ServiceStoreCreatePage = () => {
     defaultValues: {
       name: "",
       storeId: "",
+      price: 0,
     },
   });
 
@@ -51,7 +52,7 @@ const ServiceStoreCreatePage = () => {
     // Create a new object that includes the apiKey
     const serviceStoreData: PostServicesStore = data;
 
-    console.log("New user data:", serviceStoreData);
+    console.log("New service store:", serviceStoreData);
     if (serviceStoreData) {
       ServiceStoreServices.createServicesStore(serviceStoreData).then((res) => {
         console.log(res.data, "Create Service Store");
@@ -90,7 +91,7 @@ const ServiceStoreCreatePage = () => {
   return (
     <>
       <BackButton text="Back To Services Store" link="/admin/servicesStore" />
-      <h3 className="text-2xl mb-4">Create New Services Store</h3>
+      <h3 className="text-2xl mb-4">Create New Service Store</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           <FormField
@@ -137,6 +138,40 @@ const ServiceStoreCreatePage = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  Price(VND)
+                </FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                      placeholder="Enter Price"
+                      value={field.value?.toLocaleString("vi-VN") ?? 0}
+                      onChange={(e) => {
+                        //convert string to number
+                        const value = e.target.value;
+                        const numbericValue = parseFloat(
+                          value.replace(/[.]/g, "")
+                        );
+                        field.onChange(numbericValue || 0);
+                      }}
+                    />
+                    <span className="absolute inset-y-0 flex items-center right-2 text-gray-400 pointer-events-none">
+                      VND
+                    </span>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

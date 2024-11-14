@@ -14,7 +14,8 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { splitDateTime } from "@/lib/utils/dateTimeUtils";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
 import {
   handlePromotionStatusFromBe,
@@ -93,14 +94,6 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
     ? promotionList.slice(0, limit)
     : promotionList;
 
-  // Function to format max discount as currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(amount);
-  };
-
   return (
     <div className="mt-5">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Promotions"}</h3>
@@ -161,7 +154,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 <TableCell className="hidden md:table-cell">
                   {promo.maxDiscount ? (
                     <p className="font-bold">
-                      {formatCurrency(promo.maxDiscount)}
+                      {formatVNDCurrencyValue(promo.maxDiscount)}
                     </p>
                   ) : (
                     <Minus />
@@ -182,7 +175,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 <TableCell className="hidden md:table-cell">
                   {promo.requireAmount !== null ? (
                     <p className="font-bold">
-                      {formatCurrency(promo.requireAmount)}
+                      {formatVNDCurrencyValue(promo.requireAmount)}
                     </p>
                   ) : (
                     <Minus />
@@ -197,7 +190,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                   {splitDateTime({ type: "date", dateTime: promo.startDate })}
                 </TableCell> */}
                 <TableCell className="hidden md:table-cell">
-                  {splitDateTime({ type: "date", dateTime: promo.endDate })}
+                  {formatDateTime({ type: "date", dateTime: promo.endDate })}
                 </TableCell>
                 <TableCell
                   onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
