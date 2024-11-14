@@ -17,13 +17,13 @@ import {
   EtagFormValues,
   GenerateEtag,
 } from "@/lib/validation";
-
+import { useRouter, useSearchParams } from "next/navigation";
 interface UseEtagHandlersProps {
   customerForm: UseFormReturn<CustomerFormValues>;
   packageData: any;
   setShowTimer: any;
 }
-import { useRouter } from "next/navigation";
+
 export const useEtagHandlers = ({
   customerForm,
   packageData,
@@ -122,38 +122,55 @@ export const useEtagHandlers = ({
       );
     }
   };
-
-  const handleGenerateVCard = async (quantity: number) => {
+  const searchParams = useSearchParams();
+  const isAdultParam = searchParams.get("isAdult");
+  const handleGenerateVCardForAdult = async (quantity: number) => {
     try {
-      const packageId = localStorage.getItem("packageId") || "";
-      const response = await PackageItemServices.generatePackageItemForChild(
-        quantity
-      );
-
+      const response = await PackageItemServices.generatePackageItem(quantity);
       if (response.status === 201) {
         const vcardData = response.data;
         // Process the vcardData as needed
-        // toast.success('VCard generated successfully.');
         toast({
           title: "Success",
           description: "VCard generated successfully.",
         });
-        // localStorage.setItem("packageItemIdNew", response.data.data[0].id);
-        // setTimeout(() => {
-        //   router.push("/user/package-items");
-        // }, 3000);
       } else {
         throw new Error(
-          `Failed to generate VCard. Status code: ${response.status}`
+          `Failed to generate VCard for adult. Status code: ${response.status}`
         );
       }
     } catch (error) {
-      console.error("Error generating VCard:", error);
+      console.error("Error generating VCard for adult:", error);
       toast({
         title: "Error",
-        description: "Failed to generate VCard. Please try again.",
+        description: "Failed to generate VCard for adult. Please try again.",
       });
-      // toast.error('Failed to generate VCard. Please try again.');
+    }
+  };
+
+  const handleGenerateVCardForMinor = async (quantity: number) => {
+    try {
+      const response = await PackageItemServices.generatePackageItemForChild(
+        quantity
+      );
+      if (response.status === 201) {
+        const vcardData = response.data;
+        // Process the vcardData as needed
+        toast({
+          title: "Success",
+          description: "VCard generated successfully.",
+        });
+      } else {
+        throw new Error(
+          `Failed to generate VCard for minor. Status code: ${response.status}`
+        );
+      }
+    } catch (error) {
+      console.error("Error generating VCard for minor:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate VCard for minor. Please try again.",
+      });
     }
   };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
@@ -237,24 +254,30 @@ export const useEtagHandlers = ({
     }
 
     const paymentMethod = customerForm.getValues("paymentMethod");
+    const quantity = customerForm.getValues("quantity");
 
     try {
       if (paymentMethod.toLowerCase() === "cash") {
         confirmOrderForCharge({
-          invoiceId: localStorage.getItem("invoiceId") || "",
+          invoiceId,
           transactionId: localStorage.getItem("transactionId") || "",
           transactionChargeId:
             localStorage.getItem("transactionChargeId") || "",
         });
         setIsOrderConfirmed(true);
-        await handleGenerateVCard(customerForm.getValues("quantity"));
+        if (isAdultParam === "true") {
+          await handleGenerateVCardForMinor(quantity);
+        } else {
+          await handleGenerateVCardForAdult(quantity);
+        }
       } else {
         await initiatePayment(paymentMethod, invoiceId);
-        await handleGenerateVCard(customerForm.getValues("quantity"));
+        if (isAdultParam === "true") {
+          await handleGenerateVCardForMinor(quantity);
+        } else {
+          await handleGenerateVCardForAdult(quantity);
+        }
       }
-
-      // Clear packageItemId from localStorage on successful confirmation
-      localStorage.removeItem("packageItemId");
     } catch (err) {
       console.error("Error in order confirmation:", err);
       toast({
@@ -273,7 +296,7 @@ export const useEtagHandlers = ({
     orderId,
     packageData,
     handleCustomerInfoSubmit,
-    handleGenerateVCard,
+
     customerForm,
     handleCancelOrder,
     handleConfirmOrder,
