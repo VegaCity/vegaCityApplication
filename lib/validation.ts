@@ -502,6 +502,7 @@ export const editPromotionFormSchema = z
         "The begin date must be today or the following day!"
       ),
     endDate: z.string(),
+    status: z.string().nullable(),
   })
   .refine(
     (data) => {

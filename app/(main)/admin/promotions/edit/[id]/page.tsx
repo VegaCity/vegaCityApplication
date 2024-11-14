@@ -24,6 +24,7 @@ import {
   EditPromotionFormValues,
   editPromotionFormSchema,
 } from "@/lib/validation";
+import { isObject } from "@/lib/isObject";
 
 interface PromotionEditPageProps {
   params: {
@@ -39,6 +40,8 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
   const [promotionData, setPromotionData] = useState<PromotionPatch | null>(
     null
   );
+  //Promotion Status
+  const [isAutomationEnabled, setIsAutomationEnabled] = useState(false);
 
   const form = useForm<EditPromotionFormValues>({
     resolver: zodResolver(editPromotionFormSchema),
@@ -51,6 +54,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
       discountPercent: 0,
       startDate: "",
       endDate: "",
+      status: "",
     },
   });
 
@@ -88,17 +92,31 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
     }
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    setIsAutomationEnabled(isChecked);
+    if (isChecked) {
+      // Set Automation
+      form.setValue("status", "Automation");
+    } else {
+      form.setValue("status", null);
+    }
+  };
+
   useEffect(() => {
     const fetchPromotionData = async () => {
       setIsLoading(true);
       try {
         const response = await PromotionServices.getPromotionById(params.id);
-        const promoData: Promotion = response.data.data.promotion;
+        const promoData =
+          isObject(response.data.data.promotion) &&
+          response.data.data.promotion;
+
         setPromotionData(promoData);
         const roundDiscountPercent: number = convertDiscountPercent(
           promoData.discountPercent || 0
         );
-
+        console.log(promoData, "promo dataaa");
         if (promoData) {
           form.reset({ ...promoData, discountPercent: roundDiscountPercent });
         }
@@ -175,70 +193,29 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
 
           <FormField
             control={form.control}
-            name="maxDiscount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Max Discount
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 text-black dark:text-white"
-                    placeholder="Enter Max Discount"
-                    value={field.value ?? 0}
-                    onChange={(event) => {
-                      field.onChange(event.target.valueAsNumber);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
             name="requireAmount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Required Amount
-                </FormLabel>
+                <FormLabel>Require Amount(VND)</FormLabel>
                 <FormControl>
-                  <Input
-                    type="number"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 text-black dark:text-white"
-                    placeholder="Enter Required Amount"
-                    value={field.value ?? 0}
-                    onChange={(event) => {
-                      field.onChange(event.target.valueAsNumber);
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="quantity"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Quantity
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 text-black dark:text-white"
-                    placeholder="Enter Quantity"
-                    value={field.value ?? 0}
-                    onChange={(event) => {
-                      field.onChange(event.target.valueAsNumber);
-                    }}
-                  />
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Enter require amount"
+                      value={field.value?.toLocaleString("vi-VN") ?? 0}
+                      onChange={(e) => {
+                        //convert string to number
+                        const input = e.target.value;
+                        const numericValue = parseFloat(
+                          input.replace(/[.]/g, "")
+                        );
+                        field.onChange(numericValue || 0);
+                      }}
+                    />
+                    <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                      VND
+                    </span>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -250,18 +227,97 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
             name="discountPercent"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Discount Percent
-                </FormLabel>
+                <FormLabel>Discount Percent(%)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      placeholder="Enter discount percent"
+                      value={field.value ?? 0}
+                      onChange={(e) => {
+                        // Ensure only positive values
+                        let value = e.target.valueAsNumber;
+                        if (value < 0) value = 0;
+                        if (value > 100) value = 100;
+
+                        field.onChange(value);
+                      }}
+                    />
+                    <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                      %
+                    </span>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Quantity</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
-                    className="bg-slate-100 dark:bg-slate-500 border-0 text-black dark:text-white"
-                    placeholder="Enter Discount Percent"
+                    placeholder="Enter quantity"
                     value={field.value ?? 0}
-                    onChange={(event) => {
-                      field.onChange(event.target.valueAsNumber);
+                    onChange={(e) => {
+                      field.onChange(e.target.valueAsNumber);
                     }}
+                    // {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="maxDiscount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Max Discount(VND)</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Enter max discount"
+                      className="pr-8" // Padding for unit suffix
+                      value={field.value?.toLocaleString("vi-VN") || 0}
+                      onChange={(e) => {
+                        //convert string to number
+                        const input = e.target.value;
+                        const numericValue = parseFloat(
+                          input.replace(/[.]/g, "")
+                        );
+                        field.onChange(numericValue || 0);
+                      }}
+                    />
+                    <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                      VND
+                    </span>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Auto Promotion</FormLabel>
+                <FormControl>
+                  <Input
+                    type="checkbox"
+                    // checked={field.value || ""} // Ensure `checked` reflects the form state
+                    onChange={handleCheckboxChange} // Set the field value to true/false
                   />
                 </FormControl>
                 <FormMessage />

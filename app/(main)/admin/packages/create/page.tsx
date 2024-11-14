@@ -285,7 +285,7 @@ const PackageCreatePage = () => {
                           field.onChange(numericValue || 0);
                         }}
                       />
-                      <span className="absolute inset-y-0 right-2 text-gray-400 pointer-events-none">
+                      <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
                         VND
                       </span>
                     </div>
@@ -425,7 +425,7 @@ const PackageCreatePage = () => {
                           field.onChange(numericValue || 0);
                         }}
                       />
-                      <span className="absolute inset-y-0 right-2 text-gray-400 pointer-events-none">
+                      <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
                         VND
                       </span>
                     </div>
