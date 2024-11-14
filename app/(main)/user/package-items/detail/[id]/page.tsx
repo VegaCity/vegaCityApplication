@@ -91,20 +91,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       packageItemId: "",
     },
   });
-  const customerForm = useForm<CustomerFormValues>({
-    resolver: zodResolver(customerFormSchema),
-    defaultValues: {
-      customerName: "",
-      phoneNumber: "",
-      address: "",
-      cccdpassport: "",
-      paymentMethod: "Cash",
-      gender: "Male",
-      email: "",
-      quantity: 1,
-      price: 0,
-    },
-  });
+
   const handleUpdateRFID = async (rfid: string) => {
     try {
       // Call API to update RFID
@@ -265,10 +252,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       setIsPopupOpen(false);
     }
   };
-  useEffect(() => {
-    console.log("isProcessingPopupOpen:", isProcessingPopupOpen);
-    console.log("shouldShowAlertDialog:", shouldShowAlertDialog);
-  }, [isProcessingPopupOpen, shouldShowAlertDialog]);
+
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
       let paymentResponse;
