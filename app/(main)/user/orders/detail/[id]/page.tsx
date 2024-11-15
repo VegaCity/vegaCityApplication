@@ -17,7 +17,10 @@ import {
   User,
   FileText,
 } from "lucide-react";
-import { GetOrdersById } from "@/components/services/orderuserServices";
+import {
+  GetOrdersById,
+  GetOrdersDetails,
+} from "@/components/services/orderuserServices";
 
 const OrderDetailPage = () => {
   const params = useParams();
@@ -32,7 +35,7 @@ const OrderDetailPage = () => {
     const fetchOrderDetail = async () => {
       try {
         setLoading(true);
-        const response = await GetOrdersById(params.id as string);
+        const response = await GetOrdersDetails(params.id as string);
         if (response.data.orderExist) {
           setOrder(response.data.orderExist);
         } else {
