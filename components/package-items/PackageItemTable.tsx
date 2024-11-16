@@ -41,10 +41,10 @@ import PackageItemAction from "../popover/PackageAction";
 interface PackageItem {
   id: string;
   packageId: string;
-  cccdpassport: string | null;
-  email: string | null;
+  cusCccdpassport: string | null;
+  cusEmail: string | null;
   gender: string | null;
-  name: string | null;
+  cusName: string | null;
   phoneNumber: string | null;
   rfid: string | null;
   status: string;
@@ -173,8 +173,10 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       const matchesStatus = !selectedStatus || item.status === selectedStatus;
       const matchesSearch =
         !searchTerm ||
-        item.cccdpassport?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.cusCccdpassport
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        item.cusName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.phoneNumber?.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesStatus && matchesSearch;
     });
@@ -406,8 +408,8 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
           {filteredPackageItems.map((item, index) => (
             <TableRow key={item.id}>
               <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
-              <TableCell>{item.cccdpassport || "-"}</TableCell>
-              <TableCell>{item.name || "-"}</TableCell>
+              <TableCell>{item.cusCccdpassport || "-"}</TableCell>
+              <TableCell>{item.cusName || "-"}</TableCell>
               <TableCell>{item.phoneNumber || "-"}</TableCell>
               <TableCell>{item.isAdult ? "Adult" : "Child"}</TableCell>
               <TableCell>{formatDate(item.crDate)}</TableCell>

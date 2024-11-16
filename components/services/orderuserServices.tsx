@@ -5,6 +5,7 @@ import {
   ConfirmOrderForChargeData,
   OrderStoreData,
   ConfirmOrderForGenerateNewCardData,
+  ConfirmOrderForChargeVCardData,
 } from "@/types/paymentFlow/orderUser";
 export const GetOrders = async (page: number) => {
   try {
@@ -76,6 +77,17 @@ export const confirmOrderForCharge = async (
     throw error;
   }
 };
+export const confirmOrderForChargeVCard = async (
+  confirmData: ConfirmOrderForChargeVCardData
+) => {
+  try {
+    const response = await API.post("/order/cashier/confirm", confirmData);
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming order:", error);
+    throw error;
+  }
+};
 export const confirmOrder = async (confirmData: ConfirmOrderData) => {
   try {
     const response = await API.post("/order/confirm", confirmData);
@@ -97,7 +109,7 @@ export const deleteOrder = async (id: string) => {
 };
 export const detailOrder = async (id: string) => {
   try {
-    const response = await API.get(`/order/${id}`);
+    const response = await API.get(`/order/?id=${id}`);
     return response.data;
   } catch (error) {
     console.error("Error deleting order:", error);

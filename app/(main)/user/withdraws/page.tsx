@@ -27,9 +27,9 @@ import { StoreDetail } from "@/types/store/store";
 type PackageItemDetail = {
   id: string;
   packageId: string;
-  name: string;
+  cusName: string;
   phoneNumber: string;
-  cccdpassport: string;
+  cusCccdpassport: string;
   type?: "CUSTOMER" | "STORE";
 };
 
@@ -166,13 +166,11 @@ const WithdrawMoney = () => {
     setWithdrawAmount(value);
     setError("");
   };
-
   const fetchPackageItemInfo = useCallback(
     async (packageItemCode: string) => {
       try {
         setIsLoading(true);
         setError("");
-        // Add type parameter to the API call based on active tab
         const response = await API.get(
           `/package-item/?id=${packageItemCode}&type=${activeTab.toUpperCase()}`
         );
@@ -181,21 +179,28 @@ const WithdrawMoney = () => {
           const data = response.data.data;
 
           if (data) {
-            if (data.wallet) {
+            // Check if wallets array exists and has items
+            if (data.wallets && data.wallets.length > 0) {
+              const wallet = data.wallets[0];
               setWalletInfo({
-                id: data.walletId,
-                balance: data.wallet.balance,
+                id: wallet.id,
+                balance: wallet.balance || 0, // Ensure balance exists or default to 0
               });
             }
 
+            // Set package item details with all available data
             setPackageItemDetails({
               id: data.id,
               packageId: data.packageId,
-              name: data.name,
+              cusName: data.cusName,
               phoneNumber: data.phoneNumber,
-              cccdpassport: data.cccdpassport,
+              cusCccdpassport: data.cusCccdpassport,
               type: activeTab.toUpperCase() as "CUSTOMER" | "STORE",
             });
+
+            // Log successful data setting
+            console.log("Wallet Info Set:", Wallet);
+            console.log("Package Details Set:", data);
           } else {
             throw new Error("Package-Item data structure is missing.");
           }
@@ -207,7 +212,11 @@ const WithdrawMoney = () => {
         }
       } catch (err) {
         console.error("Error fetching package item info:", err);
-        setError("Đã có lỗi xảy ra. Vui lòng kiểm tra lại.");
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Đã có lỗi xảy ra. Vui lòng kiểm tra lại."
+        );
         setWalletInfo(null);
         setPackageItemDetails(null);
       } finally {
@@ -291,7 +300,7 @@ const WithdrawMoney = () => {
           title: "Success",
           description: "Withdrawal successfully processed.",
         });
-        setTimeout(() => window.location.reload(), 2500);
+        // setTimeout(() => window.location.reload(), 2500);
       } else {
         throw new Error(
           response.data.messageResponse || "Cannot process withdrawal"
@@ -359,7 +368,7 @@ const WithdrawMoney = () => {
                 <p className="text-sm text-gray-600">
                   Name:{" "}
                   <span className="font-semibold text-gray-900">
-                    {packageItemDetails.name}
+                    {packageItemDetails.cusName}
                   </span>
                 </p>
                 <p className="text-sm text-gray-600">
@@ -371,7 +380,7 @@ const WithdrawMoney = () => {
                 <p className="text-sm text-gray-600">
                   ID/Passport:{" "}
                   <span className="font-semibold text-gray-900">
-                    {packageItemDetails.cccdpassport}
+                    {packageItemDetails.cusCccdpassport}
                   </span>
                 </p>
               </div>
@@ -624,7 +633,7 @@ const WithdrawMoney = () => {
                 <p className="text-sm text-gray-600">
                   {activeTab === "customer" ? "Customer" : "Store"}:{" "}
                   <span className="font-semibold text-gray-900">
-                    {packageItemDetails.name}
+                    {packageItemDetails.cusName}
                   </span>
                 </p>
                 <p className="text-sm text-gray-600">
@@ -636,7 +645,7 @@ const WithdrawMoney = () => {
                 <p className="text-sm text-gray-600">
                   ID/Passport:{" "}
                   <span className="font-semibold text-gray-900">
-                    {packageItemDetails.cccdpassport}
+                    {packageItemDetails.cusCccdpassport}
                   </span>
                 </p>
               </div>

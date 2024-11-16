@@ -90,7 +90,7 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
               </label>
               <Input
                 type="text"
-                {...form.register("cccdpassport")}
+                {...form.register("cccdPassport", { required: true })}
                 readOnly
                 className="h-12 rounded-lg"
               />

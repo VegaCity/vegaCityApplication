@@ -42,9 +42,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const [packageData, setPackageData] = useState<any>(null);
   const [showTimer, setShowTimer] = useState(false);
   const router = useRouter();
-
   const searchParams = useSearchParams();
-
   const customerName = searchParams.get("customerName");
   const gender = searchParams.get("gender");
   const phoneNumber = searchParams.get("phoneNumber");
@@ -56,10 +54,8 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     defaultValues: {
       customerName: customerName || "",
       phoneNumber: phoneNumber || "",
-      address: "",
       cccdpassport: cccdpassport || "",
       paymentMethod: "Cash",
-      gender: (gender as "Male" | "Female" | "Other") || "",
       email: email || "",
       quantity: 1,
       price: 0,
@@ -294,34 +290,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={customerForm.control}
-                  name="gender"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Gender
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        disabled={isCustomerInfoConfirmed}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Please select gender" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -412,27 +380,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={customerForm.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Address
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Please enter address"
-                          {...field}
-                          disabled={isCustomerInfoConfirmed}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={customerForm.control}
                   name="paymentMethod"

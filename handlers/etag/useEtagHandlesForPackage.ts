@@ -99,8 +99,7 @@ export const useEtagHandlers = ({
         customerInfo: {
           fullName: data.customerName,
           phoneNumber: data.phoneNumber,
-          address: data.address,
-          gender: data.gender,
+          // gender: data.gender,
           cccdPassport: data.cccdpassport,
           email: data.email,
         },
@@ -124,12 +123,23 @@ export const useEtagHandlers = ({
   };
   const searchParams = useSearchParams();
   const isAdultParam = searchParams.get("isAdult");
-  const handleGenerateVCardForAdult = async (quantity: number) => {
+
+  const handleGenerateVCardForAdult = async (
+    quantity: number,
+    customerInfo: any
+  ) => {
     try {
-      const response = await PackageItemServices.generatePackageItem(quantity);
+      const response = await PackageItemServices.generatePackageItem({
+        quantity,
+        packageId: packageData.id,
+        cusName: customerInfo.fullName,
+        cusEmail: customerInfo.email,
+        cusCccdpassport: customerInfo.cccdPassport,
+        phoneNumber: customerInfo.phoneNumber,
+      });
+
       if (response.status === 201) {
         const vcardData = response.data;
-        // Process the vcardData as needed
         toast({
           title: "Success",
           description: "VCard generated successfully.",
@@ -148,14 +158,22 @@ export const useEtagHandlers = ({
     }
   };
 
-  const handleGenerateVCardForMinor = async (quantity: number) => {
+  const handleGenerateVCardForMinor = async (
+    quantity: number,
+    customerInfo: any
+  ) => {
     try {
-      const response = await PackageItemServices.generatePackageItemForChild(
-        quantity
-      );
+      const response = await PackageItemServices.generatePackageItemForChild({
+        quantity,
+        packageId: packageData.id,
+        cusName: customerInfo.fullName,
+        cusEmail: customerInfo.email,
+        cusCccdpassport: customerInfo.cccdPassport,
+        phoneNumber: customerInfo.phoneNumber,
+      });
+
       if (response.status === 201) {
         const vcardData = response.data;
-        // Process the vcardData as needed
         toast({
           title: "Success",
           description: "VCard generated successfully.",
@@ -255,27 +273,64 @@ export const useEtagHandlers = ({
 
     const paymentMethod = customerForm.getValues("paymentMethod");
     const quantity = customerForm.getValues("quantity");
+    const customerInfo = customerForm.getValues();
 
     try {
       if (paymentMethod.toLowerCase() === "cash") {
-        confirmOrderForCharge({
+        // First confirm the cash payment
+        const confirmResult = await confirmOrderForCharge({
           invoiceId,
           transactionId: localStorage.getItem("transactionId") || "",
-          transactionChargeId:
-            localStorage.getItem("transactionChargeId") || "",
         });
-        setIsOrderConfirmed(true);
-        if (isAdultParam === "true") {
-          await handleGenerateVCardForMinor(quantity);
-        } else {
-          await handleGenerateVCardForAdult(quantity);
+
+        // Only proceed with vCard generation if confirmation was successful
+        if (confirmResult) {
+          setIsOrderConfirmed(true);
+
+          try {
+            if (isAdultParam === "true") {
+              await handleGenerateVCardForMinor(quantity, {
+                fullName: customerInfo.customerName,
+                email: customerInfo.email,
+                cccdPassport: customerInfo.cccdpassport,
+                phoneNumber: customerInfo.phoneNumber,
+              });
+            } else {
+              await handleGenerateVCardForAdult(quantity, {
+                fullName: customerInfo.customerName,
+                email: customerInfo.email,
+                cccdPassport: customerInfo.cccdpassport,
+                phoneNumber: customerInfo.phoneNumber,
+              });
+            }
+          } catch (generateError) {
+            console.error("Error generating vCard:", generateError);
+            toast({
+              title: "Warning",
+              description:
+                "Payment confirmed but failed to generate vCard. Please contact support.",
+              variant: "destructive",
+            });
+          }
         }
       } else {
+        // For non-cash payments, proceed with normal payment flow
         await initiatePayment(paymentMethod, invoiceId);
+
         if (isAdultParam === "true") {
-          await handleGenerateVCardForMinor(quantity);
+          await handleGenerateVCardForMinor(quantity, {
+            fullName: customerInfo.customerName,
+            email: customerInfo.email,
+            cccdPassport: customerInfo.cccdpassport,
+            phoneNumber: customerInfo.phoneNumber,
+          });
         } else {
-          await handleGenerateVCardForAdult(quantity);
+          await handleGenerateVCardForAdult(quantity, {
+            fullName: customerInfo.customerName,
+            email: customerInfo.email,
+            cccdPassport: customerInfo.cccdpassport,
+            phoneNumber: customerInfo.phoneNumber,
+          });
         }
       }
     } catch (err) {
@@ -296,7 +351,6 @@ export const useEtagHandlers = ({
     orderId,
     packageData,
     handleCustomerInfoSubmit,
-
     customerForm,
     handleCancelOrder,
     handleConfirmOrder,

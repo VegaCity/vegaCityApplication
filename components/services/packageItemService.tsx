@@ -13,20 +13,20 @@ export interface GeneratePackageItem {
   };
 }
 
-export interface ActivatePackageItemRequest {
-  cccdPassport: string;
-  name: string;
-  phoneNumber: string;
-  gender: string;
-  email?: string;
-  isAdult: boolean;
-}
+// export interface ActivatePackageItemRequest {
+//   cccdPassport: string;
+//   name: string;
+//   phoneNumber: string;
+//   gender: string;
+//   email?: string;
+//   isAdult: boolean;
+// }
 
 interface ChargeMoneyRequest {
   chargeAmount: number;
   cccdPassport: string;
   paymentType: string;
-  packageItemId: string;
+  packageOrderId: string;
   promoCode: string;
 }
 
@@ -87,28 +87,67 @@ export const PackageItemServices = {
   deletePackageItemById(id: string) {
     return API.delete(`/package-item/${id}`);
   },
+  ///add cusName, cusEmail, cusCccdpassport, phoneNumber
 
-  generatePackageItem(quantity: number) {
+  generatePackageItem: ({
+    quantity,
+    packageId,
+    cusName,
+    cusEmail,
+    cusCccdpassport,
+    phoneNumber,
+  }: {
+    quantity: number;
+    packageId: string;
+    cusName: string;
+    cusEmail: string;
+    cusCccdpassport: string;
+    phoneNumber: string;
+  }) => {
     return API.post(`/package-item?quantity=${quantity}`, {
-      packageId: localStorage.getItem("packageId"),
+      packageId,
+      cusName,
+      cusEmail,
+      cusCccdpassport,
+      phoneNumber,
     });
   },
-  generatePackageItemForChild(quantity: number) {
-    return API.post(`/package-item?quantity=${quantity}`, {
-      packageId: localStorage.getItem("packageId"),
-      startDate: localStorage.getItem("startDate"),
-      endDate: localStorage.getItem("endDate"),
-      packageItemId: localStorage.getItem("packageItemId"),
+  generatePackageItemForChild: ({
+    quantity,
+    packageId,
+    cusName,
+    cusEmail,
+    cusCccdpassport,
+    phoneNumber,
+  }: {
+    quantity: number;
+    packageId: string;
+    cusName: string;
+    cusEmail: string;
+    cusCccdpassport: string;
+    phoneNumber: string;
+  }) => {
+    return API.post(`/package-item/child?quantity=${quantity}`, {
+      packageId,
+      cusName,
+      cusEmail,
+      cusCccdpassport,
+      phoneNumber,
     });
   },
   generatePackageItemLost(quantity: number) {
     return API.post(`/package-item?quantity=${quantity}`, {
       packageItemId: localStorage.getItem("packageItemIdLost"),
+      packageOrderId: localStorage.getItem("packageItemId"),
+      cusName: localStorage.getItem("cusName"),
+      cusEmail: localStorage.getItem("cusEmail"),
+      cusCccdpassport: localStorage.getItem("cusCccdpassport"),
+      phoneNumber: localStorage.getItem("phoneNumber"),
     });
   },
 
-  activatePackageItem(id: string, activateData: ActivatePackageItemRequest) {
-    return API.patch(`/package-item/${id}/activate`, activateData);
+  activatePackageItem(id: string) {
+    return API.patch(`/package-item/${id}/activate`);
   },
   updateRFID(id: string, rfId: string) {
     return API.patch(`/package-item/${id}/rfid?rfId=${rfId}`, {
@@ -117,7 +156,7 @@ export const PackageItemServices = {
     });
   },
   chargeMoney({
-    packageItemId,
+    packageOrderId,
     chargeAmount,
     cccdPassport,
     paymentType,
@@ -128,7 +167,7 @@ export const PackageItemServices = {
     }
 
     const chargeData = {
-      packageItemId,
+      packageOrderId,
       chargeAmount,
       cccdPassport,
       paymentType,
