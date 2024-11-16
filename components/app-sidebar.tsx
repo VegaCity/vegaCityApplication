@@ -113,6 +113,12 @@ export function AppSidebar() {
       roles: ["Store"],
     },
     {
+      name: "Menu",
+      icon: LayoutDashboard,
+      href: navigatePage("menu"),
+      roles: ["Store"],
+    },
+    {
       name: "Packages",
       icon: Package,
       href: navigatePage("packages"),
