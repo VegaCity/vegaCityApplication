@@ -143,7 +143,7 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       console.log("RFID không tồn tại, tiếp tục tìm kiếm thông thường");
     }
   };
-  const debouncedHandleSearch = debounce(handleSearchChange, 300);
+  const debouncedHandleSearch = debounce(handleSearchChange, 0);
   const fetchPackageItems = async (page: number) => {
     setIsLoading(true);
     try {

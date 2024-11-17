@@ -109,7 +109,7 @@ export const useEtagHandlers = ({
       localStorage.setItem("orderId", response.data.orderId);
       localStorage.setItem("invoiceId", response.data.invoiceId);
       localStorage.setItem("transactionId", response.data.transactionId);
-
+      localStorage.setItem("packageOrderId", response.data.packageOrderId);
       setOrderId(response.data.invoiceId);
       setShowTimer(true);
       setIsCustomerInfoConfirmed(true);
@@ -165,11 +165,9 @@ export const useEtagHandlers = ({
     try {
       const response = await PackageItemServices.generatePackageItemForChild({
         quantity,
-        packageId: packageData.id,
+        packageId: packageData.packageId,
         cusName: customerInfo.fullName,
-        cusEmail: customerInfo.email,
-        cusCccdpassport: customerInfo.cccdPassport,
-        phoneNumber: customerInfo.phoneNumber,
+        packageOrderId: localStorage.getItem("packageItemId") || "",
       });
 
       if (response.status === 201) {
@@ -294,6 +292,7 @@ export const useEtagHandlers = ({
                 email: customerInfo.email,
                 cccdPassport: customerInfo.cccdpassport,
                 phoneNumber: customerInfo.phoneNumber,
+                packageOrderId: localStorage.getItem("packageOrderId"),
               });
             } else {
               await handleGenerateVCardForAdult(quantity, {

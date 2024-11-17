@@ -27,7 +27,6 @@ interface ChargeMoneyRequest {
   cccdPassport: string;
   paymentType: string;
   packageOrderId: string;
-  promoCode: string;
 }
 
 interface ChargeMoneyResponse {
@@ -114,35 +113,22 @@ export const PackageItemServices = {
   },
   generatePackageItemForChild: ({
     quantity,
-    packageId,
     cusName,
-    cusEmail,
-    cusCccdpassport,
-    phoneNumber,
+    packageOrderId,
   }: {
     quantity: number;
     packageId: string;
     cusName: string;
-    cusEmail: string;
-    cusCccdpassport: string;
-    phoneNumber: string;
+    packageOrderId: string;
   }) => {
-    return API.post(`/package-item/child?quantity=${quantity}`, {
-      packageId,
+    return API.post(`/package-item?quantity=${quantity}`, {
       cusName,
-      cusEmail,
-      cusCccdpassport,
-      phoneNumber,
+      packageOrderId,
     });
   },
   generatePackageItemLost(quantity: number) {
     return API.post(`/package-item?quantity=${quantity}`, {
-      packageItemId: localStorage.getItem("packageItemIdLost"),
       packageOrderId: localStorage.getItem("packageItemId"),
-      cusName: localStorage.getItem("cusName"),
-      cusEmail: localStorage.getItem("cusEmail"),
-      cusCccdpassport: localStorage.getItem("cusCccdpassport"),
-      phoneNumber: localStorage.getItem("phoneNumber"),
     });
   },
 

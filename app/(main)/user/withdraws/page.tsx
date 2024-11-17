@@ -300,7 +300,7 @@ const WithdrawMoney = () => {
           title: "Success",
           description: "Withdrawal successfully processed.",
         });
-        // setTimeout(() => window.location.reload(), 2500);
+        //          
       } else {
         throw new Error(
           response.data.messageResponse || "Cannot process withdrawal"

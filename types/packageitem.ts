@@ -34,7 +34,7 @@ export interface PackageItem {
   status: string;
   walletId: string;
   isVerifyPhone: boolean;
-  wallet: Wallet;
+  wallets: Wallet[];
 }
 
 export interface PackageItemHandleUpdate {

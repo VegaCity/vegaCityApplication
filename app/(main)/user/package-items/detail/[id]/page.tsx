@@ -141,7 +141,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     const packageId = localStorage.getItem("packageIdCurrent");
 
     router.push(
-      `/user/packages/generate/${packageId}?customerName=${cusName}&gender=${gender}&phoneNumber=${phoneNumber}&email=${cusEmail}&cccdpassport=${cusCccdpassport}&isAdult=${isAdult}`
+      `/user/packages/generate/${packageId}?=gender=${gender}&phoneNumber=${phoneNumber}&email=${cusEmail}&cccdpassport=${cusCccdpassport}&isAdult=${isAdult}`
     );
   };
   const handleChargeMoney = async (data: {
@@ -169,7 +169,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         chargeAmount: data.chargeAmount,
         cccdPassport: cusCccdpassport,
         paymentType: data.paymentType,
-        promoCode: "no_promotion",
       });
 
       if (response.status === 200 && response.data?.data) {
@@ -199,7 +198,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
               const totalAmount = orderData.totalAmount ?? 0;
               const cusName = orderData.packageOrders?.[0]?.cusName ?? "";
               const seller = responseOrder.data?.data?.seller ?? "";
-
               localStorage.setItem("discountAmount", discountAmount.toString());
               localStorage.setItem("totalAmount", totalAmount.toString());
               localStorage.setItem("cusName", cusName);
@@ -224,7 +222,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             setShouldShowAlertDialog(true);
             setIsProcessingPopupOpen(true);
           } else {
-            await initiatePayment(data.paymentType, invoiceId);
+            await initiatePayment(
+              data.paymentType,
+              invoiceId,
+              response.data.data.key,
+              response.data.data.urlDirect,
+              response.data.data.urlIpn
+            );
           }
         }
       } else {
@@ -245,22 +249,48 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     }
   };
 
-  const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
+  const initiatePayment = async (
+    paymentMethod: string,
+    invoiceId: string,
+    key?: string,
+    urlDirect?: string,
+    urlIpn?: string
+  ) => {
     try {
       let paymentResponse;
 
       switch (paymentMethod.toLowerCase()) {
         case "momo":
-          paymentResponse = await paymentService.momo({ invoiceId });
+          paymentResponse = await paymentService.momo({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         case "vnpay":
-          paymentResponse = await paymentService.vnpay({ invoiceId });
+          paymentResponse = await paymentService.vnpay({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         case "payos":
-          paymentResponse = await paymentService.payos({ invoiceId });
+          paymentResponse = await paymentService.payos({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         case "zalopay":
-          paymentResponse = await paymentService.zalopay({ invoiceId });
+          paymentResponse = await paymentService.zalopay({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         default:
           throw new Error(`Unsupported payment method: ${paymentMethod}`);
@@ -419,12 +449,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         console.log(response.data.qrCode, "QRcode");
         setPackageItem(packageitemData);
         setQrCode(qrCodeData);
-        if (packageitemData.isAdult === false) {
-          // Remove packageItemId from localStorage
-          localStorage.removeItem("packageItemId");
-        } else {
-          localStorage.setItem("packageItemId", packageitemData.id);
-        }
+        /// packageOrderId
+        localStorage.setItem("packageItemId", packageitemData.id);
+
         localStorage.setItem("packageIdCurrent", packageitemData.packageId);
         localStorage.setItem("startDateCustomer", packageitemData.startDate);
         localStorage.setItem("endDateCustomer", packageitemData.endDate);
@@ -458,7 +485,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         );
         // Reset charge form
         formCharge.reset({
-          promoCode: "",
           chargeAmount: 0,
           cccdPassport: packageitemData.cusCccdpassport || "",
           paymentType: "Cash",
@@ -779,13 +805,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             isLoading={isLoading}
           /> */}
           <div className="flex justify-end mt-4">
-            {/* {packageItem &&
+            {packageItem &&
               packageItem.status === "Active" &&
-              packageItem.wallet.walletType.name === "ServiceWallet" && ( */}
-            <Button type="button" onClick={() => setIsPopupOpen(true)}>
-              Charge Money
-            </Button>
-            {/* )} */}
+              packageItem.wallets[0].walletType.name === "ServiceWallet" && (
+                <Button type="button" onClick={() => setIsPopupOpen(true)}>
+                  Charge Money
+                </Button>
+              )}
           </div>
 
           <ChargeMoneyDialog
