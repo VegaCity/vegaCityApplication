@@ -34,9 +34,16 @@ export interface PackageItem {
   status: string;
   walletId: string;
   isVerifyPhone: boolean;
-  wallet: Wallet;
+  wallets: Wallet[];
+  vcard: Vcard;
 }
-
+export interface Vcard {
+  id: string;
+  imageUrl: string;
+  name: string;
+  phoneNumber: string;
+  email: string;
+}
 export interface PackageItemHandleUpdate {
   name: string;
   imageUrl: string | null;

@@ -17,7 +17,10 @@ import {
   User,
   FileText,
 } from "lucide-react";
-import { GetOrdersById } from "@/components/services/orderuserServices";
+import {
+  detailOrder,
+  GetOrdersById,
+} from "@/components/services/orderuserServices";
 
 const OrderDetailPage = () => {
   const params = useParams();
@@ -32,8 +35,9 @@ const OrderDetailPage = () => {
     const fetchOrderDetail = async () => {
       try {
         setLoading(true);
-        const response = await GetOrdersById(params.id as string);
+        const response = await detailOrder(params.id as string);
         if (response.data.orderExist) {
+          console.log(response.data.orderExist, "sssss");
           setOrder(response.data.orderExist);
         } else {
           setError("Could not find order details");
@@ -182,7 +186,7 @@ const OrderDetailPage = () => {
                       Payment Type
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.paymentType}
+                      {order.payments[0].name}
                     </p>
                   </div>
                 </div>
@@ -217,7 +221,7 @@ const OrderDetailPage = () => {
                       Customer Name
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrders[0].cusName}
+                      {order.packageOrder.cusName}
                     </p>
                   </div>
                 </div>
@@ -229,7 +233,7 @@ const OrderDetailPage = () => {
                       Customer Email
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrders[0].cusEmail}
+                      {order.packageOrder.cusEmail}
                     </p>
                   </div>
                 </div>
@@ -243,7 +247,7 @@ const OrderDetailPage = () => {
                       Customer Phone
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrders[0].phoneNumber}
+                      {order.packageOrder.phoneNumber}
                     </p>
                   </div>
                 </div>
@@ -255,7 +259,7 @@ const OrderDetailPage = () => {
                       CCCD/Passport
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrders[0].cusCccdpassport}
+                      {order.packageOrder.cusCccdpassport}
                     </p>
                   </div>
                 </div>
@@ -263,7 +267,54 @@ const OrderDetailPage = () => {
             </div>
           </CardContent>
         </Card>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl">Seller Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <User className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Seller Name
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.user?.fullName}
+                    </p>
+                  </div>
+                </div>
 
+                <div className="flex items-start">
+                  <Mail className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Customer Email
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.user?.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <FileText className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      CCCD/Passport
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.user?.cccdPassport}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="flex justify-between items-center">

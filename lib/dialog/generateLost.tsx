@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PackageItemServices } from "@/components/services/packageItemService";
+import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import { useToast } from "@/components/ui/use-toast";
 import {
   confirmOrderForCharge,
@@ -21,9 +21,9 @@ import axios, { AxiosResponse } from "axios";
 interface PackageItem {
   id: string;
   packageId: string;
-  cccdpassport: string | null;
-  email: string | null;
-  name: string | null;
+  cusCccdpassport: string | null;
+  cusEmail: string | null;
+  cusName: string | null;
   phoneNumber: string | null;
   rfid: string | null;
   status: string;
@@ -71,10 +71,10 @@ const GenerateNewCardDialog = ({
     if (packageItem) {
       setFormData({
         packageItemId: packageItem.id,
-        cccdpassport: packageItem.cccdpassport || "",
-        name: packageItem.name || "",
+        cccdpassport: packageItem.cusCccdpassport || "",
+        name: packageItem.cusName || "",
         phoneNumber: packageItem.phoneNumber || "",
-        email: packageItem.email || "",
+        email: packageItem.cusEmail || "",
         rfid: packageItem.rfid || "",
         reason: "",
       });

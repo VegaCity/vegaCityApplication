@@ -13,11 +13,6 @@ export const customerFormSchema = z.object({
     message: "Phone number is invalid. Please use Vietnam phone number!",
   }),
 
-  address: z
-    .string()
-    .min(5, { message: "Address at least 5 characters" })
-    .max(200, { message: "Address at least 5 characters" }),
-
   cccdpassport: z
     .string()
     .regex(
@@ -29,12 +24,6 @@ export const customerFormSchema = z.object({
     required_error: "Payment method is required!",
     invalid_type_error: "Your payment method is invalid!",
   }),
-
-  gender: z.enum(["Male", "Female", "Other"], {
-    required_error: "Gender is required!",
-    invalid_type_error: "Gender is invalid!",
-  }),
-
   quantity: z
     .number()
     .int({ message: "Quality must be positive number!" })
@@ -92,7 +81,7 @@ export interface GenerateEtag {
 }
 export const formSchema = z
   .object({
-    name: z
+    cusName: z
       .string()
       .min(2, { message: "Full name must include at least 2 characters" })
       .max(100, { message: "Full name does not exceed 100 characters" })
@@ -110,10 +99,10 @@ export const formSchema = z
     // cccdPassport: z
     //   .string()
     //   .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
-    email: z
+    cusEmail: z
       .string()
       .email("Email của không hợp lệ. Vui lý sử dụng email hợp lệ"),
-    cccdpassport: z
+    cusCccdpassport: z
       .string()
       .regex(
         /(^\d{12}$)|(^[A-Z]\d{7}$)/,
@@ -165,7 +154,13 @@ export const formSchema = z
     //     .min(1000, { message: "Price must at least 1.000 VND" })
     //     .max(10000000, { message: "Price does not exceed 10 triệu VND" }),
     // }),
-
+    vcardId: z.string().optional(),
+    wallets: z.array(
+      z.object({
+        balance: z.number(),
+        balanceHistory: z.number(),
+      })
+    ),
     marketZone: z.object({
       name: z
         .string()
@@ -178,17 +173,6 @@ export const formSchema = z
           20,
           "Tên viết tắt khu vực thị trường không được vượt quá 20 ký tự"
         ),
-    }),
-
-    wallet: z.object({
-      balance: z
-        .number()
-        .min(0, "Số dư phải là số không âm")
-        .max(1000000000, "Số dư không được vượt quá 1.000.000.000"),
-      balanceHistory: z
-        .number()
-        .min(0, "Lịch sử số dư phải là số không âm")
-        .max(10000000, "Lịch sử số dư không được vượt quá 1.000.000.000"),
     }),
   })
   .refine(

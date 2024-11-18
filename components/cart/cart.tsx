@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Product } from "@/types/store/store";
 import { confirmOrder, createOrderStore } from "../services/orderuserServices";
-import { PackageItemServices } from "../services/packageItemService";
+import { PackageItemServices } from "../services/Package/packageItemService";
 interface CartItem extends Product {
   quantity: number;
 }

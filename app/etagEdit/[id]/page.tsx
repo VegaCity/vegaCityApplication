@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { PackageItemServices } from "@/components/services/packageItemService";
+import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import { PackageItem } from "@/types/packageitem";
 import Image from "next/image";
 import {
@@ -107,20 +107,23 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
         }
 
         form.reset({
-          name: packageitemData.name || "",
+          cusName: packageitemData.cusName || "",
           phoneNumber: packageitemData.phoneNumber || "",
-          cccdpassport: packageitemData.cccdpassport || "",
+          cusCccdpassport: packageitemData.cusCccdpassport || "",
           birthday: formatDateForInput(packageitemData.birthday) || "",
           startDate: formatDateTimeForInput(packageitemData.startDate) || "",
           endDate: formatDateTimeForInput(packageitemData.endDate) || "",
-          gender: packageitemData.gender,
+          vcardId: packageitemData.vcardId || "",
           status: packageitemData.status || 0,
           imageUrl: packageitemData.imageUrl || "",
-          email: packageitemData.email || "",
-          wallet: {
-            balance: packageitemData.wallet?.balance || 0,
-            balanceHistory: packageitemData.wallet?.balanceHistory || 0,
-          },
+          cusEmail: packageitemData.cusEmail || "",
+          isAdult: packageitemData.isAdult,
+          wallets: [
+            {
+              balance: packageitemData.wallets[0]?.balance || 0,
+              balanceHistory: packageitemData.wallets[0]?.balanceHistory || 0,
+            },
+          ],
         });
       } catch (err) {
         setError(
@@ -225,10 +228,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       <Form {...form}>
         <form className="space-y-4">
           <div className="flex flex-col items-center space-y-4 w-full">
-            <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
-              {packageItem?.imageUrl || imagePreview ? (
+            {/* <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600"> */}
+            {/* {packageItem?.imageUrl || imagePreview ? (
                 <Image
-                  src={imagePreview || packageItem?.imageUrl || ""}
+                  src={imagePreview || packageItem?.vcard.imageUrl || ""}
                   alt="Profile Image"
                   layout="fill"
                   objectFit="cover"
@@ -238,10 +241,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="text-gray-400">No image uploaded</span>
                 </div>
-              )}
+              )} */}
 
-              {/* Overlay khi hover */}
-              {isEditing && (
+            {/* Overlay khi hover */}
+            {/* {isEditing && (
                 <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                   <Input
                     type="file"
@@ -265,16 +268,16 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                     </div>
                   </label>
                 </div>
-              )}
-            </div>
+              )} */}
+          </div>
 
-            {/* Hiển thị preview filename nếu có file được chọn */}
-            {imageFile && (
+          {/* Hiển thị preview filename nếu có file được chọn */}
+          {/* {imageFile && (
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 Selected: {imageFile.name}
               </div>
-            )}
-          </div>
+            )} */}
+          {/* </div> */}
           <Card className="w-full max-w-5xl mx-auto">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
@@ -300,7 +303,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <FormControl>
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("name")}
+                            {...form.register("cusName")}
                             readOnly={!isEditing}
                           />
                         </FormControl>
@@ -313,7 +316,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <FormControl>
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("email")}
+                            {...form.register("cusEmail")}
                             readOnly
                           />
                         </FormControl>
@@ -341,39 +344,11 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <FormControl>
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("cccdpassport")}
+                            {...form.register("cusCccdpassport")}
                             readOnly
                           />
                         </FormControl>
                       </FormItem>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="gender"
-                        render={({ field }) => (
-                          <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1  md:w-10/12">
-                            <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                              Gender
-                            </FormLabel>
-                            <Select
-                              onValueChange={(value) => field.onChange(value)}
-                              defaultValue={field.value}
-                              disabled={!isEditing}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Male">Male</SelectItem>
-                                <SelectItem value="Femal">Female</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
                     </div>
                   </div>
                 </div>
@@ -383,7 +358,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                     Duration Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Start Date:
                       </FormLabel>
@@ -398,7 +373,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         End Date:
                       </FormLabel>
@@ -413,7 +388,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Status
                       </FormLabel>
@@ -442,7 +417,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       <FormControl>
                         <Input
                           className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("wallet.balance")}
+                          {...form.register("wallets.0.balance")}
                           readOnly
                         />
                       </FormControl>
@@ -455,7 +430,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       <FormControl>
                         <Input
                           className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("wallet.balanceHistory")}
+                          {...form.register("wallets.0.balanceHistory")}
                           readOnly
                         />
                       </FormControl>

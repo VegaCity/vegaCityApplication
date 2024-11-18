@@ -22,10 +22,10 @@ import Link from "next/link";
 interface PackageItemType {
   id: string;
   packageId: string;
-  cccdpassport: string | null;
-  email: string | null;
+  cusCccdpassport: string | null;
+  cusEmail: string | null;
   gender: string | null;
-  name: string | null;
+  cusName: string | null;
   phoneNumber: string | null;
   rfid: string | null;
   status: string;
@@ -81,8 +81,8 @@ const PackageItemAction: React.FC<PackageItemActionProps> = ({
                   <AlertDialogTitle>Report Card as Lost</AlertDialogTitle>
                   <AlertDialogDescription>
                     Are you sure you want to report{" "}
-                    {packageItem.name || "this card"}'s card as lost? This will
-                    block the current card and require issuing a new one.
+                    {packageItem.cusName || "this card"}'s card as lost? This
+                    will block the current card and require issuing a new one.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -108,7 +108,7 @@ const PackageItemAction: React.FC<PackageItemActionProps> = ({
                   <AlertDialogTitle>Generate New Card</AlertDialogTitle>
                   <AlertDialogDescription>
                     Are you sure you want to generate a new card for{" "}
-                    {packageItem.name || "this user"}?
+                    {packageItem.cusName || "this user"}?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -135,8 +135,9 @@ const PackageItemAction: React.FC<PackageItemActionProps> = ({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Package Item</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Are you sure you want to delete {packageItem.name || "this"}{" "}
-                    package item? This action cannot be undone.
+                    Are you sure you want to delete{" "}
+                    {packageItem.cusName || "this"} package item? This action
+                    cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

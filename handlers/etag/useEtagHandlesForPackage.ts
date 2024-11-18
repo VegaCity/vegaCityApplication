@@ -10,7 +10,7 @@ import {
 import {
   PackageItemServices,
   GeneratePackageItem,
-} from "@/components/services/packageItemService";
+} from "@/components/services/Package/packageItemService";
 import paymentService from "@/components/services/paymentService";
 import {
   CustomerFormValues,
@@ -99,8 +99,7 @@ export const useEtagHandlers = ({
         customerInfo: {
           fullName: data.customerName,
           phoneNumber: data.phoneNumber,
-          address: data.address,
-          gender: data.gender,
+          // gender: data.gender,
           cccdPassport: data.cccdpassport,
           email: data.email,
         },
@@ -110,7 +109,7 @@ export const useEtagHandlers = ({
       localStorage.setItem("orderId", response.data.orderId);
       localStorage.setItem("invoiceId", response.data.invoiceId);
       localStorage.setItem("transactionId", response.data.transactionId);
-
+      localStorage.setItem("packageOrderId", response.data.packageOrderId);
       setOrderId(response.data.invoiceId);
       setShowTimer(true);
       setIsCustomerInfoConfirmed(true);
@@ -124,12 +123,23 @@ export const useEtagHandlers = ({
   };
   const searchParams = useSearchParams();
   const isAdultParam = searchParams.get("isAdult");
-  const handleGenerateVCardForAdult = async (quantity: number) => {
+
+  const handleGenerateVCardForAdult = async (
+    quantity: number,
+    customerInfo: any
+  ) => {
     try {
-      const response = await PackageItemServices.generatePackageItem(quantity);
+      const response = await PackageItemServices.generatePackageItem({
+        quantity,
+        packageId: packageData.id,
+        cusName: customerInfo.fullName,
+        cusEmail: customerInfo.email,
+        cusCccdpassport: customerInfo.cccdPassport,
+        phoneNumber: customerInfo.phoneNumber,
+      });
+
       if (response.status === 201) {
         const vcardData = response.data;
-        // Process the vcardData as needed
         toast({
           title: "Success",
           description: "VCard generated successfully.",
@@ -148,14 +158,20 @@ export const useEtagHandlers = ({
     }
   };
 
-  const handleGenerateVCardForMinor = async (quantity: number) => {
+  const handleGenerateVCardForMinor = async (
+    quantity: number,
+    customerInfo: any
+  ) => {
     try {
-      const response = await PackageItemServices.generatePackageItemForChild(
-        quantity
-      );
+      const response = await PackageItemServices.generatePackageItemForChild({
+        quantity,
+        packageId: packageData.packageId,
+        cusName: customerInfo.fullName,
+        packageOrderId: localStorage.getItem("packageItemId") || "",
+      });
+
       if (response.status === 201) {
         const vcardData = response.data;
-        // Process the vcardData as needed
         toast({
           title: "Success",
           description: "VCard generated successfully.",
@@ -173,22 +189,48 @@ export const useEtagHandlers = ({
       });
     }
   };
-  const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
+  const initiatePayment = async (
+    paymentMethod: string,
+    invoiceId: string
+    // key: string,
+    // urlDirect: string,
+    // urlIpn: string
+  ) => {
     try {
       let paymentResponse;
 
       switch (paymentMethod.toLowerCase()) {
         case "momo":
-          paymentResponse = await paymentService.momo({ invoiceId });
+          paymentResponse = await paymentService.momo({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         case "vnpay":
-          paymentResponse = await paymentService.vnpay({ invoiceId });
+          paymentResponse = await paymentService.vnpay({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         case "payos":
-          paymentResponse = await paymentService.payos({ invoiceId });
+          paymentResponse = await paymentService.payos({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         case "zalopay":
-          paymentResponse = await paymentService.zalopay({ invoiceId });
+          paymentResponse = await paymentService.zalopay({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         default:
           throw new Error(`Unsupported payment method: ${paymentMethod}`);
@@ -240,6 +282,7 @@ export const useEtagHandlers = ({
       title: "Order Cancelled",
       description: "Your order has been cancelled and deleted.",
     });
+    window.location.reload();
   };
 
   const handleConfirmOrder = async () => {
@@ -255,27 +298,73 @@ export const useEtagHandlers = ({
 
     const paymentMethod = customerForm.getValues("paymentMethod");
     const quantity = customerForm.getValues("quantity");
+    const customerInfo = customerForm.getValues();
+
+    // Ensure quantity is 1 for minor vCard generation
+    if (isAdultParam === "true" && quantity !== 1) {
+      toast({
+        title: "Error",
+        description: "Quantity must be 1 for minor vCard generation.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       if (paymentMethod.toLowerCase() === "cash") {
-        confirmOrderForCharge({
+        const confirmResult = await confirmOrderForCharge({
           invoiceId,
           transactionId: localStorage.getItem("transactionId") || "",
-          transactionChargeId:
-            localStorage.getItem("transactionChargeId") || "",
         });
-        setIsOrderConfirmed(true);
-        if (isAdultParam === "true") {
-          await handleGenerateVCardForMinor(quantity);
-        } else {
-          await handleGenerateVCardForAdult(quantity);
+
+        if (confirmResult) {
+          setIsOrderConfirmed(true);
+
+          try {
+            if (isAdultParam === "true") {
+              await handleGenerateVCardForMinor(1, {
+                fullName: customerInfo.customerName,
+                email: customerInfo.email,
+                cccdPassport: customerInfo.cccdpassport,
+                phoneNumber: customerInfo.phoneNumber,
+                packageOrderId: localStorage.getItem("packageOrderId"),
+              });
+            } else {
+              await handleGenerateVCardForAdult(quantity, {
+                fullName: customerInfo.customerName,
+                email: customerInfo.email,
+                cccdPassport: customerInfo.cccdpassport,
+                phoneNumber: customerInfo.phoneNumber,
+              });
+            }
+          } catch (generateError) {
+            console.error("Error generating vCard:", generateError);
+            toast({
+              title: "Warning",
+              description:
+                "Payment confirmed but failed to generate vCard. Please contact support.",
+              variant: "destructive",
+            });
+          }
         }
       } else {
         await initiatePayment(paymentMethod, invoiceId);
+
         if (isAdultParam === "true") {
-          await handleGenerateVCardForMinor(quantity);
+          await handleGenerateVCardForMinor(1, {
+            fullName: customerInfo.customerName,
+            email: customerInfo.email,
+            cccdPassport: customerInfo.cccdpassport,
+            phoneNumber: customerInfo.phoneNumber,
+            packageOrderId: localStorage.getItem("packageOrderId"),
+          });
         } else {
-          await handleGenerateVCardForAdult(quantity);
+          await handleGenerateVCardForAdult(quantity, {
+            fullName: customerInfo.customerName,
+            email: customerInfo.email,
+            cccdPassport: customerInfo.cccdpassport,
+            phoneNumber: customerInfo.phoneNumber,
+          });
         }
       }
     } catch (err) {
@@ -296,7 +385,6 @@ export const useEtagHandlers = ({
     orderId,
     packageData,
     handleCustomerInfoSubmit,
-
     customerForm,
     handleCancelOrder,
     handleConfirmOrder,

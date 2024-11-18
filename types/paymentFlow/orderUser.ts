@@ -18,8 +18,7 @@ export interface ProductStoreData {
 export interface CustomerInfo {
   fullName: string;
   phoneNumber: string;
-  address: string;
-  gender: string;
+  // gender: string;
   cccdPassport: string;
   email: string;
 }
@@ -39,8 +38,12 @@ export interface ConfirmOrderData {
 
 export interface ConfirmOrderForChargeData {
   invoiceId: string;
-  transactionChargeId: string;
+  // transactionChargeId: string;
   transactionId: string;
+}
+export interface ConfirmOrderForChargeVCardData {
+  invoiceId: string;
+  transactionChargeId: string;
 }
 export interface ConfirmOrderForGenerateNewCardData {
   invoiceId: string;
@@ -98,14 +101,22 @@ export interface OrderExistData {
   package: string | null;
   packageItem: string | null;
   store: string | null;
-  user: string | null;
+  user: UserResponse;
   deposits: any[]; // Define structure if known
   orderDetails: OrderDetailData[];
-  packageOrders: PackageOrderResponse[]; // Define structure if known
+  packageOrder: PackageOrderResponse; // Define structure if known
   promotionOrders: any[]; // Define structure if known
   transactions: any[]; // Define structure if known
+  payments: PaymentResponse[]; // Define structure if known
 }
-
+export interface PaymentResponse {
+  name: string;
+}
+export interface UserResponse {
+  fullName: string;
+  email: string;
+  cccdPassport: string;
+}
 export interface PackageOrderResponse {
   id: string;
   cusName: string;

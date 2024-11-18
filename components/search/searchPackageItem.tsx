@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Loader2, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PackageItemServices } from "../services/packageItemService";
+import { PackageItemServices } from "../services/Package/packageItemService";
 
 const SearchPackageItem = () => {
   const [searchQuery, setSearchQuery] = useState("");

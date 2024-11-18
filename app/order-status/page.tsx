@@ -26,7 +26,7 @@ function OrderStatusContent() {
   const router = useRouter();
 
   const continueEtag = () => {
-    const etagId = localStorage.getItem("packageItemIdNew");
+    const etagId = localStorage.getItem("packageOrderId");
     if (etagId) {
       // router.push(`/user/etags/detail/${etagId}`);
       router.push(`/user/package-items/detail/${etagId}`);

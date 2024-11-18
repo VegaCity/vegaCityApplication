@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Promotion } from "@/types/promotion/Promotion";
 import { UseFormReturn } from "react-hook-form";
-import { CreditCard, Wallet, Tag } from "lucide-react";
+import { CreditCard, Wallet, AlertTriangle } from "lucide-react";
 
 interface ChargeMoneyDialogProps {
   isOpen: boolean;
@@ -41,6 +41,42 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
   promotions,
   isLoadingPromotions,
 }) => {
+  const [amountError, setAmountError] = useState<string | null>(null);
+
+  const validateAmount = (value: string) => {
+    const numericAmount = parseFloat(value.replace(/[^\d]/g, ""));
+
+    if (isNaN(numericAmount)) {
+      setAmountError("Please enter a valid amount");
+      return false;
+    }
+
+    if (numericAmount < 50000) {
+      setAmountError("Minimum deposit is 50,000 VND");
+      return false;
+    }
+
+    if (numericAmount % 10000 !== 0) {
+      setAmountError("Amount must be a multiple of 10,000 VND");
+      return false;
+    }
+
+    setAmountError(null);
+    return true;
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onAmountChange(e);
+    validateAmount(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateAmount(amount)) {
+      form.handleSubmit(onSubmit)(e);
+    }
+  };
+
   return (
     <Dialog
       open={isOpen}
@@ -48,143 +84,114 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
         onOpenChange(open);
         if (!open) {
           form.reset();
+          setAmountError(null);
         }
       }}
     >
-      <DialogContent className="w-[600px] h-[500px] max-w-3xl bg-white rounded-2xl shadow-xl">
+      <DialogContent className="w-[550px] max-h-[85vh] overflow-y-auto bg-white rounded-xl shadow-lg">
         <DialogHeader className="border-b pb-4">
-          <DialogTitle className="text-2xl font-bold text-center text-gray-800">
-            <Wallet className="inline-block mr-2 mb-1" size={28} />
-            Charge Money
+          <DialogTitle className="text-2xl font-semibold text-center text-blue-800">
+            <Wallet
+              className="inline-block mr-2 mb-1 text-blue-700"
+              size={28}
+            />
+            Deposit Money
           </DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit(onSubmit)(e);
-          }}
-          className="mt-6"
-        >
-          <div className="space-y-6 px-6">
-            {/* Amount Input with larger size and better styling */}
-            <div className="bg-gray-50 p-6 rounded-xl">
+        <form onSubmit={handleSubmit} className="mt-5 px-6">
+          <div className="space-y-6">
+            {/* Amount Section */}
+            <div className="p-6 bg-gray-50 shadow-md rounded-lg">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Amount (đ)
+                Amount (VND)
               </label>
               <Input
                 id="chargeAmount"
                 type="text"
                 value={formatAmount(amount)}
-                onChange={onAmountChange}
-                placeholder="0"
-                className="text-3xl font-medium h-16 text-right pr-4 rounded-xl border-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                onChange={handleAmountChange}
+                placeholder="Enter an amount"
+                className={`text-xl font-medium h-12 pr-4 rounded-lg border-2 ${
+                  amountError
+                    ? "border-red-500 focus:ring-red-500"
+                    : "border-gray-300 focus:ring-blue-500"
+                } transition duration-200 ease-in-out`}
               />
+              {amountError && (
+                <div className="mt-2 text-red-600 flex items-center">
+                  <AlertTriangle className="mr-2" size={18} />
+                  {amountError}
+                </div>
+              )}
+              <div className="text-sm text-gray-500 mt-2">
+                * Minimum deposit: 50,000 VND <br />* Must be a multiple of
+                10,000 VND
+              </div>
             </div>
 
-            {/* CCCD/Passport with icon */}
+            {/* CCCD/Passport Section */}
             <div className="space-y-2">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <CreditCard className="mr-2" size={18} />
+                <CreditCard className="mr-2 text-blue-600" size={18} />
                 CCCD/Passport
               </label>
               <Input
                 type="text"
-                {...form.register("cccdpassport")}
-                readOnly
-                className="h-12 rounded-lg"
+                {...form.register("cccdPassport", {
+                  required: "Please enter your CCCD/Passport",
+                  validate: (value) => value.trim() !== "" || "Cannot be empty",
+                })}
+                placeholder="Enter CCCD or Passport number"
+                className="h-12 rounded-lg border-gray-300 focus:ring-blue-500 transition duration-200 ease-in-out"
               />
             </div>
 
-            {/* Payment Type with better styling */}
+            {/* Payment Method Section */}
             <div className="space-y-2">
               <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Wallet className="mr-2" size={18} />
-                Payment Type
+                <Wallet className="mr-2 text-blue-600" size={18} />
+                Payment Method
               </label>
               <Select
                 defaultValue={form.getValues("paymentType")}
                 onValueChange={(value) => form.setValue("paymentType", value)}
               >
-                <SelectTrigger className="h-12 rounded-lg">
+                <SelectTrigger className="h-12 rounded-lg border-gray-300 focus:ring-blue-500 transition duration-200 ease-in-out">
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Cash">Cash</SelectItem>
                   <SelectItem value="Momo">MoMo</SelectItem>
                   <SelectItem value="VnPay">VnPay</SelectItem>
-                  <SelectItem value="PayOS">PayOs</SelectItem>
+                  <SelectItem value="PayOS">PayOS</SelectItem>
                   <SelectItem value="ZaloPay">ZaloPay</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Promotion Code with icon and loading state */}
-            {/* <div className="space-y-2">
-              <label className="flex items-center text-sm font-semibold text-gray-700">
-                <Tag className="mr-2" size={18} />
-                Promotion Code
-              </label>
-              <Select
-                value={form.getValues("promoCode")}
-                onValueChange={(value) => form.setValue("promoCode", value)}
-                disabled={isLoadingPromotions}
-              >
-                <SelectTrigger className="h-12 rounded-lg">
-                  <SelectValue
-                    placeholder={
-                      isLoadingPromotions
-                        ? "Loading promotions..."
-                        : "Select promotion code"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no_promotion" className="text-gray-500">
-                    No Promotion
-                  </SelectItem>
-                  {Array.isArray(promotions) &&
-                    promotions.map((promotion) => (
-                      <SelectItem
-                        key={promotion.id}
-                        value={promotion.promotionCode}
-                        className="py-3"
-                      >
-                        <div>
-                          <div className="font-medium">
-                            {promotion.promotionCode}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {promotion.description}
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div> */}
           </div>
 
-          {/* Action Buttons with gradient background */}
-          <div className="mt-8 px-6 py-4 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+          {/* Buttons */}
+          <div className="mt-8 flex justify-end gap-4">
             <Button
               type="button"
               variant="outline"
-              className="h-11 px-6"
+              className="h-11 px-5 text-gray-600 border-gray-300 hover:border-gray-400 transition duration-200 ease-in-out"
               onClick={() => {
                 onOpenChange(false);
                 form.reset();
+                setAmountError(null);
                 onAmountChange({
                   target: { value: "" },
-                } as React.ChangeEvent<HTMLInputElement>); // Reset amount
+                } as React.ChangeEvent<HTMLInputElement>);
               }}
             >
               Cancel
             </Button>
-
             <Button
               type="submit"
-              className="h-11 px-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium"
+              disabled={!!amountError}
+              className="h-11 px-6 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition duration-200 ease-in-out"
             >
               Confirm Payment
             </Button>
