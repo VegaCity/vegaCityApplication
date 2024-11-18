@@ -3,9 +3,19 @@
 import React, { useState } from 'react';
 import { Trash2, Plus, Save, Image as ImageIcon } from 'lucide-react';
 
+// Define categories constant
+const CATEGORIES = [
+  "Cơm",
+  "Bún",
+  "Món nước",
+  "Bánh",
+  "Mì",
+  "Món sáng",
+];
+
 const MenuCreationForm = () => {
   const [formData, setFormData] = useState({
-    menuName: '',
+    menuName: 'Menu Nhà Hàng', 
     shifts: [
       {
         name: 'Ca sáng',
@@ -14,14 +24,15 @@ const MenuCreationForm = () => {
       }
     ],
     creator: {
-      name: '',
-      email: '',
-      phone: ''
+      name: 'Nguyễn Văn A',
+      email: 'nguyenvana@example.com',
+      phone: '0123456789'
     },
     products: [
       {
         name: '',
         price: '',
+        category: '', // Add category field
         image: null as File | null,
         imagePreview: null as string | ArrayBuffer | null
       }
@@ -46,7 +57,7 @@ const MenuCreationForm = () => {
   const addProduct = () => {
     setFormData({
       ...formData,
-      products: [...formData.products, { name: '', price: '', image: null, imagePreview: null }]
+      products: [...formData.products, { name: '', price: '', category: '', image: null, imagePreview: null }]
     });
   };
 
@@ -102,7 +113,7 @@ const MenuCreationForm = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Tên Menu */}
+        {/* Tên Menu - Read only */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Thông tin Menu</h2>
           <div className="mb-4">
@@ -110,14 +121,13 @@ const MenuCreationForm = () => {
             <input
               type="text"
               value={formData.menuName}
-              onChange={(e) => setFormData({...formData, menuName: e.target.value})}
-              className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-              required
+              className="w-full p-2 border rounded bg-gray-100"
+              disabled
             />
           </div>
         </div>
 
-        {/* Ca làm việc */}
+        {/* Ca làm việc - Editable */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Ca làm việc</h2>
@@ -130,7 +140,7 @@ const MenuCreationForm = () => {
               Thêm ca
             </button>
           </div>
-          
+
           {formData.shifts.map((shift, index) => (
             <div key={index} className="flex gap-4 items-center mb-4">
               <div className="flex-1">
@@ -141,7 +151,7 @@ const MenuCreationForm = () => {
                   onChange={(e) => {
                     const newShifts = [...formData.shifts];
                     newShifts[index].name = e.target.value;
-                    setFormData({...formData, shifts: newShifts});
+                    setFormData({ ...formData, shifts: newShifts });
                   }}
                   className="w-full p-2 border rounded"
                   required
@@ -154,7 +164,7 @@ const MenuCreationForm = () => {
                   onChange={(e) => {
                     const newShifts = [...formData.shifts];
                     newShifts[index].startTime = e.target.value;
-                    setFormData({...formData, shifts: newShifts});
+                    setFormData({ ...formData, shifts: newShifts });
                   }}
                   className="w-full p-2 border rounded"
                   required
@@ -167,7 +177,7 @@ const MenuCreationForm = () => {
                   onChange={(e) => {
                     const newShifts = [...formData.shifts];
                     newShifts[index].endTime = e.target.value;
-                    setFormData({...formData, shifts: newShifts});
+                    setFormData({ ...formData, shifts: newShifts });
                   }}
                   className="w-full p-2 border rounded"
                   required
@@ -184,7 +194,7 @@ const MenuCreationForm = () => {
           ))}
         </div>
 
-        {/* Sản phẩm */}
+        {/* Sản phẩm - Editable */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Sản phẩm</h2>
@@ -197,11 +207,10 @@ const MenuCreationForm = () => {
               Thêm sản phẩm
             </button>
           </div>
-          
+
           {formData.products.map((product, index) => (
             <div key={index} className="mb-6 p-4 border rounded-lg">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                {/* Thông tin sản phẩm */}
                 <div className="col-span-2 space-y-4">
                   <input
                     type="text"
@@ -210,7 +219,7 @@ const MenuCreationForm = () => {
                     onChange={(e) => {
                       const newProducts = [...formData.products];
                       newProducts[index].name = e.target.value;
-                      setFormData({...formData, products: newProducts});
+                      setFormData({ ...formData, products: newProducts });
                     }}
                     className="w-full p-2 border rounded"
                     required
@@ -222,14 +231,31 @@ const MenuCreationForm = () => {
                     onChange={(e) => {
                       const newProducts = [...formData.products];
                       newProducts[index].price = e.target.value;
-                      setFormData({...formData, products: newProducts});
+                      setFormData({ ...formData, products: newProducts });
                     }}
                     className="w-full p-2 border rounded"
                     required
                   />
+                  <select
+                    value={product.category}
+                    onChange={(e) => {
+                      const newProducts = [...formData.products];
+                      newProducts[index].category = e.target.value;
+                      setFormData({ ...formData, products: newProducts });
+                    }}
+                    className="w-full p-2 border rounded"
+                    required
+                  >
+                    <option value="">Chọn loại sản phẩm</option>
+                    {CATEGORIES.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+
                 </div>
 
-                {/* Phần upload hình ảnh */}
                 <div className="relative">
                   {product.imagePreview ? (
                     <div className="relative">
@@ -266,8 +292,7 @@ const MenuCreationForm = () => {
                   )}
                 </div>
               </div>
-              
-              {/* Nút xóa sản phẩm */}
+
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"
@@ -282,7 +307,7 @@ const MenuCreationForm = () => {
           ))}
         </div>
 
-        {/* Thông tin người tạo */}
+        {/* Thông tin người tạo - Read only */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">Thông tin người tạo</h2>
           <div className="grid grid-cols-1 gap-4">
@@ -291,12 +316,8 @@ const MenuCreationForm = () => {
               <input
                 type="text"
                 value={formData.creator.name}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  creator: {...formData.creator, name: e.target.value}
-                })}
-                className="w-full p-2 border rounded"
-                required
+                className="w-full p-2 border rounded bg-gray-100"
+                disabled
               />
             </div>
             <div>
@@ -304,12 +325,8 @@ const MenuCreationForm = () => {
               <input
                 type="email"
                 value={formData.creator.email}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  creator: {...formData.creator, email: e.target.value}
-                })}
-                className="w-full p-2 border rounded"
-                required
+                className="w-full p-2 border rounded bg-gray-100"
+                disabled
               />
             </div>
             <div>
@@ -317,12 +334,8 @@ const MenuCreationForm = () => {
               <input
                 type="tel"
                 value={formData.creator.phone}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  creator: {...formData.creator, phone: e.target.value}
-                })}
-                className="w-full p-2 border rounded"
-                required
+                className="w-full p-2 border rounded bg-gray-100"
+                disabled
               />
             </div>
           </div>
@@ -335,7 +348,7 @@ const MenuCreationForm = () => {
             className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
           >
             <Save className="w-5 h-5 mr-2" />
-            Thêm Menu
+            Lưu Menu
           </button>
         </div>
       </form>
