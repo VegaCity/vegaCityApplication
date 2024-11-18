@@ -1,299 +1,328 @@
-'use client';
-import React, { useState } from 'react';
-import { Plus, Pencil, Trash2, X, Check, Package, ListOrdered } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+"use client";
+import { useState, useEffect } from "react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  ProductCategory,
+  ProductCategoryPost,
+  ProductCategoryPatch,
+} from "@/types/productCategory";
+import { ProductCategoryServices } from "@/components/services/productCategoryService";
 
-const ProductManagement = () => {
-  interface Product {
-    id: number;
-    name: string;
-    price: string;
-  }
-  
-  interface Category {
-    id: number;
-    name: string;
-    products: Product[];
-  }
-  
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 1, name: "Cơm", products: [] },
-    { id: 2, name: "Bún", products: [] },
-    { id: 3, name: "Món nước", products: [] },
-    { id: 4, name: "Bánh", products: [] },
-    { id: 5, name: "Mì", products: [] },
-  ]);
-
-  const [newCategory, setNewCategory] = useState("");
-  const [editingCategory, setEditingCategory] = useState<{ id: number; name: string } | null>(null);
-  const [newProduct, setNewProduct] = useState({ categoryId: "", name: "", price: "" });
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState("");
-
-  const showNotification = (message: React.SetStateAction<string>) => {
-    setAlertMessage(message);
-    setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+interface ApiResponse {
+  statusCode: number;
+  messageResponse: string;
+  data: ProductCategory[];
+  metaData: {
+    size: number;
+    page: number;
+    total: number;
+    totalPage: number;
   };
+  parentName: string | null;
+  qrCode: string | null;
+}
 
-  const handleAddCategory = () => {
-    if (!newCategory.trim()) {
-      showNotification("Vui lòng nhập tên danh mục!");
-      return;
-    }
-    
-    const newId = Math.max(...categories.map(c => c.id), 0) + 1;
-    setCategories([...categories, { id: newId, name: newCategory, products: [] }]);
-    setNewCategory("");
-    showNotification("Đã thêm danh mục mới!");
-  };
+export default function ProductCategoryPage() {
+  const { toast } = useToast();
+  const [productCategories, setProductCategories] = useState<ProductCategory[]>(
+    []
+  );
+  const [selectedCategory, setSelectedCategory] =
+    useState<ProductCategory | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<ProductCategory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleDeleteCategory = (categoryId: number) => {
-    setCategories(categories.filter(c => c.id !== categoryId));
-    showNotification("Đã xóa danh mục!");
-  };
+  const fetchProductCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await ProductCategoryServices.getProductCategories({
+        page: 1,
+        size: 20,
+        storeId: localStorage.getItem("storeId") as string,
+      });
 
-  const startEditingCategory = (category: { id: number; name: string }) => {
-    setEditingCategory({ ...category });
-  };
-
-  const handleSaveCategory = () => {
-    if (editingCategory && !editingCategory.name.trim()) {
-      showNotification("Tên danh mục không được để trống!");
-      return;
-    }
-    
-    if (editingCategory) {
-      setCategories(categories.map(c => 
-        c.id === editingCategory.id ? { ...c, name: editingCategory.name } : c
-      ));
-    }
-    setEditingCategory(null);
-    showNotification("Đã cập nhật danh mục!");
-  };
-
-  const handleAddProduct = () => {
-    if (!newProduct.categoryId || !newProduct.name.trim() || !newProduct.price.trim()) {
-      showNotification("Vui lòng nhập đầy đủ thông tin sản phẩm!");
-      return;
-    }
-
-    setCategories(categories.map(c => {
-      if (c.id === parseInt(newProduct.categoryId)) {
-        const newProductId = Math.max(...c.products.map(p => p.id || 0), 0) + 1;
-        return {
-          ...c,
-          products: [...c.products, { id: newProductId, name: newProduct.name, price: newProduct.price }]
-        };
+      const apiResponse = response.data as ApiResponse;
+      if (apiResponse.statusCode === 200) {
+        setProductCategories(apiResponse.data);
+      } else {
+        setError(apiResponse.messageResponse);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: apiResponse.messageResponse,
+        });
       }
-      return c;
-    }));
-    
-    setNewProduct({ categoryId: "", name: "", price: "" });
-    showNotification("Đã thêm sản phẩm mới!");
+    } catch (error) {
+      console.error("Error fetching product categories:", error);
+      setError("Error loading product categories");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error loading product categories",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteProduct = (categoryId: number, productId: any) => {
-    setCategories(categories.map(c => {
-      if (c.id === categoryId) {
-        return {
-          ...c,
-          products: c.products.filter(p => p.id !== productId)
-        };
+  useEffect(() => {
+    fetchProductCategories();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const categoryData = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+    };
+
+    try {
+      if (selectedCategory) {
+        await ProductCategoryServices.editProductCategory(
+          selectedCategory.id,
+          categoryData as ProductCategoryPatch
+        );
+        toast({
+          title: "Success",
+          description: "Product category updated successfully",
+        });
+      } else {
+        await ProductCategoryServices.createProductCategory(
+          categoryData as ProductCategoryPost
+        );
+        toast({
+          title: "Success",
+          description: "New product category created successfully",
+        });
       }
-      return c;
-    }));
-    showNotification("Đã xóa sản phẩm!");
+
+      fetchProductCategories();
+      setIsModalOpen(false);
+      setSelectedCategory(null);
+    } catch (error) {
+      console.error("Error saving product category:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error saving product category",
+      });
+    }
   };
+
+  const handleEdit = async (category: ProductCategory) => {
+    const patchData: ProductCategoryPatch = {
+      name: category.name,
+      description: category.description,
+    };
+    try {
+      const response = await ProductCategoryServices.editProductCategory(
+        category.id,
+        patchData
+      );
+      setSelectedCategory(category);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching category details:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error loading category details",
+      });
+    }
+  };
+
+  const handleDeleteClick = (category: ProductCategory) => {
+    setCategoryToDelete(category);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (categoryToDelete) {
+      try {
+        await ProductCategoryServices.deleteProductCategoryById(
+          categoryToDelete.id
+        );
+        toast({
+          title: "Success",
+          description: "Product category deleted successfully",
+        });
+        fetchProductCategories();
+      } catch (error) {
+        console.error("Error deleting product category:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Error deleting product category",
+        });
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setCategoryToDelete(null);
+  };
+
+  if (loading) {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-blue-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-blue-800 mb-8">Quản lý Danh mục & Sản phẩm</h1>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Form thêm mới */}
-          <div className="space-y-6">
-            <Card className="border-blue-200 shadow-lg">
-              <CardHeader className="bg-blue-600">
-                <CardTitle className="text-white flex items-center">
-                  <ListOrdered className="w-5 h-5 mr-2" />
-                  Thêm Danh mục Mới
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Tên danh mục mới"
-                      value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value)}
-                      className="border-blue-200 focus:border-blue-400"
-                    />
-                    <Button 
-                      onClick={handleAddCategory}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Thêm
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-blue-200 shadow-lg">
-              <CardHeader className="bg-blue-600">
-                <CardTitle className="text-white flex items-center">
-                  <Package className="w-5 h-5 mr-2" />
-                  Thêm Sản phẩm Mới
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <Select
-                    value={newProduct.categoryId}
-                    onValueChange={(value) => setNewProduct({...newProduct, categoryId: value})}
-                  >
-                    <SelectTrigger className="border-blue-200 focus:border-blue-400">
-                      <SelectValue placeholder="Chọn danh mục" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map(category => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Input
-                    placeholder="Tên sản phẩm"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
-                    className="border-blue-200 focus:border-blue-400"
-                  />
-
-                  <Input
-                    placeholder="Giá"
-                    type="number"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({...newProduct, price: e.target.value})}
-                    className="border-blue-200 focus:border-blue-400"
-                  />
-
-                  <Button 
-                    onClick={handleAddProduct}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Thêm sản phẩm
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Danh sách danh mục và sản phẩm */}
-          <Card className="border-blue-200 shadow-lg">
-            <CardHeader className="bg-blue-600">
-              <CardTitle className="text-white">Danh sách Danh mục & Sản phẩm</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="space-y-6">
-                {categories.map(category => (
-                  <div key={category.id} className="rounded-lg border border-blue-200 p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      {editingCategory?.id === category.id ? (
-                        <div className="flex gap-2 items-center flex-1">
-                          <Input
-                            value={editingCategory.name}
-                            onChange={(e) => setEditingCategory({...editingCategory, name: e.target.value})}
-                            className="border-blue-200 focus:border-blue-400"
-                          />
-                          <Button 
-                            onClick={handleSaveCategory} 
-                            variant="outline"
-                            className="border-blue-400 text-blue-600 hover:bg-blue-50"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            onClick={() => setEditingCategory(null)} 
-                            variant="outline"
-                            className="border-blue-400 text-blue-600 hover:bg-blue-50"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <h3 className="text-lg font-semibold text-blue-800">{category.name}</h3>
-                          <div className="flex gap-2">
-                            <Button 
-                              onClick={() => startEditingCategory(category)} 
-                              variant="outline"
-                              className="border-blue-400 text-blue-600 hover:bg-blue-50"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              onClick={() => handleDeleteCategory(category.id)} 
-                              variant="outline"
-                              className="border-red-400 text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-
-                    {category.products.length > 0 && (
-                      <>
-                        <Separator className="my-4 bg-blue-100" />
-                        <div className="space-y-2">
-                          {category.products.map(product => (
-                            <div key={product.id} 
-                              className="flex items-center justify-between p-3 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors"
-                            >
-                              <div>
-                                <span className="font-medium text-blue-800">{product.name}</span>
-                                <span className="ml-4 text-blue-600">{Number(product.price).toLocaleString()}đ</span>
-                              </div>
-                              <Button
-                                onClick={() => handleDeleteProduct(category.id, product.id)}
-                                variant="outline"
-                                size="icon"
-                                className="border-red-400 text-red-600 hover:bg-red-50"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Product Categories Management</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          <PlusCircle size={20} />
+          Add Category
+        </button>
       </div>
 
-      {showAlert && (
-        <Alert className="fixed bottom-4 right-4 w-auto bg-blue-600 text-white">
-          <AlertDescription>{alertMessage}</AlertDescription>
-        </Alert>
+      <div className="border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Category Name</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {productCategories.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  No data available
+                </TableCell>
+              </TableRow>
+            ) : (
+              productCategories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {category.description}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit(category)}
+                        className="p-2 text-blue-500 hover:bg-blue-100 rounded"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(category)}
+                        className="p-2 text-red-500 hover:bg-red-100 rounded"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">
+              {selectedCategory ? "Edit Category" : "Add New Category"}
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label className="block mb-2">Category Name</label>
+                <input
+                  name="name"
+                  defaultValue={selectedCategory?.name}
+                  className="w-full border p-2 rounded"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block mb-2">Description</label>
+                <textarea
+                  name="description"
+                  defaultValue={selectedCategory?.description}
+                  className="w-full border p-2 rounded"
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setSelectedCategory(null);
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  {selectedCategory ? "Update" : "Add"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the category "
+              {categoryToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-};
-
-export default ProductManagement;
+}
