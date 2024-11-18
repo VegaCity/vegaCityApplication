@@ -167,12 +167,30 @@ const WithdrawMoney = () => {
     setError("");
   };
   const fetchPackageItemInfo = useCallback(
-    async (packageItemCode: string) => {
+    async (searchValue: string) => {
       try {
         setIsLoading(true);
         setError("");
+
+        // Kiểm tra xem searchValue có phải là RFID (10 số) hay không
+        const isRfid = /^\d{10}$/.test(searchValue);
+
+        // Kiểm tra xem searchValue có phải là GUID hay không
+        const isGuid =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+            searchValue
+          );
+
+        if (!isRfid && !isGuid) {
+          throw new Error(
+            "ID không hợp lệ. Vui lòng nhập GUID hoặc RFID (10 số)"
+          );
+        }
+
         const response = await API.get(
-          `/package-item/?id=${packageItemCode}&type=${activeTab.toUpperCase()}`
+          `/package-item/?${
+            isRfid ? "rfId" : "id"
+          }=${searchValue}&type=${activeTab.toUpperCase()}`
         );
 
         if (response.data?.statusCode === 200) {
@@ -184,8 +202,12 @@ const WithdrawMoney = () => {
               const wallet = data.wallets[0];
               setWalletInfo({
                 id: wallet.id,
-                balance: wallet.balance || 0, // Ensure balance exists or default to 0
+                balance: wallet.balance || 0,
               });
+            } else {
+              throw new Error(
+                "Không tìm thấy thông tin ví cho Package-Item này."
+              );
             }
 
             // Set package item details with all available data
@@ -199,10 +221,10 @@ const WithdrawMoney = () => {
             });
 
             // Log successful data setting
-            console.log("Wallet Info Set:", Wallet);
+            console.log("Wallet Info Set:", walletInfo);
             console.log("Package Details Set:", data);
           } else {
-            throw new Error("Package-Item data structure is missing.");
+            throw new Error("Không tìm thấy thông tin Package-Item.");
           }
         } else {
           throw new Error(
@@ -228,9 +250,9 @@ const WithdrawMoney = () => {
 
   const handlePackageItemChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const id = e.target.value;
-      setPackageItemCode(id);
-      if (id) fetchPackageItemInfo(id);
+      const searchValue = e.target.value;
+      setPackageItemCode(searchValue);
+      if (searchValue) fetchPackageItemInfo(searchValue);
     },
     [fetchPackageItemInfo]
   );
@@ -296,11 +318,12 @@ const WithdrawMoney = () => {
 
       if (response.data.statusCode === 200) {
         setShowConfirmDialog(false);
+        setWithdrawAmount("");
         toast({
           title: "Success",
           description: "Withdrawal successfully processed.",
         });
-        //          
+        fetchPackageItemInfo(packageItemCode);
       } else {
         throw new Error(
           response.data.messageResponse || "Cannot process withdrawal"
@@ -325,21 +348,24 @@ const WithdrawMoney = () => {
     <div className="space-y-6">
       <div className="space-y-3">
         <label
-          htmlFor="etag-input"
+          htmlFor="package-item-input"
           className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
         >
-          <span>Package Item Id</span>
+          <span>Package Item ID/RFID</span>
           {error && <AlertCircle className="w-4 h-4 text-red-500" />}
         </label>
         <Input
-          id="etag-input"
+          id="package-item-input"
           type="text"
           value={packageItemCode}
           onChange={handlePackageItemChange}
-          placeholder="xxxxxxxxxxxx"
+          placeholder="Nhập ID (GUID) hoặc RFID (10 số)"
           className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           disabled={isLoading}
         />
+        <p className="text-sm text-gray-500">
+          Enter a GUID or RFID format ID consisting of 10 digits
+        </p>
       </div>
 
       {error && (
@@ -577,7 +603,7 @@ const WithdrawMoney = () => {
     </div>
   );
   return (
-    <div className="min-h-screen p-6 flex items-center justify-center">
+    <div className="min-h-screen p-6 flex justify-center">
       <div className="w-full max-w-xl rounded-2xl shadow-lg p-8 space-y-8">
         <div className="space-y-3">
           <div className="flex items-center justify-center space-x-3">

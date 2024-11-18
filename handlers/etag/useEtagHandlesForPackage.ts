@@ -189,22 +189,48 @@ export const useEtagHandlers = ({
       });
     }
   };
-  const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
+  const initiatePayment = async (
+    paymentMethod: string,
+    invoiceId: string
+    // key: string,
+    // urlDirect: string,
+    // urlIpn: string
+  ) => {
     try {
       let paymentResponse;
 
       switch (paymentMethod.toLowerCase()) {
         case "momo":
-          paymentResponse = await paymentService.momo({ invoiceId });
+          paymentResponse = await paymentService.momo({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         case "vnpay":
-          paymentResponse = await paymentService.vnpay({ invoiceId });
+          paymentResponse = await paymentService.vnpay({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         case "payos":
-          paymentResponse = await paymentService.payos({ invoiceId });
+          paymentResponse = await paymentService.payos({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         case "zalopay":
-          paymentResponse = await paymentService.zalopay({ invoiceId });
+          paymentResponse = await paymentService.zalopay({
+            invoiceId,
+            // key,
+            // urlDirect,
+            // urlIpn,
+          });
           break;
         default:
           throw new Error(`Unsupported payment method: ${paymentMethod}`);

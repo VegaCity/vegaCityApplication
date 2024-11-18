@@ -154,6 +154,7 @@ export const formSchema = z
     //     .min(1000, { message: "Price must at least 1.000 VND" })
     //     .max(10000000, { message: "Price does not exceed 10 triệu VND" }),
     // }),
+    vcardId: z.string().optional(),
     wallets: z.array(
       z.object({
         balance: z.number(),

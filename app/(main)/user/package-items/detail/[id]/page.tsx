@@ -389,6 +389,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       status: 0,
       imageUrl: "",
       isAdult: true,
+      vcardId: "",
       wallets: [
         {
           balance: 0,
@@ -459,7 +460,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         if (!packageitemData) {
           throw new Error("No etag data received");
         }
-
         form.reset({
           cusName: packageitemData.cusName || "",
           phoneNumber: packageitemData.phoneNumber || "",
@@ -467,7 +467,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           birthday: formatDateForInput(packageitemData.birthday) || "",
           startDate: formatDateTimeForInput(packageitemData.startDate) || "",
           endDate: formatDateTimeForInput(packageitemData.endDate) || "",
-
+          vcardId: packageitemData.vcardId || "",
           status: packageitemData.status || 0,
           imageUrl: packageitemData.imageUrl || "",
           cusEmail: packageitemData.cusEmail || "",
@@ -554,12 +554,11 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   return (
     <>
       <BackButton text="Back To Etag List" link="/user/package-items" />
-      <h3 className="text-2xl mb-4">VCard Detail</h3>
 
       <Form {...form}>
         <form className="space-y-4">
           <div className="flex flex-col items-center space-y-4 w-full">
-            <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
+            {/* <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
               {packageItem?.imageUrl ? (
                 <Image
                   src={packageItem?.imageUrl || ""}
@@ -573,7 +572,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   <span className="text-gray-400">No image uploaded</span>
                 </div>
               )}
-            </div>
+            </div> */}
           </div>
 
           <Card className="w-full max-w-5xl mx-auto">
@@ -673,34 +672,21 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {/* <FormField
-                        control={form.control}
-                        name="gender"
-                        render={({ field }) => (
-                          <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1  md:w-10/12">
-                            <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                              Gender
-                            </FormLabel>
-                            <Select
-                              onValueChange={(value) => field.onChange(value)}
-                              defaultValue={field.value}
-                              disabled={!isEditing}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Male">Male</SelectItem>
-                                <SelectItem value="Female">Female</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      /> */}
                       <CustomerStatusField
                         isAdult={form.getValues("isAdult")}
                       />
+                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                          VCard ID:
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            {...form.register("vcardId")}
+                            readOnly={!isEditing}
+                          />
+                        </FormControl>
+                      </FormItem>
                     </div>
                   </div>
                 </div>
@@ -844,7 +830,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         </form>
       </Form>
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
-        {packageItem && packageItem.status === "Inactive" && !isConfirming && (
+        {packageItem && packageItem.status === "InActive" && !isConfirming && (
           <Button
             className="mt-12 px-6 py-2"
             onClick={handleActivateEtag}

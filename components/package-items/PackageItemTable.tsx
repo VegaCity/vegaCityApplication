@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   Table,
@@ -99,51 +99,67 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     return uuidRegex.test(str);
   };
+  const [inputBuffer, setInputBuffer] = useState("");
+  const inputTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastInputTimeRef = useRef<number>(0);
+  const RFID_TIMEOUT = 50; // Timeout for RFID input (milliseconds)
+  const SEARCH_DEBOUNCE = 500; // Debounce for manual search (milliseconds)
+  const handleSearchInput = (value: string) => {
+    const currentTime = Date.now();
+    setInputBuffer(value);
 
-  const debounce = (func: Function, wait: number) => {
-    let timeout: NodeJS.Timeout;
-    return function executedFunction(...args: any[]) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  };
-  const handleSearchChange = async (value: string) => {
-    setSearchTerm(value);
-
-    try {
-      // Gọi API để lấy thông tin package item dựa trên ID
-      const responseById = await PackageItemServices.getPackageItemById({
-        id: value.trim(),
-      });
-
-      // Nếu có dữ liệu trả về, chuyển hướng đến trang chi tiết của package item
-      if (responseById.data) {
-        router.push(`/user/package-items/detail/${value.trim()}`);
-        return;
-      }
-    } catch (error) {
-      console.log("ID không tồn tại, tiếp tục tìm kiếm bằng RFID");
+    // Clear any existing timeout
+    if (inputTimeoutRef.current) {
+      clearTimeout(inputTimeoutRef.current);
     }
 
+    // Check if this is rapid input (likely from RFID scanner)
+    const isRapidInput = currentTime - lastInputTimeRef.current < RFID_TIMEOUT;
+    lastInputTimeRef.current = currentTime;
+
+    // Set timeout based on input type
+    inputTimeoutRef.current = setTimeout(
+      () => processSearch(value),
+      isRapidInput ? RFID_TIMEOUT : SEARCH_DEBOUNCE
+    );
+  };
+
+  const processSearch = async (value: string) => {
+    setSearchTerm(value);
+
+    if (!value.trim()) return;
+
     try {
+      // Try to find by ID first
+      if (isValidUUID(value.trim())) {
+        const responseById = await PackageItemServices.getPackageItemById({
+          id: value.trim(),
+        });
+
+        if (responseById.data) {
+          router.push(`/user/package-items/detail/${value.trim()}`);
+          return;
+        }
+      }
+
+      // Then try by RFID
       const responseByRfId = await PackageItemServices.getPackageItemById({
         rfId: value.trim(),
       });
+
       if (responseByRfId.data) {
         router.push(
           `/user/package-items/detail/${responseByRfId.data.data.id}`
         );
         return;
       }
+
+      // If no direct matches, continue with regular search filtering
     } catch (error) {
-      console.log("RFID không tồn tại, tiếp tục tìm kiếm thông thường");
+      // Continue with regular search if no exact matches found
+      console.log("Continuing with regular search");
     }
   };
-  const debouncedHandleSearch = debounce(handleSearchChange, 0);
   const fetchPackageItems = async (page: number) => {
     setIsLoading(true);
     try {
@@ -353,8 +369,8 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
           <input
             type="text"
             placeholder="Search by ID, CCCD, Name, or Phone"
-            value={searchTerm}
-            onChange={(e) => debouncedHandleSearch(e.target.value)}
+            value={inputBuffer}
+            onChange={(e) => handleSearchInput(e.target.value)}
             className="pl-10 pr-4 py-2 w-full border rounded-md"
           />
         </div>
