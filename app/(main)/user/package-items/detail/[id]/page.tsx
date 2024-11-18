@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { PackageItemServices } from "@/components/services/packageItemService";
+import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import { PackageItem } from "@/types/packageitem";
 import Image from "next/image";
 import {

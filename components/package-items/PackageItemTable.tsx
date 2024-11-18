@@ -23,7 +23,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { ChevronUp, ChevronDown, Search } from "lucide-react";
-import { PackageItemServices } from "../services/packageItemService";
+import { PackageItemServices } from "../services/Package/packageItemService";
 import {
   Pagination,
   PaginationContent,

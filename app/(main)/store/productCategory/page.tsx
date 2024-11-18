@@ -254,9 +254,20 @@
 // export default StoreDetailPage;
 // types.ts
 // app/page.tsx
-'use client'
-import { useState, useEffect, ChangeEvent } from 'react'
-import { PlusCircle, Pencil, Trash2, Image as ImageIcon } from 'lucide-react'
+"use client";
+import { useState, useEffect } from "react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -264,229 +275,260 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
+import {
+  ProductCategory,
+  ProductCategoryPost,
+  ProductCategoryPatch,
+} from "@/types/productCategory";
+import { ProductCategoryServices } from "@/components/services/productCategoryService";
 
-interface Product {
-  id: number
-  name: string
-  price: number
-  description: string
-  imageUrl: string
+interface ApiResponse {
+  statusCode: number;
+  messageResponse: string;
+  data: ProductCategory[];
+  metaData: {
+    size: number;
+    page: number;
+    total: number;
+    totalPage: number;
+  };
+  parentName: string | null;
+  qrCode: string | null;
 }
 
-export default function ProductPage() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [imagePreview, setImagePreview] = useState<string>('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  
-  useEffect(() => {
-    setProducts([
-      { 
-        id: 1, 
-        name: "Laptop", 
-        price: 1000, 
-        description: "A powerful laptop",
-        imageUrl: "/api/placeholder/400/300"
-      },
-      { 
-        id: 2, 
-        name: "Phone", 
-        price: 500, 
-        description: "Latest smartphone",
-        imageUrl: "/api/placeholder/400/300"
-      }
-    ])
-  }, [])
+export default function ProductCategoryPage() {
+  const { toast } = useToast();
+  const [productCategories, setProductCategories] = useState<ProductCategory[]>(
+    []
+  );
+  const [selectedCategory, setSelectedCategory] =
+    useState<ProductCategory | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<ProductCategory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string)
+  const fetchProductCategories = async () => {
+    try {
+      setLoading(true);
+      const response = await ProductCategoryServices.getProductCategories({
+        page: 1,
+        size: 20,
+        storeId: localStorage.getItem("storeId") as string,
+      });
+
+      const apiResponse = response.data as ApiResponse;
+      if (apiResponse.statusCode === 200) {
+        setProductCategories(apiResponse.data);
+      } else {
+        setError(apiResponse.messageResponse);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: apiResponse.messageResponse,
+        });
       }
-      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error("Error fetching product categories:", error);
+      setError("Error loading product categories");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error loading product categories",
+      });
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  useEffect(() => {
+    fetchProductCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    
-    let imageUrl = selectedProduct?.imageUrl || '/api/placeholder/400/300'
-    if (selectedFile) {
-      imageUrl = imagePreview
-    }
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
 
-    const newProduct = {
-      id: selectedProduct?.id || Date.now(),
-      name: formData.get('name') as string,
-      price: Number(formData.get('price')),
-      description: formData.get('description') as string,
-      imageUrl: imageUrl
-    }
+    const categoryData = {
+      name: formData.get("name") as string,
+      description: formData.get("description") as string,
+    };
 
-    if (selectedProduct) {
-      setProducts(products.map(p => p.id === selectedProduct.id ? newProduct : p))
-    } else {
-      setProducts([...products, newProduct])
+    try {
+      if (selectedCategory) {
+        await ProductCategoryServices.editProductCategory(
+          selectedCategory.id,
+          categoryData as ProductCategoryPatch
+        );
+        toast({
+          title: "Success",
+          description: "Product category updated successfully",
+        });
+      } else {
+        await ProductCategoryServices.createProductCategory(
+          categoryData as ProductCategoryPost
+        );
+        toast({
+          title: "Success",
+          description: "New product category created successfully",
+        });
+      }
+
+      fetchProductCategories();
+      setIsModalOpen(false);
+      setSelectedCategory(null);
+    } catch (error) {
+      console.error("Error saving product category:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error saving product category",
+      });
     }
-    
-    setIsModalOpen(false)
-    setSelectedProduct(null)
-    setImagePreview('')
-    setSelectedFile(null)
+  };
+
+  const handleEdit = async (category: ProductCategory) => {
+    const patchData: ProductCategoryPatch = {
+      name: category.name,
+      description: category.description,
+    };
+    try {
+      const response = await ProductCategoryServices.editProductCategory(
+        category.id,
+        patchData
+      );
+      setSelectedCategory(category);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching category details:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error loading category details",
+      });
+    }
+  };
+
+  const handleDeleteClick = (category: ProductCategory) => {
+    setCategoryToDelete(category);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (categoryToDelete) {
+      try {
+        await ProductCategoryServices.deleteProductCategoryById(
+          categoryToDelete.id
+        );
+        toast({
+          title: "Success",
+          description: "Product category deleted successfully",
+        });
+        fetchProductCategories();
+      } catch (error) {
+        console.error("Error deleting product category:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Error deleting product category",
+        });
+      }
+    }
+    setIsDeleteDialogOpen(false);
+    setCategoryToDelete(null);
+  };
+
+  if (loading) {
+    return <div className="p-8 text-center">Loading...</div>;
   }
 
-  const handleEdit = (product: Product) => {
-    setSelectedProduct(product)
-    setImagePreview(product.imageUrl)
-    setIsModalOpen(true)
-  }
-
-  const handleDelete = (id: number) => {
-    if (confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-      setProducts(products.filter(p => p.id !== id))
-    }
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
   }
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý sản phẩm</h1>
+        <h1 className="text-2xl font-bold">Product Categories Management</h1>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
         >
           <PlusCircle size={20} />
-          Thêm sản phẩm
+          Add Category
         </button>
       </div>
 
-      {/* Bảng sản phẩm */}
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Hình ảnh</TableHead>
-              <TableHead>Tên sản phẩm</TableHead>
-              <TableHead>Giá</TableHead>
-              <TableHead>Mô tả</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+              <TableHead>Category Name</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map(product => (
-              <TableRow key={product.id}>
-                <TableCell>
-                  <div className="w-20 h-20 relative">
-                    <img 
-                      src={product.imageUrl} 
-                      alt={product.name}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{product.price.toLocaleString('vi-VN')}đ</TableCell>
-                <TableCell className="max-w-xs truncate">{product.description}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="p-2 text-blue-500 hover:bg-blue-100 rounded"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="p-2 text-red-500 hover:bg-red-100 rounded"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+            {productCategories.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">
+                  No data available
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Modal thêm/sửa sản phẩm */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">
-              {selectedProduct ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}
-            </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block mb-2">Hình ảnh sản phẩm</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="imageInput"
-                  />
-                  {imagePreview ? (
-                    <div className="relative aspect-video mb-2">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-full object-cover rounded-lg"
-                      />
+            ) : (
+              productCategories.map((category) => (
+                <TableRow key={category.id}>
+                  <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {category.description}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
                       <button
-                        type="button"
-                        onClick={() => {
-                          setImagePreview('')
-                          setSelectedFile(null)
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full"
+                        onClick={() => handleEdit(category)}
+                        className="p-2 text-blue-500 hover:bg-blue-100 rounded"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(category)}
+                        className="p-2 text-red-500 hover:bg-red-100 rounded"
                       >
                         <Trash2 size={16} />
                       </button>
                     </div>
-                  ) : (
-                    <label
-                      htmlFor="imageInput"
-                      className="flex flex-col items-center justify-center cursor-pointer py-6"
-                    >
-                      <ImageIcon size={40} className="text-gray-400 mb-2" />
-                      <span className="text-gray-500">Click để chọn ảnh</span>
-                    </label>
-                  )}
-                </div>
-              </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">
+              {selectedCategory ? "Edit Category" : "Add New Category"}
+            </h2>
+            <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="block mb-2">Tên sản phẩm</label>
+                <label className="block mb-2">Category Name</label>
                 <input
                   name="name"
-                  defaultValue={selectedProduct?.name}
+                  defaultValue={selectedCategory?.name}
                   className="w-full border p-2 rounded"
                   required
                 />
               </div>
               <div className="mb-4">
-                <label className="block mb-2">Giá</label>
-                <input
-                  name="price"
-                  type="number"
-                  defaultValue={selectedProduct?.price}
-                  className="w-full border p-2 rounded"
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block mb-2">Mô tả</label>
+                <label className="block mb-2">Description</label>
                 <textarea
                   name="description"
-                  defaultValue={selectedProduct?.description}
+                  defaultValue={selectedCategory?.description}
                   className="w-full border p-2 rounded"
                   required
                 />
@@ -495,26 +537,48 @@ export default function ProductPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    setIsModalOpen(false)
-                    setSelectedProduct(null)
-                    setImagePreview('')
-                    setSelectedFile(null)
+                    setIsModalOpen(false);
+                    setSelectedCategory(null);
                   }}
                   className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
                 >
-                  Hủy
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 >
-                  {selectedProduct ? 'Cập nhật' : 'Thêm'}
+                  {selectedCategory ? "Update" : "Add"}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the category "
+              {categoryToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  )
+  );
 }

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PackageItemServices } from "@/components/services/packageItemService";
+import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import { useToast } from "@/components/ui/use-toast";
 import {
   confirmOrderForCharge,

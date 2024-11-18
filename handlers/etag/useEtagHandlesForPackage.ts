@@ -10,7 +10,7 @@ import {
 import {
   PackageItemServices,
   GeneratePackageItem,
-} from "@/components/services/packageItemService";
+} from "@/components/services/Package/packageItemService";
 import paymentService from "@/components/services/paymentService";
 import {
   CustomerFormValues,
