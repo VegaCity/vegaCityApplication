@@ -4,7 +4,7 @@ export interface HouseType {
   address: string;
   zoneId: string;
   deflag: boolean;
-  isRent: boolean;
+  isRent?: boolean;
 }
 
 export interface HouseTypeId extends HouseType {

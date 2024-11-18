@@ -4,6 +4,8 @@ import BackButton from "@/components/BackButton";
 import { useUserRole } from "@/components/hooks/useUserRole";
 import StoresPagination from "@/components/stores/StoresPagination";
 import StoresTable from "@/components/stores/StoresTable";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
 import Link from "next/link";
 
 const PackagesPage = () => {
@@ -17,13 +19,14 @@ const PackagesPage = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <BackButton text="Go Back" link="/" />
+        {/* <BackButton text="Go Back" link="/" /> */}
+        <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full transition-colors duration-200">
+          <Link href="/admin/zones" className="flex items-center">
+            <Upload size={15} /> &nbsp; Create New Store
+          </Link>
+        </Button>
       </div>
-      <StoresTable
-        params={{
-          id: "",
-        }}
-      />
+      <StoresTable />
       <StoresPagination />
     </div>
   );

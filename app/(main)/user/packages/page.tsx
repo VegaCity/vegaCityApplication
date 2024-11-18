@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import BackButton from "@/components/BackButton";
 import { useUserRole } from "@/components/hooks/useUserRole";
-import { PackageServices } from "@/components/services/packageServices";
-import { Package } from "@/types/package";
+import { PackageServices } from "@/components/services/Package/packageServices";
+import { Package } from "@/types/packageType/package";
 import PackageCard from "@/components/card/packagecard";
 
 interface ApiResponse {
@@ -34,7 +34,11 @@ const PackagesPage = () => {
         });
         const apiResponse = response.data as ApiResponse;
         if (apiResponse.statusCode === 200 && Array.isArray(apiResponse.data)) {
-          setPackages(apiResponse.data);
+          // Filter out packages where deflag is true
+          const filteredPackages = apiResponse.data.filter(
+            (pkg) => !pkg.deflag
+          );
+          setPackages(filteredPackages);
         } else {
           throw new Error("Invalid response format");
         }
@@ -63,14 +67,9 @@ const PackagesPage = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <BackButton text="Go Back" link="/" />
-      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {packages.length > 0 ? (
-          packages.map((pkg) => (
-            <PackageCard key={pkg.id} package={pkg} />
-          ))
+        {packages?.length > 0 ? (
+          packages.map((pkg) => <PackageCard key={pkg.id} package={pkg} />)
         ) : (
           <div>No packages available</div>
         )}

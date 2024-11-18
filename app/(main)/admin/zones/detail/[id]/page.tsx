@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ZoneType } from "@/types/zone";
+import { Zone } from "@/types/zone/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { HouseTypeId } from "@/types/house";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import BackButton from "@/components/BackButton";
 
 interface ZoneDetailPageProps {
   params: {
@@ -14,7 +15,7 @@ interface ZoneDetailPageProps {
   };
 }
 
-interface GetZone extends ZoneType {
+interface GetZone extends Zone {
   id: string;
 }
 
@@ -59,10 +60,10 @@ const ZoneDetailsPage = ({ params }: ZoneDetailPageProps) => {
           </p>
           <Button>
             <Link href={`/admin/houses/create/houseZoneId/${zone.id}`}>
-              Create House in Zone
+              Create Store in Zone
             </Link>
           </Button>
-          {zone.houses.length > 0 ? (
+          {/* {zone.houses.length > 0 ? (
             <div>
               <h3 className="text-xl mt-4">Houses</h3>
               <ul>
@@ -85,10 +86,13 @@ const ZoneDetailsPage = ({ params }: ZoneDetailPageProps) => {
             </div>
           ) : (
             <h3 className="text-xl mt-4">No houses available.</h3>
-          )}
+          )} */}
         </>
       ) : (
-        <div>No zone details available.</div>
+        <div>
+          <BackButton text="Back To Zones" link="/admin/zones" />
+          No zone details available.
+        </div>
       )}
     </div>
   );

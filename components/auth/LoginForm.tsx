@@ -20,20 +20,7 @@ import { toast } from "../ui/use-toast";
 import { AxiosError } from "axios";
 import { AuthServices } from "@/components/services/authServices";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
-
-const formSchema = z.object({
-  email: z
-    .string()
-    .min(1, {
-      message: "Email is required",
-    })
-    .email({
-      message: "Please enter a valid email",
-    }),
-  password: z.string().min(1, {
-    message: "Password is required",
-  }),
-});
+import { loginFormSchema, loginFormValues } from "@/lib/validation";
 
 interface UserRefreshToken {
   email: string;
@@ -51,8 +38,8 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<loginFormValues>({
+    resolver: zodResolver(loginFormSchema),
     defaultValues: {
       email: "",
       password: "",
@@ -385,8 +372,9 @@ const LoginForm = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (data: z.infer<typeof loginFormSchema>) => {
     console.log("a");
+    console.log(data, "login account");
     if (!isLoading) {
       toast({
         title: "Loading",
@@ -516,7 +504,9 @@ const LoginForm = () => {
               )}
             />
 
-            <Button className="w-full bg-sky-600 text-lg ">Sign In</Button>
+            <Button className="w-full text-lg bg-sky-500 hover:bg-sky-600">
+              Sign In
+            </Button>
           </form>
         </Form>
       </CardContent>

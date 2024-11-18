@@ -1,8 +1,7 @@
 "use client";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
-import { UserServices } from "@/components/services/userServices";
+import { UserServices } from "@/components/services/User/userServices";
 import { Role, roles } from "@/types/role";
-import { Users } from "@/types/user";
 import { useState, useEffect } from "react";
 
 export function useUserRole(): { userRole: Role | null; loading: boolean } {
@@ -13,9 +12,9 @@ export function useUserRole(): { userRole: Role | null; loading: boolean } {
   useEffect(() => {
     async function fetchUserRole() {
       if (user && user.roleId) {
-        const authUser = user?.roleId;
-        const getUserRole = roles.find(({ id }) => id === authUser) || null;
-        setUserRole(getUserRole);
+        const authUser = user?.role || null;
+        // const getUserRole = roles.find(({ id }) => id === authUser) || null;
+        setUserRole(authUser);
       }
       setLoading(false);
     }

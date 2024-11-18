@@ -1,27 +1,32 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface DashboardCardProps {
   title: string;
-  count: number;
-  icon: React.ReactElement<LucideIcon>;
+  count: string | number;
+  icon: ReactNode;
+  prefix?: string;
 }
 
-const DashboardCard = ({ title, count, icon }: DashboardCardProps) => {
+const DashboardCard = ({
+  title,
+  count,
+  icon,
+  prefix = "",
+}: DashboardCardProps) => {
   return (
-    <Card className='bg-slate-100 dark:bg-slate-800 p-4 pb-0'>
-      <CardContent>
-        <h3 className='text-3xl text-center mb-4 font-bold text-slate-500 dark:text-slate-200'>
-          {title}
-        </h3>
-        <div className='flex gap-5 justify-center items-center'>
-          {icon}
-          <h3 className='text-5xl font-semibold text-slate-500 dark:text-slate-200'>
+    <div className="bg-white rounded-lg shadow p-6 flex-1">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-sm text-gray-900">{title}</h3>
+          <p className="text-3xl font-bold text-gray-900 mt-2">
+            {prefix}
             {count}
-          </h3>
+          </p>
         </div>
-      </CardContent>
-    </Card>
+        <div className="text-gray-400">{icon}</div>
+      </div>
+    </div>
   );
 };
 

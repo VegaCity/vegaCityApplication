@@ -20,8 +20,8 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 const zoneSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  location: z.string().min(1, { message: "Location is required" }),
+  zoneName: z.string().min(1, { message: "Name is required" }),
+  zoneLocation: z.string().min(1, { message: "Location is required" }),
 });
 
 interface ZoneEditPageProps {
@@ -41,8 +41,8 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(zoneSchema),
     defaultValues: {
-      name: "",
-      location: "",
+      zoneName: "",
+      zoneLocation: "",
     },
   });
 
@@ -52,12 +52,12 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
       try {
         setIsLoading(true);
         const response = await ZoneServices.getZoneById(params.id);
-        const zoneData = response.data.data.zone;
-        console.log(zoneData, "Get package by Id"); // Log the response for debugging
+        const zoneData = response.data.data;
+        console.log(zoneData, "Get zone by Id"); // Log the response for debugging
         if (zoneData) {
           form.reset({
-            name: zoneData.name,
-            location: zoneData.location,
+            zoneName: zoneData.name,
+            zoneLocation: zoneData.location,
           });
         }
       } catch (err) {
@@ -78,7 +78,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
       await ZoneServices.editZone(params.id, data);
       toast({
         title: "Zone has been updated successfully",
-        description: `Zone ${data.name} was updated!`,
+        description: `Zone ${data.zoneName} was updated!`,
       });
     } catch (err) {
       setError(
@@ -98,8 +98,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           <FormField
             control={form.control}
-            disabled
-            name="name"
+            name="zoneName"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
@@ -108,7 +107,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
                 <FormControl>
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Id"
+                    placeholder="Zone Name"
                     {...field}
                   />
                 </FormControl>
@@ -119,8 +118,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
 
           <FormField
             control={form.control}
-            disabled
-            name="location"
+            name="zoneLocation"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
@@ -129,7 +127,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
                 <FormControl>
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="MarketZone Id"
+                    placeholder="Zone Location"
                     {...field}
                   />
                 </FormControl>

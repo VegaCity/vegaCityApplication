@@ -11,8 +11,8 @@ import {
   TableRow,
   TableCaption,
 } from "@/components/ui/table";
-import { PackageServices } from "@/components/services/packageServices";
-import { Package } from "@/types/package";
+import { PackageServices } from "@/components/services/Package/packageServices";
+import { Package } from "@/types/packageType/package";
 import { useToast } from "@/components/ui/use-toast";
 import {
   AlertDialog,
@@ -25,6 +25,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { Minus } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import { Badge } from "@/components/ui/badge";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 interface PackageTableProps {
   limit?: number;
@@ -36,6 +43,7 @@ interface GetPackage extends Package {
 }
 
 const PackageTable = ({ limit, title }: PackageTableProps) => {
+  const router = useRouter();
   const [packageList, setPackageList] = useState<GetPackage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -96,92 +104,75 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
 
   const filteredPackages = limit ? packageList.slice(0, limit) : packageList;
 
-  // Function to format price
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
   return (
-    <div className="mt-10">
+    <div className="mt-5">
       <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
       {filteredPackages.length > 0 ? (
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
           <TableHeader>
-            <TableRow className="bg-slate-300 hover:bg-slate-300">
-              <TableHead>NO</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead className="hidden md:table-cell">Image</TableHead>
-              <TableHead className="hidden md:table-cell">
+            <TableRow>
+              <TableHead className="text-white">#</TableHead>
+              <TableHead className="text-white">Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Image
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
                 Description
               </TableHead>
-              <TableHead className="hidden md:table-cell">Price</TableHead>
-              <TableHead className="hidden md:table-cell">Start Date</TableHead>
-              <TableHead className="hidden md:table-cell">End Date</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Price
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Duration
+              </TableHead>
+              <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredPackages.map((pkg, i) => (
-              <TableRow key={pkg.id}>
+              <TableRow
+                onClick={() => router.push(`/admin/packages/detail/${pkg.id}`)}
+                key={pkg.id}
+              >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{pkg.name}</TableCell>
+                <TableCell>
+                  <p className="font-bold">{pkg.name}</p>
+                </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <img
-                    src={pkg?.imageUrl ?? "/images/placeholder.jpg"}
+                  <Image
+                    src={validImageUrl(pkg?.imageUrl || null)}
                     alt={pkg.name}
-                    width="100"
-                    height="auto"
+                    width={150}
+                    height={100}
                     className="object-cover"
                   />
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {pkg.description}
+                  {pkg.description ? (
+                    <p className="text-slate-500">{pkg.description}</p>
+                  ) : (
+                    <Minus />
+                  )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {formatPrice(pkg.price)}
+                  <p className="font-bold">
+                    {formatVNDCurrencyValue(pkg.price)}
+                  </p>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  {new Date(pkg.startDate).toLocaleDateString()}
+                  <Badge className="bg-slate-500 text-white">
+                    {pkg.duration} days
+                  </Badge>
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {new Date(pkg.endDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <Link href={`/admin/packages/edit/${pkg.id}`}>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-xs mr-2">
-                      Edit
-                    </button>
-                  </Link>
-                  <AlertDialog>
-                    <AlertDialogTrigger>
-                      <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs">
-                        Delete
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are sure for delete this -{pkg?.name}- PACKAGE?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will deflag package
-                          in your package list!
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeletePackage(pkg)}
-                        >
-                          Confirm
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                <TableCell
+                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                >
+                  <PopoverActionTable
+                    item={pkg}
+                    editLink={`/admin/packages/edit/${pkg.id}`}
+                    handleDelete={handleDeletePackage}
+                  />
                 </TableCell>
               </TableRow>
             ))}

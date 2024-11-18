@@ -2,10 +2,20 @@
   @tailwind components;
   @tailwind utilities;
 
+  /* Important things should add in global.css | It's could help u prevent scroll when wrapping Provider */
+  /* html, body { */
+    /* height: 100%; */
+    /* margin: 0; */
+    /* padding: 0; */
+    /* overflow: auto; Allow natural scrolling */
+  /* } */
+
   @layer base {
     :root {
       --background: 0 0% 100%;
       --foreground: 222.2 84% 4.9%;
+      --fixed-background-image: url('../img/vegaCityBackground.jpg');
+
 
       --card: 0 0% 100%;
       --card-foreground: 222.2 84% 4.9%;
@@ -15,7 +25,6 @@
 
       --primary: 222.2 47.4% 11.2%;
       --primary-foreground: 210 40% 98%;
-
       --secondary: 210 40% 96.1%;
       --secondary-foreground: 222.2 47.4% 11.2%;
 
@@ -27,12 +36,19 @@
 
       --destructive: 0 84.2% 60.2%;
       --destructive-foreground: 210 40% 98%;
-
+      
       --border: 214.3 31.8% 91.4%;
       --input: 214.3 31.8% 91.4%;
       --ring: 222.2 84% 4.9%;
-
       --radius: 0.5rem;
+      --sidebar-background: 0 0% 98%;
+      --sidebar-foreground: 240 5.3% 26.1%;
+      --sidebar-primary: 240 5.9% 10%;
+      --sidebar-primary-foreground: 0 0% 98%;
+      --sidebar-accent: 240 4.8% 95.9%;
+      --sidebar-accent-foreground: 240 5.9% 10%;
+      --sidebar-border: 220 13% 91%;
+      --sidebar-ring: 217.2 91.2% 59.8%;
     }
 
     .dark {
@@ -63,7 +79,15 @@
       --border: 217.2 32.6% 17.5%;
       --input: 217.2 32.6% 17.5%;
       --ring: 212.7 26.8% 83.9%;
-    }
+      --sidebar-background: 240 5.9% 10%;
+      --sidebar-foreground: 240 4.8% 95.9%;
+      --sidebar-primary: 224.3 76.3% 48%;
+      --sidebar-primary-foreground: 0 0% 100%;
+      --sidebar-accent: 240 3.7% 15.9%;
+      --sidebar-accent-foreground: 240 4.8% 95.9%;
+      --sidebar-border: 240 3.7% 15.9%;
+      --sidebar-ring: 217.2 91.2% 59.8%;
+      }
   }
 
   @layer base {
@@ -73,4 +97,34 @@
     body {
       @apply bg-background text-foreground;
     }
+    .button-style {
+      @apply bg-blue-500 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200 hover:bg-blue-700;
+      /* Add any other common styles here */
+    }    
   }
+
+ /* HTML: <div class="loader"></div> */
+.loader {
+  width: calc(6*30px);
+  height: 50px;
+  display: flex;
+  color: #8d7958;
+  filter: drop-shadow(30px 25px 0 currentColor) drop-shadow(60px 0 0 currentColor) drop-shadow(120px 0 0 currentColor);
+  clip-path: inset(0 100% 0 0);
+  animation: l12 2s infinite steps(7);
+}
+.loader:before {
+  content: "";
+  width: 30px;
+  height: 25px;
+  --c:no-repeat radial-gradient(farthest-side,currentColor 92%,#0000);
+  background: 
+    var(--c) left /70% 70%,
+    var(--c) right/20% 20%,
+    var(--c) top    0 right 15%/20% 20%,
+    var(--c) bottom 0 right 15%/20% 20%;
+}
+@keyframes l12 {
+  100% {clip-path: inset(0 -30px 0 0)}
+}
+
