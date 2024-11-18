@@ -282,6 +282,7 @@ export const useEtagHandlers = ({
       title: "Order Cancelled",
       description: "Your order has been cancelled and deleted.",
     });
+    window.location.reload();
   };
 
   const handleConfirmOrder = async () => {
@@ -299,21 +300,29 @@ export const useEtagHandlers = ({
     const quantity = customerForm.getValues("quantity");
     const customerInfo = customerForm.getValues();
 
+    // Ensure quantity is 1 for minor vCard generation
+    if (isAdultParam === "true" && quantity !== 1) {
+      toast({
+        title: "Error",
+        description: "Quantity must be 1 for minor vCard generation.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       if (paymentMethod.toLowerCase() === "cash") {
-        // First confirm the cash payment
         const confirmResult = await confirmOrderForCharge({
           invoiceId,
           transactionId: localStorage.getItem("transactionId") || "",
         });
 
-        // Only proceed with vCard generation if confirmation was successful
         if (confirmResult) {
           setIsOrderConfirmed(true);
 
           try {
             if (isAdultParam === "true") {
-              await handleGenerateVCardForMinor(quantity, {
+              await handleGenerateVCardForMinor(1, {
                 fullName: customerInfo.customerName,
                 email: customerInfo.email,
                 cccdPassport: customerInfo.cccdpassport,
@@ -339,15 +348,15 @@ export const useEtagHandlers = ({
           }
         }
       } else {
-        // For non-cash payments, proceed with normal payment flow
         await initiatePayment(paymentMethod, invoiceId);
 
         if (isAdultParam === "true") {
-          await handleGenerateVCardForMinor(quantity, {
+          await handleGenerateVCardForMinor(1, {
             fullName: customerInfo.customerName,
             email: customerInfo.email,
             cccdPassport: customerInfo.cccdpassport,
             phoneNumber: customerInfo.phoneNumber,
+            packageOrderId: localStorage.getItem("packageOrderId"),
           });
         } else {
           await handleGenerateVCardForAdult(quantity, {

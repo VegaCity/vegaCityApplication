@@ -193,52 +193,60 @@ const WithdrawMoney = () => {
           }=${searchValue}&type=${activeTab.toUpperCase()}`
         );
 
-        if (response.data?.statusCode === 200) {
-          const data = response.data.data;
+        // Log the entire response for debugging
+        console.log("Full API Response:", response);
 
-          if (data) {
-            // Check if wallets array exists and has items
-            if (data.wallets && data.wallets.length > 0) {
-              const wallet = data.wallets[0];
-              setWalletInfo({
-                id: wallet.id,
-                balance: wallet.balance || 0,
-              });
-            } else {
-              throw new Error(
-                "Không tìm thấy thông tin ví cho Package-Item này."
-              );
-            }
+        // Check for specific error scenarios
+        if (response.data.statusCode !== 200) {
+          // Prioritize messageResponse if available
+          const errorMessage = response.data.messageResponse;
+          console.log(errorMessage, "errorMessage");
 
-            // Set package item details with all available data
-            setPackageItemDetails({
-              id: data.id,
-              packageId: data.packageId,
-              cusName: data.cusName,
-              phoneNumber: data.phoneNumber,
-              cusCccdpassport: data.cusCccdpassport,
-              type: activeTab.toUpperCase() as "CUSTOMER" | "STORE",
-            });
-
-            // Log successful data setting
-            console.log("Wallet Info Set:", walletInfo);
-            console.log("Package Details Set:", data);
-          } else {
-            throw new Error("Không tìm thấy thông tin Package-Item.");
-          }
-        } else {
-          throw new Error(
-            response.data?.messageResponse ||
-              "Không tìm thấy thông tin Package-Item"
-          );
+          throw new Error(errorMessage);
         }
+
+        const data = response.data.data;
+
+        if (!data) {
+          throw new Error("Không tìm thấy thông tin Package-Item.");
+        }
+
+        // Check if wallets array exists and has items
+        if (!data.wallets || data.wallets.length === 0) {
+          throw new Error("Không tìm thấy thông tin ví cho Package-Item này.");
+        }
+
+        const wallet = data.wallets[0];
+        setWalletInfo({
+          id: wallet.id,
+          balance: wallet.balance || 0,
+        });
+
+        // Set package item details with all available data
+        setPackageItemDetails({
+          id: data.id,
+          packageId: data.packageId,
+          cusName: data.cusName,
+          phoneNumber: data.phoneNumber,
+          cusCccdpassport: data.cusCccdpassport,
+          type: activeTab.toUpperCase() as "CUSTOMER" | "STORE",
+        });
       } catch (err) {
-        console.error("Error fetching package item info:", err);
-        setError(
+        // Enhanced error logging
+        console.error("Fetch Package Item Error:", err);
+
+        // Extract messageResponse if available
+        const messageResponse =
           err instanceof Error
-            ? err.message
-            : "Đã có lỗi xảy ra. Vui lòng kiểm tra lại."
-        );
+            ? (err as any).response?.data?.messageResponse || err.message
+            : "Đã có lỗi xảy ra. Vui lòng kiểm tra lại.";
+
+        console.log("MessageResponse:", messageResponse);
+
+        // Set error state with the message
+        setError(messageResponse);
+
+        // Reset state on error
         setWalletInfo(null);
         setPackageItemDetails(null);
       } finally {
@@ -292,12 +300,29 @@ const WithdrawMoney = () => {
         setPendingTransactionId(response.data.data.transactionId);
         setShowConfirmDialog(true);
       } else {
+        // Handle specific error response
         throw new Error(
-          response.data.messageResponse || "Không thể tạo yêu cầu rút tiền"
+          response.data.Error ||
+            response.data.messageResponse ||
+            "Không thể tạo yêu cầu rút tiền"
         );
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+      console.error("Withdrawal Error:", err);
+
+      // Check if err is an object with specific error properties
+      if (err instanceof Error && "response" in err) {
+        const errorResponse = (err as any).response?.data;
+        setError(
+          errorResponse?.Error ||
+            errorResponse?.messageResponse ||
+            err.message ||
+            "Đã có lỗi xảy ra"
+        );
+      } else {
+        // Fallback error handling
+        setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+      }
     } finally {
       setIsWithdrawing(false);
     }
@@ -325,9 +350,7 @@ const WithdrawMoney = () => {
         });
         fetchPackageItemInfo(packageItemCode);
       } else {
-        throw new Error(
-          response.data.messageResponse || "Cannot process withdrawal"
-        );
+        throw new Error(response.data.Error || "Cannot process withdrawal");
       }
     } catch (err) {
       setError(

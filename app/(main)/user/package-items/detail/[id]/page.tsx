@@ -527,7 +527,17 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     try {
       const formData = form.getValues();
 
-      await PackageItemServices.activatePackageItem(packageItem.id);
+      const activationData = {
+        email: formData.cusEmail,
+        fullName: formData.cusName,
+        phoneNumber: formData.phoneNumber,
+        cccdPassport: formData.cusCccdpassport,
+      };
+
+      await PackageItemServices.activatePackageItem(
+        packageItem.id,
+        activationData
+      );
       toast({
         title: "ETag Activated",
         description: "The ETag has been successfully activated.",

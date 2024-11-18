@@ -236,7 +236,7 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
     switch (status) {
       case "Active":
         return "bg-green-500";
-      case "Inactive":
+      case "InActive":
         return "bg-yellow-500";
       case "Expired":
         return "bg-red-500";

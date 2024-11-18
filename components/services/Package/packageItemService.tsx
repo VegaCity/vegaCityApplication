@@ -63,7 +63,7 @@ export const PackageItemServices = {
 
   getPackageItemById({ id, rfId }: GetPackageItemByIdParams) {
     if (id) {
-      return API.get(`/package-item/?id=${id}`);
+      return API.get(`/package-item?id=${id}`);
     } else if (rfId) {
       return API.get(`/package-item/?rfId=${rfId}`);
     } else {
@@ -132,8 +132,16 @@ export const PackageItemServices = {
     });
   },
 
-  activatePackageItem(id: string) {
-    return API.patch(`/package-item/${id}/activate`);
+  activatePackageItem(
+    id: string,
+    data: {
+      email: string;
+      fullName: string;
+      phoneNumber: string;
+      cccdPassport: string;
+    }
+  ) {
+    return API.patch(`/package-item/${id}/activate`, data);
   },
   updateRFID(id: string, rfId: string) {
     return API.patch(`/package-item/${id}/rfid?rfId=${rfId}`, {
