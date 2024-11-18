@@ -21,12 +21,11 @@ const SESSIONS = {
   }
 };
 
-// Thêm danh sách categories
 const CATEGORIES = [
   "Tất cả",
   "Cơm",
   "Bún",
-  "Món nước",
+  "Món nước", 
   "Bánh",
   "Mì",
   "Món sáng"
@@ -49,6 +48,8 @@ const MenuUI = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentSession, setCurrentSession] = useState<keyof typeof SESSIONS | null>(null);
+  const [isOwnerMode, setIsOwnerMode] = useState(false);
+  const [cart, setCart] = useState<Array<{id: number, quantity: number}>>([]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -88,7 +89,24 @@ const MenuUI = () => {
   };
 
   const handleAddToCart = (itemId: number) => {
-    console.log('Added to cart:', itemId);
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === itemId);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === itemId 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { id: itemId, quantity: 1 }];
+    });
+  };
+
+  const getCartTotal = () => {
+    return cart.reduce((total, cartItem) => {
+      const menuItem = menuData.find(item => item.id === cartItem.id);
+      return total + (menuItem ? menuItem.price * cartItem.quantity : 0);
+    }, 0);
   };
 
   const filteredMenu = menuData.filter(item => {
@@ -105,7 +123,6 @@ const MenuUI = () => {
     }).format(price);
   };
 
-  // Tính số lượng món ăn cho mỗi category
   const getCategoryCount = (category: string) => {
     if (category === 'Tất cả') return menuData.length;
     return menuData.filter(item => item.category === category).length;
@@ -126,12 +143,43 @@ const MenuUI = () => {
             )}
           </div>
         </div>
-        <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          <Link href="/store/product/create" className="flex items-center">
-            <Plus size={20} />
-            Thêm món
-          </Link>
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Role Switch */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Chế độ:</span>
+            <select 
+              className="p-2 border rounded-lg"
+              value={isOwnerMode ? "owner" : "staff"}
+              onChange={(e) => setIsOwnerMode(e.target.value === "owner")}
+            >
+              <option value="staff">Nhân viên</option>
+              <option value="owner">Chủ cửa hàng</option>
+            </select>
+          </div>
+          
+          {/* Conditional buttons based on role */}
+          {isOwnerMode ? (
+            <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              <Link href="/store/product/create" className="flex items-center">
+                <Plus size={20} />
+                Thêm món
+              </Link>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="font-medium">
+                Giỏ hàng ({cart.reduce((sum, item) => sum + item.quantity, 0)})
+              </span>
+              <span className="text-blue-600 font-bold">
+                {formatPrice(getCartTotal())}
+              </span>
+              <button className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                <ShoppingCart size={20} />
+                Thanh toán
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-8">
@@ -143,10 +191,11 @@ const MenuUI = () => {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${selectedCategory === category
-                  ? 'bg-blue-600 text-white'
-                  : 'hover:bg-gray-100'
-                  }`}
+                className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
+                  selectedCategory === category
+                    ? 'bg-blue-600 text-white'
+                    : 'hover:bg-gray-100'
+                }`}
               >
                 <span>{category}</span>
                 <span className="text-sm bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
@@ -174,10 +223,11 @@ const MenuUI = () => {
             <div className="flex gap-4 mb-6">
               <button
                 onClick={() => setSelectedSession('all')}
-                className={`px-4 py-2 rounded-lg ${selectedSession === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
+                className={`px-4 py-2 rounded-lg ${
+                  selectedSession === 'all'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                }`}
               >
                 Tất cả
               </button>
@@ -185,10 +235,11 @@ const MenuUI = () => {
                 <button
                   key={session}
                   onClick={() => setSelectedSession(session)}
-                  className={`px-4 py-2 rounded-lg ${selectedSession === session
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200'
-                    }`}
+                  className={`px-4 py-2 rounded-lg ${
+                    selectedSession === session
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
                 >
                   {time.label}
                 </button>
@@ -200,11 +251,14 @@ const MenuUI = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredMenu.map((item) => {
               const isAvailable = isItemAvailable(item.session);
+              const cartItem = cart.find(cartItem => cartItem.id === item.id);
+              
               return (
                 <div
                   key={item.id}
-                  className={`bg-white rounded-lg shadow-md transition-all ${isAvailable ? 'hover:shadow-lg' : 'opacity-60'
-                    }`}
+                  className={`bg-white rounded-lg shadow-md transition-all ${
+                    isAvailable ? 'hover:shadow-lg' : 'opacity-60'
+                  }`}
                 >
                   {/* Product image */}
                   <div className="aspect-square bg-gray-100 rounded-t-lg relative">
@@ -237,20 +291,24 @@ const MenuUI = () => {
                       <span className="text-sm text-gray-500">{item.category}</span>
                     </div>
 
-                    {/* Action buttons */}
+                    {/* Action buttons - different for each role */}
                     <div className="flex gap-2">
-                      <button
-                        className="flex-1 flex items-center justify-center gap-1 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        onClick={() => handleAddToCart(item.id)}
-                        disabled={!isAvailable}
-                      >
-
-                        Add to cart
-                      </button>
+                      {!isOwnerMode && (
+                        <button
+                          className="flex-1 flex items-center justify-center gap-1 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => handleAddToCart(item.id)}
+                          disabled={!isAvailable}
+                        >
+                         
+                          {cartItem ? `Order (${cartItem.quantity})` : 'Add'}
+                        </button>
+                      )}
 
                       <Link
                         href={`/store/product/${item.id}`}
-                        className="flex-1 flex items-center justify-center gap-1 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className={`flex items-center justify-center gap-1 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors ${
+                          isOwnerMode ? 'flex-1' : 'w-32'
+                        }`}
                       >
                         <Eye size={16} />
                         Chi tiết

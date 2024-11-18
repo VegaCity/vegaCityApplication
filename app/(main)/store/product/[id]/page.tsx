@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { ArrowLeft, Heart, Share2, Clock, Tag, ShoppingCart, Plus, Minus } from 'lucide-react';
+import { ArrowLeft, Heart, Share2, Clock, Tag } from 'lucide-react';
 import Link from 'next/link';
 import {
   Accordion,
@@ -10,8 +10,18 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Định nghĩa kiểu dữ liệu cho món ăn
 interface MenuItem {
   id: number;
   name: string;
@@ -29,7 +39,25 @@ interface MenuItem {
   };
 }
 
-// Mock data cho chi tiết món ăn
+const SESSIONS = {
+  sang: {
+    start: '07:00',
+    end: '10:30',
+    label: 'Ca sáng (7:00 - 10:30)'
+  },
+  trua: {
+    start: '10:30',
+    end: '14:00',
+    label: 'Ca trưa (10:30 - 14:00)'
+  },
+  toi: {
+    start: '14:00',
+    end: '22:00',
+    label: 'Ca tối (14:00 - 22:00)'
+  }
+};
+
+// Mock data
 const menuItemDetail: MenuItem = {
   id: 1,
   name: "Phở bò",
@@ -54,26 +82,9 @@ const menuItemDetail: MenuItem = {
   }
 };
 
-const SESSIONS = {
-  sang: {
-    start: '07:00',
-    end: '10:30',
-    label: 'Ca sáng (7:00 - 10:30)'
-  },
-  trua: {
-    start: '10:30',
-    end: '14:00',
-    label: 'Ca trưa (10:30 - 14:00)'
-  },
-  toi: {
-    start: '14:00',
-    end: '22:00',
-    label: 'Ca tối (14:00 - 22:00)'
-  }
-};
-
 const ProductDetail = () => {
-  const [quantity, setQuantity] = useState(1);
+  const [isEditing, setIsEditing] = useState(false);
+  const [menuItem, setMenuItem] = useState<MenuItem>(menuItemDetail);
   const [isWishlist, setIsWishlist] = useState(false);
 
   const formatPrice = (price: number) => {
@@ -83,19 +94,199 @@ const ProductDetail = () => {
     }).format(price);
   };
 
-  const handleQuantityChange = (action: 'increase' | 'decrease') => {
-    if (action === 'increase') {
-      setQuantity(prev => prev + 1);
-    } else if (action === 'decrease' && quantity > 1) {
-      setQuantity(prev => prev - 1);
-    }
+  const handleChange = (field: keyof MenuItem, value: any) => {
+    setMenuItem(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
+
+  const handleIngredientsChange = (value: string) => {
+    const ingredients = value.split('\n').filter(item => item.trim() !== '');
+    setMenuItem(prev => ({
+      ...prev,
+      ingredients
+    }));
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Implement save logic here
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="max-w-3xl mx-auto p-6">
+        <div className="flex items-center mb-8">
+          <Button variant="ghost" onClick={() => setIsEditing(false)} className="mr-4">
+            <ArrowLeft className="mr-2" size={20} />
+            Quay lại
+          </Button>
+          <h1 className="text-2xl font-bold">Chỉnh sửa sản phẩm</h1>
+        </div>
+
+        <form onSubmit={handleSave}>
+          <Card className="p-6 space-y-6">
+            {/* Basic Information */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="name">Tên sản phẩm</Label>
+                <Input
+                  id="name"
+                  value={menuItem.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="price">Giá bán</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    value={menuItem.price}
+                    onChange={(e) => handleChange('price', Number(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="originalPrice">Giá gốc</Label>
+                  <Input
+                    id="originalPrice"
+                    type="number"
+                    value={menuItem.originalPrice}
+                    onChange={(e) => handleChange('originalPrice', Number(e.target.value))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="session">Ca phục vụ</Label>
+                  <Select
+                    value={menuItem.session}
+                    onValueChange={(value) => handleChange('session', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn ca phục vụ" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {Object.entries(SESSIONS).map(([key, value]) => (
+                          <SelectItem key={key} value={key}>
+                            {value.label}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="category">Danh mục</Label>
+                  <Input
+                    id="category"
+                    value={menuItem.category}
+                    onChange={(e) => handleChange('category', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="description">Mô tả</Label>
+                <Textarea
+                  id="description"
+                  value={menuItem.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="ingredients">Nguyên liệu (mỗi dòng một nguyên liệu)</Label>
+                <Textarea
+                  id="ingredients"
+                  value={menuItem.ingredients?.join('\n')}
+                  onChange={(e) => handleIngredientsChange(e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              {/* Nutrition Information */}
+              <div>
+                <Label className="mb-2 block">Thông tin dinh dưỡng</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="calories">Calories (kcal)</Label>
+                    <Input
+                      id="calories"
+                      type="number"
+                      value={menuItem.nutritionInfo?.calories}
+                      onChange={(e) => handleChange('nutritionInfo', {
+                        ...menuItem.nutritionInfo,
+                        calories: Number(e.target.value)
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="protein">Protein (g)</Label>
+                    <Input
+                      id="protein"
+                      type="number"
+                      value={menuItem.nutritionInfo?.protein}
+                      onChange={(e) => handleChange('nutritionInfo', {
+                        ...menuItem.nutritionInfo,
+                        protein: Number(e.target.value)
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="carbs">Carbs (g)</Label>
+                    <Input
+                      id="carbs"
+                      type="number"
+                      value={menuItem.nutritionInfo?.carbs}
+                      onChange={(e) => handleChange('nutritionInfo', {
+                        ...menuItem.nutritionInfo,
+                        carbs: Number(e.target.value)
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="fat">Fat (g)</Label>
+                    <Input
+                      id="fat"
+                      type="number"
+                      value={menuItem.nutritionInfo?.fat}
+                      onChange={(e) => handleChange('nutritionInfo', {
+                        ...menuItem.nutritionInfo,
+                        fat: Number(e.target.value)
+                      })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4">
+              <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
+                Hủy
+              </Button>
+              <Button type="submit">
+                Lưu thay đổi
+              </Button>
+            </div>
+          </Card>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Back button and actions */}
       <div className="flex justify-between items-center mb-8">
-        <Link href="/menu" className="flex items-center text-gray-600 hover:text-gray-900">
+        <Link href="/store/menu/${menu.id}" className="flex items-center text-gray-600 hover:text-gray-900">
           <ArrowLeft className="mr-2" size={20} />
           Quay lại menu
         </Link>
@@ -123,61 +314,37 @@ const ProductDetail = () => {
         {/* Product Info */}
         <div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-4">{menuItemDetail.name}</h1>
+            <h1 className="text-3xl font-bold mb-4">{menuItem.name}</h1>
             <div className="flex items-center gap-4 mb-4">
               <span className="text-2xl font-bold text-blue-600">
-                {formatPrice(menuItemDetail.price)}
+                {formatPrice(menuItem.price)}
               </span>
               <span className="text-lg text-gray-400 line-through">
-                {formatPrice(menuItemDetail.originalPrice)}
+                {formatPrice(menuItem.originalPrice)}
               </span>
             </div>
 
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center text-gray-600">
                 <Clock size={20} className="mr-2" />
-                {SESSIONS[menuItemDetail.session as keyof typeof SESSIONS].label}
+                {SESSIONS[menuItem.session as keyof typeof SESSIONS].label}
               </div>
               <div className="flex items-center text-gray-600">
                 <Tag size={20} className="mr-2" />
-                {menuItemDetail.category}
+                {menuItem.category}
               </div>
             </div>
           </div>
 
           {/* Description */}
           <p className="text-gray-600 mb-8">
-            {menuItemDetail.description}
+            {menuItem.description}
           </p>
 
-          {/* Add to cart section */}
+          {/* Edit button section */}
           <Card className="p-6 mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => handleQuantityChange('decrease')}
-                  className="p-2 rounded-lg border hover:bg-gray-50"
-                  disabled={quantity <= 1}
-                >
-                  <Minus size={16} />
-                </button>
-                <span className="text-xl font-medium w-12 text-center">
-                  {quantity}
-                </span>
-                <button
-                  onClick={() => handleQuantityChange('increase')}
-                  className="p-2 rounded-lg border hover:bg-gray-50"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
-              <span className="text-xl font-bold text-blue-600">
-                {formatPrice(menuItemDetail.price * quantity)}
-              </span>
-            </div>
-            <Button className="w-full" size="lg">
-              <ShoppingCart className="mr-2" size={20} />
-              Thêm vào giỏ hàng
+            <Button className="w-full" size="lg" onClick={() => setIsEditing(true)}>
+              Chỉnh sửa sản phẩm
             </Button>
           </Card>
 
@@ -187,7 +354,7 @@ const ProductDetail = () => {
               <AccordionTrigger>Nguyên liệu</AccordionTrigger>
               <AccordionContent>
                 <ul className="list-disc pl-6 space-y-2">
-                  {menuItemDetail.ingredients?.map((ingredient, index) => (
+                  {menuItem.ingredients?.map((ingredient, index) => (
                     <li key={index}>{ingredient}</li>
                   ))}
                 </ul>
@@ -200,25 +367,25 @@ const ProductDetail = () => {
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="text-sm text-gray-600">Calories</div>
                     <div className="text-lg font-semibold">
-                      {menuItemDetail.nutritionInfo?.calories} kcal
+                      {menuItem.nutritionInfo?.calories} kcal
                     </div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="text-sm text-gray-600">Protein</div>
                     <div className="text-lg font-semibold">
-                      {menuItemDetail.nutritionInfo?.protein}g
+                      {menuItem.nutritionInfo?.protein}g
                     </div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="text-sm text-gray-600">Carbs</div>
                     <div className="text-lg font-semibold">
-                      {menuItemDetail.nutritionInfo?.carbs}g
+                      {menuItem.nutritionInfo?.carbs}g
                     </div>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <div className="text-sm text-gray-600">Fat</div>
                     <div className="text-lg font-semibold">
-                      {menuItemDetail.nutritionInfo?.fat}g
+                      {menuItem.nutritionInfo?.fat}g
                     </div>
                   </div>
                 </div>
