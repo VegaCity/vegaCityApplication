@@ -40,6 +40,7 @@ import {
   StorageReference,
   uploadBytes,
 } from "firebase/storage";
+import { Edit } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -316,7 +317,10 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                         ? new Date(field.value).toISOString().split("T")[0]
                         : ""
                     } //value property is field that display data on UI, should solve login in here
-                    onChange={(e) => field.onChange(e.target.value)} //onChange property that change and set on field.birthday, should not change it's data change receive
+                    onChange={(e) => {
+                      field.onChange(e.target.value);
+                      console.log(e.target.value, "birthdayyy");
+                    }} //onChange property that change and set on field.birthday, should not change it's data change receive
                     // {...field}
                   />
                 </FormControl>
@@ -437,9 +441,12 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
             )}
           />
 
-          <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Update User
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+              <Edit />
+              Update
+            </Button>
+          </div>
         </form>
       </Form>
     </>

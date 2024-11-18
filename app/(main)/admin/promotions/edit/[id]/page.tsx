@@ -25,6 +25,8 @@ import {
   editPromotionFormSchema,
 } from "@/lib/validation";
 import { isObject } from "@/lib/isObject";
+import { Edit } from "lucide-react";
+import { handlePlusOneDayFromBe } from "@/lib/utils/convertDatePlusOne";
 
 interface PromotionEditPageProps {
   params: {
@@ -108,17 +110,24 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
       setIsLoading(true);
       try {
         const response = await PromotionServices.getPromotionById(params.id);
-        const promoData =
+        const promoData: PromotionPatch =
           isObject(response.data.data.promotion) &&
           response.data.data.promotion;
 
         setPromotionData(promoData);
+        const { discountPercent, startDate, endDate } = promoData;
+
         const roundDiscountPercent: number = convertDiscountPercent(
-          promoData.discountPercent || 0
+          discountPercent || 0
         );
-        console.log(promoData, "promo dataaa");
+
         if (promoData) {
-          form.reset({ ...promoData, discountPercent: roundDiscountPercent });
+          form.reset({
+            ...promoData,
+            discountPercent: roundDiscountPercent,
+            startDate: startDate || "",
+            endDate: endDate || "",
+          });
         }
       } catch (err) {
         console.error("Error fetching promotion data:", err);
@@ -335,9 +344,12 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type="date"
+                    type="datetime-local"
                     className="bg-slate-100 dark:bg-slate-500 border-0 text-black dark:text-white"
-                    {...field}
+                    value={field.value ? field.value : ""}
+                    onChange={(event) => {
+                      field.onChange(event.target.value);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -355,9 +367,10 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                 </FormLabel>
                 <FormControl>
                   <Input
-                    type="date"
+                    type="datetime-local"
                     className="bg-slate-100 dark:bg-slate-500 border-0 text-black dark:text-white"
-                    {...field}
+                    value={field.value ? field.value : ""}
+                    onChange={(event) => field.onChange(event.target.value)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -365,9 +378,12 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
             )}
           />
 
-          <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Update Promotion
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+              <Edit />
+              Update
+            </Button>
+          </div>
         </form>
       </Form>
     </>

@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+  TableHeader,
+} from "@/components/ui/table";
 import { Loader } from "@/components/loader/Loader";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
@@ -15,6 +22,14 @@ import { WalletTypesServices } from "@/components/services/User/walletTypesServi
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import Image from "next/image";
+import {
+  UserAccountDetail,
+  UserAccountGetDetail,
+} from "@/types/user/userAccount";
+import {
+  handleStoreStatusFromBe,
+  handleStoreTypeFromBe,
+} from "@/types/store/storeOwner";
 
 interface UserDetailProps {
   params: { id: string };
@@ -22,7 +37,9 @@ interface UserDetailProps {
 
 const UserDetail = ({ params }: UserDetailProps) => {
   const { id: userId } = params;
-  const [userDetail, setUserDetail] = useState<GetUserById | null>(null);
+  const [userDetail, setUserDetail] = useState<UserAccountGetDetail | null>(
+    null
+  );
   const [walletTypes, setWalletTypes] = useState<GetWalletTypeById[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
@@ -34,11 +51,11 @@ const UserDetail = ({ params }: UserDetailProps) => {
       try {
         //fetch user detail
         const userResponse = await UserServices.getUserById(userId);
-        const user: GetUserById = userResponse.data.data;
+        const user: UserAccountGetDetail = userResponse.data.data;
 
         //fetch walletType
         const walletTypePromises = user.wallets.map((wallet) =>
-          WalletTypesServices.getWalletTypeById(wallet.walletTypeId)
+          WalletTypesServices.getWalletTypeById(wallet.id)
         );
         const walletTypeResponses = await Promise.all(walletTypePromises);
         const walletTypes = walletTypeResponses.map(
@@ -205,16 +222,35 @@ const UserDetail = ({ params }: UserDetailProps) => {
       {/* Example for Reports */}
       <Card>
         <CardHeader>
-          <CardTitle>User's Reports</CardTitle>
+          <CardTitle>User's Store</CardTitle>
         </CardHeader>
         <CardContent>
-          {userDetail.reports?.length > 0 ? (
+          {userDetail.userStoreMappings?.length > 0 ? (
             <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Phone number</TableHead>
+                  <TableHead>Address</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
-                {userDetail.reports.length > 0 &&
-                  userDetail.reports.map((report, index) => (
+                {userDetail.userStoreMappings.length > 0 &&
+                  userDetail.userStoreMappings.map((userStore, index) => (
                     <TableRow key={index}>
-                      <TableCell>Report {index + 1}</TableCell>
+                      <TableCell>Store {index + 1}</TableCell>
+                      <TableCell>{userStore.store.name}</TableCell>
+                      <TableCell>
+                        {handleStoreTypeFromBe(userStore.store.storeType)}
+                      </TableCell>
+                      <TableCell>
+                        {handleStoreStatusFromBe(userStore.store.status)}
+                      </TableCell>
+                      <TableCell>{userStore.store.phoneNumber}</TableCell>
+                      <TableCell>{userStore.store.address}</TableCell>
                       {/* <TableCell>{report.details}</TableCell> */}
                     </TableRow>
                   ))}

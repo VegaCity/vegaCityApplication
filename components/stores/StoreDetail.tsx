@@ -12,6 +12,11 @@ import { Store } from "@/types/store/store";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import {
+  handleStoreStatusFromBe,
+  handleStoreTypeFromBe,
+} from "@/types/store/storeOwner";
 
 interface StoreDetailProps {
   params: { id: string };
@@ -30,21 +35,6 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
   const router = useRouter();
-
-  const handleBadgeStatusColor = (status: number): string => {
-    switch (status) {
-      case 0: // Active
-        return "bg-green-400 hover:bg-green-500";
-      case 1: // Inactive
-        return "bg-slate-400 hover:bg-slate-500";
-      case 2: // Ban
-        return "bg-red-400 hover:bg-red-500";
-      case 3: // PendingVerify
-        return "bg-blue-400 hover:bg-blue-500";
-      default:
-        return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
-    }
-  };
 
   useEffect(() => {
     const fetchStoreDetail = async () => {
@@ -80,7 +70,7 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
           <Badge
             className={cn(handleBadgeStatusColor(storeDetail.status), "w-auto")}
           >
-            {storeDetail.status ? "Inactive" : "Active"}
+            {handleStoreStatusFromBe(storeDetail.status)}
           </Badge>
         </CardHeader>
         <CardContent>
@@ -90,7 +80,9 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
                 <TableCell>
                   <strong>Store Type:</strong>
                 </TableCell>
-                <TableCell>{storeDetail.storeType ?? "N/A"}</TableCell>
+                <TableCell>
+                  {handleStoreTypeFromBe(storeDetail.storeType) ?? "N/A"}
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>

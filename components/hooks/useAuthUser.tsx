@@ -63,10 +63,10 @@ export function useAuthUser(): {
       } else {
         setLoading(false);
         console.log("User is unauthorized!");
-        toast({
-          title: "Something went wrong!",
-          description: "User is unauthorized!",
-        });
+        // toast({
+        //   title: "Something went wrong!",
+        //   description: "User is unauthorized!",
+        // });
         router.push("/auth");
       }
     }

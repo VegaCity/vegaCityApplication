@@ -108,7 +108,7 @@ const UserSessionPage = () => {
                 <FormLabel>Start Date</FormLabel>
                 <FormControl>
                   <Input
-                    type="date"
+                    type="datetime-local"
                     placeholder="Enter start date"
                     {...field}
                   />
@@ -125,7 +125,11 @@ const UserSessionPage = () => {
               <FormItem>
                 <FormLabel>End Date</FormLabel>
                 <FormControl>
-                  <Input type="date" placeholder="Enter end date" {...field} />
+                  <Input
+                    type="datetime-local"
+                    placeholder="Enter end date"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

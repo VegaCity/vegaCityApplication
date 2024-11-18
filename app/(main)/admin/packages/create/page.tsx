@@ -2,8 +2,8 @@
 
 import BackButton from "@/components/BackButton";
 import { PackageServices } from "@/components/services/Package/packageServices";
-import { PackageTypeServices } from "@/components/services/Package/packageTypeServices";
 import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
+import { ZoneServices } from "@/components/services/zoneServices";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -28,10 +28,12 @@ import {
   CreatePackageFormValues,
   createPackageFormSchema,
 } from "@/lib/validation";
-import { PackageType } from "@/types/packageType/packageType";
+import { PackageTypesEnum } from "@/types/packageType/package";
 import { GetWalletType } from "@/types/walletType/walletType";
+import { Zone } from "@/types/zone/zone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
+import { Upload } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -42,8 +44,8 @@ const PackageCreatePage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [walletTypes, setWalletTypes] = useState<GetWalletType[]>([]);
-  const [packageTypes, setPackageTypes] = useState<PackageType[]>([]);
-  const [selectedPackageType, setSelectedPackageType] = useState<{
+  const [zones, setZones] = useState<Zone[]>([]);
+  const [selectedZones, setSelectedZones] = useState<{
     id: string;
     name: string;
   } | null>(null);
@@ -58,51 +60,66 @@ const PackageCreatePage = () => {
   const form = useForm<CreatePackageFormValues>({
     resolver: zodResolver(createPackageFormSchema),
     defaultValues: {
+      type: "",
       imageUrl: null,
       name: "",
       description: "",
       price: 0,
       duration: 0,
-      packageTypeId: "",
+      zoneId: "",
       walletTypeId: "",
       moneyStart: 0,
     },
   });
 
+  //Package Type
+  interface PackageType {
+    name: string;
+    value: string;
+  }
+
+  const packageTypes: PackageType[] = [
+    {
+      name: "Specific Package",
+      value: PackageTypesEnum[0],
+    },
+    {
+      name: "Service Package",
+      value: PackageTypesEnum[1],
+    },
+  ];
   useEffect(() => {
     const fetchTypes = async () => {
       try {
         setIsLoading(true);
-        console.log("Fetching ETag types...");
-        const [walletTypeRes, packageTypeRes] = await Promise.all([
+        console.log("Fetching Package types...");
+        const [walletTypeRes, zoneRes] = await Promise.all([
           WalletTypesServices.getWalletTypes({ page: 1, size: 10 }),
-          PackageTypeServices.getPackageTypes({ page: 1, size: 10 }),
+          ZoneServices.getZones({ page: 1, size: 10 }),
         ]);
 
         // Check isArray and set
         const walletTypes = Array.isArray(walletTypeRes.data.data)
           ? walletTypeRes.data.data
           : [];
-        const packageTypes = Array.isArray(packageTypeRes.data.data)
-          ? packageTypeRes.data.data
-          : [];
 
+        const zones = Array.isArray(zoneRes.data.data) ? zoneRes.data.data : [];
+
+        setZones(zones);
         setWalletTypes(walletTypes); // Lưu danh sách
-        setPackageTypes(packageTypes);
 
         console.log("walletTypes set:", walletTypes);
-        console.log("packageTypes set:", packageTypes);
       } catch (err) {
-        console.error("Error fetching ETag types", err);
+        console.error("Error fetching Package types", err);
         if (err instanceof Error) {
           console.error("Error message:", err.message);
           console.error("Error stack:", err.stack);
         }
-        toast({
-          title: "Error",
-          description: "Failed to fetch ETag types. Please try again.",
-          variant: "destructive",
-        });
+        // toast({
+        //   title: "Error",
+        //   description: "Failed to fetch Package types. Please try again.",
+        //   variant: "destructive",
+        // });
       } finally {
         setIsLoading(false);
       }
@@ -111,27 +128,24 @@ const PackageCreatePage = () => {
     fetchTypes();
   }, [toast]);
 
-  const handleTypeChange = async (
-    type: "packageType" | "walletType",
-    id: string
-  ) => {
-    console.log(id, "onchnage");
+  const handleTypeChange = async (type: "zone" | "walletType", id: string) => {
+    console.log(id, "onchange");
     try {
-      if (type === "packageType") {
-        const res = await PackageTypeServices.getPackageTypeById(id);
-        setSelectedPackageType(res.data.data);
-        console.log(res.data, "res packageeee");
-        form.setValue("packageTypeId", res.data.data.id);
+      if (type === "zone") {
+        const res = await ZoneServices.getZoneById(id);
+        setSelectedZones(res.data.data);
+        console.log(res.data, "res zone");
+        form.setValue("zoneId", res.data.data.id);
       } else if (type === "walletType") {
         const res = await WalletTypesServices.getWalletTypeById(id);
         setSelectedWalletType(res.data.data);
         form.setValue("walletTypeId", res.data.data.id);
       }
     } catch (err) {
-      console.error("Error fetching ETag type details", err);
+      console.error("Error fetching Package type details", err);
       toast({
         title: "Error",
-        description: "Failed to fetch ETag type details. Please try again.",
+        description: "Failed to fetch Package type details. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -188,7 +202,7 @@ const PackageCreatePage = () => {
       <BackButton text="Back To Packages" link="/admin/packages" />
       <h3 className="text-2xl mb-4">Create New Package</h3>
       {isLoading ? (
-        <p>Loading ETag Types...</p>
+        <p>Loading Package Types...</p>
       ) : (
         <Form {...form}>
           <form
@@ -204,6 +218,94 @@ const PackageCreatePage = () => {
                   <FormLabel>Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter package name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Package Type */}
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                      }}
+                      value={field.value}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an package type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isLoading ? (
+                          <SelectItem value="loading" disabled>
+                            Loading Package Types...
+                          </SelectItem>
+                        ) : packageTypes.length > 0 ? (
+                          packageTypes.map((pkgType) => (
+                            <SelectItem
+                              key={pkgType.value}
+                              value={pkgType.value}
+                            >
+                              {pkgType.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-pkgs" disabled>
+                            No Package Types available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Zone */}
+            <FormField
+              control={form.control}
+              name="zoneId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select Zone</FormLabel>
+                  <FormControl>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        handleTypeChange("zone", value);
+                      }}
+                      value={field.value}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Zone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {isLoading ? (
+                          <SelectItem value="loading" disabled>
+                            Loading zones...
+                          </SelectItem>
+                        ) : zones.length > 0 ? (
+                          zones.map((zone) => (
+                            <SelectItem key={zone.id} value={zone.id}>
+                              {zone.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-zones" disabled>
+                            No Zone Types available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -360,49 +462,6 @@ const PackageCreatePage = () => {
               )}
             />
 
-            {/* Package Type */}
-            <FormField
-              control={form.control}
-              name="packageTypeId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Select Package Type</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        handleTypeChange("packageType", value);
-                      }}
-                      value={field.value}
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an Package Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {isLoading ? (
-                          <SelectItem value="loading" disabled>
-                            Loading Package Types...
-                          </SelectItem>
-                        ) : packageTypes.length > 0 ? (
-                          packageTypes.map((pkg) => (
-                            <SelectItem key={pkg.id} value={pkg.id}>
-                              {pkg.name}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-pkgs" disabled>
-                            No Package Types available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             {/* Money Start */}
             <FormField
               control={form.control}
@@ -437,6 +496,7 @@ const PackageCreatePage = () => {
 
             <div className="flex justify-end items-end w-full mt-4">
               <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+                <Upload />
                 Create Package
               </Button>
             </div>

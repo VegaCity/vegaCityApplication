@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { Badge } from "@/components/ui/badge";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { Card } from "@/components/ui/card";
 
 interface PackageTableProps {
   limit?: number;
@@ -114,6 +115,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
             <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
+              <TableHead className="text-white">Type</TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Image
               </TableHead>
@@ -139,6 +141,9 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                 <TableCell>
                   <p className="font-bold">{pkg.name}</p>
                 </TableCell>
+                <TableCell>
+                  <p className="font-semibold">{pkg.type}</p>
+                </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Image
                     src={validImageUrl(pkg?.imageUrl || null)}
@@ -150,7 +155,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {pkg.description ? (
-                    <p className="text-slate-500">{pkg.description}</p>
+                    <p className="text-muted-foreground">{pkg.description}</p>
                   ) : (
                     <Minus />
                   )}
@@ -161,8 +166,11 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                   </p>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Badge className="bg-slate-500 text-white">
-                    {pkg.duration} days
+                  <Badge className="bg-slate-500 text-white w-full">
+                    <div className="flex flex-row items-center justify-center w-full">
+                      <p>{pkg.duration}</p> &nbsp;
+                      <p>days</p>
+                    </div>
                   </Badge>
                 </TableCell>
                 <TableCell
@@ -179,7 +187,9 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <Card className="font-bold text-lg text-sky-400 p-4 bg-slate-200 hover:bg-slate-300">
+          Data is not found!
+        </Card>
       )}
     </div>
   );

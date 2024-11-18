@@ -281,6 +281,7 @@ export const createUserAccountFormSchema = z.object({
     .email({ message: "Invalid email format" }),
   description: z.string().optional(),
   roleName: z.string().min(1, { message: "Role Name is required" }),
+  registerStoreType: z.number().nullable(),
 });
 
 export const serviceStoreFormSchema = z.object({
@@ -360,14 +361,15 @@ export const storeFormSchema = z.object({
   shortName: z
     .string()
     .min(2, { message: "Tên viết tắt phải có ít nhất 2 ký tự" })
-    .max(10, { message: "Tên viết tắt không được vượt quá 10 ký tự" }),
+    .max(10, { message: "Tên viết tắt không được vượt quá 10 ký tự" })
+    .nullable(),
   email: z.string().email("Your email is invalid!"),
   description: z.string().min(1).nullable(),
   storeType: z.coerce.number({
     required_error: "Store Type is required!",
     invalid_type_error: "Store Type must be a number!",
   }),
-  storeStatus: z.coerce.number({
+  status: z.coerce.number({
     required_error: "Store Status is required!",
     invalid_type_error: "Store Status must be a number!",
   }),
@@ -389,6 +391,7 @@ export const etagTypeFormSchema = z.object({
 export const userApproveFormSchema = z.object({
   locationZone: z.string().min(1, "Location zone is invalid"),
   storeName: z.string().min(1, "Store name is invalid"),
+  storeType: z.number(),
   storeAddress: z.string().min(1, "Store address is invalid"),
   phoneNumber: z.string().regex(/^(0|\+84)(\s|-)?[1-9]\d{8}$/, {
     message: "Phone number is invalid!",
@@ -420,6 +423,7 @@ export const editPackageFormSchema = z.object({
 });
 
 export const createPackageFormSchema = z.object({
+  type: z.string().min(1, "Package's type is required!"),
   name: z
     .string()
     .min(2, { message: "Name must include at least 2 characters" })
@@ -434,7 +438,7 @@ export const createPackageFormSchema = z.object({
     .min(1000, { message: "Price must at least 1.000 VND" })
     .max(10000000, { message: "Price does not exceed 10 millions VND" }),
   duration: z.number().min(1, "At least 1 day"),
-  packageTypeId: z.string().min(1),
+  zoneId: z.string().min(1),
   walletTypeId: z.string().min(1),
   moneyStart: z.number().min(50000, "Money start at least 50.000 VND"),
 });

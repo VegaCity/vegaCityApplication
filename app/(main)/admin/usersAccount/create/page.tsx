@@ -26,12 +26,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { roles } from "@/types/role";
-import { UserAccountPostPatch } from "@/types/user/userAccount";
+import { UserAccountPost } from "@/types/user/userAccount";
 import {
   CreateUserAccountFormValues,
   createUserAccountFormSchema,
 } from "@/lib/validation";
 import { apiKey } from "@/components/services/api";
+import { Upload } from "lucide-react";
+import { storeTypes } from "@/types/store/storeOwner";
 
 const UserCreatePage = () => {
   const { toast } = useToast();
@@ -46,12 +48,15 @@ const UserCreatePage = () => {
       email: "",
       description: "",
       roleName: "",
+      registerStoreType: 0,
     },
   });
 
+  const { getValues, watch } = form;
+
   const handleSubmit = (data: CreateUserAccountFormValues) => {
     // Create a new object that includes the apiKey
-    const userData: UserAccountPostPatch | null = {
+    const userData: UserAccountPost | null = {
       ...data,
       apiKey: apiKey, // Add the apiKey here
     };
@@ -76,6 +81,16 @@ const UserCreatePage = () => {
           }
           console.error(err, "Error creating user");
         });
+    }
+  };
+
+  const checkStore = () => {
+    const getRole = watch("roleName");
+
+    if (getRole === "Store") {
+      return false;
+    } else {
+      return true;
     }
   };
 
@@ -217,6 +232,45 @@ const UserCreatePage = () => {
 
           <FormField
             control={form.control}
+            name="registerStoreType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                  Store Type
+                </FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) => field.onChange(Number(value))}
+                    disabled={checkStore()}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {!checkStore() ? (
+                        storeTypes.map((storeType) => (
+                          <SelectItem
+                            key={storeType.value}
+                            value={storeType.value.toString()}
+                          >
+                            {storeType.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-storeTypes" disabled>
+                          Type is not found!
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
@@ -236,8 +290,9 @@ const UserCreatePage = () => {
           />
 
           <div className="flex justify-end items-end w-full mt-4">
-            <Button className="bg-blue-500 hover:bg-blue-700">
-              Create User
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+              <Upload />
+              Create
             </Button>
           </div>
         </form>

@@ -23,6 +23,7 @@ import {
   createPromotionFormSchema,
 } from "@/lib/validation";
 import { useEffect, useState } from "react";
+import { Upload } from "lucide-react";
 
 const PromotionCreatePage = () => {
   const { toast } = useToast();
@@ -345,8 +346,9 @@ const PromotionCreatePage = () => {
             />
           </div>
           <div className="flex justify-end items-end w-full mt-4">
-            <Button className="bg-blue-500 hover:bg-blue-700">
-              Create Promotion
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+              <Upload />
+              Create
             </Button>
           </div>
         </form>

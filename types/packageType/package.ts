@@ -1,99 +1,98 @@
-export interface Package {
-  id: string;
-  name: string;
-  description?: string | null;
-  price: number;
-  duration: number;
-  crDate: string;
-  upsDate: string;
-  deflag: boolean;
-  imageUrl?: string | null;
-  marketZone: null;
-  statusCode: number;
-  // messageResponse: null;
-  // data: null;
+export enum PackageTypesEnum {
+  SpecificPackage = 0,
+  ServicePackage = 1,
 }
 
-export interface PackageDetail {
+export interface Package {
   id: string;
+  type: string;
+  zoneId: string;
   imageUrl?: string | null;
   name: string;
-  description?: string | null;
+  description: string | null;
   price: number;
   crDate: string;
   upsDate: string;
   deflag: boolean;
   duration: number;
-  packageTypeId: string;
-  packageType: null;
-  orders: [null];
-  packageDetails: [
-    {
-      id: string;
-      packageId: string;
-      walletTypeId: string;
-      startMoney: number;
-      crDate: string;
-      package: null;
-      walletType: null;
-    }
-  ];
-  packageItems: [
-    {
-      id: string;
-      packageId: string;
-      crDate: string;
-      upsDate: string;
-      name: string;
-      cccdpassport: string;
-      email: string;
-      status: string;
-      gender: string;
-      isAdult: true;
-      walletId: string;
-      isChanged: boolean;
-      phoneNumber: string;
-      package: null;
-      wallet: null;
-      customerMoneyTransfers: [];
-      deposits: [];
-      orders: [];
-      reports: [];
-    }
-  ];
-  packageOrders: [
-    {
-      id: string;
-      orderId: string;
-      packageId: string;
-      cusName: string;
-      cusCccdpassport: string;
-      phoneNumber: string;
-      cusEmail: string;
-      crDate: string;
-      upsDate: string;
-      status: string; //COMPLETED
-      order: null;
-      package: null;
-    }
-  ];
+}
+
+export interface PackageDetailType {
+  id: string;
+  type: string;
+  zoneId: string;
+  imageUrl?: string | null;
+  name: string;
+  description: string | null;
+  price: number;
+  crDate: string;
+  upsDate: string;
+  deflag: boolean;
+  zone: null;
+  duration: number;
+  orders: [];
+  packageDetails: PackageDetails[];
+  packageOrders: PackageOrder[];
 }
 
 export interface PackagePost {
-  imageUrl: string | null;
+  type: string;
+  zoneId: string;
+  imageUrl?: string | null;
   name: string;
   description?: string | null;
   price: number;
   duration: number;
-  packageTypeId: string;
   walletTypeId: string;
   moneyStart: number;
 }
 
 export interface PackagePatch {
-  imageUrl: string | null;
+  imageUrl?: string | null;
   name: string;
-  description?: string | null;
+  description: string | null;
   price: number;
   duration: number;
+}
+
+export interface PackageOrder {
+  id: string;
+  packageId: string;
+  vcardId: string | null;
+  cusName: string;
+  cusEmail: string;
+  cusCccdpassport: number;
+  phoneNumber: number;
+  crDate: string;
+  upsDate: string;
+  status: "Active" | "InActive" | "Blocked" | "Expired" | string; //PENDING
+  startDate: string | null;
+  endDate: string | null;
+  isAdult: boolean;
+  package: null;
+  vcard: null;
+  customerMoneyTransfers: [];
+  orders: [];
+  wallets: [];
+}
+
+interface PackageDetails {
+  id: string;
+  packageId: string;
+  walletTypeId: string;
+  startMoney: number;
+  crDate: string;
+  package: null;
+  walletType: {
+    id: string;
+    name: string;
+    marketZoneId: string;
+    crDate: string;
+    upsDate: string;
+    deflag: boolean;
+    marketZone: null;
+    packageDetails: [null];
+    walletTypeMappings: [];
+    wallets: [];
+  };
 }

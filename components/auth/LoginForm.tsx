@@ -504,7 +504,10 @@ const LoginForm = () => {
               )}
             />
 
-            <Button className="w-full text-lg bg-sky-500 hover:bg-sky-600">
+            <Button
+              type="submit"
+              className="w-full text-lg bg-sky-500 hover:bg-sky-600"
+            >
               Sign In
             </Button>
           </form>

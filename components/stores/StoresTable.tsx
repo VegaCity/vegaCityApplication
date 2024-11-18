@@ -4,6 +4,7 @@ import { Loader } from "@/components/loader/Loader";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { HouseServices } from "@/components/services/houseServices";
 import { StoreServices } from "@/components/services/Store/storeServices";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -15,8 +16,15 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { isObject } from "@/lib/isObject";
+import { cn } from "@/lib/utils";
+import { handleBadgeStoreStatusColor } from "@/lib/utils/statusUtils";
 import { StoreHouseType } from "@/types/house";
-import { StoreOwner, StoreTypeEnum } from "@/types/store/storeOwner";
+import {
+  handleStoreStatusFromBe,
+  handleStoreTypeFromBe,
+  StoreOwner,
+  StoreTypeEnum,
+} from "@/types/store/storeOwner";
 import { Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -149,6 +157,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
             <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Store Name</TableHead>
+              <TableHead className="text-white">Store Type</TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Email
               </TableHead>
@@ -156,7 +165,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
                 PhoneNumber
               </TableHead>
               <TableHead className="hidden md:table-cell text-white">
-                ShortName
+                Zone Name
               </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Address
@@ -164,7 +173,8 @@ const StoresTable = ({ params }: StoreTableProps) => {
               <TableHead className="hidden md:table-cell text-white">
                 Description
               </TableHead>
-              <TableHead className="text-white">StoreType</TableHead>
+              <TableHead className=" text-white">Status</TableHead>
+
               <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -176,17 +186,32 @@ const StoresTable = ({ params }: StoreTableProps) => {
               >
                 <TableCell>{index + 1}</TableCell>
                 <TableCell>{store.name}</TableCell>
-                <TableCell>{store.email}</TableCell>
-                <TableCell>{store.phoneNumber}</TableCell>
                 <TableCell>
-                  {store.shortName ? store.shortName : <Minus />}
+                  {store.storeType ? (
+                    handleStoreTypeFromBe(store.storeType)
+                  ) : (
+                    <Minus />
+                  )}
                 </TableCell>
-                <TableCell>{store.address}</TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {store.email}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {store.phoneNumber}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {store.zoneName ? store.zoneName : <Minus />}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {store.address}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
                   {store.description ? store.description : <Minus />}
                 </TableCell>
                 <TableCell>
-                  {store.storeType ? store.storeType : <Minus />}
+                  <Badge className={handleBadgeStoreStatusColor(store.status)}>
+                    {handleStoreStatusFromBe(store.status)}
+                  </Badge>
                 </TableCell>
                 <TableCell
                   onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow

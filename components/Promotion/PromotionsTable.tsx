@@ -13,10 +13,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
-import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import { handleBadgePromotionStatusColor } from "@/lib/utils/statusUtils";
 import {
   handlePromotionStatusFromBe,
   Promotion,
@@ -54,6 +53,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
           ? response.data.data
           : [];
         setPromotionList(promotions);
+        console.log(promotions, "promotions");
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
@@ -96,7 +96,9 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
 
   return (
     <div className="mt-5">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Promotions"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Promotions"}
+      </h3>
       {filteredPromotions.length > 0 ? (
         <Table>
           <TableCaption>A list of recent promotions</TableCaption>
@@ -146,7 +148,9 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {promo.description ? (
-                    <p className="text-slate-500">{promo.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {promo.description}
+                    </p>
                   ) : (
                     <Minus />
                   )}
@@ -182,15 +186,18 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                   )}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Badge className={cn(handleBadgeStatusColor(promo.status))}>
+                  <Badge
+                    className={handleBadgePromotionStatusColor(promo.status)}
+                  >
                     {handlePromotionStatusFromBe(promo.status)}
                   </Badge>
                 </TableCell>
-                {/* <TableCell className="hidden md:table-cell">
-                  {splitDateTime({ type: "date", dateTime: promo.startDate })}
-                </TableCell> */}
                 <TableCell className="hidden md:table-cell">
-                  {formatDateTime({ type: "date", dateTime: promo.endDate })}
+                  <div className="flex flex-col items-center justify-center">
+                    {formatDateTime({ type: "date", dateTime: promo.endDate })}
+                    <Minus />
+                    {formatDateTime({ type: "time", dateTime: promo.endDate })}
+                  </div>
                 </TableCell>
                 <TableCell
                   onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow

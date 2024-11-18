@@ -31,6 +31,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -66,10 +67,12 @@ import {
   userReAssignEmailFormSchema,
   UserReAssignEmailValues,
 } from "@/lib/validation";
+import { storeTypes } from "@/types/store/storeOwner";
 import {
+  approveStatuses,
   handleUserStatusFromBe,
-  UserAccountGet,
   UserApprove,
+  UserAccount,
   UserApproveSubmit,
   UserStatus,
 } from "@/types/user/userAccount";
@@ -92,7 +95,7 @@ interface UsersTableProps {
 const UsersTable = ({ limit, title }: UsersTableProps) => {
   const router = useRouter();
   const { toast } = useToast();
-  const [userList, setUserList] = useState<UserAccountGet[]>([]);
+  const [userList, setUserList] = useState<UserAccount[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [approveLoading, setApproveLoading] = useState(false);
@@ -104,7 +107,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   //search user by email, cccdPassport, phone number
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [userSearch, setUserSearch] = useState<UserAccountGet[]>([]);
+  const [userSearch, setUserSearch] = useState<UserAccount[]>([]);
   const [isUserFound, setIsUserFound] = useState<boolean>(false);
 
   //get zone api for approve user pending verify
@@ -116,10 +119,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     defaultValues: {
       locationZone: "",
       storeName: "",
+      storeType: 0,
       storeAddress: "",
       phoneNumber: "",
       storeEmail: "",
-      approvalStatus: "APPROVED",
+      approvalStatus: "",
     },
   });
 
@@ -131,10 +135,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     setApproveLoading(true);
     try {
       const { approvalStatus, ...restData } = data;
-      const response = await UserServices.approveUser(data.id, {
-        ...restData,
-        approvalStatus: "APPROVED",
-      });
+      const response = await UserServices.approveUser(data.id, data);
 
       console.log(response, "Approve user successfully!");
       toast({
@@ -166,7 +167,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         // console.log(response.data, "get users list"); // Log the response for debugging
         // console.log(zoneResponse.data, "response zonessss"); // Log the response for debugging
 
-        const users: UserAccountGet[] = Array.isArray(userResponse.data.data)
+        const users: UserAccount[] = Array.isArray(userResponse.data.data)
           ? userResponse.data.data
           : [];
         const zones: Zone[] = Array.isArray(zoneResponse.data.data)
@@ -186,7 +187,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     fetchUsersAndHouses();
   }, [isLoading, deleteLoading, approveLoading]);
 
-  const handleDeleteUser = (user: UserAccountGet) => {
+  const handleDeleteUser = (user: UserAccount) => {
     setDeleteLoading(true);
     if (user.id) {
       UserServices.deleteUserById(user.id)
@@ -230,7 +231,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     },
   ];
 
-  const filterUserStatus = (): UserAccountGet[] | undefined => {
+  const filterUserStatus = (): UserAccount[] | undefined => {
     switch (userStatusValue) {
       case "active":
         return userList.filter((user) => user.status === 0);
@@ -259,7 +260,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   console.log(handleUserStatusFromBe(2), "status");
 
   const UserFound = () => {
-    return userSearch?.map((userFound: UserAccountGet, i) => (
+    return userSearch?.map((userFound: UserAccount, i) => (
       <TableRow key={userFound.id}>
         <TableCell>
           <div className="flex items-center">
@@ -341,7 +342,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   console.log(zoneList, "Houses List");
 
-  const UserPendingVerifyPopUp = (userData: UserAccountGet) => {
+  const UserPendingVerifyPopUp = (userData: UserAccount) => {
     // const userApproveForm = useForm<UserApproveFormValues>({
     //   defaultValues: {
     //     approvalStatus: "APPROVED",
@@ -361,7 +362,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           storeAddress: "",
           phoneNumber: userData.phoneNumber,
           storeEmail: userData.email,
-          approvalStatus: "APPROVED",
+          approvalStatus: "",
         }); // Reset form fields when the popup is reopened
       }
     };
@@ -458,6 +459,56 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                     </FormItem>
                   )}
                 />
+
+                {/* Store type */}
+                <FormField
+                  control={userApproveForm.control}
+                  name="storeType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select Type</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => {
+                            const valueAsNumber = Number(value);
+                            field.onChange(valueAsNumber);
+                          }}
+                          value={field.value.toString()}
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Loading types...
+                              </SelectItem>
+                            ) : storeTypes.length > 0 ? (
+                              storeTypes.map((type) => (
+                                <SelectItem
+                                  key={type.value}
+                                  value={type.value.toString()}
+                                  onChange={(value) =>
+                                    field.onChange(Number(value))
+                                  }
+                                >
+                                  {type.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="no-typess" disabled>
+                                No types available!
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={userApproveForm.control}
                   name="storeAddress"
@@ -490,23 +541,50 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                     </FormItem>
                   )}
                 />
-                {/* <FormField
+                {/* approveStatus */}
+                <FormField
                   control={userApproveForm.control}
                   name="approvalStatus"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel>Select Status</FormLabel>
                       <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          placeholder="Enter Approval Status"
-                          {...field}
-                        />
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                          }}
+                          value={field.value}
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Loading status...
+                              </SelectItem>
+                            ) : approveStatuses.length > 0 ? (
+                              approveStatuses.map((status) => (
+                                <SelectItem
+                                  key={status.value}
+                                  value={status.value}
+                                >
+                                  {status.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="no-statuses" disabled>
+                                No status available!
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
-                /> */}
-                {/* <Button type="submit">Confirm</Button> */}
+                />
               </div>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -595,9 +673,17 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                 ? UserFound()
                 : filteredUsers?.map((user, i) => (
                     <TableRow
-                      onClick={() =>
-                        router.push(`/admin/usersAccount/detail/${user.id}`)
-                      }
+                      onClick={(e) => {
+                        if (user.status === 1) {
+                          e.stopPropagation();
+                          toast({
+                            title: "User is disable!",
+                            description: "You can't access this user!",
+                          });
+                        } else {
+                          router.push(`/admin/usersAccount/detail/${user.id}`);
+                        }
+                      }}
                       key={user.id}
                     >
                       <TableCell>{i + 1}</TableCell>
@@ -615,6 +701,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         <p className="text-slate-500">{user.email}</p>
+                        {/* Approve user button and Re-assign email button */}
+
                         {user.status === 3 && (
                           <ReassignEmailPopover userId={user.id} />
                         )}
@@ -629,9 +717,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         {user.cccdPassport}
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          className={cn(handleBadgeStatusColor(user.status))}
-                        >
+                        <Badge className={handleBadgeStatusColor(user.status)}>
                           {handleUserStatusFromBe(user.status)}
                         </Badge>
                       </TableCell>
@@ -645,7 +731,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                             handleDelete={handleDeleteUser}
                           />
                         )}
-                        {/* Approve user button and Re-assign email button */}
                         {user.status === 3 && (
                           <div className="flex items-center justify-between w-min gap-2">
                             <div className="flex-row items-end justify-end">

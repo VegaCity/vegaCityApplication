@@ -1,8 +1,8 @@
-import { API } from "@/components/services/api";
+import { API, apiKey } from "@/components/services/api";
 import { Users } from "@/types/user/user";
 import {
-  UserAccountPostPatch,
   UserAccountPost,
+  UserAccountPatch,
   UserApprove,
 } from "@/types/user/userAccount";
 
@@ -22,10 +22,10 @@ export const UserServices = {
   getUserById(userId: string) {
     return API.get(`/user/${userId}`);
   },
-  createUser(userData: UserAccountPostPatch) {
+  createUser(userData: UserAccountPost) {
     return API.post("/user/", userData);
   },
-  updateUserById(userId: string, userData: UserAccountPost) {
+  updateUserById(userId: string, userData: UserAccountPatch) {
     return API.patch(`/user/${userId}`, userData);
   },
   deleteUserById(userId: string) {

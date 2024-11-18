@@ -31,6 +31,8 @@ import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { EditPackageFormValues, editPackageFormSchema } from "@/lib/validation";
 import { useRouter } from "next/navigation";
 import handleImageFileChange from "@/components/uploadImageToFirebaseStorage/UploadImage";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import { Upload } from "lucide-react";
 
 interface PackageEditPageProps {
   params: {
@@ -128,42 +130,6 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
             duration: pkgData.duration,
           });
         }
-        // if (pkgData) {
-        //   if (
-        //     pkgData?.packageETagTypeMappings &&
-        //     pkgData?.packageETagTypeMappings.length > 0
-        //   ) {
-        //     const etagTypeMapping =
-        //       pkgData?.packageETagTypeMappings?.length > 0
-        //         ? pkgData.packageETagTypeMappings[0]
-        //         : undefined;
-        //     console.log(etagTypeMapping, "etagTypeMappingggg");
-
-        //     if (
-        //       etagTypeMapping &&
-        //       etagTypeMapping.etagType &&
-        //       etagTypeMapping?.etagTypeId
-        //     ) {
-        //       const etagId = etagTypeMapping?.etagType.id;
-        //       localStorage.setItem("etagTypeId", etagId);
-        //       console.log("EtagTypeId stored in localStorage:", etagId);
-        //     } else {
-        //       console.warn("EtagType or its ID is missing in the package data");
-        //       setError(
-        //         "EtagType information is incomplete. Please check the package configuration."
-        //       );
-        //     }
-        //   } else {
-        //     console.warn(
-        //       "No packageETagTypeMappings found in the package data"
-        //     );
-        //     setError(
-        //       "No E-Tag type information found for this package. Please check the package configuration."
-        //     );
-        //   }
-        // } else {
-        //   throw new Error("Package data is missing in the response");
-        // }
       } catch (err) {
         console.error("Error fetching package data:", err);
         setError(
@@ -256,7 +222,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
                   />
                 </FormControl>
                 <Image
-                  src={imageUploaded || field.value || ""}
+                  src={imageUploaded || validImageUrl(field.value)}
                   alt={field.value || "image"}
                   width={300}
                   height={250}
@@ -341,9 +307,12 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
             )}
           />
 
-          <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Update Package
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+              <Upload />
+              Update
+            </Button>
+          </div>
         </form>
       </Form>
     </>

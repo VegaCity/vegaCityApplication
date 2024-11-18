@@ -13,10 +13,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { StoreFormValues, storeFormSchema } from "@/lib/validation";
+import {
+  StoreOwnerDetail,
+  storeStatusTypes,
+  storeTypes,
+} from "@/types/store/storeOwner";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Edit, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,7 +57,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
       email: "",
       description: "",
       storeType: 0,
-      storeStatus: 0,
+      status: 0,
     },
   });
 
@@ -53,18 +66,18 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
     const fetchStore = async () => {
       try {
         const response = await StoreServices.getStoreById(params.id);
-        const storeData = response.data.data.store;
+        const storeData: StoreOwnerDetail = response.data.data;
         console.log(storeData, "Get store by Id"); // Log the response for debugging
         if (storeData) {
           form.reset({
-            name: storeData.name,
-            address: storeData.address,
-            phoneNumber: storeData.phoneNumber,
-            shortName: storeData.shortName,
-            email: storeData.email,
-            description: storeData.description,
-            storeType: storeData.storeType,
-            storeStatus: storeData.storeStatus,
+            name: storeData.store.name,
+            address: storeData.store.address,
+            phoneNumber: storeData.store.phoneNumber,
+            shortName: storeData.store.shortName,
+            email: storeData.store.email,
+            description: storeData.store.description,
+            storeType: storeData.store.storeType,
+            status: storeData.store.status,
           });
         }
       } catch (err) {
@@ -81,13 +94,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
 
   const handleSubmit = async (data: StoreFormValues) => {
     try {
-      const storeType = 0;
-      const storeStatus = 0;
-      await StoreServices.editStore(params.id, {
-        ...data,
-        storeType: storeType,
-        storeStatus: storeStatus,
-      });
+      await StoreServices.editStore(params.id, data);
       toast({
         title: "Store has been updated successfully",
         description: `Store ${data.name} was updated with address ${data.address}`,
@@ -181,7 +188,8 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
                   <Input
                     className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                     placeholder="Enter Short Name"
-                    {...field}
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />
@@ -210,6 +218,98 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
             )}
           />
 
+          {/* Store Type */}
+          <FormField
+            control={form.control}
+            name="storeType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Select Store's Type</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(Number(value));
+                      // handleTypeChange("zone", value);
+                    }}
+                    value={field.value.toString()}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoading ? (
+                        <SelectItem value="loading" disabled>
+                          Loading zones...
+                        </SelectItem>
+                      ) : storeTypes.length > 0 ? (
+                        storeTypes.map((storeType) => (
+                          <SelectItem
+                            key={storeType.value}
+                            value={storeType.value.toString()}
+                          >
+                            {storeType.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-zones" disabled>
+                          No Zone Types available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Store Status */}
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Select Store's status</FormLabel>
+                <FormControl>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(Number(value));
+                      // handleTypeChange("zone", value);
+                    }}
+                    value={field.value.toString()}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {isLoading ? (
+                        <SelectItem value="loading" disabled>
+                          Loading store status...
+                        </SelectItem>
+                      ) : storeStatusTypes.length > 0 ? (
+                        storeStatusTypes.map((status) => (
+                          <SelectItem
+                            key={status.value}
+                            value={status.value.toString()}
+                          >
+                            {status.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-zones" disabled>
+                          No status available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="description"
@@ -231,9 +331,12 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
             )}
           />
 
-          <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Update Store
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+              <Edit />
+              Update
+            </Button>
+          </div>
         </form>
       </Form>
     </>

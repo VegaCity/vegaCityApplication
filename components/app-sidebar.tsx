@@ -122,18 +122,7 @@ export function AppSidebar() {
       name: "Manage Packages",
       icon: Package,
       roles: ["Admin"],
-      child: [
-        {
-          name: "Packages",
-          icon: Package,
-          href: navigatePage("packages"),
-        },
-        {
-          name: "Package Types",
-          icon: Tags,
-          href: navigatePage("packageTypes"),
-        },
-      ],
+      href: navigatePage("packages"),
     },
     {
       name: "Orders",
