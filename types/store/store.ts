@@ -59,8 +59,9 @@ export interface Product {
   crDate: string;
   upsDate: string;
   status: string;
-  imageUrl: string;
+  imageUrl: string | null;
   menu: Menu | null;
+  description: string;
   productCategory: ProductCategory | null;
   orderDetails: any[];
 }
