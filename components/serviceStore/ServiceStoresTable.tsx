@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -31,8 +32,15 @@ import { Loader } from "@/components/loader/Loader";
 import { toast } from "@/components/ui/use-toast";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { Card } from "@/components/ui/card";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 
-const ServiceStoresTable = () => {
+interface ServiceStoresTableProps {
+  limit?: number;
+  title?: string;
+}
+
+const ServiceStoresTable = ({ limit, title }: ServiceStoresTableProps) => {
   const [stores, setStores] = useState<GetServicesStore[]>([]);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -83,37 +91,47 @@ const ServiceStoresTable = () => {
   <Loader isLoading={deleteLoading} />;
 
   return (
-    <div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>NO</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Updated Date</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {stores.map((store, i) => (
-            <TableRow key={store.id}>
-              <TableCell>{i + 1}</TableCell>
-              <TableCell>{store.name}</TableCell>
-              <TableCell>{formatVNDCurrencyValue(store.price || 0)}</TableCell>
-              <TableCell>
-                {formatDateTime({ type: "date", dateTime: store.upsDate })}
-              </TableCell>
-              <TableCell>
-                <PopoverActionTable
-                  item={store}
-                  editLink={`/admin/servicesStore/edit/${store.id}`}
-                  handleDelete={handleDeleteServiceStore}
-                />
-              </TableCell>
+    <div className="mt-5">
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Service Stores"}
+      </h3>
+      {stores.length > 0 ? (
+        <Table>
+          <TableCaption>List of Service Stores</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>NO</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Updated Date</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {stores.map((store, i) => (
+              <TableRow key={store.id}>
+                <TableCell>{i + 1}</TableCell>
+                <TableCell>{store.name}</TableCell>
+                <TableCell>
+                  {formatVNDCurrencyValue(store.price || 0)}
+                </TableCell>
+                <TableCell>
+                  {formatDateTime({ type: "date", dateTime: store.upsDate })}
+                </TableCell>
+                <TableCell>
+                  <PopoverActionTable
+                    item={store}
+                    editLink={`/admin/servicesStore/edit/${store.id}`}
+                    handleDelete={handleDeleteServiceStore}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      ) : (
+        <EmptyDataPage />
+      )}
 
       {/* <AlertDialog
         open={!!storeToDelete}

@@ -157,11 +157,6 @@ export function AppSidebar() {
           icon: Store,
           href: navigatePage("stores"),
         },
-        {
-          name: "Services Stores",
-          icon: Pizza,
-          href: navigatePage("servicesStore"),
-        },
       ],
     },
     {

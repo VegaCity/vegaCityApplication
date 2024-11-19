@@ -10,15 +10,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { EtagType } from "@/types/etagtype";
-import { Package } from "@/types/packageType/package";
 import { Pencil, Trash } from "lucide-react";
 import Link from "next/link";
 

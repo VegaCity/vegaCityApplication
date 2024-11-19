@@ -80,7 +80,7 @@ import { Zone } from "@/types/zone/zone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { AxiosError } from "axios";
-import { CheckIcon, PenLine, SearchIcon } from "lucide-react";
+import { CheckIcon, Minus, PenLine, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -613,7 +613,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Users"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Users"}
+      </h3>
       <>
         <div className="mb-3">
           <div className="flex items-center space-x-2">
@@ -649,6 +651,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Full Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Role
+              </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Email
               </TableHead>
@@ -700,6 +705,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         </div>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
+                        <Badge className="bg-slate-400 hover:bg-slate-500 text-white">
+                          {user.roleName}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <p className="text-slate-500">{user.email}</p>
                         {/* Approve user button and Re-assign email button */}
 
@@ -711,7 +721,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         {user.phoneNumber}
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
-                        <p className="text-slate-500">{user.address}</p>
+                        <p className="text-slate-500">
+                          {user.address || <Minus />}
+                        </p>
                       </TableCell>
                       <TableCell className="hidden md:table-cell">
                         {user.cccdPassport}

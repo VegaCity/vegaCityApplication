@@ -27,6 +27,8 @@ import { Zone } from "@/types/zone/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { useRouter } from "next/navigation";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { Card } from "@/components/ui/card";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 
 interface ZoneTableProps {
   limit?: number;
@@ -111,7 +113,9 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Zones"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Zones"}
+      </h3>
       {filteredZones.length > 0 ? (
         <Table>
           <TableCaption>A list of recent zones</TableCaption>
@@ -157,7 +161,7 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <EmptyDataPage />
       )}
     </div>
   );

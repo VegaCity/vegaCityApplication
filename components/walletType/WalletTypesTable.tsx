@@ -1,7 +1,11 @@
 "use client";
 
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Loader } from "@/components/loader/Loader";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,7 +16,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { GetWalletType } from "@/types/walletType/walletType";
+import {
+  handleBadgeStoreStatusColor,
+  handleBedageWalletStatusColor,
+} from "@/lib/utils/statusUtils";
+import {
+  GetWalletType,
+  handleWalletTypeFromBe,
+} from "@/types/walletType/walletType";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -87,7 +98,12 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   const filteredWalletTypes = limit
@@ -96,14 +112,19 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Zones"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Wallet Types"}
+      </h3>
       {filteredWalletTypes.length > 0 ? (
         <Table>
-          <TableCaption>A list of recent Zones</TableCaption>
+          <TableCaption>A list of recent Wallet Types</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Status
+              </TableHead>
               <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -117,13 +138,14 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
               >
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{walletType.name}</TableCell>
-                {/* {zns.houses.map((house) => (
-                  <React.Fragment key={house.id}>
-                    <TableCell className='hidden md:table-cell'>{house.id}</TableCell>
-                    <TableCell className='hidden md:table-cell'>{house.houseName}</TableCell>
-                    <TableCell className='hidden md:table-cell'>{house.location}</TableCell>
-                  </React.Fragment>
-                ))} */}
+                <TableCell>
+                  <Badge
+                    className={handleBedageWalletStatusColor(walletType.deflag)}
+                  >
+                    {handleWalletTypeFromBe(walletType.deflag)}
+                  </Badge>
+                </TableCell>
+
                 <TableCell
                   onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
                 >
@@ -138,7 +160,7 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <EmptyDataPage />
       )}
     </div>
   );

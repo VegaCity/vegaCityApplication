@@ -1,3 +1,11 @@
+export const handleWalletTypeFromBe = (status: boolean): string => {
+  if (status) {
+    return "InActive";
+  } else {
+    return "Active";
+  }
+};
+
 export interface GetWalletType {
   id: string;
   name: string;

@@ -96,7 +96,7 @@ const UserSessionPage = () => {
 
   return (
     <>
-      <BackButton text="Back To User Sessions" link="/admin/user-sessions" />
+      <BackButton text="Back To User Sessions" link="/admin/userSession" />
       <h3 className="text-2xl mb-4">Create New User Session</h3>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">

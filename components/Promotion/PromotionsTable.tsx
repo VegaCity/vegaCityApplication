@@ -1,8 +1,11 @@
 "use client";
 
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Loader } from "@/components/loader/Loader";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { PromotionServices } from "@/components/services/Promotion/promotionServices";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -87,7 +90,12 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   const filteredPromotions = limit
@@ -124,6 +132,9 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
               </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Status
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Start Date
               </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 End Date
@@ -194,6 +205,19 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <div className="flex flex-col items-center justify-center">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: promo.startDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: promo.startDate,
+                    })}
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <div className="flex flex-col items-center justify-center">
                     {formatDateTime({ type: "date", dateTime: promo.endDate })}
                     <Minus />
                     {formatDateTime({ type: "time", dateTime: promo.endDate })}
@@ -213,7 +237,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <EmptyDataPage />
       )}
     </div>
   );

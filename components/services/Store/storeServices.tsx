@@ -1,8 +1,5 @@
 import { API, API_LOCAL, apiKey } from "@/components/services/api";
-import {
-  StoreOwnerPatch,
-  StoreOwnerPatchStore,
-} from "@/types/store/storeOwner";
+import { StoreOwnerPatch } from "@/types/store/storeOwner";
 
 interface StorePageSize {
   // apiKey: string;
@@ -27,7 +24,7 @@ export const StoreServices = {
   editStore(storeId: string, storeData: StoreOwnerPatch) {
     return API.patch(`/store/${storeId}`, storeData);
   },
-  editStoreProfile(storeId: string, storeData: StoreOwnerPatchStore) {
+  editStoreProfile(storeId: string, storeData: StoreOwnerPatch) {
     return API.patch(`/store/${storeId}`, storeData);
   },
   deleteStoreById(id: string) {

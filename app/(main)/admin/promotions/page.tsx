@@ -5,7 +5,7 @@ import { useUserRole } from "@/components/hooks/useUserRole";
 import PromotionsPagination from "@/components/Promotion/PromotionsPagination";
 import PromotionsTable from "@/components/Promotion/PromotionsTable";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 const PromotionsPage = () => {
@@ -22,7 +22,7 @@ const PromotionsPage = () => {
         {/* <BackButton text="Go Back" link="/" /> */}
         <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full transition-colors duration-200">
           <Link href="/admin/promotions/create" className="flex items-center">
-            <Upload size={15} /> &nbsp; Create New Promotion
+            <Plus size={15} /> &nbsp; Add New Promotion
           </Link>
         </Button>
       </div>

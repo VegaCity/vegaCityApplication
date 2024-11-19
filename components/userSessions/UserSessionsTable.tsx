@@ -35,6 +35,7 @@ import {
 } from "@/lib/utils/statusUtils";
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 
 interface UserSessionTableProps {
   limit?: number;
@@ -110,7 +111,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
         {title || "User Sessions"}
       </h3>
       {filteredSessions.length > 0 ? (
@@ -181,7 +182,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <EmptyDataPage />
       )}
     </div>
   );

@@ -1,10 +1,12 @@
 "use client";
 
+import EmptyDataPage from "@/components/emptyData/emptyData";
 import { Loader } from "@/components/loader/Loader";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { HouseServices } from "@/components/services/houseServices";
 import { StoreServices } from "@/components/services/Store/storeServices";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -104,7 +106,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
 
   return (
     <div className="mt-5">
-      <h3 className="text-2xl mb-4 font-semibold">
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
         {houseId ? "Stores by House" : "All Stores"}
       </h3>
       {houseId && house && isObject(house) ? (
@@ -227,7 +229,7 @@ const StoresTable = ({ params }: StoreTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>No stores found!</div>
+        <EmptyDataPage />
       )}
     </div>
   );

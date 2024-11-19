@@ -5,7 +5,7 @@ import { useUserRole } from "@/components/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import UsersPagination from "@/components/users/UsersPagination";
 import UsersTable from "@/components/users/UsersTable";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 const UsersPage = () => {
@@ -21,7 +21,7 @@ const UsersPage = () => {
         {/* <BackButton text="Go Back" link="/" /> */}
         <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full transition-colors duration-200">
           <Link href="/admin/usersAccount/create" className="flex items-center">
-            <Upload size={15} /> &nbsp; Create New User
+            <Plus size={15} /> &nbsp; Add New User
           </Link>
         </Button>
       </div>

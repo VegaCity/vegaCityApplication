@@ -33,6 +33,7 @@ import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { Badge } from "@/components/ui/badge";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { Card } from "@/components/ui/card";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 
 interface PackageTableProps {
   limit?: number;
@@ -107,7 +108,9 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
 
   return (
     <div className="mt-5">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Packages"}
+      </h3>
       {filteredPackages.length > 0 ? (
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
@@ -187,9 +190,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <Card className="font-bold text-lg text-sky-400 p-4 bg-slate-200 hover:bg-slate-300">
-          Data is not found!
-        </Card>
+        <EmptyDataPage />
       )}
     </div>
   );

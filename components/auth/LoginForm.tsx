@@ -21,6 +21,8 @@ import { AxiosError } from "axios";
 import { AuthServices } from "@/components/services/authServices";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 import { loginFormSchema, loginFormValues } from "@/lib/validation";
+import Image from "next/image";
+import VegaLogo from "@/img/logo.png";
 
 interface UserRefreshToken {
   email: string;
@@ -453,9 +455,12 @@ const LoginForm = () => {
   };
 
   return (
-    <Card className="max-w-lg mx-auto p-6">
+    <Card className="max-w-lg mx-auto p-6 bg-transparent dark:bg-black/30 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-center text-xl">Login</CardTitle>
+        <CardTitle className="text-2xl font-bold text-sky-400 text-center uppercase dark:text-white">
+          <img width={70} height={70} src={VegaLogo.src} alt="VegaLogo" />
+          Login
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
@@ -468,9 +473,6 @@ const LoginForm = () => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="uppercase text-sm font-bold text-zinc-500 dark:text-white">
-                    Email
-                  </FormLabel>
                   <FormControl>
                     <Input
                       className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
@@ -488,9 +490,6 @@ const LoginForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="uppercase text-sm font-bold text-zinc-500 dark:text-white">
-                    Password
-                  </FormLabel>
                   <FormControl>
                     <Input
                       type="password"

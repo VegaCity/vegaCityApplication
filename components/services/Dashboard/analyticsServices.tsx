@@ -1,5 +1,5 @@
 import { API } from "@/components/services/api";
-import { AnalyticsAdminDashboard, AnalyticsPostProps } from "@/types/analytics";
+import { AnalyticsPostProps } from "@/types/analytics";
 
 const dataExample: AnalyticsPostProps = {
   startDate: "2024-07-01",

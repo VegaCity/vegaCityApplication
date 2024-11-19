@@ -16,15 +16,12 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { Loader2, Camera, X } from "lucide-react";
 import { Users, ApiResponse } from "@/types/user/user";
-import { UserAccountPost } from "@/types/user/userAccount";
+import { UserAccountPatch } from "@/types/user/userAccount";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
-import {
-  StoreOwnerPatch,
-  StoreOwnerPatchStore,
-} from "@/types/store/storeOwner";
+import { StoreOwnerPatch, storeTypes } from "@/types/store/storeOwner";
 const UserProfileComponent: React.FC = () => {
   const [user, setUser] = useState<Users | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -36,8 +33,8 @@ const UserProfileComponent: React.FC = () => {
     Record<string, string>
   >({});
   const [storeId, setStoreId] = useState<string | null>(null);
-  const [storeData, setStoreData] = useState<StoreOwnerPatchStore | null>(null);
-  const [formData, setFormData] = useState<UserAccountPost>({
+  const [storeData, setStoreData] = useState<StoreOwnerPatch | null>(null);
+  const [formData, setFormData] = useState<UserAccountPatch>({
     fullName: "",
     address: "",
     description: "",
@@ -48,14 +45,15 @@ const UserProfileComponent: React.FC = () => {
     imageUrl: null,
   });
 
-  const [storeFormData, setStoreFormData] = useState<StoreOwnerPatchStore>({
+  const [storeFormData, setStoreFormData] = useState<StoreOwnerPatch>({
     name: "",
     address: "",
     phoneNumber: "",
     shortName: "",
     email: "",
     description: "",
-    storeStatus: 0,
+    status: 0,
+    storeType: 0,
   });
 
   useEffect(() => {
@@ -66,7 +64,7 @@ const UserProfileComponent: React.FC = () => {
     try {
       const storeId = localStorage.getItem("storeId");
       const response = await StoreServices.getStoreById(storeId as string);
-      const store = response.data.data.store;
+      const store: StoreOwnerPatch = response.data.data.store;
 
       setStoreData(store);
       setStoreFormData({
@@ -76,7 +74,8 @@ const UserProfileComponent: React.FC = () => {
         shortName: store.shortName || "",
         email: store.email || "",
         description: store.description || "",
-        storeStatus: store.status,
+        status: store.status,
+        storeType: store.storeType,
       });
     } catch (error) {
       handleError(error);
@@ -110,7 +109,7 @@ const UserProfileComponent: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ): void => {
     const { name, value } = e.target;
-    setStoreFormData((prev) => ({ ...prev, [name]: value }));
+    setStoreFormData((prev: any) => ({ ...prev, [name]: value }));
 
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: "" }));
@@ -355,7 +354,7 @@ const UserProfileComponent: React.FC = () => {
             <Input
               id="shortName"
               name="shortName"
-              value={storeFormData.shortName}
+              value={storeFormData.shortName || ""}
               onChange={handleStoreInputChange}
               disabled={!editMode}
             />
@@ -414,7 +413,7 @@ const UserProfileComponent: React.FC = () => {
           <div className="col-span-2 space-y-2">
             <Label htmlFor="storeStatus">Store Status</Label>
             <Select
-              value={storeFormData.storeStatus?.toString() || "0"}
+              value={storeFormData.status?.toString() || "0"}
               onValueChange={(value) =>
                 setStoreFormData((prev) => ({
                   ...prev,
@@ -434,11 +433,38 @@ const UserProfileComponent: React.FC = () => {
             </Select>
           </div>
           <div className="col-span-2 space-y-2">
+            <Label htmlFor="storeStatus">Store Type</Label>
+            <Select
+              value={storeFormData.storeType?.toString() || "0"}
+              onValueChange={(value) =>
+                setStoreFormData((prev) => ({
+                  ...prev,
+                  storeStatus: parseInt(value),
+                }))
+              }
+              disabled={!editMode}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select store status" />
+              </SelectTrigger>
+              <SelectContent>
+                {storeTypes.map((storeType) => (
+                  <SelectItem
+                    key={storeType.value}
+                    value={storeType.value.toString()}
+                  >
+                    {storeType.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="col-span-2 space-y-2">
             <Label htmlFor="storeDescription">Store Description</Label>
             <Textarea
               id="description"
               name="description"
-              value={storeFormData.description}
+              value={storeFormData.description || ""}
               onChange={handleStoreInputChange}
               disabled={!editMode}
               rows={4}

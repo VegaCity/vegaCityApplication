@@ -99,14 +99,20 @@ const PackageCreatePage = () => {
         ]);
 
         // Check isArray and set
-        const walletTypes = Array.isArray(walletTypeRes.data.data)
+        const walletTypes: GetWalletType[] = Array.isArray(
+          walletTypeRes.data.data
+        )
           ? walletTypeRes.data.data
           : [];
 
         const zones = Array.isArray(zoneRes.data.data) ? zoneRes.data.data : [];
 
+        const filterWalletTypes = walletTypes.filter(
+          ({ name }) => name === "ServiceWallet" || name === "SpecificWallet"
+        );
+        console.log(filterWalletTypes, "filterWalletTypes");
         setZones(zones);
-        setWalletTypes(walletTypes); // Lưu danh sách
+        setWalletTypes(filterWalletTypes); // Lưu danh sách
 
         console.log("walletTypes set:", walletTypes);
       } catch (err) {
@@ -497,7 +503,7 @@ const PackageCreatePage = () => {
             <div className="flex justify-end items-end w-full mt-4">
               <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
                 <Upload />
-                Create Package
+                Create
               </Button>
             </div>
           </form>
