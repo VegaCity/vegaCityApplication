@@ -1,78 +1,311 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Trash2, Plus, Save, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Trash2, Plus, Save, Image as ImageIcon } from "lucide-react";
+import { StoreMenuServices } from "@/components/services/storeMenuService";
+import { ProductCategoryServices } from "@/components/services/productCategoryService";
+import { StoreMenuPatch } from "@/types/store/storeMenu";
+import { useToast } from "@/components/ui/use-toast";
+import { storage } from "@/lib/firebase"; // Make sure to create this firebase config
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useRouter } from "next/navigation";
+import { ProductServices } from "@/components/services/productServices";
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  count?: number;
+}
 
-// Define categories constant
-const CATEGORIES = [
-  "Cơm",
-  "Bún",
-  "Món nước",
-  "Bánh",
-  "Mì",
-  "Món sáng",
-];
+enum DateFilter {
+  Morning = 1,
+  Afternoon = 2,
+  Lunch = 3,
+}
 
-const MenuCreationForm = () => {
-  const [formData, setFormData] = useState({
-    menuName: 'Menu Nhà Hàng', 
-    shifts: [
-      {
-        name: 'Ca sáng',
-        startTime: '07:00',
-        endTime: '11:00'
-      }
-    ],
-    creator: {
-      name: 'Nguyễn Văn A',
-      email: 'nguyenvana@example.com',
-      phone: '0123456789'
+const DATE_FILTER_LABELS = {
+  [DateFilter.Morning]: "Ca sáng",
+  [DateFilter.Afternoon]: "Ca chiều",
+  [DateFilter.Lunch]: "Ca trưa",
+};
+
+interface Product {
+  id?: string;
+  name: string;
+  price: string;
+  categoryId: string;
+  image: File | null;
+  imagePreview: string | ArrayBuffer | null;
+  isNew?: boolean;
+  isSaving?: boolean;
+  status?: string;
+  dateFilter?: number;
+}
+
+interface MenuData {
+  id?: string;
+  menuName: string;
+  dateFilter: DateFilter;
+  creator: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  products: Product[];
+  itemCount?: number;
+  lastUpdated?: string;
+}
+const initialFormData: MenuData = {
+  menuName: "",
+  dateFilter: DateFilter.Morning,
+  creator: {
+    name: "Nguyễn Văn A",
+    email: "nguyenvana@example.com",
+    phone: "0123456789",
+  },
+  products: [
+    {
+      name: "",
+      price: "",
+      categoryId: "",
+      image: null,
+      imagePreview: null,
     },
-    products: [
-      {
-        name: '',
-        price: '',
-        category: '', // Add category field
-        image: null as File | null,
-        imagePreview: null as string | ArrayBuffer | null
+  ],
+};
+
+interface MenuCreationFormProps {
+  params: { id: string };
+}
+
+const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState<MenuData>(initialFormData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const router = useRouter();
+  const uploadImageToFirebase = async (file: File): Promise<string> => {
+    try {
+      const storageRef = ref(
+        storage,
+        `menu-products/${Date.now()}-${file.name}`
+      );
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw new Error("Failed to upload image");
+    }
+  };
+  const fetchProductCategories = async () => {
+    try {
+      setIsLoading(true);
+      const response = await ProductCategoryServices.getProductCategories({
+        page: 1,
+        size: 20,
+        storeId: localStorage.getItem("storeId") as string,
+      });
+
+      const apiResponse = response.data;
+      if (apiResponse.statusCode === 200) {
+        setCategories(apiResponse.data);
+      } else {
+        setError(apiResponse.messageResponse);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: apiResponse.messageResponse,
+        });
       }
-    ]
-  });
-
-  const addShift = () => {
-    setFormData({
-      ...formData,
-      shifts: [...formData.shifts, { name: '', startTime: '', endTime: '' }]
-    });
+    } catch (error) {
+      console.error("Error fetching product categories:", error);
+      setError("Error loading product categories");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error loading product categories",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeShift = (index: number) => {
-    const newShifts = formData.shifts.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      shifts: newShifts
-    });
-  };
+  useEffect(() => {
+    fetchProductCategories();
+  }, []);
 
+  const fetchMenuAndCategories = async () => {
+    try {
+      setIsLoading(true);
+
+      const categoryResponse =
+        await ProductCategoryServices.getProductCategories({
+          page: 1,
+          size: 20,
+          storeId: localStorage.getItem("storeId") as string,
+        });
+
+      if (categoryResponse.data.statusCode === 200) {
+        setCategories(categoryResponse.data.data);
+      }
+
+      const menuResponse = await StoreMenuServices.getStoreMenuById(params.id);
+      const menuData = menuResponse.data.data;
+
+      // Filter and process active products only
+      const existingProducts = menuData.menuProductMappings
+        .filter((mapping: any) => mapping.product.status === "Active")
+        .map((mapping: any) => {
+          const product = mapping.product;
+          return {
+            id: product.id,
+            name: product.name,
+            price: product.price.toString(),
+            categoryId: product.productCategoryId,
+            image: null,
+            imagePreview: product.imageUrl,
+            status: product.status,
+            dateFilter: menuData.dateFilter,
+            isNew: false,
+          };
+        });
+
+      setFormData({
+        id: menuData.id,
+        menuName: menuData.name,
+        dateFilter: menuData.dateFilter,
+        creator: menuData.creator || initialFormData.creator,
+        products: existingProducts,
+        itemCount: existingProducts.length,
+        lastUpdated: menuData.upsDate,
+      });
+      const menuId = localStorage.setItem("menuId" as string, menuData.id);
+    } catch (err) {
+      setError("Failed to load menu data");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load menu data",
+      });
+      console.error("Error fetching data:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchMenuAndCategories();
+  }, [params.id]);
   const addProduct = () => {
     setFormData({
       ...formData,
-      products: [...formData.products, { name: '', price: '', category: '', image: null, imagePreview: null }]
+      products: [
+        ...formData.products,
+        {
+          name: "",
+          price: "",
+          categoryId: "",
+          image: null,
+          imagePreview: null,
+          isNew: true,
+        },
+      ],
     });
   };
 
-  const removeProduct = (index: number) => {
-    const newProducts = formData.products.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      products: newProducts
-    });
+  const handleSaveProduct = async (index: number) => {
+    const product = formData.products[index];
+    if (!product.isNew) return;
+
+    try {
+      const updatedProducts = [...formData.products];
+      updatedProducts[index] = { ...product, isSaving: true };
+      setFormData({ ...formData, products: updatedProducts });
+
+      // Upload image to Firebase if exists
+      let imageUrl = "";
+      if (product.image) {
+        imageUrl = await uploadImageToFirebase(product.image);
+      }
+
+      const productData = {
+        name: product.name,
+        productCategoryId: product.categoryId,
+        price: parseFloat(product.price),
+        imageUrl: imageUrl,
+        status: "Active", // Set initial status as Active
+      };
+
+      await StoreMenuServices.addProductToMenu(params.id, productData);
+
+      updatedProducts[index] = {
+        ...product,
+        isNew: false,
+        isSaving: false,
+        imagePreview: imageUrl,
+        status: "Active",
+      };
+      setFormData({ ...formData, products: updatedProducts });
+
+      toast({
+        title: "Success",
+        description: "Product added successfully",
+      });
+    } catch (err) {
+      console.error("Error adding product:", err);
+      setError(err instanceof Error ? err.message : "Failed to add product");
+
+      const updatedProducts = [...formData.products];
+      updatedProducts[index] = { ...product, isSaving: false };
+      setFormData({ ...formData, products: updatedProducts });
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add product",
+      });
+    }
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const removeProduct = async (index: number) => {
+    const product = formData.products[index];
+
+    try {
+      // If the product has an ID and is not a new product, call the delete API
+      if (product.id && !product.isNew) {
+        await ProductServices.deleteProductById(product.id);
+      }
+
+      // Remove the product from the local state
+      const newProducts = formData.products.filter((_, i) => i !== index);
+      setFormData({
+        ...formData,
+        products: newProducts,
+      });
+
+      toast({
+        title: "Success",
+        description: "Product removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing product:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to remove product",
+      });
+    }
+  };
+
+  const handleImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const files = e.target.files;
     if (!files) return;
     const file = files[0];
+
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -80,11 +313,11 @@ const MenuCreationForm = () => {
         newProducts[index] = {
           ...newProducts[index],
           image: file,
-          imagePreview: reader.result
+          imagePreview: reader.result,
         };
         setFormData({
           ...formData,
-          products: newProducts
+          products: newProducts,
         });
       };
       reader.readAsDataURL(file);
@@ -96,18 +329,43 @@ const MenuCreationForm = () => {
     newProducts[index] = {
       ...newProducts[index],
       image: null,
-      imagePreview: null
+      imagePreview: null,
     };
     setFormData({
       ...formData,
-      products: newProducts
+      products: newProducts,
     });
   };
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Xử lý gửi dữ liệu đến server ở đây
+    try {
+      const storeMenuData: StoreMenuPatch = {
+        name: formData.menuName,
+        dateFilter: formData.dateFilter,
+        imageUrl: "",
+      };
+
+      await StoreMenuServices.editStoreMenu(params.id, storeMenuData);
+
+      toast({
+        title: "Success",
+        description: "Menu saved successfully",
+      });
+
+      // Save any new products
+      const newProducts = formData.products.filter((product) => product.isNew);
+      for (let i = 0; i < formData.products.length; i++) {
+        if (formData.products[i].isNew) {
+          await handleSaveProduct(i);
+        }
+      }
+      const menuId = localStorage.getItem("menuId");
+      router.push(`/store/menu/${menuId}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update menu");
+      console.error("Error updating menu:", err);
+    }
   };
 
   return (
@@ -127,71 +385,25 @@ const MenuCreationForm = () => {
           </div>
         </div>
 
-        {/* Ca làm việc - Editable */}
+        {/* Ca làm việc - Single Select */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Ca làm việc</h2>
-            <button
-              type="button"
-              onClick={addShift}
-              className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Thêm ca
-            </button>
-          </div>
-
-          {formData.shifts.map((shift, index) => (
-            <div key={index} className="flex gap-4 items-center mb-4">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  placeholder="Tên ca"
-                  value={shift.name}
-                  onChange={(e) => {
-                    const newShifts = [...formData.shifts];
-                    newShifts[index].name = e.target.value;
-                    setFormData({ ...formData, shifts: newShifts });
-                  }}
-                  className="w-full p-2 border rounded"
-                  required
-                />
-              </div>
-              <div className="flex-1">
-                <input
-                  type="time"
-                  value={shift.startTime}
-                  onChange={(e) => {
-                    const newShifts = [...formData.shifts];
-                    newShifts[index].startTime = e.target.value;
-                    setFormData({ ...formData, shifts: newShifts });
-                  }}
-                  className="w-full p-2 border rounded"
-                  required
-                />
-              </div>
-              <div className="flex-1">
-                <input
-                  type="time"
-                  value={shift.endTime}
-                  onChange={(e) => {
-                    const newShifts = [...formData.shifts];
-                    newShifts[index].endTime = e.target.value;
-                    setFormData({ ...formData, shifts: newShifts });
-                  }}
-                  className="w-full p-2 border rounded"
-                  required
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeShift(index)}
-                className="p-2 text-red-500 hover:text-red-700"
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
-            </div>
-          ))}
+          <h2 className="text-xl font-semibold mb-4">Ca làm việc</h2>
+          <select
+            value={formData.dateFilter}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                dateFilter: Number(e.target.value) as DateFilter,
+              })
+            }
+            className="w-full p-2 border rounded"
+          >
+            {Object.entries(DATE_FILTER_LABELS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Sản phẩm - Editable */}
@@ -237,23 +449,22 @@ const MenuCreationForm = () => {
                     required
                   />
                   <select
-                    value={product.category}
+                    value={product.categoryId}
                     onChange={(e) => {
                       const newProducts = [...formData.products];
-                      newProducts[index].category = e.target.value;
+                      newProducts[index].categoryId = e.target.value;
                       setFormData({ ...formData, products: newProducts });
                     }}
                     className="w-full p-2 border rounded"
                     required
                   >
                     <option value="">Chọn loại sản phẩm</option>
-                    {CATEGORIES.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
                       </option>
                     ))}
                   </select>
-
                 </div>
 
                 <div className="relative">
@@ -286,14 +497,27 @@ const MenuCreationForm = () => {
                         className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:bg-gray-50"
                       >
                         <ImageIcon className="w-8 h-8 text-gray-400" />
-                        <span className="mt-2 text-sm text-gray-500">Thêm hình ảnh</span>
+                        <span className="mt-2 text-sm text-gray-500">
+                          Thêm hình ảnh
+                        </span>
                       </label>
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-end gap-2">
+                {product.isNew && (
+                  <button
+                    type="button"
+                    onClick={() => handleSaveProduct(index)}
+                    disabled={product.isSaving}
+                    className="flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+                  >
+                    <Save className="w-4 h-4 mr-1" />
+                    {product.isSaving ? "Đang lưu..." : "Lưu sản phẩm"}
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => removeProduct(index)}

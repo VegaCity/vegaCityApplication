@@ -9,9 +9,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Product } from "@/types/store/store";
 import { confirmOrder, createOrderStore } from "../services/orderuserServices";
-import { PackageItemServices } from "../services/Package/packageItemService";
+import { PackageItemServices } from "@/components/services/Package/packageItemService";
+import paymentService from "../services/paymentService";
+
 interface CartItem extends Product {
   quantity: number;
 }
@@ -25,6 +34,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [vcardCode, setVcardCode] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<string>("qrcode");
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
   >("idle");
@@ -67,11 +77,71 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     0
   );
 
-  async function handleCreateOrder() {
-    if (!vcardCode) {
-      setPaymentError("Please enter a valid Vcard code.");
-      return;
+  const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
+    try {
+      let paymentResponse;
+      switch (paymentMethod) {
+        case "Momo":
+          paymentResponse = await paymentService.momo({
+            invoiceId,
+          });
+          break;
+        case "VnPay":
+          paymentResponse = await paymentService.vnpay({
+            invoiceId,
+          });
+          break;
+        case "PayOs":
+          paymentResponse = await paymentService.payos({
+            invoiceId,
+          });
+          break;
+        case "ZaloPay":
+          paymentResponse = await paymentService.zalopay({
+            invoiceId,
+          });
+          break;
+        case "QrCode":
+          // Handle QR code payment separately if needed
+          return false;
+        default:
+          throw new Error(`Unsupported payment method: ${paymentMethod}`);
+      }
+
+      if (paymentResponse?.statusCode !== 200) {
+        throw new Error("Payment service returned non-200 status");
+      }
+
+      const paymentUrl = getPaymentUrl(paymentMethod, paymentResponse.data);
+      if (!paymentUrl) {
+        throw new Error("Payment URL not found in response");
+      }
+
+      window.location.href = paymentUrl;
+      return true;
+    } catch (error) {
+      console.error("Payment initiation error:", error);
+      throw error;
     }
+  };
+
+  const getPaymentUrl = (method: string, data: any): string | null => {
+    if (!data) return null;
+    switch (method.toLowerCase()) {
+      case "momo":
+        return data.payUrl || data.shortLink;
+      case "vnpay":
+        return data.vnPayResponse;
+      case "payos":
+        return data.checkoutUrl;
+      case "zalopay":
+        return data.order_url;
+      default:
+        return null;
+    }
+  };
+  async function handleCreateOrder() {
+    setPaymentStatus("processing");
 
     try {
       const storeId = localStorage?.getItem("storeId") ?? "";
@@ -79,35 +149,47 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         saleType: "Product",
         storeId,
         totalAmount: totalPrice,
-        packageItemId: vcardCode,
+        packageOrderId: vcardCode,
         productData: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
-          productCategory: item.productCategory?.name ?? "Unknown",
+          productCategory:
+            item.productCategory?.name ??
+            item.productCategory?.name ??
+            "Unknown",
           price: item.price,
-          imgUrl: item.imageUrl,
+          imgUrl: item?.imageUrl || "",
           quantity: item.quantity,
         })),
+        paymentType: paymentMethod,
       };
 
       const orderResponse = await createOrderStore(orderData);
+      localStorage.setItem("invoiceId", orderResponse.data.invoiceId);
+      // Differentiate payment handling based on payment method
+      if (paymentMethod.toLowerCase() === "qrcode") {
+        // For QR code, complete the local flow
+        setPaymentStatus("success");
+        setTimeout(() => {
+          setCartItems([]);
+          setIsPaymentModalOpen(false);
+          setIsOpen(false);
+          setVcardCode("");
+          setPaymentStatus("idle");
+        }, 2000);
+      } else {
+        // For other payment methods, confirm order and initiate payment
 
-      await confirmOrder({
-        transactionId: orderResponse.data.transactionId,
-        invoiceId: orderResponse.data.invoiceId,
-      });
-      setPaymentStatus("success");
-      setTimeout(() => {
-        setCartItems([]);
-        setIsPaymentModalOpen(false);
-        setIsOpen(false);
-        setVcardCode("");
-        setPaymentStatus("idle");
-      }, 2000);
+        const invoiceId = orderResponse.data.invoiceId;
+        const result = await initiatePayment(paymentMethod, invoiceId);
+
+        if (result) {
+          // Payment redirection happens in initiatePayment method
+          setPaymentStatus("success");
+        }
+      }
     } catch (error) {
-      // Log the error details for debugging
       console.error("Payment Error:", error);
-
       setPaymentStatus("error");
       setPaymentError(
         error instanceof Error
@@ -116,9 +198,8 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       );
     }
   }
-
   const handleCreateOrderClick = () => {
-    setIsPaymentModalOpen(true); // Open payment modal if Vcard code is not provided
+    setIsPaymentModalOpen(true);
   };
 
   return (
@@ -152,7 +233,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     className="flex items-center gap-4 border-b pb-4"
                   >
                     <img
-                      src={item.imageUrl}
+                      src={item.imageUrl || ""}
                       alt={item.name}
                       className="w-16 h-16 object-cover rounded"
                     />
@@ -201,7 +282,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
               </div>
               <Button
                 className="w-full mt-4 bg-sky-600"
-                onClick={handleCreateOrderClick} // Open payment modal
+                onClick={handleCreateOrderClick}
               >
                 Create Order
               </Button>
@@ -212,10 +293,28 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Payment with Vcard</DialogTitle>
+              <DialogTitle>Payment</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label htmlFor="payment-method" className="text-sm font-medium">
+                  Select Payment Method
+                </label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Payment Method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="QrCode">QR Code</SelectItem>
+                    <SelectItem value="Momo">Momo</SelectItem>
+                    <SelectItem value="VnPay">VnPay</SelectItem>
+                    <SelectItem value="PayOs">PayOS</SelectItem>
+                    <SelectItem value="ZaloPay">ZaloPay</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <label htmlFor="vcard-code" className="text-sm font-medium">
                   Enter Vcard Code
@@ -252,7 +351,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                 className="w-full"
                 onClick={handleCreateOrder}
                 disabled={
-                  !vcardCode ||
+                  !vcardCode || // Now Vcard Code is required for ALL payment methods
                   paymentStatus === "processing" ||
                   paymentStatus === "success"
                 }

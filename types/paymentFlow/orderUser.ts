@@ -64,7 +64,7 @@ export interface OrderStoreData {
   saleType: string;
   storeId: string;
   totalAmount: number;
-  packageItemId: string;
+  packageOrderId: string;
   productData: ProductStoreData[];
 }
 
