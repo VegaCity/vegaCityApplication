@@ -144,6 +144,9 @@ export const useEtagHandlers = ({
           title: "Success",
           description: "VCard generated successfully.",
         });
+        setTimeout(() => {
+          router.push("/user/package-items");
+        }, 2000);
       } else {
         throw new Error(
           `Failed to generate VCard for adult. Status code: ${response.status}`
