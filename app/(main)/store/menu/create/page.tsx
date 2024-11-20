@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { Save, Image as ImageIcon, Trash2 } from "lucide-react";
+import { StoreMenuServices } from "@/components/services/storeMenuService";
 import {
   Select,
   SelectContent,
@@ -9,10 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StoreMenuServices } from "@/components/services/storeMenuService";
 import { useToast } from "@/components/ui/use-toast";
+import { Image as ImageIcon, Save, Trash2 } from "lucide-react";
+import React, { useState } from "react";
 
-const MenuCreationForm = ({ storeId }: { storeId: string }) => {
+const MenuCreationForm = () => {
   const { toast } = useToast();
 
   const [menuData, setMenuData] = useState({

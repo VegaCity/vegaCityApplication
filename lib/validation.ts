@@ -419,12 +419,12 @@ export const createPackageFormSchema = z.object({
   description: z.string().min(1).nullable(),
   price: z
     .number()
-    .min(1000, { message: "Price must at least 1.000 VND" })
+    .min(100000, { message: "Price must at least 100.000 VND" })
     .max(10000000, { message: "Price does not exceed 10 millions VND" }),
   duration: z.number().min(1, "At least 1 day"),
   zoneId: z.string().min(1),
   walletTypeId: z.string().min(1),
-  moneyStart: z.number().min(50000, "Money start at least 50.000 VND"),
+  moneyStart: z.number().min(10000, "Money start at least 100.000 VND"),
 });
 
 export const createPromotionFormSchema = z
