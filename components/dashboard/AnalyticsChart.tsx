@@ -7,6 +7,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
   Tooltip,
+  Legend,
 } from "recharts";
 import {
   Card,
@@ -21,6 +22,146 @@ import {
   CashierAnalytics,
 } from "@/types/analytics";
 import { AnalyticsServices } from "../services/Dashboard/analyticsServices";
+import {
+  TrendingUp,
+  DollarSign,
+  CreditCard,
+  Package,
+  ShoppingCart,
+  LucideIcon,
+} from "lucide-react";
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}
+const formatLargeNumber = (value: number) => {
+  if (value >= 1000000000) {
+    return `${(value / 1000000000).toFixed(1)}B`;
+  }
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)}M`;
+  }
+  if (value >= 1000) {
+    return `${(value / 1000).toFixed(1)}K`;
+  }
+  return value.toString();
+};
+
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+    notation: "compact",
+    compactDisplay: "short",
+  }).format(value);
+};
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+        <p className="font-semibold text-gray-800">{label}</p>
+        {payload.map((entry, index) => {
+          const value =
+            entry.dataKey.includes("Amount") ||
+            entry.dataKey.includes("Revenue")
+              ? formatCurrency(entry.value)
+              : formatLargeNumber(entry.value);
+          return (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              {`${entry.name}: ${value}`}
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+  return null;
+};
+
+interface ChartCardProps {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  children: React.ReactNode;
+}
+
+const ChartCard = ({
+  title,
+  description,
+  icon: Icon,
+  children,
+}: ChartCardProps) => (
+  <Card className="flex-1 min-w-[450px] hover:shadow-lg transition-all duration-300">
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <div>
+        <CardTitle className="text-xl font-bold flex items-center gap-2">
+          <Icon className="w-5 h-5" />
+          {title}
+        </CardTitle>
+        <CardDescription className="text-sm text-gray-500">
+          {description}
+        </CardDescription>
+      </div>
+    </CardHeader>
+    <CardContent>{children}</CardContent>
+  </Card>
+);
+
+interface ChartLineConfig {
+  dataKey: string;
+  stroke: string;
+  name: string;
+}
+
+interface ChartProps {
+  data: any[];
+  lines: ChartLineConfig[];
+}
+
+const Chart = ({ data, lines }: ChartProps) => {
+  const [hoveredLine, setHoveredLine] = useState<string | null>(null);
+
+  return (
+    <div className="h-[300px]">
+      <ResponsiveContainer width="100%">
+        <LineChart
+          data={data}
+          margin={{ top: 5, right: 20, left: 50, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+          <XAxis
+            dataKey="name"
+            tick={{ fill: "#666" }}
+            tickLine={{ stroke: "#666" }}
+          />
+          <YAxis tick={{ fill: "#666" }} tickLine={{ stroke: "#666" }} />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend
+            onMouseEnter={(e) => setHoveredLine(e.dataKey as string)}
+            onMouseLeave={() => setHoveredLine(null)}
+          />
+          {lines.map((line) => (
+            <Line
+              key={line.dataKey}
+              type="monotone"
+              {...line}
+              strokeWidth={hoveredLine === line.dataKey ? 3 : 2}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6, strokeWidth: 2 }}
+              className={
+                hoveredLine && hoveredLine !== line.dataKey ? "opacity-30" : ""
+              }
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
 const AnalyticsChart = () => {
   const [analyticsData, setAnalyticsData] = useState<
     StoreAnalytics[] | AdminAnalytics[] | CashierAnalytics[]
@@ -32,21 +173,19 @@ const AnalyticsChart = () => {
     const fetchUserAndAnalytics = async () => {
       setIsLoading(true);
       try {
-        // First get user info to determine role
-        const userId = localStorage.getItem("userId"); // Assume we store this on login
+        const userId = localStorage.getItem("userId");
         const userResponse = await AnalyticsServices.getUserById(
           userId as string
         );
         const role = userResponse.data.data.role.name;
         setUserRole(role);
 
-        // Then fetch appropriate dashboard data based on role
         const analyticsResponse =
           await AnalyticsServices.getDashboardAnalytics();
         setAnalyticsData(analyticsResponse.data.data || []);
-        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -55,220 +194,136 @@ const AnalyticsChart = () => {
   }, []);
 
   const renderStoreCharts = () => (
-    <>
-      <div className="flex flex-wrap w-full gap-4">
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Orders Overview</CardTitle>
-            <CardDescription>Monthly Order Statistics</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%">
-                <LineChart data={analyticsData as StoreAnalytics[]}>
-                  <Line
-                    type="monotone"
-                    dataKey="orderCount"
-                    stroke="#8884d8"
-                    name="Total Orders"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="orderCashCount"
-                    stroke="#82ca9d"
-                    name="Cash Orders"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="otherOrderCount"
-                    stroke="#ffc658"
-                    name="Other Orders"
-                  />
-                  <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="flex flex-wrap w-full gap-6">
+      <ChartCard
+        title="Orders Overview"
+        description="Monthly Order Statistics"
+        icon={ShoppingCart}
+      >
+        <Chart
+          data={analyticsData as StoreAnalytics[]}
+          lines={[
+            { dataKey: "orderCount", stroke: "#8884d8", name: "Total Orders" },
+            {
+              dataKey: "orderCashCount",
+              stroke: "#82ca9d",
+              name: "Cash Orders",
+            },
+            {
+              dataKey: "otherOrderCount",
+              stroke: "#ffc658",
+              name: "Other Orders",
+            },
+          ]}
+        />
+      </ChartCard>
 
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Revenue & Products</CardTitle>
-            <CardDescription>Monthly Financial Overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%">
-                <LineChart data={analyticsData as StoreAnalytics[]}>
-                  <Line
-                    type="monotone"
-                    dataKey="totalAmountFromTransaction"
-                    stroke="#8884d8"
-                    name="Revenue"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="totalProduct"
-                    stroke="#82ca9d"
-                    name="Products"
-                  />
-                  <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+      <ChartCard
+        title="Revenue & Products"
+        description="Monthly Financial Overview"
+        icon={DollarSign}
+      >
+        <Chart
+          data={analyticsData as StoreAnalytics[]}
+          lines={[
+            {
+              dataKey: "totalAmountFromTransaction",
+              stroke: "#8884d8",
+              name: "Revenue",
+            },
+            { dataKey: "totalProduct", stroke: "#82ca9d", name: "Products" },
+          ]}
+        />
+      </ChartCard>
+    </div>
   );
 
   const renderAdminCharts = () => (
-    <>
-      <div className="flex flex-wrap w-full gap-4">
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Transaction Overview</CardTitle>
-            <CardDescription>Monthly Transaction Count</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%">
-                <LineChart data={analyticsData as AdminAnalytics[]}>
-                  <Line
-                    type="monotone"
-                    dataKey="totalTransactions"
-                    stroke="#8884d8"
-                  />
-                  <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="flex flex-wrap w-full gap-6">
+      <ChartCard
+        title="Transaction Overview"
+        description="Monthly Transaction Count"
+        icon={TrendingUp}
+      >
+        <Chart
+          data={analyticsData as AdminAnalytics[]}
+          lines={[
+            {
+              dataKey: "totalTransactions",
+              stroke: "#8884d8",
+              name: "Transactions",
+            },
+          ]}
+        />
+      </ChartCard>
 
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Orders & Packages</CardTitle>
-            <CardDescription>Monthly Overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%">
-                <LineChart data={analyticsData as AdminAnalytics[]}>
-                  <Line
-                    type="monotone"
-                    dataKey="orderCount"
-                    stroke="#8884d8"
-                    name="Orders"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="packageCount"
-                    stroke="#82ca9d"
-                    name="Packages"
-                  />
-                  <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+      <ChartCard
+        title="Orders & Packages"
+        description="Monthly Overview"
+        icon={Package}
+      >
+        <Chart
+          data={analyticsData as AdminAnalytics[]}
+          lines={[
+            { dataKey: "orderCount", stroke: "#8884d8", name: "Orders" },
+            { dataKey: "packageCount", stroke: "#82ca9d", name: "Packages" },
+          ]}
+        />
+      </ChartCard>
+    </div>
   );
 
   const renderCashierCharts = () => (
-    <>
-      <div className="flex flex-wrap w-full gap-4">
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Orders & Transactions</CardTitle>
-            <CardDescription>Monthly Overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%">
-                <LineChart data={analyticsData as CashierAnalytics[]}>
-                  <Line
-                    type="monotone"
-                    dataKey="totalTransactions"
-                    stroke="#8884d8"
-                    name="Total Transactions"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="orderCash"
-                    stroke="#82ca9d"
-                    name="Cash Orders"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="otherOrder"
-                    stroke="#ffc658"
-                    name="Other Orders"
-                  />
-                  <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="flex flex-wrap w-full gap-6">
+      <ChartCard
+        title="Orders & Transactions"
+        description="Monthly Overview"
+        icon={ShoppingCart}
+      >
+        <Chart
+          data={analyticsData as CashierAnalytics[]}
+          lines={[
+            {
+              dataKey: "totalTransactions",
+              stroke: "#8884d8",
+              name: "Total Transactions",
+            },
+            { dataKey: "orderCash", stroke: "#82ca9d", name: "Cash Orders" },
+            { dataKey: "otherOrder", stroke: "#ffc658", name: "Other Orders" },
+          ]}
+        />
+      </ChartCard>
 
-        <Card className="flex-1">
-          <CardHeader>
-            <CardTitle>Revenue & V-Cards</CardTitle>
-            <CardDescription>Monthly Financial Overview</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%">
-                <LineChart data={analyticsData as CashierAnalytics[]}>
-                  <Line
-                    type="monotone"
-                    dataKey="totalAmountFromTransaction"
-                    stroke="#8884d8"
-                    name="Revenue"
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="etagCount"
-                    stroke="#82ca9d"
-                    name="V-Cards"
-                  />
-                  <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+      <ChartCard
+        title="Revenue & V-Cards"
+        description="Monthly Financial Overview"
+        icon={CreditCard}
+      >
+        <Chart
+          data={analyticsData as CashierAnalytics[]}
+          lines={[
+            {
+              dataKey: "totalAmountFromTransaction",
+              stroke: "#8884d8",
+              name: "Revenue",
+            },
+            { dataKey: "etagCount", stroke: "#82ca9d", name: "V-Cards" },
+          ]}
+        />
+      </ChartCard>
+    </div>
   );
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {userRole === "Store" && renderStoreCharts()}
       {userRole === "Admin" && renderAdminCharts()}
       {userRole === "CashierWeb" && renderCashierCharts()}

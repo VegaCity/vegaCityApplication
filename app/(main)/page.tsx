@@ -70,9 +70,9 @@ const Home = () => {
   // Format number for display with Vietnamese currency
   const formatNumber = (num: number): string => {
     if (num >= 1000000) {
-      return `${(num / 1000000).toFixed(1)} Triệu`;
+      return `${(num / 1000000).toFixed(1)} M`;
     } else if (num >= 1000) {
-      return `${(num / 1000).toFixed(1)} Nghìn`;
+      return `${(num / 1000).toFixed(1)} K`;
     }
     return num.toString();
   };
@@ -179,12 +179,12 @@ const Home = () => {
     <>
       <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
         <DashboardCard
-          title="Tổng Giao Dịch"
+          title="Total Transactions"
           count={formatNumber(adminTotals.totalTransactions)}
           icon={<Package2 className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Tổng Doanh Thu"
+          title="Total Revenue"
           count={formatNumber(adminTotals.totalAmount)}
           icon={<Wallet className="text-slate-500" size={72} />}
         />
@@ -238,27 +238,27 @@ const Home = () => {
     <>
       <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
         <DashboardCard
-          title="Tổng Giao Dịch"
+          title="Total Transactions"
           count={formatNumber(cashierTotals.totalTransactions)}
           icon={<Package2 className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Tổng Doanh Thu"
+          title="Total Revenue"
           count={formatNumber(cashierTotals.totalAmount)}
           icon={<Wallet className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Tổng V-Cards"
+          title="Total V-Cards"
           count={formatNumber(cashierTotals.totalEtags)}
           icon={<Tag className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Đơn Tiền Mặt"
+          title="Orders Cash"
           count={formatNumber(cashierTotals.cashOrders)}
           icon={<Store className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Đơn Khác"
+          title="Orders Other"
           count={formatNumber(cashierTotals.otherOrders)}
           icon={<CreditCard className="text-slate-500" size={72} />}
         />
@@ -275,7 +275,6 @@ const Home = () => {
       {userRole === "Store" && renderStoreDashboard()}
       {userRole === "CashierWeb" && renderCashierDashboard()}
       <AnalyticsChart />
-      <TransactionTable title="Giao Dịch Gần Đây" limit={5} />
     </div>
   );
 };
