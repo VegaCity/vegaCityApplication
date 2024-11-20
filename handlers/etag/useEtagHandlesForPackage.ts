@@ -176,6 +176,9 @@ export const useEtagHandlers = ({
           title: "Success",
           description: "VCard generated successfully.",
         });
+        setTimeout(() => {
+          router.push("/user/package-items");
+        });
       } else {
         throw new Error(
           `Failed to generate VCard for minor. Status code: ${response.status}`

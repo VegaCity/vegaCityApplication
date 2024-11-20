@@ -171,12 +171,7 @@ export function AppSidebar() {
       href: navigatePage("orders"),
       roles: ["CashierWeb"],
     },
-    {
-      name: "Reports",
-      icon: MessageSquareWarning,
-      href: navigatePage("reports"),
-      roles: ["CashierWeb"],
-    },
+
     {
       name: "Transactions",
       icon: ArrowRightLeft,

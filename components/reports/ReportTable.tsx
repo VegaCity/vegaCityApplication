@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { ReportServices } from "@/components/services/reportServices";
 import { StoreServices } from "@/components/services/storeServices";
 import { Badge } from "@/components/ui/badge";
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { useForm } from "react-hook-form";
 import {
@@ -33,6 +32,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { PencilIcon } from "lucide-react";
+
 interface ReportTableProps {
   limit?: number;
   title?: string;
@@ -59,6 +59,7 @@ interface ApiResponse {
     totalPage: number;
   };
 }
+
 const EditReportDialog = ({
   report,
   onSuccess,
@@ -73,8 +74,8 @@ const EditReportDialog = ({
   const { toast } = useToast();
   const form = useForm({
     defaultValues: {
-      solution: report.solution,
-      status: report.status.toString(),
+      solution: report.solution || "",
+      status: report.status?.toString() || "0",
     },
   });
 
@@ -156,6 +157,7 @@ const EditReportDialog = ({
     </Dialog>
   );
 };
+
 const ReportTable = ({ limit, title }: ReportTableProps) => {
   const [reportList, setReportList] = useState<ReportData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -168,6 +170,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const { toast } = useToast();
+
   const getStatusInfo = (status: number) => {
     switch (status) {
       case 0:
@@ -206,7 +209,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   const fetchStoreName = async (storeId: string) => {
     try {
       const response = await StoreServices.getStoreById(storeId);
-      return response.data.data.store.name;
+      return response?.data?.data?.store?.name || "Unknown Store";
     } catch {
       return "Unknown Store";
     }
@@ -222,9 +225,13 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
         size: pageSize,
       });
 
+      if (!response?.data?.data) {
+        throw new Error("No data received from the server");
+      }
+
       const reportData = response.data.data;
       const updatedReports = await Promise.all(
-        reportData?.map(async (report: ReportData) => ({
+        reportData.map(async (report: ReportData) => ({
           ...report,
           storeName: await fetchStoreName(report.storeId),
         }))
@@ -250,10 +257,12 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   useEffect(() => {
     fetchReports(currentPage);
   }, [currentPage]);
+
   const handleEdit = (report: ReportData) => {
     setSelectedReport(report);
     setIsEditDialogOpen(true);
   };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -261,8 +270,8 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h3 className="text-2xl font-semibold">Reports</h3>
-        <div className="text-gray-600">Data is fetching... Please wait...</div>
+        <h3 className="text-2xl font-semibold">{title || "Reports"}</h3>
+        <div className="text-gray-600">Loading reports...</div>
       </div>
     );
   }
@@ -270,22 +279,17 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   if (error) {
     return (
       <div className="space-y-4">
-        <h3 className="text-2xl font-semibold">Reports</h3>
+        <h3 className="text-2xl font-semibold">{title || "Reports"}</h3>
         <div className="text-red-500">Error: {error}</div>
-        <button
-          onClick={() => fetchReports(currentPage)}
-          className="px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Try Again
-        </button>
+        <Button onClick={() => fetchReports(currentPage)}>Try Again</Button>
       </div>
     );
   }
 
-  if (!reportList.length) {
+  if (!reportList?.length) {
     return (
       <div className="space-y-4">
-        <h3 className="text-2xl font-semibold">Reports</h3>
+        <h3 className="text-2xl font-semibold">{title || "Reports"}</h3>
         <div className="text-gray-600">No reports found</div>
       </div>
     );
@@ -295,7 +299,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-2xl font-semibold">Reports</h3>
+      <h3 className="text-2xl font-semibold">{title || "Reports"}</h3>
       <Table>
         <TableCaption>
           {metadata &&
@@ -345,10 +349,38 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
         </TableBody>
       </Table>
       {metadata && (
-        <PaginationControls
-          metadata={metadata}
-          onPageChange={handlePageChange}
-        />
+        <div className="flex items-center justify-center space-x-2 mt-4">
+          {metadata.page > 1 && (
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(metadata.page - 1)}
+            >
+              Previous
+            </Button>
+          )}
+          {Array.from(
+            { length: Math.min(metadata.totalPage, 5) },
+            (_, i) => metadata.page - 2 + i
+          )
+            .filter((p) => p > 0 && p <= metadata.totalPage)
+            .map((pageNum) => (
+              <Button
+                key={pageNum}
+                variant={pageNum === metadata.page ? "default" : "outline"}
+                onClick={() => handlePageChange(pageNum)}
+              >
+                {pageNum}
+              </Button>
+            ))}
+          {metadata.page < metadata.totalPage && (
+            <Button
+              variant="outline"
+              onClick={() => handlePageChange(metadata.page + 1)}
+            >
+              Next
+            </Button>
+          )}
+        </div>
       )}
       {selectedReport && (
         <EditReportDialog
@@ -357,45 +389,6 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
         />
-      )}
-    </div>
-  );
-};
-
-const PaginationControls = ({
-  metadata,
-  onPageChange,
-}: {
-  metadata: ApiResponse["metadata"];
-  onPageChange: (page: number) => void;
-}) => {
-  const { page, totalPage } = metadata;
-  const maxVisiblePages = 5;
-  const pages = Array.from(
-    { length: Math.min(totalPage, maxVisiblePages) },
-    (_, i) => page - 2 + i
-  ).filter((p) => p > 0 && p <= totalPage);
-
-  return (
-    <div className="flex items-center justify-center space-x-2 mt-4">
-      {page > 1 && (
-        <Button variant="outline" onClick={() => onPageChange(page - 1)}>
-          Previous
-        </Button>
-      )}
-      {pages.map((pageNum) => (
-        <Button
-          key={pageNum}
-          variant={pageNum === page ? "default" : "outline"}
-          onClick={() => onPageChange(pageNum)}
-        >
-          {pageNum}
-        </Button>
-      ))}
-      {page < totalPage && (
-        <Button variant="outline" onClick={() => onPageChange(page + 1)}>
-          Next
-        </Button>
       )}
     </div>
   );

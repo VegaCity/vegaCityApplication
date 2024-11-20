@@ -29,7 +29,7 @@ function OrderStatusContent() {
     const etagId = localStorage.getItem("packageOrderId");
     if (etagId) {
       // router.push(`/user/etags/detail/${etagId}`);
-      router.push(`/user/package-items/detail/${etagId}`);
+      router.push(`/user/package-items`);
     } else {
       router.push("/user/package-items");
     }
@@ -74,10 +74,10 @@ function OrderStatusContent() {
         </CardContent>
         <CardFooter className="justify-center">
           {isSuccess ? (
-            <Button onClick={continueEtag}>Thông tin VCard</Button>
+            <Button onClick={continueEtag}>Continue</Button>
           ) : (
             <Button onClick={handleFailure} variant="destructive">
-              Quay lại
+              Back
             </Button>
           )}
         </CardFooter>

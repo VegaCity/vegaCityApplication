@@ -118,6 +118,7 @@ export interface UserAccountPost {
   description?: string | null;
   roleName: string;
   registerStoreType?: StoreTypeEnum | number | null;
+  imageUrl?: string | null;
 }
 
 export interface UserAccountPatch {
