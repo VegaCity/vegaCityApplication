@@ -388,19 +388,6 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Status
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("status")}
-                          readOnly
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
                   </div>
                 </div>
 
