@@ -20,7 +20,8 @@ import { Product } from "@/types/store/store";
 import { confirmOrder, createOrderStore } from "../services/orderuserServices";
 import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import paymentService from "../services/paymentService";
-
+import { Toast } from "@/components/ui/toast";
+import toast from "react-hot-toast";
 interface CartItem extends Product {
   quantity: number;
 }
@@ -168,19 +169,26 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       };
 
       const orderResponse = await createOrderStore(orderData);
-      localStorage.setItem("invoiceId", orderResponse.data.invoiceId);
+      const invoiceId = orderResponse.data.invoiceId;
+      const transactionId = orderResponse.data.transactionId;
 
       if (isQrCodePayment) {
-        setPaymentStatus("success");
-        setTimeout(() => {
-          setCartItems([]);
-          setIsPaymentModalOpen(false);
-          setIsOpen(false);
-          setVcardCode("");
-          setPaymentStatus("idle");
-        }, 2000);
+        const confirmationResponse = await confirmOrder({
+          invoiceId: invoiceId,
+          transactionId: transactionId,
+        });
+
+        if (confirmationResponse.status === "success") {
+          (toast.success as any)({
+            title: "Success",
+            description: "Payment completed successfully",
+            duration: 3000,
+          });
+          setPaymentStatus("success");
+        } else {
+          throw new Error("QR Code payment confirmation failed");
+        }
       } else {
-        const invoiceId = orderResponse.data.invoiceId;
         const result = await initiatePayment(paymentMethod, invoiceId);
 
         if (result) {
@@ -190,14 +198,16 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     } catch (error) {
       console.error("Payment Error:", error);
       setPaymentStatus("error");
-      setPaymentError(
-        error instanceof Error
-          ? error.message
-          : "Payment failed. Please try again."
-      );
+      (toast.error as any)({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Payment failed. Please try again.",
+        duration: 3000,
+      });
     }
   }
-
   const handleCreateOrderClick = () => {
     setIsPaymentModalOpen(true);
   };
@@ -308,7 +318,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     <SelectValue placeholder="Select Payment Method" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="QrCode">QR Code</SelectItem>
+                    <SelectItem value="QRCode">QR Code</SelectItem>
                     <SelectItem value="Momo">Momo</SelectItem>
                     <SelectItem value="VnPay">VnPay</SelectItem>
                     <SelectItem value="PayOS">PayOS</SelectItem>

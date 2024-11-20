@@ -74,7 +74,7 @@ const UserProfileComponent: React.FC = () => {
         shortName: store.shortName || "",
         email: store.email || "",
         description: store.description || "",
-        status: store.status,
+        status: store.status || 0,
         storeType: store.storeType,
       });
     } catch (error) {
@@ -417,7 +417,7 @@ const UserProfileComponent: React.FC = () => {
               onValueChange={(value) =>
                 setStoreFormData((prev) => ({
                   ...prev,
-                  storeStatus: parseInt(value),
+                  status: parseInt(value), // Corrected from storeStatus to status
                 }))
               }
               disabled={!editMode}
@@ -439,7 +439,7 @@ const UserProfileComponent: React.FC = () => {
               onValueChange={(value) =>
                 setStoreFormData((prev) => ({
                   ...prev,
-                  storeStatus: parseInt(value),
+                  storeType: parseInt(value), // Corrected from storeStatus to storeType
                 }))
               }
               disabled={!editMode}

@@ -145,7 +145,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     );
   };
   const handleChargeMoney = async (data: {
-    packageItemId: string;
+    packageOrderId: string;
     chargeAmount: number;
     cccdPassport: any;
     paymentType: string;
@@ -182,7 +182,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         localStorage.setItem("balance", response.data.data.balance);
         localStorage.setItem(
           "packageItemIdCharge",
-          response.data.data.packageItemId
+          response.data.data.packageOrderId
         );
         localStorage.setItem("invoiceId", response.data.data.invoiceId);
 
@@ -196,7 +196,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
               const discountAmount =
                 orderData.promotionOrders?.[0]?.discountAmount ?? 0;
               const totalAmount = orderData.totalAmount ?? 0;
-              const cusName = orderData.packageOrders?.[0]?.cusName ?? "";
+              const cusName = orderData.packageOrder?.cusName ?? "";
               const seller = responseOrder.data?.data?.seller ?? "";
               localStorage.setItem("discountAmount", discountAmount.toString());
               localStorage.setItem("totalAmount", totalAmount.toString());
@@ -735,7 +735,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Status
                       </FormLabel>
@@ -840,36 +840,39 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         </form>
       </Form>
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
-        {packageItem && packageItem.status === "InActive" && !isConfirming && (
-          <Button
-            className="mt-12 px-6 py-2"
-            onClick={handleActivateEtag}
-            disabled={isLoading}
-          >
-            {isLoading
-              ? "Processing..."
-              : isEditing
-              ? "Confirm"
-              : "Activate ETag"}
-          </Button>
-        )}
-        {isConfirming && (
+        {packageItem && packageItem.status === "InActive" && (
           <>
-            <Button
-              className="mt-12 px-6 py-2"
-              onClick={handleConfirmActivation}
-              disabled={isLoading}
-            >
-              {isLoading ? "Activating..." : "Confirm Activation"}
-            </Button>
-            <Button
-              className="mt-12 px-6 py-2"
-              onClick={handleCancelActivation}
-              disabled={isLoading}
-              variant="outline"
-            >
-              Cancel
-            </Button>
+            {!isConfirming ? (
+              <Button
+                className="mt-12 px-6 py-2"
+                onClick={handleActivateEtag}
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? "Processing..."
+                  : isEditing
+                  ? "Confirm"
+                  : "Activate ETag"}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  className="mt-12 px-6 py-2"
+                  onClick={handleConfirmActivation}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Activating..." : "Confirm Activation"}
+                </Button>
+                <Button
+                  className="mt-12 px-6 py-2"
+                  onClick={handleCancelActivation}
+                  disabled={isLoading}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
           </>
         )}
       </div>
