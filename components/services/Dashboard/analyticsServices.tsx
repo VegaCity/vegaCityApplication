@@ -1,5 +1,9 @@
 import { API } from "@/components/services/api";
-import { AnalyticsAdminDashboard, AnalyticsPostProps } from "@/types/analytics";
+import {
+  AdminAnalytics,
+  StoreAnalytics,
+  AnalyticsPostProps,
+} from "@/types/analytics";
 
 const dataExample: AnalyticsPostProps = {
   startDate: "2024-07-01",
@@ -7,6 +11,9 @@ const dataExample: AnalyticsPostProps = {
 };
 
 export const AnalyticsServices = {
+  getUserById(userId: string) {
+    return API.get(`/user/${userId}`);
+  },
   getDashboardAnalytics() {
     return API.post("/transaction/dashboard", dataExample);
   },

@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  ChevronRight,
-  Plus,
-  Clock,
-  Calendar,
-  Loader2,
-  Trash,
-} from "lucide-react";
+import { ChevronRight, Plus, Clock, Loader2, Trash } from "lucide-react";
 import Link from "next/link";
 import { StoreMenuServices } from "@/components/services/storeMenuService";
 import { StoreMenu } from "@/types/store/storeMenu";
@@ -45,19 +38,121 @@ const getDateFilterColor = (dateFilter: number) => {
   );
 };
 
+const LoadingState = () => (
+  <div className="min-h-[200px] flex items-center justify-center bg-transparent">
+    <div className="text-center">
+      <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600 mb-2" />
+      <p className="text-gray-500">Loading menus...</p>
+    </div>
+  </div>
+);
+
+const ErrorState = ({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) => (
+  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+    <div className="flex flex-col items-center text-center">
+      <p className="text-red-700 mb-3">{message}</p>
+      <Button
+        onClick={onRetry}
+        variant="outline"
+        className="border-red-500 text-red-600 hover:bg-red-50"
+      >
+        Try Again
+      </Button>
+    </div>
+  </div>
+);
+
+const EmptyState = () => (
+  <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
+    <p className="text-gray-500 mb-4 text-lg">No menus created yet</p>
+    <Button
+      asChild
+      variant="outline"
+      className="border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+    >
+      <Link href="/store/menu/create" className="flex items-center">
+        <Plus className="mr-2 h-5 w-5" />
+        Create First Menu
+      </Link>
+    </Button>
+  </div>
+);
+
+const MenuCard = ({
+  menu,
+  onDelete,
+}: {
+  menu: StoreMenu;
+  onDelete: (id: string) => void;
+}) => (
+  <div className="relative group">
+    <Link href={`/store/menu/${menu.id}`} className="block">
+      <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 rounded-xl overflow-hidden cursor-pointer">
+        <CardContent className="p-6 bg-white">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-800 truncate max-w-[200px]">
+              {menu.name}
+            </h3>
+            <ChevronRight className="h-6 w-6 text-gray-400 group-hover:translate-x-1 transition-transform" />
+          </div>
+          <div className="flex justify-between items-center text-sm text-gray-500">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span>
+                {new Date(menu.upsDate).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </div>
+            <Badge
+              className={`${getDateFilterColor(menu.dateFilter)} rounded-full`}
+            >
+              {getDateFilterText(menu.dateFilter)}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+    <button
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        onDelete(menu.id);
+      }}
+      className="absolute top-3 right-3 bg-red-100 text-red-500 hover:bg-red-200 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
+    >
+      <Trash className="h-5 w-5" />
+    </button>
+  </div>
+);
+
 const MenuList = () => {
   const [menus, setMenus] = useState<StoreMenu[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuToDelete, setMenuToDelete] = useState<string | null>(null);
-  const [selectedProductId, setSelectedProductId] = useState<string | null>(
-    null
-  );
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const fetchMenus = async () => {
     try {
       setLoading(true);
+      setError(null);
+
+      const storeId = localStorage.getItem("storeId");
+      if (!storeId) {
+        throw new Error("Store ID not found");
+      }
+
       const response = await StoreMenuServices.getStoreMenus({
-        storeId: localStorage.getItem("storeId") || "",
+        storeId,
         page: 1,
         size: 10,
       });
@@ -69,13 +164,16 @@ const MenuList = () => {
         : [];
 
       setMenus(menuData);
-      setError(null);
-    } catch (err) {
-      setError("Cannot fetch menu list. Please try again later.");
+    } catch (err: any) {
       console.error("Error fetching menus:", err);
-      setMenus([]);
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Cannot fetch menu list. Please try again later."
+      );
     } finally {
       setLoading(false);
+      setIsInitialized(true);
     }
   };
 
@@ -87,70 +185,22 @@ const MenuList = () => {
     if (!menuToDelete) return;
 
     try {
-      setLoading(true);
       await StoreMenuServices.deleteStoreMenuById(menuToDelete);
-
       setMenus((prev) => prev.filter((menu) => menu.id !== menuToDelete));
       toast.success("Menu deleted successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting menu:", error);
-      toast.error("Cannot delete menu. Please try again later.");
+      toast.error(
+        error.response?.data?.message ||
+          "Cannot delete menu. Please try again later."
+      );
     } finally {
-      setLoading(false);
       setMenuToDelete(null);
     }
   };
 
-  const DeleteConfirmationDialog = () => (
-    <AlertDialog
-      open={!!menuToDelete}
-      onOpenChange={() => setMenuToDelete(null)}
-    >
-      <AlertDialogContent className="rounded-xl">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-2xl font-bold text-red-600">
-            Delete Menu
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-600">
-            Are you sure you want to permanently delete this menu? This action
-            cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel className="mr-4">Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleDeleteMenu}
-            className="bg-red-600 hover:bg-red-700 text-white"
-          >
-            Delete Menu
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600 mb-4" />
-          <p className="text-gray-600 text-lg">Loading menus...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
-          <div className="flex items-center text-red-700">
-            <span className="font-semibold mr-2">Error:</span>
-            {error}
-          </div>
-        </div>
-      </div>
-    );
+  if (!isInitialized || loading) {
+    return <LoadingState />;
   }
 
   return (
@@ -175,67 +225,47 @@ const MenuList = () => {
         </Button>
       </div>
 
-      {menus.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-xl p-12 text-center shadow-sm">
-          <p className="text-gray-500 mb-4 text-lg">No menus created yet</p>
-          <Button
-            asChild
-            variant="outline"
-            className="border-emerald-500 text-emerald-600 hover:bg-emerald-50"
-          >
-            <Link href="/store/menu/create" className="flex items-center">
-              <Plus className="mr-2 h-5 w-5" />
-              Create First Menu
-            </Link>
-          </Button>
-        </div>
+      {error ? (
+        <ErrorState message={error} onRetry={fetchMenus} />
+      ) : menus.length === 0 ? (
+        <EmptyState />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {menus.map((menu) => (
-            <div key={menu.id} className="relative group">
-              <Link href={`/store/menu/${menu.id}`} className="block">
-                <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 rounded-xl overflow-hidden">
-                  <CardContent className="p-6 bg-white">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-bold text-gray-800 truncate max-w-[200px]">
-                        {menu.name}
-                      </h3>
-                      <ChevronRight className="h-6 w-6 text-gray-400 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        <span>
-                          {new Date(menu.upsDate).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </span>
-                      </div>
-                      <Badge
-                        className={`${getDateFilterColor(
-                          menu.dateFilter
-                        )} rounded-full`}
-                      >
-                        {getDateFilterText(menu.dateFilter)}
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              <button
-                onClick={() => setMenuToDelete(menu.id)}
-                className="absolute top-3 right-3 bg-red-100 text-red-500 hover:bg-red-200 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-              >
-                <Trash className="h-5 w-5" />
-              </button>
-            </div>
+            <MenuCard
+              key={menu.id}
+              menu={menu}
+              onDelete={(id) => setMenuToDelete(id)}
+            />
           ))}
         </div>
       )}
 
-      <DeleteConfirmationDialog />
+      <AlertDialog
+        open={!!menuToDelete}
+        onOpenChange={() => setMenuToDelete(null)}
+      >
+        <AlertDialogContent className="rounded-xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-2xl font-bold text-red-600">
+              Delete Menu
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-600">
+              Are you sure you want to permanently delete this menu? This action
+              cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="mr-4">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteMenu}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Menu
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

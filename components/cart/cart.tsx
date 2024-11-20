@@ -91,7 +91,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
             invoiceId,
           });
           break;
-        case "PayOs":
+        case "PayOS":
           paymentResponse = await paymentService.payos({
             invoiceId,
           });
@@ -140,16 +140,19 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         return null;
     }
   };
+
   async function handleCreateOrder() {
     setPaymentStatus("processing");
 
     try {
       const storeId = localStorage?.getItem("storeId") ?? "";
+      const isQrCodePayment = paymentMethod.toLowerCase() === "qrcode";
+
       const orderData = {
         saleType: "Product",
         storeId,
         totalAmount: totalPrice,
-        packageOrderId: vcardCode,
+        packageOrderId: isQrCodePayment ? vcardCode : null,
         productData: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
@@ -166,9 +169,8 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
       const orderResponse = await createOrderStore(orderData);
       localStorage.setItem("invoiceId", orderResponse.data.invoiceId);
-      // Differentiate payment handling based on payment method
-      if (paymentMethod.toLowerCase() === "qrcode") {
-        // For QR code, complete the local flow
+
+      if (isQrCodePayment) {
         setPaymentStatus("success");
         setTimeout(() => {
           setCartItems([]);
@@ -178,13 +180,10 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
           setPaymentStatus("idle");
         }, 2000);
       } else {
-        // For other payment methods, confirm order and initiate payment
-
         const invoiceId = orderResponse.data.invoiceId;
         const result = await initiatePayment(paymentMethod, invoiceId);
 
         if (result) {
-          // Payment redirection happens in initiatePayment method
           setPaymentStatus("success");
         }
       }
@@ -198,9 +197,12 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       );
     }
   }
+
   const handleCreateOrderClick = () => {
     setIsPaymentModalOpen(true);
   };
+
+  const isQrCodePayment = paymentMethod.toLowerCase() === "qrcode";
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -309,25 +311,27 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     <SelectItem value="QrCode">QR Code</SelectItem>
                     <SelectItem value="Momo">Momo</SelectItem>
                     <SelectItem value="VnPay">VnPay</SelectItem>
-                    <SelectItem value="PayOs">PayOS</SelectItem>
+                    <SelectItem value="PayOS">PayOS</SelectItem>
                     <SelectItem value="ZaloPay">ZaloPay</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="vcard-code" className="text-sm font-medium">
-                  Enter Vcard Code
-                </label>
-                <Input
-                  id="vcard-code"
-                  placeholder="Enter your Vcard code"
-                  value={vcardCode}
-                  onChange={(e) => setVcardCode(e.target.value)}
-                  maxLength={50}
-                  className="font-mono"
-                />
-              </div>
+              {isQrCodePayment && (
+                <div className="space-y-2">
+                  <label htmlFor="vcard-code" className="text-sm font-medium">
+                    Enter Vcard Code
+                  </label>
+                  <Input
+                    id="vcard-code"
+                    placeholder="Enter your Vcard code"
+                    value={vcardCode}
+                    onChange={(e) => setVcardCode(e.target.value)}
+                    maxLength={50}
+                    className="font-mono"
+                  />
+                </div>
+              )}
 
               <div className="font-semibold">
                 Total Amount: {totalPrice.toLocaleString("vi-VN")} đ
@@ -351,7 +355,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                 className="w-full"
                 onClick={handleCreateOrder}
                 disabled={
-                  !vcardCode || // Now Vcard Code is required for ALL payment methods
+                  (isQrCodePayment && !vcardCode) ||
                   paymentStatus === "processing" ||
                   paymentStatus === "success"
                 }

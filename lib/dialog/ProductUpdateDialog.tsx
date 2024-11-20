@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,7 +25,7 @@ import { Product as ProductType, ProductPatch } from "@/types/product";
 interface ProductUpdateDialogProps {
   open: boolean;
   onClose: () => void;
-  product: StoreProduct | null; // Change to StoreProduct
+  product: StoreProduct | null;
   onUpdate: (updatedProduct: ProductPatch) => Promise<void>;
 }
 
@@ -35,17 +35,30 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
   product,
   onUpdate,
 }) => {
-  const [formData, setFormData] = useState({
-    name: product?.name || "",
-    price: product?.price || 0,
-    status: product?.status || "InActive",
-    imageUrl: product?.imageUrl || "",
+  // Initialize formData with empty values
+  const [formData, setFormData] = useState<ProductPatch>({
+    name: "",
+    price: 0,
+    status: "InActive",
+    imageUrl: "",
   });
+
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>(
-    product?.imageUrl || ""
-  );
+  const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update formData when product prop changes
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name,
+        price: product.price,
+        status: product.status,
+        imageUrl: product.imageUrl || "",
+      });
+      setImagePreview(product.imageUrl || "");
+    }
+  }, [product]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -86,6 +99,15 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
         imageUrl: imagePreview,
       });
       onClose();
+      // Reset form after successful update
+      setFormData({
+        name: "",
+        price: 0,
+        status: "InActive",
+        imageUrl: "",
+      });
+      setSelectedImage(null);
+      setImagePreview("");
     } catch (error) {
       toast.error("Cập nhật sản phẩm thất bại");
     }
@@ -190,7 +212,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Active">Hoạt động</SelectItem>
-                <SelectItem value="Inactive">Ngừng kinh doanh</SelectItem>
+                <SelectItem value="InActive">Ngừng kinh doanh</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -290,6 +290,26 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={customerForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Email
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          placeholder="Please enter email"
+                          {...field}
+                          disabled={isCustomerInfoConfirmed}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
@@ -406,26 +426,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           <SelectItem value="ZaloPay">ZaloPay</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={customerForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Email
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Please enter email"
-                          {...field}
-                          disabled={isCustomerInfoConfirmed}
-                        />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

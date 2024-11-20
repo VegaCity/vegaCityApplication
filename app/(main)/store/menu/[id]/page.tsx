@@ -135,6 +135,16 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProductUpdateDialogOpen, setIsProductUpdateDialogOpen] =
     useState(false);
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -530,7 +540,17 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                       }
                     </span>
                   </div>
-
+                  {isOwnerMode && (
+                    <div className="mb-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                          item.status
+                        )}`}
+                      >
+                        {item.status}
+                      </span>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     {!isOwnerMode ? (
                       <>
