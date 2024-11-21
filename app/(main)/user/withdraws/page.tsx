@@ -22,7 +22,8 @@ import {
   Wallet,
 } from "lucide-react";
 import { StoreServices } from "@/components/services/Store/storeServices";
-import { StoreDetail } from "@/types/store/store";
+// import { StoreDetail } from "@/types/store/store";
+import { Wallet as WalletType } from "@/types/packageitem";
 
 type PackageItemDetail = {
   id: string;
@@ -37,6 +38,13 @@ interface WalletInfo {
   id: string;
   balance: number;
 }
+interface StoreDetail_FixToDeploy {
+  id: string;
+  name: string;
+  address: string;
+  shortName: string;
+  wallets: WalletType;
+}
 
 const MIN_WITHDRAWAL = 50000;
 const FORMAT_LOCALE = "vi-VN";
@@ -48,7 +56,8 @@ const WithdrawMoney = () => {
   const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
   const [packageItemDetails, setPackageItemDetails] =
     useState<PackageItemDetail | null>(null);
-  const [storeDetails, setStoreDetails] = useState<StoreDetail | null>(null);
+  const [storeDetails, setStoreDetails] =
+    useState<StoreDetail_FixToDeploy | null>(null);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);

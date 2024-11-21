@@ -33,14 +33,14 @@ export interface StoreDetail {
   address: string;
   crDate: string;
   upsDate: string;
-  deflag: false;
+  deflag: boolean;
   phoneNumber: string;
   shortName: null;
   email: string;
   zoneId: string;
   marketZoneId: string;
   description: string | null;
-  status: StoreStatusTypeEnum | numer;
+  status: StoreStatusTypeEnum | number;
   zone: null;
   wallets: Wallet;
 }
