@@ -35,7 +35,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [vcardCode, setVcardCode] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<string>("qrcode");
+  const [paymentMethod, setPaymentMethod] = useState<string>("QRCode");
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
   >("idle");
@@ -77,7 +77,12 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-
+  const resetPaymentState = () => {
+    setIsPaymentModalOpen(false);
+    setPaymentStatus("idle");
+    setVcardCode("");
+    setCartItems([]); // Optional: clear cart after successful payment
+  };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
       let paymentResponse;
@@ -102,7 +107,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
             invoiceId,
           });
           break;
-        case "QrCode":
+        case "QRCode":
           // Handle QR code payment separately if needed
           return false;
         default:
@@ -147,7 +152,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
     try {
       const storeId = localStorage?.getItem("storeId") ?? "";
-      const isQrCodePayment = paymentMethod.toLowerCase() === "qrcode";
+      const isQrCodePayment = paymentMethod === "QRCode";
 
       const orderData = {
         saleType: "Product",
@@ -177,16 +182,17 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
           invoiceId: invoiceId,
           transactionId: transactionId,
         });
-
-        if (confirmationResponse.status === "success") {
+        console.log("confirmationResponse", confirmationResponse);
+        if (confirmationResponse.statusCode === 200) {
           (toast.success as any)({
             title: "Success",
             description: "Payment completed successfully",
             duration: 3000,
           });
           setPaymentStatus("success");
-        } else {
-          throw new Error("QR Code payment confirmation failed");
+
+          // Thêm dòng này để tự động đóng dialog sau một khoảng thời gian
+          setTimeout(resetPaymentState, 1000);
         }
       } else {
         const result = await initiatePayment(paymentMethod, invoiceId);
@@ -212,7 +218,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     setIsPaymentModalOpen(true);
   };
 
-  const isQrCodePayment = paymentMethod.toLowerCase() === "qrcode";
+  const isQrCodePayment = paymentMethod === "QRCode";
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

@@ -29,16 +29,16 @@ function OrderStatusContent() {
     const etagId = localStorage.getItem("packageOrderId");
     if (etagId) {
       // router.push(`/user/etags/detail/${etagId}`);
-      router.push(`/user/package-items`);
+      router.push(`/`);
     } else {
-      router.push("/user/package-items");
+      router.push("/");
     }
   };
   const orderId = localStorage.getItem("orderId");
   const invoiceId = localStorage.getItem("invoiceId");
 
   const handleFailure = () => {
-    router.push("/user/package-items");
+    router.push("/");
   };
 
   return (
@@ -74,7 +74,7 @@ function OrderStatusContent() {
         </CardContent>
         <CardFooter className="justify-center">
           {isSuccess ? (
-            <Button onClick={continueEtag}>Continue</Button>
+            <Button onClick={continueEtag}>Back to Home</Button>
           ) : (
             <Button onClick={handleFailure} variant="destructive">
               Back
