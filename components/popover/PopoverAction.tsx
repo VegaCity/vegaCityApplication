@@ -55,7 +55,10 @@ export const PopoverActionTable = <T extends BaseType>({
           <div>
             {/* <Label htmlFor="width">Edit</Label> */}
             <Link href={editLink}>
-              <Button className="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded text-xs mr-2">
+              <Button
+                variant={"ghost"}
+                className="text-blue-500 hover:text-blue-600 font-bold rounded text-xs"
+              >
                 <Pencil />
               </Button>
             </Link>
@@ -65,8 +68,8 @@ export const PopoverActionTable = <T extends BaseType>({
             <AlertDialog>
               <AlertDialogTrigger>
                 <Button
-                  variant={"destructive"}
-                  className="bg-red-500 hover:bg-red-700 text-white font-bold rounded text-xs"
+                  variant={"ghost"}
+                  className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
                 >
                   <Trash />
                 </Button>

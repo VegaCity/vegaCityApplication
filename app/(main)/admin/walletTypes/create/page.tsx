@@ -46,6 +46,7 @@ const WalletCreatePage = () => {
       setIsLoading(true);
       const walletResponse = await WalletTypesServices.createWalletType(data);
       toast({
+        variant: "success",
         title: "Success",
         description: `Wallet "${data.name}" created successfully.`,
       });

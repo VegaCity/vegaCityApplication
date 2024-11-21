@@ -77,7 +77,8 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
       // Assuming you have an update method in ZoneServices
       await ZoneServices.editZone(params.id, data);
       toast({
-        title: "Zone has been updated successfully",
+        variant: "success",
+        title: "Zone has been updated successfully!",
         description: `Zone ${data.zoneName} was updated!`,
       });
     } catch (err) {

@@ -12,7 +12,7 @@ export const formatDateTime = ({ type, dateTime }: SelectType) => {
   if (type === "date") {
     return formatVNDate;
   } else if (type === "time") {
-    return splitDateTime[1];
+    return formatVNTime;
   } else {
     return;
   }

@@ -60,6 +60,7 @@ const ZoneCreatePage = () => {
     try {
       const res = await ZoneServices.uploadZone(data);
       toast({
+        variant: "success",
         title: "Zone created successfully",
         description: `Created Zone: ${data.name}`,
       });
@@ -67,6 +68,7 @@ const ZoneCreatePage = () => {
     } catch (error) {
       console.error(error);
       toast({
+        variant: "destructive",
         title: "Error creating zone",
         description: "Please try again later.",
       });

@@ -67,6 +67,7 @@ const UserCreatePage = () => {
         .then((res) => {
           console.log(res.data, "Create User");
           toast({
+            variant: "success",
             title: "User has been created successfully",
             description: `Created user: ${userData.fullName}`,
           });
@@ -75,6 +76,7 @@ const UserCreatePage = () => {
         .catch((err) => {
           if (err.response.status === 400) {
             toast({
+              variant: "destructive",
               title: "Error when creating!",
               description: `Error: ${err.response.data.messageResponse}`,
             });

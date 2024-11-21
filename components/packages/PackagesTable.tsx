@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { Card } from "@/components/ui/card";
 import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Loader } from "@/components/loader/Loader";
 
 interface PackageTableProps {
   limit?: number;
@@ -87,6 +88,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
         .then((res) => {
           setDeleteLoading(false);
           toast({
+            variant: "success",
             title: res.data.messageResponse,
             description: `Package name: ${pkg.name}`,
           });
@@ -94,6 +96,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
         .catch((err) => {
           setDeleteLoading(false);
           toast({
+            variant: "destructive",
             title: err.data.messageResponse,
             description: "Some errors have been occured!",
           });
@@ -101,7 +104,12 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   const filteredPackages = limit ? packageList.slice(0, limit) : packageList;

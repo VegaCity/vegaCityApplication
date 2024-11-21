@@ -74,8 +74,11 @@ export const ReassignEmailPopover: React.FC<ReassignEmailPopoverProps> = ({
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full mt-2">
-              Submit
+            <Button
+              type="submit"
+              className="w-full mt-2 bg-blue-500 hover:bg-blue-600"
+            >
+              Confirm
             </Button>
           </form>
         </Form>

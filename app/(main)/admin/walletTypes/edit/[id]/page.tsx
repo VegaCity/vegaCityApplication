@@ -54,7 +54,8 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
     try {
       await WalletTypesServices.updateWalletTypeById(params.id, data);
       toast({
-        title: "Wallet Type updated successfully",
+        variant: "success",
+        title: "Wallet Type updated successfully!",
         description: `Wallet type "${data.name}" was updated.`,
       });
       router.back();

@@ -96,6 +96,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
     try {
       await StoreServices.editStore(params.id, data);
       toast({
+        variant: "success",
         title: "Store has been updated successfully",
         description: `Store ${data.name} was updated with address ${data.address}`,
       });

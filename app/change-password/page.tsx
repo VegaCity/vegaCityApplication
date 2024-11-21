@@ -14,19 +14,18 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import VegaLogo from "@/img/logo.png";
+import { useRouter } from "next/navigation";
 
 const ChangePasswordForm = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [oldPassword, setOldPassword] = useState("");
+  const [activateCode, setActivateCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  //Email Focus State
-  const [isFocused, setIsFocused] = useState(false);
   const [focusedFields, setFocusedFields] = React.useState<
     Record<string, boolean>
   >({});
@@ -34,15 +33,12 @@ const ChangePasswordForm = () => {
   const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
     const fieldName = event.target.name;
     setFocusedFields((prev) => ({ ...prev, [fieldName]: true }));
-    console.log(fieldName, "focus");
   };
+
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     const fieldName = event.target.name;
     setFocusedFields((prev) => ({ ...prev, [fieldName]: false }));
-    console.log(fieldName, "blur");
   };
-
-  console.log(focusedFields, "focusField");
 
   const { toast } = useToast();
 
@@ -54,7 +50,7 @@ const ChangePasswordForm = () => {
     e.preventDefault();
 
     // Validation
-    if (!email || !oldPassword || !newPassword || !confirmPassword) {
+    if (!email || !activateCode || !newPassword || !confirmPassword) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -84,7 +80,7 @@ const ChangePasswordForm = () => {
     if (newPassword.length < 6) {
       toast({
         title: "Error",
-        description: "New password must be at least 6 characters long",
+        description: "New password must be at least 6 characters",
         variant: "destructive",
       });
       return;
@@ -95,19 +91,18 @@ const ChangePasswordForm = () => {
 
       await AuthServices.changePassword({
         email,
-        oldPassword,
+        activateCode,
         newPassword,
       });
 
       toast({
         title: "Success",
-        description: "Change Passwork Successfully",
+        description: "Change Password Successfully",
       });
 
-      // Clear form
-      setOldPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      setTimeout(() => {
+        router.push("/auth");
+      }, 2000);
     } catch (error) {
       toast({
         title: "Error",
@@ -122,11 +117,11 @@ const ChangePasswordForm = () => {
   return (
     <Card className="max-w-lg mx-auto p-6 bg-transparent dark:bg-black/30 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-sky-400 text-center uppercase dark:text-white">
+        <CardTitle className="text-2xl font-bold text-black text-center uppercase dark:text-white">
           <img width={70} height={70} src={VegaLogo.src} alt="VegaLogo" />
           Change Password
         </CardTitle>
-        <CardDescription className="text-center text-sky-500 text-sm">
+        <CardDescription className="text-center text-black text-sm">
           Please enter your email and password
         </CardDescription>
       </CardHeader>
@@ -148,7 +143,7 @@ const ChangePasswordForm = () => {
                 htmlFor="email"
                 className={`absolute left-4 transition-all duration-200 pointer-events-none
           ${
-            isFocused || email
+            focusedFields.email || email
               ? "text-xs text-blue-500 top-2"
               : "text-base text-slate-500 top-4"
           }`}
@@ -161,25 +156,25 @@ const ChangePasswordForm = () => {
           <div className="space-y-2">
             <div className="relative">
               <Input
-                id="oldPassword"
-                name="oldPassword"
-                type="oldPassword"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
+                id="activateCode"
+                name="activateCode"
+                type="text"
+                value={activateCode}
+                onChange={(e) => setActivateCode(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
               <label
-                htmlFor="oldPassword"
+                htmlFor="activateCode"
                 className={`absolute left-4 transition-all duration-200 pointer-events-none
           ${
-            isFocused || oldPassword
+            focusedFields.activateCode || activateCode
               ? "text-xs text-blue-500 top-2"
               : "text-base text-slate-500 top-4"
           }`}
               >
-                Old Password
+                Activate Code
               </label>
             </div>
           </div>
@@ -189,24 +184,36 @@ const ChangePasswordForm = () => {
               <Input
                 id="newPassword"
                 name="newPassword"
-                type="newPassword"
+                type={showNewPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="pr-10 h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
+
               <label
                 htmlFor="newPassword"
                 className={`absolute left-4 transition-all duration-200 pointer-events-none
-          ${
-            isFocused || newPassword
-              ? "text-xs text-blue-500 top-2"
-              : "text-base text-slate-500 top-4"
-          }`}
+                  ${
+                    focusedFields.newPassword || newPassword
+                      ? "text-xs text-blue-500 top-2"
+                      : "text-base text-slate-500 top-4"
+                  }`}
               >
                 New Password
               </label>
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                {showNewPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -215,7 +222,7 @@ const ChangePasswordForm = () => {
               <Input
                 id="confirmPassword"
                 name="confirmPassword"
-                type="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 onFocus={handleFocus}
@@ -226,13 +233,24 @@ const ChangePasswordForm = () => {
                 htmlFor="confirmPassword"
                 className={`absolute left-4 transition-all duration-200 pointer-events-none
           ${
-            isFocused || confirmPassword
+            focusedFields.confirmPassword || confirmPassword
               ? "text-xs text-blue-500 top-2"
               : "text-base text-slate-500 top-4"
           }`}
               >
                 Confirm Password
               </label>
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-500" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-500" />
+                )}
+              </button>
             </div>
           </div>
 

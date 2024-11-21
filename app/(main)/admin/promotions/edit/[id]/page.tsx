@@ -83,6 +83,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
     try {
       await PromotionServices.editPromotion(params.id, promotionData);
       toast({
+        variant: "success",
         title: "Promotion has been updated successfully",
         description: `Promotion ${data.name} was updated.`,
       });

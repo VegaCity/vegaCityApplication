@@ -261,11 +261,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   const UserFound = () => {
     return userSearch?.map((userFound: UserAccount, i) => (
-      <TableRow key={userFound.id}>
+      <TableRow
+        onClick={() =>
+          router.push(`/admin/usersAccount/detail/${userFound.id}`)
+        }
+        key={userFound.id}
+      >
         <TableCell>
-          <div className="flex items-center">
-            <PenLine size={20} />.{i}
-          </div>
+          <div className="flex items-center">{i + 1}.</div>
         </TableCell>
         <TableCell>
           <div className="flex items-center">
@@ -278,6 +281,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             />
             <p className="ml-4">{userFound.fullName}</p>
           </div>
+        </TableCell>
+        <TableCell className="hidden md:table-cell">
+          <Badge className="bg-slate-400 hover:bg-slate-500">
+            {userFound.roleName}
+          </Badge>
         </TableCell>
         <TableCell className="hidden md:table-cell">
           {userFound.email}
@@ -296,7 +304,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             {handleUserStatusFromBe(userFound.status)}
           </Badge>
         </TableCell>
-        <TableCell>
+        <TableCell onClick={(e) => e.stopPropagation()}>
           {userFound.status !== 3 ? (
             <PopoverActionTable
               item={userFound}
@@ -376,7 +384,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     return (
       <AlertDialog onOpenChange={handleOpenChange}>
         <AlertDialogTrigger>
-          <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+          <Button className="w-20 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4">
             Approve
           </Button>
         </AlertDialogTrigger>
@@ -416,7 +424,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                                   key={i}
                                   value={zone.location || "-"}
                                 >
-                                  {zone.location || "-"}
+                                  {zone.name || "-"}
                                 </SelectItem>
                               ))}
                           </SelectContent>
@@ -473,7 +481,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                             const valueAsNumber = Number(value);
                             field.onChange(valueAsNumber);
                           }}
-                          value={field.value.toString()}
                           disabled={isLoading}
                         >
                           <SelectTrigger>
@@ -488,10 +495,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                               storeTypes.map((type) => (
                                 <SelectItem
                                   key={type.value}
-                                  value={type.value.toString()}
-                                  onChange={(value) =>
-                                    field.onChange(Number(value))
-                                  }
+                                  value={String(type.value)}
                                 >
                                   {type.name}
                                 </SelectItem>
@@ -709,7 +713,10 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           {user.roleName}
                         </Badge>
                       </TableCell>
-                      <TableCell className="hidden md:table-cell">
+                      <TableCell
+                        onClick={(e) => e.stopPropagation()}
+                        className="hidden md:table-cell"
+                      >
                         <p className="text-slate-500">{user.email}</p>
                         {/* Approve user button and Re-assign email button */}
 
@@ -747,7 +754,10 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           <div className="flex items-center justify-between w-min gap-2">
                             <div className="flex-row items-end justify-end">
                               {UserPendingVerifyPopUp(user)}
-                              <Button className="w-auto bg-red-500 hover:bg-red-700 text-white font-bold">
+                              <Button
+                                type="submit"
+                                className="w-20 bg-red-500 hover:bg-red-600 text-white font-bold"
+                              >
                                 Delete
                               </Button>
                             </div>

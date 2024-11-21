@@ -102,6 +102,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
         imageUrl: imageUploaded,
       });
       toast({
+        variant: "success",
         title: "Package has been updated successfully",
         description: `Package ${data.name} was updated with price ${data.price} VND`,
       });

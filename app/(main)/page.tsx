@@ -184,7 +184,7 @@ const Home = () => {
           icon={<Package2 className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Total Revenue"
+          title="Total Revenues"
           count={formatNumber(adminTotals.totalAmount)}
           icon={<Wallet className="text-slate-500" size={72} />}
         />

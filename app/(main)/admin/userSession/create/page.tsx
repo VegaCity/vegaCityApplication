@@ -29,6 +29,7 @@ import { useEffect, useState } from "react";
 import { UserSessionServices } from "@/components/services/User/userSessionServices";
 import { Users } from "@/types/user/user";
 import { Zone } from "@/types/zone/zone";
+import { CircleCheck, CircleX } from "lucide-react";
 
 const userSessionSchema = z.object({
   startDate: z.string().min(1, { message: "Start Date is required" }),
@@ -59,7 +60,7 @@ const UserSessionPage = () => {
     const fetchUsersAndZones = async () => {
       try {
         const [userResponse, zoneResponse] = await Promise.all([
-          UserServices.getUsers({ page: 1, size: 100 }), // Fetching users
+          UserServices.getUsersNoneSession({ page: 1, size: 100 }), // Fetching users none session
           ZoneServices.getZones({ page: 1, size: 10 }), // Fetching zones
         ]);
 
@@ -79,18 +80,25 @@ const UserSessionPage = () => {
     const { userId, ...userSessionData } = data;
 
     console.log("New User Session data:", data);
-
     if (data) {
       // Assuming UserSessionServices.uploadUserSession exists
-      UserSessionServices.createUserSessionById(userId, userSessionData).then(
-        (res) => {
+      UserSessionServices.createUserSessionById(userId, userSessionData)
+        .then((res) => {
           toast({
-            title: "User Session created successfully",
+            variant: "success",
+            title: "✅ User Session created successfully",
             description: `Session for User ID: ${data.userId} in Zone ID: ${data.zoneId}`,
           });
           router.push("/admin/userSession");
-        }
-      );
+        })
+        .catch((e) => {
+          console.error("Error creating User Session:", e);
+          toast({
+            variant: "destructive",
+            title: "❌ User Session delete failed",
+            description: `Session for User ID: ${data.userId} in Zone ID: ${data.zoneId}`,
+          });
+        });
     }
   };
 
@@ -153,7 +161,7 @@ const UserSessionPage = () => {
                     <SelectContent>
                       {users.map((user) => (
                         <SelectItem key={user.id} value={user.id}>
-                          {user.fullName}
+                          {user.fullName} - {user.email}
                         </SelectItem>
                       ))}
                     </SelectContent>

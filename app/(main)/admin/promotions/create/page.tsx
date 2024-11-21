@@ -73,6 +73,7 @@ const PromotionCreatePage = () => {
       .then((res) => {
         console.log(res.data, "Create Promotion");
         toast({
+          variant: "success",
           title: "Promotion has been created successfully",
           description: `Created promotion: ${promotionData.name}`,
         });
@@ -81,6 +82,7 @@ const PromotionCreatePage = () => {
       .catch((err) => {
         if (err.response.status === 400) {
           toast({
+            variant: "destructive",
             title: "Error when creating!",
             description: `Error: ${err.response.data.messageResponse}`,
           });

@@ -3,7 +3,7 @@ import { LoginAccount } from "@/types/loginAccount";
 export interface ChangePasswordPayload {
   apiKey: string;
   email: string;
-  oldPassword: string;
+  activateCode: string;
   newPassword: string;
 }
 export const DEFAULT_API_KEY = "5f728deb-b2c3-4bac-9d9c-41a11e0acccc";

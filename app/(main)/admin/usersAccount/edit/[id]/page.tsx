@@ -191,6 +191,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
         gender: renderGenderToNumber,
       });
       toast({
+        variant: "success",
         title: "User has been updated successfully",
         description: `User ${data.fullName} was updated.`,
       });
