@@ -390,6 +390,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       imageUrl: "",
       isAdult: true,
       vcardId: "",
+      customer: {
+        fullName: "",
+      },
       wallets: [
         {
           balance: 0,
@@ -472,6 +475,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           imageUrl: packageitemData.imageUrl || "",
           cusEmail: packageitemData.cusEmail || "",
           isAdult: packageitemData.isAdult,
+          customer: {
+            fullName: packageitemData.customer?.fullName || "",
+          },
           wallets: [
             {
               balance: packageitemData.wallets[0]?.balance || 0,
@@ -693,6 +699,20 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                           <Input
                             className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
                             {...form.register("vcardId")}
+                            readOnly={!isEditing}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                          Buyer:
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            {...form.register("customer.fullName")}
                             readOnly={!isEditing}
                           />
                         </FormControl>

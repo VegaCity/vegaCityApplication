@@ -108,7 +108,15 @@ export const formSchema = z
         /(^\d{12}$)|(^[A-Z]\d{7}$)/,
         "CCCD must include 12 digits and Passport must include first character and 7 digits"
       ),
-
+    customer: z.object({
+      fullName: z
+        .string()
+        .min(2, { message: "Full name must include at least 2 characters" })
+        .max(100, { message: "Full name does not exceed 100 characters" })
+        .regex(/^[\p{L}\s]+$/u, {
+          message: "Name have not special character and space!",
+        }),
+    }),
     birthday: z.string().refine((date) => {
       const birthDate = new Date(date);
       const today = new Date();

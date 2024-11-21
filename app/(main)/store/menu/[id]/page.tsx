@@ -384,7 +384,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
               : "hover:bg-gray-100"
           }`}
         >
-          <span>Tất cả món</span>
+          <span>All Products</span>
           <span className="text-sm bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
             {menuItems.length}
           </span>
