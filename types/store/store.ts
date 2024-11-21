@@ -1,4 +1,5 @@
 import { GetServicesStore } from "@/types/store/serviceStore";
+import { StoreTypeEnum, StoreStatusTypeEnum } from "@/types/store/storeOwner";
 
 export interface Store {
   id: string;
@@ -27,9 +28,20 @@ export interface Store {
 }
 export interface StoreDetail {
   id: string;
+  storeType: StoreTypeEnum | number;
   name: string;
   address: string;
-  shortName: string;
+  crDate: string;
+  upsDate: string;
+  deflag: false;
+  phoneNumber: string;
+  shortName: null;
+  email: string;
+  zoneId: string;
+  marketZoneId: string;
+  description: string | null;
+  status: StoreStatusTypeEnum | numer;
+  zone: null;
   wallets: Wallet;
 }
 export interface Wallet {

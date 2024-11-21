@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHeader,
+  TableHead,
+} from "@/components/ui/table";
 import { Loader } from "@/components/loader/Loader";
 import { useToast } from "@/components/ui/use-toast";
 import { StoreServices } from "@/components/services/Store/storeServices";
@@ -12,26 +19,25 @@ import { Store } from "@/types/store/store";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
-import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import {
+  handleBadgeStatusColor,
+  handleBadgeStoreStatusColor,
+} from "@/lib/utils/statusUtils";
 import {
   handleStoreStatusFromBe,
   handleStoreTypeFromBe,
+  StoreOwnerDetail,
 } from "@/types/store/storeOwner";
+import { Minus } from "lucide-react";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 
 interface StoreDetailProps {
   params: { id: string };
 }
 
-interface StoreMenu {
-  Name: string;
-  ImgUrl: string;
-  Price: number;
-  ProductCategory: string;
-}
-
 const StoreDetail = ({ params }: StoreDetailProps) => {
   const { id: storeId } = params;
-  const [storeDetail, setStoreDetail] = useState<Store | null>(null);
+  const [storeDetail, setStoreDetail] = useState<StoreOwnerDetail | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { toast } = useToast();
   const router = useRouter();
@@ -41,7 +47,7 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
       setIsLoading(true);
       try {
         const response = await StoreServices.getStoreById(storeId);
-        setStoreDetail(response.data.data.store);
+        setStoreDetail(response.data.data);
         console.log(response.data.data, "storeeee");
       } catch (err) {
         toast({
@@ -63,15 +69,30 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
   return (
     <div className="mt-10 space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-3xl font-semibold">
-            {storeDetail.name}
-          </CardTitle>
-          <Badge
-            className={cn(handleBadgeStatusColor(storeDetail.status), "w-auto")}
-          >
-            {handleStoreStatusFromBe(storeDetail.status)}
-          </Badge>
+        <CardHeader className="relative flex items-center justify-between">
+          <div className="flex w-full justify-between items-center gap-4">
+            <Image
+              src={validImageUrl(null)}
+              alt="avatar"
+              width={150}
+              height={150}
+              className="rounded-md"
+            />
+            <CardTitle className="text-3xl font-semibold text-center flex-1">
+              <p>{storeDetail.store.name ?? "No Name Available"}</p>
+            </CardTitle>
+            <Badge
+              className={cn(
+                handleBadgeStoreStatusColor(storeDetail.store.status),
+                "w-auto absolute top-2 right-2"
+              )}
+            >
+              <p className="text-xl">
+                {handleStoreStatusFromBe(storeDetail.store.status)}
+              </p>
+            </Badge>
+          </div>
+          {/* <div className="flex justify-end w-full mr-16"></div> */}
         </CardHeader>
         <CardContent>
           <Table>
@@ -81,64 +102,80 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
                   <strong>Store Type:</strong>
                 </TableCell>
                 <TableCell>
-                  {handleStoreTypeFromBe(storeDetail.storeType) ?? "N/A"}
+                  {
+                    <Badge className="text-xl">
+                      {handleStoreTypeFromBe(storeDetail.store.storeType)}
+                    </Badge>
+                  }
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Address:</strong>
                 </TableCell>
-                <TableCell>{storeDetail.address}</TableCell>
+                <TableCell>{storeDetail.store.address}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Email:</strong>
                 </TableCell>
-                <TableCell>{storeDetail.email}</TableCell>
+                <TableCell>{storeDetail.store.email}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Phone Number:</strong>
                 </TableCell>
-                <TableCell>{storeDetail.phoneNumber}</TableCell>
+                <TableCell>{storeDetail.store.phoneNumber}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Short Name:</strong>
                 </TableCell>
-                <TableCell>{storeDetail.shortName ?? "N/A"}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>Status:</strong>
-                </TableCell>
-                <TableCell>{storeDetail.status}</TableCell>
+                <TableCell>{storeDetail.store.shortName ?? "None"}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Created Date:</strong>
                 </TableCell>
-                <TableCell>{storeDetail.crDate}</TableCell>
+                <TableCell>
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: storeDetail.store.crDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: storeDetail.store.crDate,
+                    })}
+                  </div>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Last Updated:</strong>
                 </TableCell>
-                <TableCell>{storeDetail.upsDate}</TableCell>
+                <TableCell>
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: storeDetail.store.upsDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: storeDetail.store.upsDate,
+                    })}
+                  </div>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Description:</strong>
                 </TableCell>
                 <TableCell>
-                  {storeDetail.description ?? "No description"}
+                  {storeDetail.store.description ?? "No description"}
                 </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>
-                  <strong>Zone:</strong>
-                </TableCell>
-                <TableCell>{storeDetail.zone ?? "N/A"}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -151,30 +188,39 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
           <CardTitle>Store's Menu</CardTitle>
         </CardHeader>
         <CardContent>
-          {storeDetail.menus?.length > 0 ? (
+          {storeDetail.store.menus && storeDetail.store.menus?.length > 0 ? (
             <Table>
               <TableBody>
-                {storeDetail.menus.map((menu, index) => (
+                {storeDetail.store.menus.map((menu, index) => (
                   <TableRow key={index}>
                     <TableCell>Menu {index + 1}</TableCell>
-                    {(JSON.parse(menu.menuJson) as StoreMenu[]).map(
-                      (storeMenu, index) => (
-                        <TableRow key={index}>
-                          <TableCell>Item: {index + 1}</TableCell>
-                          <TableCell>{storeMenu.Name}</TableCell>
-                          <TableCell>
-                            <Image
-                              src={validImageUrl(storeMenu.ImgUrl)}
-                              width={200}
-                              height={150}
-                              alt="menuImage"
-                            />
-                          </TableCell>
-                          <TableCell>{storeMenu.Price}</TableCell>
-                          <TableCell>{storeMenu.ProductCategory}</TableCell>
-                        </TableRow>
-                      )
-                    )}
+                    <TableCell>{menu.name}</TableCell>
+                    <TableCell>
+                      <Image
+                        src={validImageUrl(menu.imageUrl)}
+                        width={200}
+                        height={150}
+                        alt="menuImage"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      Start:{" "}
+                      <strong>
+                        {formatDateTime({
+                          type: "date",
+                          dateTime: menu.crDate,
+                        })}
+                      </strong>
+                    </TableCell>
+                    <TableCell>
+                      Update:{" "}
+                      <strong>
+                        {formatDateTime({
+                          type: "date",
+                          dateTime: menu.upsDate,
+                        })}
+                      </strong>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -185,51 +231,36 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
         </CardContent>
       </Card>
 
-      {/* Product Information Sections */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle>Store's Product</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {storeDetail.menus?.length > 0 ? (
-            <Table>
-              <TableBody>
-                {storeDetail.menus.map((menu, index) => (
-                  <TableRow key={index}>
-                    <TableCell>Report {index + 1}</TableCell>
-                    {menu?.products.map((storeMenu, index) => (
-                      <TableRow key={index}>
-                        <TableCell>Item: {index + 1}</TableCell>
-                        <TableCell>{storeMenu.Name}</TableCell>
-                        <TableCell>{storeMenu.ImgUrl}</TableCell>
-                        <TableCell>{storeMenu.Price}</TableCell>
-                        <TableCell>{storeMenu.ProductCategory}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <p>No menu found!</p>
-          )}
-        </CardContent>
-      </Card> */}
-
       {/* Additional Information Sections */}
       <Card>
         <CardHeader>
-          <CardTitle>Dispute Reports</CardTitle>
+          <CardTitle>Store's Wallet</CardTitle>
         </CardHeader>
         <CardContent>
-          {storeDetail.disputeReports &&
-          storeDetail.disputeReports?.length > 0 ? (
+          {storeDetail.store.wallets &&
+          storeDetail.store.wallets?.length > 0 ? (
             <Table>
+              <TableHeader>
+                <TableHead>Name</TableHead>
+                <TableHead>Wallet Type</TableHead>
+                <TableHead>Initial Balance</TableHead>
+                <TableHead>Balance History</TableHead>
+                <TableHead>Transactions</TableHead>
+              </TableHeader>
               <TableBody>
-                {storeDetail.disputeReports.map((report, index) => (
+                {storeDetail.store.wallets.map((wallet, index) => (
                   <TableRow key={index}>
-                    <TableCell>Report {index + 1}</TableCell>
-                    <TableCell>{report.details}</TableCell>
+                    <TableCell>
+                      <Badge>{wallet.walletType.name}</Badge>
+                    </TableCell>
+                    <TableCell>{wallet.balance}</TableCell>
+                    <TableCell>{wallet.balanceStart}</TableCell>
+                    <TableCell>{wallet.balanceHistory}</TableCell>
+                    <TableCell>
+                      {wallet.transactions.length > 0
+                        ? wallet.transactions
+                        : "Nothing"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

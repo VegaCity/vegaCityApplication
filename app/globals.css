@@ -14,7 +14,7 @@
     :root {
       --background: 0 0% 100%;
       --foreground: 222.2 84% 4.9%;
-      --fixed-background-image: url('../img/vegaCityBackground.jpg');
+      --fixed-background-image: url('../img/banner-vega-city-nha-trang.jpg');
 
 
       --card: 0 0% 100%;
@@ -102,6 +102,26 @@
       /* Add any other common styles here */
     }    
   }
+
+  @layer utilities {
+    @keyframes gradient-slide {
+      0% {
+        background-position: 100% 0;
+      }
+      100% {
+        background-position: 0 0;
+      }
+    }
+    .hover-gradient {
+      background-image: linear-gradient(to right, #3b82f6, #60a5fa, #93c5fd);
+      background-size: 200% auto;
+      transition: background-color 2s ease-in-out;
+    }
+    .hover-gradient:hover {
+      animation: gradient-slide 2s infinite forwards;
+    }
+  }
+
 
  /* HTML: <div class="loader"></div> */
 .loader {

@@ -474,9 +474,9 @@ const LoginForm = () => {
   };
 
   return (
-    <Card className="max-w-lg mx-auto p-6 bg-transparent dark:bg-black/30 backdrop-blur-sm">
+    <Card className="max-w-lg mx-auto p-6 bg-black/30 dark:bg-black/30 backdrop-blur-sm bg-opacity-30">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-black text-center uppercase dark:text-white">
+        <CardTitle className="text-2xl font-bold text-blue-400 text-center uppercase dark:text-white">
           <img width={70} height={70} src={VegaLogo.src} alt="VegaLogo" />
           Login
         </CardTitle>
@@ -579,11 +579,16 @@ const LoginForm = () => {
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full text-lg bg-sky-500 hover:bg-sky-600"
-            >
-              Sign In <LogIn />
+            <Button type="submit" className="w-full p-2 rounded hover-gradient">
+              <div className="flex flex-row items-center group justify-center w-full gap-2">
+                <span className="text-white text-lg group-hover:text-blue-800 dark:text-white">
+                  Sign In
+                </span>
+                <LogIn
+                  size={20}
+                  className="text-white group-hover:text-blue-800 transition-transform duration-200 group-hover:scale-150 dark:text-white"
+                />
+              </div>
             </Button>
           </form>
         </Form>

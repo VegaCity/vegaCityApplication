@@ -179,24 +179,29 @@ const Home = () => {
     <>
       <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
         <DashboardCard
-          title="Total Transactions"
-          count={formatNumber(adminTotals.totalTransactions)}
-          icon={<Package2 className="text-slate-500" size={72} />}
-        />
-        <DashboardCard
-          title="Total Revenues"
-          count={formatNumber(adminTotals.totalAmount)}
-          icon={<Wallet className="text-slate-500" size={72} />}
-        />
-        <DashboardCard
-          title="Total V-Cards"
-          count={formatNumber(adminTotals.totalEtags)}
-          icon={<Tag className="text-slate-500" size={72} />}
-        />
-        <DashboardCard
           title="Total Orders"
-          count={formatNumber(adminTotals.totalOrders)}
-          icon={<ShoppingCart className="text-slate-500" size={72} />}
+          count={formatNumber(storeTotals.totalOrders)}
+          icon={<ShoppingCart className="text-slate-500" size={50} />}
+        />
+        <DashboardCard
+          title="Total Revenue"
+          count={formatNumber(storeTotals.totalAmount)}
+          icon={<Wallet className="text-slate-500" size={50} />}
+        />
+        <DashboardCard
+          title="Total Products"
+          count={formatNumber(storeTotals.totalProducts)}
+          icon={<Package2 className="text-slate-500" size={50} />}
+        />
+        <DashboardCard
+          title="Order Cash"
+          count={formatNumber(storeTotals.cashOrders)}
+          icon={<Store className="text-slate-500" size={50} />}
+        />
+        <DashboardCard
+          title="Other Orders"
+          count={formatNumber(storeTotals.otherOrders)}
+          icon={<Tag className="text-slate-500" size={50} />}
         />
       </div>
     </>

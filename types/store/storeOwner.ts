@@ -1,3 +1,6 @@
+import { WalletType } from "@/types/walletType/walletType";
+import { StoreMenu } from "@/types/store/storeMenu";
+
 export enum StoreTypeEnum {
   Food = 0,
   Clothing = 1,
@@ -92,11 +95,35 @@ export interface StoreOwner {
   deflag: boolean;
   crDate: string;
   upsDate: string;
+  menus?: StoreMenu[];
+  wallets?: WalletStoreDetail[];
 }
 
 export interface StoreOwnerDetail {
   storeType?: StoreTypeEnum | string;
   store: StoreOwner;
+}
+
+interface WalletStoreDetail {
+  id: string;
+  name: string;
+  crDate: string;
+  upsDate: string;
+  balance: number;
+  balanceHistory: number;
+  balanceStart: number;
+  userId: string;
+  storeId: string;
+  walletTypeId: string;
+  packageOrderId: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  deflag: boolean;
+  packageOrder: null;
+  store: null;
+  user: null;
+  walletType: WalletType;
+  transactions: [];
 }
 
 export interface StoreOwnerPatch {
