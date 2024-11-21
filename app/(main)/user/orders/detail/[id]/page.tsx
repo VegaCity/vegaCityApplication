@@ -221,7 +221,7 @@ const OrderDetailPage = () => {
                       Customer Name
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder.cusName}
+                      {order.customer?.fullName}
                     </p>
                   </div>
                 </div>
@@ -233,7 +233,7 @@ const OrderDetailPage = () => {
                       Customer Email
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder.cusEmail}
+                      {order.customer?.email}
                     </p>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ const OrderDetailPage = () => {
                       Customer Phone
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder.phoneNumber}
+                      {order.customer?.phoneNumber}
                     </p>
                   </div>
                 </div>
@@ -259,7 +259,7 @@ const OrderDetailPage = () => {
                       CCCD/Passport
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder.cusCccdpassport}
+                      {order.customer?.cccdpassport}
                     </p>
                   </div>
                 </div>

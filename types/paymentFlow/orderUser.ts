@@ -19,7 +19,7 @@ export interface CustomerInfo {
   fullName: string;
   phoneNumber: string;
   // gender: string;
-  cccdPassport: string;
+  cccdpassport: string;
   email: string;
 }
 
@@ -108,6 +108,7 @@ export interface OrderExistData {
   promotionOrders: any[]; // Define structure if known
   transactions: any[]; // Define structure if known
   payments: PaymentResponse[]; // Define structure if known
+  customer: CustomerInfo | null;
 }
 export interface PaymentResponse {
   name: string;
@@ -131,6 +132,5 @@ export interface OrderDetailResponse {
   data: {
     orderExist: OrderExistData;
     productJson: any | null; // Define structure if known
-    customer: CustomerInfo | null;
   };
 }
