@@ -30,6 +30,9 @@ import {
   handleStoreStatusFromBe,
   handleStoreTypeFromBe,
 } from "@/types/store/storeOwner";
+import { isObject } from "@/lib/isObject";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 interface UserDetailProps {
   params: { id: string };
@@ -53,21 +56,8 @@ const UserDetail = ({ params }: UserDetailProps) => {
         const userResponse = await UserServices.getUserById(userId);
         const user: UserAccountGetDetail = userResponse.data.data;
 
-        //fetch walletType
-        const walletTypePromises = user.wallets.map((wallet) =>
-          WalletTypesServices.getWalletTypeById(wallet.id)
-        );
-        const walletTypeResponses = await Promise.all(walletTypePromises);
-        const walletTypes = walletTypeResponses.map(
-          (response) => response.data.data
-        );
-        console.log(walletTypes, "walletTypes");
-
-        // const walletType: GetWalletTypeById = walletTypeResponse.data.data;
-
         setUserDetail(user);
         // You can now use walletTypes array for further processing
-        setWalletTypes(walletTypes);
       } catch (err) {
         toast({
           title: "Error",
@@ -194,20 +184,43 @@ const UserDetail = ({ params }: UserDetailProps) => {
           <CardTitle>User's Wallets</CardTitle>
         </CardHeader>
         <CardContent>
-          {walletTypes && walletTypes.length > 0 ? (
+          {userDetail && isObject(userDetail) ? (
             <Table>
               <TableBody>
-                {walletTypes.map((wallet, index) => (
+                {userDetail.wallets.map((wallet, index) => (
                   <TableRow key={index}>
-                    <TableCell>Wallet {index + 1}</TableCell>
-                    <TableCell>{wallet.name}</TableCell>
-                    {/* {userDetail.wallets.map((wallet, index) => (
-                      <>
-                        <TableCell>Balance: {wallet.balance}</TableCell>
-                        <TableCell>Balance: {wallet.balanceHistory}</TableCell>
-                      </>
-                    ))} */}
-                    <TableCell>Last Updated: {wallet.upsDate}</TableCell>
+                    <TableCell>
+                      <p className="font-bold">Wallet</p> {wallet.name}
+                    </TableCell>
+
+                    <TableCell>
+                      <p className="font-bold">Balance</p>
+                      {formatVNDCurrencyValue(wallet.balance)}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-bold">Initial Balance</p>
+                      {formatVNDCurrencyValue(wallet.balanceStart)}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-bold">History</p>
+                      {formatVNDCurrencyValue(wallet.balanceHistory)}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-bold">Type</p>
+                      {wallet.walletType.name}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-bold">Last Updated</p>
+                      {formatDateTime({
+                        type: "date",
+                        dateTime: wallet.upsDate,
+                      })}{" "}
+                      -
+                      {formatDateTime({
+                        type: "time",
+                        dateTime: wallet.upsDate,
+                      })}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

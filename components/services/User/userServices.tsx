@@ -19,6 +19,14 @@ export const UserServices = {
       },
     });
   },
+  getUsersNoneSession({ page, size }: UserPageSize) {
+    return API.get("/users/no-session", {
+      params: {
+        page,
+        size,
+      },
+    });
+  },
   getUserById(userId: string) {
     return API.get(`/user/${userId}`);
   },

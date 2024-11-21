@@ -184,17 +184,17 @@ const Home = () => {
           icon={<Package2 className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Total Revenue"
+          title="Total Revenues"
           count={formatNumber(adminTotals.totalAmount)}
           icon={<Wallet className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Tổng V-Cards"
+          title="Total V-Cards"
           count={formatNumber(adminTotals.totalEtags)}
           icon={<Tag className="text-slate-500" size={72} />}
         />
         <DashboardCard
-          title="Tổng Đơn Hàng"
+          title="Total Orders"
           count={formatNumber(adminTotals.totalOrders)}
           icon={<ShoppingCart className="text-slate-500" size={72} />}
         />

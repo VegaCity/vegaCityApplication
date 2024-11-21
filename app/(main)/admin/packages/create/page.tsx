@@ -179,6 +179,7 @@ const PackageCreatePage = () => {
       // }
 
       toast({
+        variant: "success",
         title: "Success",
         description: `Package "${data.name}" created successfully!`,
       });
@@ -409,16 +410,21 @@ const PackageCreatePage = () => {
               name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Duration</FormLabel>
+                  <FormLabel>Duration(day)</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Enter duration"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.valueAsNumber);
-                      }}
-                    />
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        placeholder="Enter duration"
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.valueAsNumber);
+                        }}
+                      />
+                      <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                        day
+                      </span>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

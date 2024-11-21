@@ -23,6 +23,7 @@ import { useAuthUser } from "@/components/hooks/useAuthUser";
 import { loginFormSchema, loginFormValues } from "@/lib/validation";
 import Image from "next/image";
 import VegaLogo from "@/img/logo.png";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 
 interface UserRefreshToken {
   email: string;
@@ -47,6 +48,24 @@ const LoginForm = () => {
       password: "",
     },
   });
+
+  //Form Focus State
+  const [focusedFields, setFocusedFields] = useState<Record<string, boolean>>(
+    {}
+  );
+
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
+    const fieldName = event.target.name;
+    setFocusedFields((prev) => ({ ...prev, [fieldName]: true }));
+  };
+
+  const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+    const fieldName = event.target.name;
+    setFocusedFields((prev) => ({ ...prev, [fieldName]: false }));
+  };
+
+  //Show password button
+  const [showPassword, setShowPassword] = useState(false);
 
   // Function to calculate expiration time (20 hours from now)
   const calculateExpirationTime = () => {
@@ -457,7 +476,7 @@ const LoginForm = () => {
   return (
     <Card className="max-w-lg mx-auto p-6 bg-transparent dark:bg-black/30 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-sky-400 text-center uppercase dark:text-white">
+        <CardTitle className="text-2xl font-bold text-black text-center uppercase dark:text-white">
           <img width={70} height={70} src={VegaLogo.src} alt="VegaLogo" />
           Login
         </CardTitle>
@@ -474,11 +493,34 @@ const LoginForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
+                    <div className="relative">
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      />
+                      <label
+                        htmlFor="email"
+                        className={`absolute left-4 transition-all duration-200 pointer-events-none
+                    ${
+                      focusedFields.email || field.value
+                        ? "text-xs text-blue-500 top-2"
+                        : "text-base text-slate-500 top-4"
+                    }`}
+                      >
+                        Email
+                      </label>
+                    </div>
+                    {/* <Input
                       className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
                       placeholder="Enter Email"
                       {...field}
-                    />
+                    /> */}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -491,12 +533,46 @@ const LoginForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        name="password"
+                        type={showPassword ? "text" : "password"}
+                        value={field.value}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                      />
+                      <label
+                        htmlFor="password"
+                        className={`absolute left-4 transition-all duration-200 pointer-events-none
+                    ${
+                      focusedFields.password || field.value
+                        ? "text-xs text-blue-500 top-2"
+                        : "text-base text-slate-500 top-4"
+                    }`}
+                      >
+                        Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-500" />
+                        )}
+                      </button>
+                    </div>
+                    {/* <Input
                       type="password"
                       className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible: ring-offset-0"
                       placeholder="Enter Password"
                       {...field}
-                    />
+                    /> */}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -507,7 +583,7 @@ const LoginForm = () => {
               type="submit"
               className="w-full text-lg bg-sky-500 hover:bg-sky-600"
             >
-              Sign In
+              Sign In <LogIn />
             </Button>
           </form>
         </Form>

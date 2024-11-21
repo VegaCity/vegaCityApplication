@@ -25,6 +25,7 @@ import {
   Tags,
   LucideProps,
   UserCheck2,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -246,6 +247,11 @@ export function AppSidebar() {
     router.push("/auth"); // Redirect to auth page
   };
 
+  // Navigate Account Page
+  const handleNavigateAccountPage = () => {
+    router.push("/profile");
+  };
+
   // // Check if accessToken is present, if not, log out the user
   // useEffect(() => {
   //   const accessToken = localStorage.getItem("accessToken");
@@ -354,16 +360,30 @@ export function AppSidebar() {
                 <ThemeToggler />
               </div>
               <DropdownMenuContent side="top" className="w-10 md:ml-20">
-                <DropdownMenuItem>
-                  <Link href={"/profile"}>
-                    <span>Account</span>
-                  </Link>
+                <DropdownMenuItem onClick={handleNavigateAccountPage}>
+                  <div className="flex flex-row items-center justify-between w-full group hover:bg-gray-100 p-2 rounded">
+                    <span className="text-gray-700 group-hover:text-sky-500 dark:text-white">
+                      Account
+                    </span>
+                    <User2
+                      size={15}
+                      className="text-gray-700 group-hover:text-sky-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                    />
+                  </div>
                 </DropdownMenuItem>
                 {/* <DropdownMenuItem>
                   <span>Billing</span>
                 </DropdownMenuItem> */}
                 <DropdownMenuItem onClick={handleLogout}>
-                  <span>Sign out</span>
+                  <div className="flex flex-row items-center justify-between w-full group hover:bg-gray-100 p-2 rounded">
+                    <span className="text-gray-700 group-hover:text-red-500 dark:text-white">
+                      Sign out
+                    </span>
+                    <LogOut
+                      size={15}
+                      className="text-gray-700 group-hover:text-red-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                    />
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

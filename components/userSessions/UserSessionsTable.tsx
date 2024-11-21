@@ -36,6 +36,8 @@ import {
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Button } from "@/components/ui/button";
+import { Trash, Minus } from "lucide-react";
 
 interface UserSessionTableProps {
   limit?: number;
@@ -53,7 +55,6 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        setIsLoading(true);
         const response = await UserSessionServices.getUserSessions({
           page: 1,
           size: 10,
@@ -72,7 +73,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
     };
 
     fetchSessions();
-  }, []);
+  }, [isLoading, deleteLoading]);
 
   const handleSessionDetails = (sessionId: string) => {
     router.push(`/admin/userSession/detail/${sessionId}`);
@@ -85,6 +86,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
         .then((res) => {
           setDeleteLoading(false);
           toast({
+            variant: "success",
             title: res.data.messageResponse,
             description: `Session ID: ${session.id}`,
           });
@@ -92,6 +94,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
         .catch((err) => {
           setDeleteLoading(false);
           toast({
+            variant: "destructive",
             title: "Error",
             description: "An error occurred while deleting the session.",
           });
@@ -150,10 +153,20 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                     type: "date",
                     dateTime: session.startDate,
                   })}
+                  <Minus />
+                  {formatDateTime({
+                    type: "time",
+                    dateTime: session.startDate,
+                  })}
                 </TableCell>
                 <TableCell>
                   {formatDateTime({
                     type: "date",
+                    dateTime: session.endDate,
+                  })}
+                  <Minus />
+                  {formatDateTime({
+                    type: "time",
                     dateTime: session.endDate,
                   })}
                 </TableCell>
@@ -171,11 +184,38 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                   </Badge>
                 </TableCell>
                 <TableCell onClick={(event) => event.stopPropagation()}>
-                  <PopoverActionTable
-                    item={session}
-                    editLink={`/admin/userSession/edit/${session.id}`}
-                    handleDelete={handleDeleteSession}
-                  />
+                  <div>
+                    {/* <Label htmlFor="maxWidth">Delete</Label> */}
+                    <AlertDialog>
+                      <AlertDialogTrigger>
+                        <Button
+                          variant={"ghost"}
+                          className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
+                        >
+                          <Trash />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are sure for delete this -{session.userId}-?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will deflag in
+                            list!
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteSession(session)}
+                          >
+                            Confirm
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
