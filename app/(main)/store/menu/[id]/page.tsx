@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { ShoppingCart } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -285,10 +286,10 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
       setLoading(true);
       await ProductServices.deleteProductById(itemId);
       setMenuItems((prev) => prev.filter((item) => item.id !== itemId));
-      toast.success("Xóa món ăn thành công");
+      toast.success("Deleted product successfully.");
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast.error("Không thể xóa món ăn. Vui lòng thử lại sau.");
+      toast.error("Failed to delete product.");
     } finally {
       setLoading(false);
       setItemToDelete(null); // Reset the itemToDelete after deletion
@@ -301,19 +302,21 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Bạn có chắc chắn muốn xóa?</AlertDialogTitle>
+          <AlertDialogTitle>
+            Are you absolutely sure delete this?
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Hành động này không thể hoàn tác. Món ăn này sẽ bị xóa vĩnh viễn
-            khỏi menu.
+            This action cannot be undone. This will permanently delete the
+            product and remove its data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Hủy</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => handleDelete(itemId)}
             className="bg-red-600 hover:bg-red-700"
           >
-            Xóa
+            Delete
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -355,7 +358,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
         )
       );
 
-      toast.success("Cập nhật món ăn thành công");
+      toast.success("Product updated successfully.");
       setTimeout(() => {
         window.location.reload();
       }, 3000);
@@ -364,14 +367,14 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
       setIsProductUpdateDialogOpen(false);
     } catch (error) {
       console.error("Error updating product:", error);
-      toast.error("Không thể cập nhật món ăn. Vui lòng thử lại sau.");
+      toast.error("Failed to update product.");
     }
   };
 
   // Category sidebar component
   const CategorySidebar = () => (
     <div className="w-64 flex-shrink-0">
-      <h2 className="font-semibold mb-4">Danh mục món ăn</h2>
+      <h2 className="font-semibold mb-4">Category</h2>
       <div className="space-y-2">
         <button
           onClick={() => setSelectedCategory("all")}
@@ -415,9 +418,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
       {/* Keep existing header section */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">
-            {menu?.name || "Menu Nhà hàng"}
-          </h1>
+          <h1 className="text-3xl font-bold mb-2">{menu?.name || "Menu "}</h1>
           <div className="flex items-center text-gray-600">
             <Clock size={20} className="mr-2" />
             {currentTime.toLocaleTimeString()}
@@ -448,7 +449,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
               <Plus size={20} />
-              Thêm món
+              Update Menu
             </button>
           )}
         </div>
@@ -473,32 +474,6 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                 size={20}
               />
             </div>
-
-            <div className="flex gap-4 mb-6">
-              <button
-                onClick={() => setSelectedDateFilter("all")}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedDateFilter === "all"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 hover:bg-gray-200"
-                }`}
-              >
-                Tất cả
-              </button>
-              {Object.entries(DATE_FILTER_LABELS).map(([key, label]) => (
-                <button
-                  key={key}
-                  onClick={() => setSelectedDateFilter(parseInt(key))}
-                  className={`px-4 py-2 rounded-lg ${
-                    selectedDateFilter === parseInt(key)
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 hover:bg-gray-200"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Modified product grid with update/delete buttons for manager mode */}
@@ -506,88 +481,93 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
             {filteredMenu.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
               >
-                <div className="aspect-square bg-gray-100 rounded-t-lg relative">
+                <div className="aspect-square bg-gray-100 rounded-t-lg relative overflow-hidden">
                   {item.imageUrl && (
                     <img
                       src={item.imageUrl}
                       alt={item.name}
-                      className="w-full h-full object-cover rounded-t-lg"
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                     />
                   )}
                 </div>
 
-                <div className="p-4">
-                  <h3 className="font-medium text-lg mb-2">{item.name}</h3>
-                  <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-lg font-semibold text-blue-600">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(item.price)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
-                      {DATE_FILTER_LABELS[item.dateFilter]}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {
-                        categories.find((cat) => cat.id === item.categoryId)
-                          ?.name
-                      }
-                    </span>
-                  </div>
-                  {isOwnerMode && (
-                    <div className="mb-4">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                          item.status
-                        )}`}
-                      >
-                        {item.status}
+                <div className="p-4 flex flex-col justify-between h-[calc(100%-300px)]">
+                  <div>
+                    <h3 className="font-bold text-xl mb-2 text-gray-800">
+                      {item.name}
+                    </h3>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-semibold text-blue-600">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(item.price)}
+                      </span>
+                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        {
+                          categories.find((cat) => cat.id === item.categoryId)
+                            ?.name
+                        }
                       </span>
                     </div>
-                  )}
-                  <div className="flex gap-2">
+
+                    {isOwnerMode && (
+                      <div className="mb-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            item.status
+                          )}`}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 flex space-x-3">
                     {!isOwnerMode ? (
                       <>
                         <button
-                          className="flex-1 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                          className="flex-1 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
+                  flex items-center justify-center gap-2 font-semibold"
                           onClick={() => cartRef.current?.addToCart(item)}
                         >
-                          Add to Cart
+                          <ShoppingCart size={18} />
+                          Buy
                         </button>
                         <button
                           onClick={() => setSelectedProductId(item.id)}
-                          className="flex items-center justify-center gap-1 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-32"
+                          className="w-16 flex items-center justify-center py-3 text-blue-600 border border-blue-600 
+                  rounded-lg hover:bg-blue-50 transition-colors"
                         >
-                          <Eye size={16} />
-                          Chi tiết
+                          <Eye size={18} />
                         </button>
                       </>
                     ) : (
                       <>
                         <button
                           onClick={() => handleUpdateClick(item)}
-                          className="flex-1 flex items-center justify-center gap-1 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-green-600 
+                  rounded-lg hover:bg-green-700 transition-colors font-semibold"
                         >
                           <Pencil size={16} />
-                          Cập nhật
+                          Update
                         </button>
                         <button
                           onClick={() => setItemToDelete(item.id)}
-                          className="flex-1 flex items-center justify-center gap-1 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-red-600 
+                  rounded-lg hover:bg-red-700 transition-colors font-semibold"
                         >
                           <Trash2 size={16} />
-                          Xóa
+                          Delete
                         </button>
                       </>
                     )}
                   </div>
                 </div>
+
                 <DeleteConfirmationDialog itemId={item.id} />
                 <ProductDetailsDialog
                   productId={selectedProductId}

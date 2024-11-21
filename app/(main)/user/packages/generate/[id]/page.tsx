@@ -171,7 +171,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
 
                   {/* Package Type */}
                   <div className="flex items-center space-x-2">
-                    <Package className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <span className="text-gray-600 dark:text-gray-400">
                       {packageData?.packageType?.name}
                     </span>

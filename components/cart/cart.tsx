@@ -20,7 +20,8 @@ import { Product } from "@/types/store/store";
 import { confirmOrder, createOrderStore } from "../services/orderuserServices";
 import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import paymentService from "../services/paymentService";
-
+import { Toast } from "@/components/ui/toast";
+import toast from "react-hot-toast";
 interface CartItem extends Product {
   quantity: number;
 }
@@ -34,7 +35,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [vcardCode, setVcardCode] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<string>("qrcode");
+  const [paymentMethod, setPaymentMethod] = useState<string>("QRCode");
   const [paymentStatus, setPaymentStatus] = useState<
     "idle" | "processing" | "success" | "error"
   >("idle");
@@ -76,7 +77,12 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-
+  const resetPaymentState = () => {
+    setIsPaymentModalOpen(false);
+    setPaymentStatus("idle");
+    setVcardCode("");
+    setCartItems([]); // Optional: clear cart after successful payment
+  };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
       let paymentResponse;
@@ -101,7 +107,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
             invoiceId,
           });
           break;
-        case "QrCode":
+        case "QRCode":
           // Handle QR code payment separately if needed
           return false;
         default:
@@ -146,7 +152,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
     try {
       const storeId = localStorage?.getItem("storeId") ?? "";
-      const isQrCodePayment = paymentMethod.toLowerCase() === "qrcode";
+      const isQrCodePayment = paymentMethod === "QRCode";
 
       const orderData = {
         saleType: "Product",
@@ -168,19 +174,27 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       };
 
       const orderResponse = await createOrderStore(orderData);
-      localStorage.setItem("invoiceId", orderResponse.data.invoiceId);
+      const invoiceId = orderResponse.data.invoiceId;
+      const transactionId = orderResponse.data.transactionId;
 
       if (isQrCodePayment) {
-        setPaymentStatus("success");
-        setTimeout(() => {
-          setCartItems([]);
-          setIsPaymentModalOpen(false);
-          setIsOpen(false);
-          setVcardCode("");
-          setPaymentStatus("idle");
-        }, 2000);
+        const confirmationResponse = await confirmOrder({
+          invoiceId: invoiceId,
+          transactionId: transactionId,
+        });
+        console.log("confirmationResponse", confirmationResponse);
+        if (confirmationResponse.statusCode === 200) {
+          (toast.success as any)({
+            title: "Success",
+            description: "Payment completed successfully",
+            duration: 3000,
+          });
+          setPaymentStatus("success");
+
+          // Thêm dòng này để tự động đóng dialog sau một khoảng thời gian
+          setTimeout(resetPaymentState, 1000);
+        }
       } else {
-        const invoiceId = orderResponse.data.invoiceId;
         const result = await initiatePayment(paymentMethod, invoiceId);
 
         if (result) {
@@ -190,19 +204,21 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     } catch (error) {
       console.error("Payment Error:", error);
       setPaymentStatus("error");
-      setPaymentError(
-        error instanceof Error
-          ? error.message
-          : "Payment failed. Please try again."
-      );
+      (toast.error as any)({
+        title: "Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Payment failed. Please try again.",
+        duration: 3000,
+      });
     }
   }
-
   const handleCreateOrderClick = () => {
     setIsPaymentModalOpen(true);
   };
 
-  const isQrCodePayment = paymentMethod.toLowerCase() === "qrcode";
+  const isQrCodePayment = paymentMethod === "QRCode";
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -308,7 +324,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     <SelectValue placeholder="Select Payment Method" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="QrCode">QR Code</SelectItem>
+                    <SelectItem value="QRCode">QR Code</SelectItem>
                     <SelectItem value="Momo">Momo</SelectItem>
                     <SelectItem value="VnPay">VnPay</SelectItem>
                     <SelectItem value="PayOS">PayOS</SelectItem>

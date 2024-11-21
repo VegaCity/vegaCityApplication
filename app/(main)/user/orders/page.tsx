@@ -169,14 +169,15 @@ const OrdersPage = () => {
             <TableHead className="font-bold text-white whitespace-nowrap">
               Status
             </TableHead>
-            <TableHead className="font-bold text-white whitespace-nowrap">
-              Actions
-            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order, index) => (
-            <TableRow key={order.id}>
+            <TableRow
+              key={order.id}
+              onClick={() => router.push(`/user/orders/detail/${order.id}`)}
+              className="cursor-pointer hover:bg-gray-100 transition-colors"
+            >
               <TableCell>{index + 1}</TableCell>
               <TableCell>{order.name}</TableCell>
               <TableCell>{order.paymentType}</TableCell>
@@ -195,18 +196,7 @@ const OrdersPage = () => {
                 </span>
               </TableCell>
               <TableCell>
-                <div className="flex space-x-2">
-                  <Link href={`/user/orders/detail/${order.id}`}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Details
-                    </Button>
-                  </Link>
-                </div>
+                {/* Không cần có nút Details nữa vì người dùng có thể click vào dòng để xem chi tiết */}
               </TableCell>
             </TableRow>
           ))}
