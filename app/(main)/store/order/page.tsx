@@ -88,7 +88,7 @@ const OrdersPage = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await GetOrders(page);
+        const response = await GetOrders({ page: page });
         console.log("response:", response);
 
         if (response.statusCode === 200 && Array.isArray(response.data)) {
