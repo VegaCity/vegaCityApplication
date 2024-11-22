@@ -6,18 +6,30 @@ import {
   OrderStoreData,
   ConfirmOrderForGenerateNewCardData,
   ConfirmOrderForChargeVCardData,
+  OrderResponse,
 } from "@/types/paymentFlow/orderUser";
 export const GetOrders = async ({
   page = 1,
   size = 10,
   status = "ALL",
+  searchTerm = "",
 }: {
   page?: number;
   size?: number;
   status?: string;
+  searchTerm?: string;
 } = {}) => {
   try {
-    const params: Record<string, string | number> = { page, size, status };
+    const params: Record<string, string | number> = {
+      page,
+      size,
+      status,
+    };
+
+    if (searchTerm.trim()) {
+      params.searchTerm = searchTerm;
+    }
+
     const response = await API.get("/orders", { params });
     return response.data;
   } catch (error) {

@@ -140,3 +140,16 @@ export interface VCardCustomerInfo {
   cccdPassport: string;
   email: string;
 }
+export interface OrderResponse {
+  statusCode: number;
+  messageResponse: string;
+  data: Order[];
+  metaData: {
+    page: number;
+    size: number;
+    total: number;
+    totalPage: number;
+  };
+  parentName: null;
+  qrCode: null;
+}
