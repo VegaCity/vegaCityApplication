@@ -126,7 +126,6 @@ export interface UserAccountPatch {
   phoneNumber: string;
   address: string;
   description?: string | null;
-  birthday?: string | null;
   gender: Gender | number;
   cccdPassport: string;
   imageUrl?: string | null;

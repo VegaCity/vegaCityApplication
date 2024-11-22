@@ -13,8 +13,7 @@ import Link from "next/link";
 import ShoppingCartComponent, { CartRef } from "@/components/cart/cart";
 import { useRouter } from "next/navigation";
 import { StoreMenuServices } from "@/components/services/storeMenuService";
-import { ProductCategoryServices } from "@/components/services/productCategoryService";
-import { useParams } from "next/navigation";
+
 import ProductUpdateDialog from "@/lib/dialog/ProductUpdateDialog";
 import {
   AlertDialog,
@@ -28,24 +27,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { ShoppingCart } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { ProductServices } from "@/components/services/productServices";
 import { toast } from "react-hot-toast";
 import { ProductPatch } from "@/types/product";
@@ -430,6 +412,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
           </div>
         </div>
 
+        {/* Modify the existing div with the mode selection and buttons */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Mode:</span>
@@ -444,13 +427,22 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
           </div>
 
           {isOwnerMode && menu && (
-            <button
-              onClick={() => router.push(`/store/menu/edit/${menu.id}`)}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
-              <Plus size={20} />
-              Update Menu
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => router.push(`/store/menu/edit/${menu.id}`)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                <Plus size={20} />
+                Add Product
+              </button>
+              <button
+                onClick={() => router.push(`/store/menu/update/${menu.id}`)}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              >
+                <Pencil size={20} />
+                Update Menu
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -464,7 +456,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
             <div className="relative mb-6">
               <input
                 type="text"
-                placeholder="Tìm kiếm món ăn..."
+                placeholder="Search..."
                 className="w-full p-3 pl-10 border rounded-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -484,6 +476,15 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
               >
                 <div className="aspect-square bg-gray-100 rounded-t-lg relative overflow-hidden">
+                  {isOwnerMode && item.status && (
+                    <Badge
+                      className={`absolute top-2 right-2 z-10 px-3 py-1 text-lg font-medium ${getStatusColor(
+                        item.status
+                      )}`}
+                    >
+                      {item.status}
+                    </Badge>
+                  )}
                   {item.imageUrl && (
                     <img
                       src={item.imageUrl}
@@ -492,12 +493,12 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                     />
                   )}
                 </div>
-
                 <div className="p-4 flex flex-col justify-between h-[calc(100%-300px)]">
                   <div>
                     <h3 className="font-bold text-xl mb-2 text-gray-800">
                       {item.name}
                     </h3>
+
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-semibold text-blue-600">
                         {new Intl.NumberFormat("vi-VN", {
@@ -512,18 +513,6 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                         }
                       </span>
                     </div>
-
-                    {isOwnerMode && (
-                      <div className="mb-3">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            item.status
-                          )}`}
-                        >
-                          {item.status}
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                   <div className="mt-4 flex space-x-3">

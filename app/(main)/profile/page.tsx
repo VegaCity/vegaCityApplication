@@ -22,6 +22,19 @@ import { format } from "date-fns";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 import { StoreOwnerPatch, storeTypes } from "@/types/store/storeOwner";
+import { GitPullRequestClosed } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 const UserProfileComponent: React.FC = () => {
   const [user, setUser] = useState<Users | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -34,12 +47,14 @@ const UserProfileComponent: React.FC = () => {
   >({});
   const [storeId, setStoreId] = useState<string | null>(null);
   const [storeData, setStoreData] = useState<StoreOwnerPatch | null>(null);
+  const [requestingClose, setRequestingClose] = useState(false);
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
   const [formData, setFormData] = useState<UserAccountPatch>({
     fullName: "",
     address: "",
     description: "",
     phoneNumber: "",
-    birthday: "",
+
     gender: 0,
     cccdPassport: "",
     imageUrl: null,
@@ -59,7 +74,31 @@ const UserProfileComponent: React.FC = () => {
   useEffect(() => {
     fetchUserData();
   }, []);
+  const handleStoreCloseRequest = async () => {
+    const storeId = localStorage.getItem("storeId");
+    if (!storeId) {
+      toast({
+        title: "Error",
+        description: "Store ID not found",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    try {
+      setRequestingClose(true);
+      await StoreServices.requestClosed(storeId);
+      toast({
+        title: "Success",
+        description: "Store closure request submitted successfully",
+      });
+      setIsCloseDialogOpen(false);
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setRequestingClose(false);
+    }
+  };
   const fetchStoreData = async (storeId: string) => {
     try {
       const storeId = localStorage.getItem("storeId");
@@ -164,7 +203,7 @@ const UserProfileComponent: React.FC = () => {
           address: userData.address || "",
           description: userData.description || "",
           phoneNumber: userData.phoneNumber || "",
-          birthday: userData.birthday ? userData.birthday.split("T")[0] : "", // Xử lý định dạng ngày
+
           gender: userData.gender || 0,
           cccdPassport: userData.cccdPassport || "",
           imageUrl: userData.imageUrl || null,
@@ -193,6 +232,8 @@ const UserProfileComponent: React.FC = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log("File selected:", file.name, file.size);
+
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Error",
@@ -202,38 +243,32 @@ const UserProfileComponent: React.FC = () => {
         return;
       }
 
-      // Preview image
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-
       try {
         setUploading(true);
 
-        // Tạo unique filename với timestamp
         const fileName = `${Date.now()}-${file.name}`;
         const storageRef = ref(storage, `profile-images/${fileName}`);
 
-        // Upload file
-        await uploadBytes(storageRef, file);
+        console.log("Uploading file to:", storageRef.fullPath);
 
-        // Lấy download URL
+        const snapshot = await uploadBytes(storageRef, file);
+        console.log("Upload snapshot:", snapshot);
+
         const downloadURL = await getDownloadURL(storageRef);
+        console.log("Download URL:", downloadURL);
 
-        // Cập nhật formData
         setFormData((prev) => ({
           ...prev,
           imageUrl: downloadURL,
         }));
+        setImagePreview(downloadURL);
 
         toast({
           title: "Success",
           description: "Image uploaded successfully",
         });
       } catch (error) {
-        console.error("Error uploading image:", error);
+        console.error("Complete error details:", error);
         handleError(error);
         setImagePreview(null);
       } finally {
@@ -305,9 +340,6 @@ const UserProfileComponent: React.FC = () => {
         address: user.address || "",
         description: user.description || "",
         phoneNumber: user.phoneNumber || "",
-        birthday: user.birthday
-          ? format(new Date(user.birthday), "yyyy-MM-dd")
-          : "",
         gender: user.gender || 0,
         cccdPassport: user.cccdPassport || "",
         imageUrl: user.imageUrl || null,
@@ -318,17 +350,11 @@ const UserProfileComponent: React.FC = () => {
     setValidationErrors({});
   };
 
-  const isApiError = (
-    error: unknown
-  ): error is { response?: { storeStatus: number } } => {
-    return typeof error === "object" && error !== null && "response" in error;
-  };
   const renderStoreFields = () => {
     if (user?.role?.name !== "Store") return null;
 
     return (
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold">Store Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <Label htmlFor="name">
@@ -472,6 +498,53 @@ const UserProfileComponent: React.FC = () => {
             />
           </div>
         </div>
+        <div className="col-span-2 space-y-4 border-t pt-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-md font-semibold">Store Closure</h4>
+              <p className="text-sm text-muted-foreground">
+                Request to close your store permanently
+              </p>
+            </div>
+            <AlertDialog
+              open={isCloseDialogOpen}
+              onOpenChange={setIsCloseDialogOpen}
+            >
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">
+                  <GitPullRequestClosed className="mr-2 h-4 w-4" />
+                  Request Store Close
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will submit a request to permanently close your
+                    store. This process is irreversible and requires approval
+                    from the system administrator.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleStoreCloseRequest}
+                    disabled={requestingClose}
+                  >
+                    {requestingClose ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Requesting...
+                      </>
+                    ) : (
+                      "Confirm Close Request"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
       </div>
     );
   };
@@ -491,65 +564,66 @@ const UserProfileComponent: React.FC = () => {
           <span>
             {user?.role?.name === "Store" ? "Store Profile" : "User Profile"}
           </span>
-          {!editMode && (
-            <Button onClick={() => setEditMode(true)}>Edit Profile</Button>
-          )}
+          {!editMode && <Button onClick={() => setEditMode(true)}>Edit</Button>}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
-                <img
-                  src={imagePreview || "/api/placeholder/150/150"}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {editMode && (
-                <div className="absolute -bottom-2 right-0 flex gap-2">
-                  <label
-                    htmlFor="imageUpload"
-                    className={`p-2 bg-primary hover:bg-primary/90 text-white rounded-full cursor-pointer transition-colors ${
-                      uploading ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {uploading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Camera className="w-4 h-4" />
-                    )}
-                    <input
-                      type="file"
-                      id="imageUpload"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={uploading}
-                    />
-                  </label>
-                  {imagePreview && (
-                    <button
-                      type="button"
-                      onClick={removeImage}
-                      className="p-2 bg-destructive hover:bg-destructive/90 text-white rounded-full transition-colors"
-                      disabled={uploading}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
+          {/* Only show image upload for non-store profiles */}
+          {user?.role?.name !== "Store" && (
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
+                  <img
+                    src={imagePreview || "/api/placeholder/150/150"}
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              )}
-            </div>
-          </div>
 
+                {editMode && (
+                  <div className="absolute -bottom-2 right-0 flex gap-2">
+                    <label
+                      htmlFor="imageUpload"
+                      className={`p-2 bg-primary hover:bg-primary/90 text-white rounded-full cursor-pointer transition-colors ${
+                        uploading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
+                    >
+                      {uploading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4" />
+                      )}
+                      <input
+                        type="file"
+                        id="imageUpload"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploading}
+                      />
+                    </label>
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="p-2 bg-destructive hover:bg-destructive/90 text-white rounded-full transition-colors"
+                        disabled={uploading}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Rest of the form remains the same */}
           {user?.role?.name === "Store" ? (
-            // For Store role, show only store fields
             renderStoreFields()
           ) : (
-            // For other roles, show only personal information
+            // Personal information fields
             <div className="space-y-6">
               <h3 className="text-lg font-semibold">Personal Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -591,20 +665,6 @@ const UserProfileComponent: React.FC = () => {
                       {validationErrors.phoneNumber}
                     </p>
                   )}
-                </div>
-
-                {/* Birthday */}
-                <div className="space-y-2">
-                  <Label htmlFor="birthday">Birthday</Label>
-                  <Input
-                    id="birthday"
-                    name="birthday"
-                    type="date"
-                    value={formData.birthday ?? ""}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    max={format(new Date(), "yyyy-MM-dd")}
-                  />
                 </div>
 
                 <div className="space-y-2">

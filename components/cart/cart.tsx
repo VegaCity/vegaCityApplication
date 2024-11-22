@@ -188,8 +188,6 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
             duration: 3000,
           });
           setPaymentStatus("success");
-
-          // Thêm dòng này để tự động đóng dialog sau một khoảng thời gian
           setTimeout(resetPaymentState, 1000);
         }
       } else {
@@ -199,17 +197,15 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
           setPaymentStatus("success");
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment Error:", error);
-      setPaymentStatus("error");
-      (toast.error as any)({
-        title: "Error",
-        description:
-          error instanceof Error
+      setPaymentError(
+        error.response?.data?.Error ||
+          (error instanceof Error
             ? error.message
-            : "Payment failed. Please try again.",
-        duration: 3000,
-      });
+            : "Payment failed. Please try again.")
+      );
+      setPaymentStatus("error");
     }
   }
   const handleCreateOrderClick = () => {

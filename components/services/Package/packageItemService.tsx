@@ -128,7 +128,7 @@ export const PackageItemServices = {
   },
   generatePackageItemLost(quantity: number) {
     return API.post(`/package-item?quantity=${quantity}`, {
-      packageOrderId: localStorage.getItem("packageItemId"),
+      packageOrderId: localStorage.getItem("packageItemIdLost"),
     });
   },
 

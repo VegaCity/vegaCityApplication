@@ -77,17 +77,20 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
     }
   };
 
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      // Reset amount to 0 when dialog closes
+      onAmountChange({
+        target: { value: "0" },
+      } as React.ChangeEvent<HTMLInputElement>);
+      form.reset();
+      setAmountError(null);
+    }
+    onOpenChange(open);
+  };
+
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        onOpenChange(open);
-        if (!open) {
-          form.reset();
-          setAmountError(null);
-        }
-      }}
-    >
+    <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogContent className="w-[550px] max-h-[85vh] overflow-y-auto bg-white rounded-xl shadow-lg">
         <DialogHeader className="border-b pb-4">
           <DialogTitle className="text-2xl font-semibold text-center text-blue-800">
@@ -177,14 +180,7 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
               type="button"
               variant="outline"
               className="h-11 px-5 text-gray-600 border-gray-300 hover:border-gray-400 transition duration-200 ease-in-out"
-              onClick={() => {
-                onOpenChange(false);
-                form.reset();
-                setAmountError(null);
-                onAmountChange({
-                  target: { value: "" },
-                } as React.ChangeEvent<HTMLInputElement>);
-              }}
+              onClick={() => handleDialogClose(false)}
             >
               Cancel
             </Button>
