@@ -19,6 +19,7 @@ const config = {
     },
     extend: {
       colors: {
+        customBorder: "hsl(235 72% 6%)",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -58,7 +59,7 @@ const config = {
         },
         "hover-button": "#1C86EE",
         sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
+          DEFAULT: "linear-gradient(to bottom, hsl(var(--sidebar-background)))", //app side bar
           foreground: "hsl(var(--sidebar-foreground))",
           primary: "hsl(var(--sidebar-primary))",
           "primary-foreground": "hsl(var(--sidebar-primary-foreground))",

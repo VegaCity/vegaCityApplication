@@ -38,7 +38,7 @@ export function useAuthUser(): {
           })
           .catch((err) => {
             setLoading(false);
-            const error401 = err.response.status;
+            const error401 = err.response?.status;
             const fetchLogoutUser = async () => {
               try {
                 const error = await error401;

@@ -34,13 +34,13 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         {/* <Navbar /> */}
         <div className="flex w-full justify-center">
           {/* Sidebar on the left */}
-          <div className="hidden xl:block h-screen w-18">
+          <div className="hidden sm:block h-screen w-18">
             {/* <Sidebar /> */}
             <AppSidebar />
           </div>
 
           {/* Main content area */}
-          <div className="p-5 w-full max-w-7xl md:block">
+          <div className="p-5 w-full max-w-7xl">
             <div className="fixed left-29 top-1">
               <SidebarTrigger />
             </div>

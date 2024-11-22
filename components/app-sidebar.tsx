@@ -65,6 +65,7 @@ import { Badge } from "@/components/ui/badge";
 import { AuthServices } from "@/components/services/authServices";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 // import { useSidebar } from "@/context/SidebarContext";
+import VegaLogo from "@/img/logo.png";
 
 export function AppSidebar() {
   const [collapsedItem, setCollapsedItem] = useState<Record<string, boolean>>(
@@ -261,12 +262,42 @@ export function AppSidebar() {
   // }, []);
 
   return (
-    <Sidebar>
+    <Sidebar className="border-customBorder bg-">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel className="h-20 flex items-center justify-center">
+            <img src={VegaLogo.src} width={100} alt="logo" />
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem key={user?.id}>
+                <div className="flex items-center w-full justify-between">
+                  <div className="flex items-center">
+                    <SidebarMenuButton
+                      onClick={handleNavigateAccountPage}
+                      className="h-10"
+                    >
+                      {user ? (
+                        <Avatar>
+                          <AvatarImage
+                            src="https://github.com/shadcn.png"
+                            alt="@shadcn"
+                            className="h-8 w-8 rounded-full"
+                          />
+                          <AvatarFallback className="text-white">
+                            BT
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                      )}
+                      {user?.fullName}
+                    </SidebarMenuButton>
+                  </div>
+                  <ThemeToggler />
+                </div>
+              </SidebarMenuItem>
+              <SidebarSeparator />
               {menuItems.map(
                 (item, i) =>
                   item.roles.includes(userRole?.name || "") &&
@@ -278,8 +309,8 @@ export function AppSidebar() {
                           asChild
                         >
                           <SidebarMenuButton className="transition-transform duration-200">
-                            <item.icon />
-                            {item.name}
+                            <item.icon size={20} />
+                            <span className="text-base">{item.name}</span>
                             {collapsedItem[item.name] ? (
                               <ChevronDown
                                 className={
@@ -287,7 +318,7 @@ export function AppSidebar() {
                                 }
                               />
                             ) : (
-                              <ChevronRight
+                              <ChevronUp
                                 className={
                                   "ml-auto transition-transform duration-150"
                                 }
@@ -303,8 +334,10 @@ export function AppSidebar() {
                                 <SidebarMenuSubItem key={childIndex}>
                                   <Link href={itemChild?.href || ""}>
                                     <div className="flex items-center gap-3">
-                                      <itemChild.icon size={15} />
-                                      {itemChild?.name}
+                                      <itemChild.icon size={20} />
+                                      <span className="text-md">
+                                        {itemChild?.name}
+                                      </span>
                                     </div>
                                   </Link>
                                 </SidebarMenuSubItem>
@@ -317,8 +350,8 @@ export function AppSidebar() {
                     <SidebarMenuItem key={i}>
                       <SidebarMenuButton asChild>
                         <Link href={item.href ?? ""}>
-                          <item.icon />
-                          <span>{item.name}</span>
+                          <item.icon size={20} />
+                          <span className="text-base">{item.name}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -327,11 +360,10 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarSeparator />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem key={user?.id}>
+          {/* <SidebarMenuItem key={user?.id}>
             <DropdownMenu>
               <div className="flex items-center w-full justify-between">
                 <DropdownMenuTrigger asChild>
@@ -371,9 +403,19 @@ export function AppSidebar() {
                     />
                   </div>
                 </DropdownMenuItem>
-                {/* <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem> */}
+                <DropdownMenuItem onClick={handleLogout}>
+                  <div className="flex flex-row items-center justify-between w-full group hover:bg-gray-100 p-2 rounded">
+                    <span className="text-gray-700 group-hover:text-red-500 dark:text-white">
+                      Sign out
+                    </span>
+                    <LogOut
+                      size={15}
+                      className="text-gray-700 group-hover:text-red-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                    />
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+              <DropdownMenuContent>
                 <DropdownMenuItem onClick={handleLogout}>
                   <div className="flex flex-row items-center justify-between w-full group hover:bg-gray-100 p-2 rounded">
                     <span className="text-gray-700 group-hover:text-red-500 dark:text-white">
@@ -387,6 +429,25 @@ export function AppSidebar() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          </SidebarMenuItem> */}
+          {/* <div className="absolute right-0 bottom-12 flex-col justify-end items-end mb-2">
+            <ThemeToggler />
+          </div> */}
+          <SidebarSeparator />
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <button onClick={handleLogout}>
+                <div className="flex flex-row items-center justify-between group w-full hover:bg-gray-100 p-2 rounded">
+                  <span className="text-gray-700 group-hover:text-red-500 dark:text-white text-lg">
+                    Sign out
+                  </span>
+                  <LogOut
+                    size={15}
+                    className="text-gray-700 group-hover:text-red-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                  />
+                </div>
+              </button>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

@@ -10,7 +10,10 @@ const Auth = () => {
         backgroundImage: "var(--fixed-background-image)", //need a root to set background
       }}
     >
-      <div className="w-full h-full bg-slate-300 bg-opacity-30 py-20 rounded-lg">
+      {/* <div className="w-full h-full bg-slate-300 bg-opacity-30 py-20 rounded-lg">
+        <LoginForm />
+      </div> */}
+      <div className="w-full h-full flex justify-center bg-slate-300 bg-opacity-30 pt-20 rounded-lg">
         <LoginForm />
       </div>
     </div>

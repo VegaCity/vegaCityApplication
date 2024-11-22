@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -80,10 +81,10 @@ const ZoneCreatePage = () => {
   return (
     <div className="space-y-6">
       <BackButton text="Back To Zones" link="/admin/zones" />
-      <h4 className="text-sm font-semibold text-zinc-700 dark:text-white">
+      <h4 className="text-2xl font-semibold text-zinc-700 dark:text-white">
         Zone Information
       </h4>
-      <p className="text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="text-md text-zinc-500 dark:text-zinc-400">
         Provide details about the zone.
       </p>
       <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
@@ -148,7 +149,13 @@ const ZoneCreatePage = () => {
                 className="bg-blue-500 hover:bg-blue-700"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Creating..." : "Create Zone"}
+                {isSubmitting ? (
+                  "Creating..."
+                ) : (
+                  <>
+                    <Upload /> <p>Create</p>
+                  </>
+                )}
               </Button>
             </div>
           </form>

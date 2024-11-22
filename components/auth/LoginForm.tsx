@@ -11,7 +11,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -23,8 +29,9 @@ import { useAuthUser } from "@/components/hooks/useAuthUser";
 import { loginFormSchema, loginFormValues } from "@/lib/validation";
 import Image from "next/image";
 import VegaLogo from "@/img/logo.png";
-import VegaImage from "@/img/vegaCityBackground.jpg";
+import VegaImage from "@/img/banner-vega-city-nha-trang.jpg";
 import { Eye, EyeOff, LogIn } from "lucide-react";
+import Link from "next/link";
 
 interface UserRefreshToken {
   email: string;
@@ -36,7 +43,7 @@ interface UserLogin {
   password: string;
 }
 
-const LoginForm = () => {
+const LoginForm: any = () => {
   const [emailLogin, setEmailLogin] = useState<string>("");
   const user = useAuthUser();
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +99,7 @@ const LoginForm = () => {
     } catch (error) {
       console.error("Failed to refresh token:", error);
       toast({
+        variant: "destructive",
         title: "Token Refresh Failed!",
         description: "Please log in again!",
       });
@@ -147,7 +155,8 @@ const LoginForm = () => {
 
       // Show success toast
       toast({
-        title: "Login Successful",
+        // variant: "success",
+        title: "✅ Login Successful",
         description: "Welcome back!",
       });
 
@@ -252,6 +261,7 @@ const LoginForm = () => {
 
                 // Show success toast
                 toast({
+                  variant: "success",
                   title: "Login Successful",
                   description: "Hi! Long time no see ha!",
                 });
@@ -269,6 +279,7 @@ const LoginForm = () => {
                 });
                 // Show status login again in order to get refreshToken
                 toast({
+                  variant: "destructive",
                   title: "Login Again!",
                   description: "Error is busy, login again!",
                 });
@@ -318,6 +329,7 @@ const LoginForm = () => {
 
                 // Show success toast
                 toast({
+                  variant: "success",
                   title: "Login Successful",
                   description: "Hi! Long time no see ha!",
                 });
@@ -333,6 +345,7 @@ const LoginForm = () => {
             console.log("wait2"); //does not handle anything
             // Show success toast
             toast({
+              variant: "destructive",
               title: "Login Again!",
               description: "Server is busy now, try again!",
             });
@@ -340,12 +353,14 @@ const LoginForm = () => {
         } else if (error.response && error.response.status === 400) {
           // Request was made but no response was received
           toast({
+            variant: "destructive",
             title: "Login Failed!",
             description: "Invalid email or password!",
           });
         } else {
           // Something went wrong
           toast({
+            variant: "destructive",
             title: "Login Failed!",
             description: "Something went wrong in the server!",
           });
@@ -412,7 +427,11 @@ const LoginForm = () => {
       if (error instanceof AxiosError) {
         console.log("c");
         if (error.response?.status === 400) {
-          toast({ title: "Login Failed", description: "Wrong password!" });
+          toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: "Wrong password!",
+          });
         }
         if (error.response?.status === 401) {
           console.log("d");
@@ -477,12 +496,23 @@ const LoginForm = () => {
   return (
     <div className="login-container">
       <Card className="max-w-lg mx-auto p-6 form-gradient dark:bg-black/30 backdrop-blur-sm bg-opacity-20 border-none">
+        <img
+          className="mt-2"
+          width={110}
+          height={100}
+          src={VegaLogo.src}
+          alt="VegaLogo"
+        />
         <div className="form-content">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-white text-center uppercase dark:text-white">
-              <img width={70} height={70} src={VegaLogo.src} alt="VegaLogo" />
+            <CardTitle className="text-4xl font-bold text-white text-center uppercase dark:text-white">
               Login
             </CardTitle>
+            <CardDescription>
+              <p className="text-sm text-white text-center dark:text-white">
+                Welcome to Vega
+              </p>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Form {...form}>
@@ -505,7 +535,7 @@ const LoginForm = () => {
                             onChange={(e) => field.onChange(e.target.value)}
                             onFocus={handleFocus}
                             onBlur={handleBlur}
-                            className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            className="h-14 pt-4 pb-1 px-4 w-full rounded-md bg-black/30 placeholder-transparent focus:border-transparent transition-all duration-200"
                           />
                           <label
                             htmlFor="email"
@@ -545,7 +575,7 @@ const LoginForm = () => {
                             onChange={(e) => field.onChange(e.target.value)}
                             onFocus={handleFocus}
                             onBlur={handleBlur}
-                            className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                            className="h-14 pt-4 pb-1 px-4 w-full rounded-md bg-black/30 placeholder-transparent focus:border-transparent transition-all duration-200"
                           />
                           <label
                             htmlFor="password"
@@ -575,7 +605,15 @@ const LoginForm = () => {
                     </FormItem>
                   )}
                 />
-
+                <p className="text-sm text-white text-end dark:text-white mb-2">
+                  <Link
+                    className="hover:text-blue-500 hover:underline transition-colors duration-200"
+                    href={"https://vega-city-landing-page.vercel.app/register"}
+                    target="_blank"
+                  >
+                    Don't have account?
+                  </Link>
+                </p>
                 <Button
                   type="submit"
                   className="w-full p-2 rounded hover-gradient"
@@ -590,6 +628,14 @@ const LoginForm = () => {
                     />
                   </div>
                 </Button>
+                <p className="text-sm text-white text-center dark:text-white">
+                  <Link
+                    className="hover:text-blue-500 hover:underline transition-colors duration-200"
+                    href="/change-password"
+                  >
+                    Forget Password?
+                  </Link>
+                </p>
               </form>
             </Form>
           </CardContent>
@@ -597,7 +643,7 @@ const LoginForm = () => {
       </Card>
       <div
         className="loginImage"
-        style={{ backgroundImage: `url$(${VegaImage.src})` }}
+        style={{ backgroundImage: `url(${VegaImage.src})` }}
       />
     </div>
   );

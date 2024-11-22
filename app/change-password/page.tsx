@@ -91,13 +91,14 @@ const ChangePasswordForm = () => {
 
       await AuthServices.changePassword({
         email,
-        activateCode,
+        oldPassword: activateCode,
         newPassword,
       });
 
       toast({
         title: "Success",
-        description: "Change Password Successfully",
+        description: "Change Password Successfully!",
+        variant: "success",
       });
 
       setTimeout(() => {
