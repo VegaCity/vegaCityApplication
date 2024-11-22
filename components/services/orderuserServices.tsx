@@ -7,9 +7,18 @@ import {
   ConfirmOrderForGenerateNewCardData,
   ConfirmOrderForChargeVCardData,
 } from "@/types/paymentFlow/orderUser";
-export const GetOrders = async (page: number) => {
+export const GetOrders = async ({
+  page = 1,
+  size = 10,
+  status = "ALL",
+}: {
+  page?: number;
+  size?: number;
+  status?: string;
+} = {}) => {
   try {
-    const response = await API.get(`/orders?page=${page}`);
+    const params: Record<string, string | number> = { page, size, status };
+    const response = await API.get("/orders", { params });
     return response.data;
   } catch (error) {
     console.error("Error getting orders:", error);

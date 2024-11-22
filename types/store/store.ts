@@ -74,7 +74,7 @@ export interface Product {
   imageUrl: string | null;
   menu: Menu | null;
   description: string;
-  productCategory: ProductCategory | null;
+  productCategory: ProductCategory;
   orderDetails: any[];
 }
 export interface ProductCategory {
@@ -83,7 +83,6 @@ export interface ProductCategory {
   crDate: string;
   deflag: boolean;
   description: string;
-  products: Product[] | null;
   upsDate: string;
   walletTypeMappings: any[];
 }

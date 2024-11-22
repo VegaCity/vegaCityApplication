@@ -159,13 +159,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         storeId,
         totalAmount: totalPrice,
         packageOrderId: isQrCodePayment ? vcardCode : null,
+
         productData: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
-          productCategory:
-            item.productCategory?.name ??
-            item.productCategory?.name ??
-            "Unknown",
+          productCategory: item.productCategory?.name || "Unknown",
           price: item.price,
           imgUrl: item?.imageUrl || "",
           quantity: item.quantity,

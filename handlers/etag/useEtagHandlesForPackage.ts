@@ -18,6 +18,7 @@ import {
   GenerateEtag,
 } from "@/lib/validation";
 import { useRouter, useSearchParams } from "next/navigation";
+import { VCardCustomerInfo } from "@/types/paymentFlow/orderUser";
 interface UseEtagHandlersProps {
   customerForm: UseFormReturn<CustomerFormValues>;
   packageData: any;

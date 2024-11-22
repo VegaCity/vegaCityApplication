@@ -19,7 +19,7 @@ export interface CustomerInfo {
   fullName: string;
   phoneNumber: string;
   // gender: string;
-  cccdPassport: string;
+  cccdpassport: string;
   email: string;
 }
 
@@ -28,7 +28,7 @@ export interface OrderData {
   paymentType: string;
   totalAmount: number;
   productData: ProductData[];
-  customerInfo: CustomerInfo;
+  customerInfo: VCardCustomerInfo;
 }
 
 export interface ConfirmOrderData {
@@ -133,4 +133,10 @@ export interface OrderDetailResponse {
     orderExist: OrderExistData;
     productJson: any | null; // Define structure if known
   };
+}
+export interface VCardCustomerInfo {
+  fullName: string;
+  phoneNumber: string;
+  cccdPassport: string;
+  email: string;
 }
