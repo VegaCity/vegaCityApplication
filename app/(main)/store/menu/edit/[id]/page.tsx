@@ -24,9 +24,9 @@ enum DateFilter {
 }
 
 const DATE_FILTER_LABELS = {
-  [DateFilter.Morning]: "Ca sáng",
-  [DateFilter.Afternoon]: "Ca chiều",
-  [DateFilter.Lunch]: "Ca trưa",
+  [DateFilter.Morning]: "Morning",
+  [DateFilter.Afternoon]: "Afternoon",
+  [DateFilter.Lunch]: "Lunch",
 };
 
 interface Product {
@@ -373,9 +373,9 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Tên Menu - Read only */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Thông tin Menu</h2>
+          <h2 className="text-xl font-semibold mb-4">Menu</h2>
           <div className="mb-4">
-            <label className="block mb-2 font-medium">Tên Menu</label>
+            <label className="block mb-2 font-medium">Menu Name</label>
             <input
               type="text"
               value={formData.menuName}
@@ -387,7 +387,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
 
         {/* Ca làm việc - Single Select */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Ca làm việc</h2>
+          <h2 className="text-xl font-semibold mb-4">Shift</h2>
           <select
             value={formData.dateFilter}
             onChange={(e) =>
@@ -396,6 +396,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                 dateFilter: Number(e.target.value) as DateFilter,
               })
             }
+            disabled
             className="w-full p-2 border rounded"
           >
             {Object.entries(DATE_FILTER_LABELS).map(([value, label]) => (
@@ -409,14 +410,14 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         {/* Sản phẩm - Editable */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Sản phẩm</h2>
+            <h2 className="text-xl font-semibold">Products</h2>
             <button
               type="button"
               onClick={addProduct}
               className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Thêm sản phẩm
+              Add Product
             </button>
           </div>
 
@@ -426,7 +427,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                 <div className="col-span-2 space-y-4">
                   <input
                     type="text"
-                    placeholder="Tên sản phẩm"
+                    placeholder="Product Name"
                     value={product.name}
                     onChange={(e) => {
                       const newProducts = [...formData.products];
@@ -438,7 +439,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                   />
                   <input
                     type="number"
-                    placeholder="Giá"
+                    placeholder="Price"
                     value={product.price}
                     onChange={(e) => {
                       const newProducts = [...formData.products];
@@ -458,7 +459,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     className="w-full p-2 border rounded"
                     required
                   >
-                    <option value="">Chọn loại sản phẩm</option>
+                    <option value="">Select Category</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
@@ -498,7 +499,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                       >
                         <ImageIcon className="w-8 h-8 text-gray-400" />
                         <span className="mt-2 text-sm text-gray-500">
-                          Thêm hình ảnh
+                          Upload Image
                         </span>
                       </label>
                     </div>
@@ -515,7 +516,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     className="flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
                   >
                     <Save className="w-4 h-4 mr-1" />
-                    {product.isSaving ? "Đang lưu..." : "Lưu sản phẩm"}
+                    {product.isSaving ? "Saving..." : "Save Product"}
                   </button>
                 )}
                 <button
@@ -524,45 +525,11 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                   className="flex items-center px-3 py-1 text-red-500 hover:text-red-700"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
-                  Xóa sản phẩm
+                  Remove
                 </button>
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Thông tin người tạo - Read only */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Thông tin người tạo</h2>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block mb-2 font-medium">Họ tên</label>
-              <input
-                type="text"
-                value={formData.creator.name}
-                className="w-full p-2 border rounded bg-gray-100"
-                disabled
-              />
-            </div>
-            <div>
-              <label className="block mb-2 font-medium">Email</label>
-              <input
-                type="email"
-                value={formData.creator.email}
-                className="w-full p-2 border rounded bg-gray-100"
-                disabled
-              />
-            </div>
-            <div>
-              <label className="block mb-2 font-medium">Số điện thoại</label>
-              <input
-                type="tel"
-                value={formData.creator.phone}
-                className="w-full p-2 border rounded bg-gray-100"
-                disabled
-              />
-            </div>
-          </div>
         </div>
 
         {/* Nút submit */}
@@ -572,7 +539,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
             className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
           >
             <Save className="w-5 h-5 mr-2" />
-            Lưu Menu
+            Save
           </button>
         </div>
       </form>

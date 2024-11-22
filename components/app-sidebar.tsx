@@ -186,12 +186,12 @@ export function AppSidebar() {
     //   href: navigatePage("servicesStore"),
     //   roles: ["Admin"],
     // },
-    // {
-    //   name: "Wallet Type",
-    //   icon: Wallet,
-    //   href: navigatePage("walletTypes"),
-    //   roles: ["Admin"],
-    // },
+    {
+      name: "Reports",
+      icon: Wallet,
+      href: navigatePage("reports"),
+      roles: ["CashierWeb"],
+    },
     {
       name: "Manage Users",
       icon: User,

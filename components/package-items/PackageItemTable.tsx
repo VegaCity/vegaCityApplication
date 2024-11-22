@@ -90,7 +90,7 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
   const statusOptions = [
     { value: "", label: "All" },
     { value: "Active", label: "Active" },
-    { value: "Inactive", label: "Inactive" },
+    { value: "InActive", label: "InActive" },
     { value: "Expired", label: "Expired" },
     { value: "Blocked", label: "Blocked" },
   ];

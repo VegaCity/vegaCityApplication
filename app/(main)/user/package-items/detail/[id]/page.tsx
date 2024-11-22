@@ -144,7 +144,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     const packageId = localStorage.getItem("packageIdCurrent");
 
     router.push(
-      `/user/packages/generate/${packageId}?phoneNumber=${phoneNumber}&email=${cusEmail}&cccdpassport=${cusCccdpassport}&isAdult=${isAdult}`
+      `/user/packages/generate/${packageId}?phoneNumber=${phoneNumber}&email=${cusEmail}&cccdPassport=${cusCccdpassport}&isAdult=${isAdult}`
     );
   };
   const handleChargeMoney = async (data: {
@@ -185,7 +185,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         localStorage.setItem("balance", response.data.data.balance);
         localStorage.setItem(
           "packageItemIdCharge",
-          response.data.data.packageOrderId
+          response.data.data.packageItemId
         );
         localStorage.setItem("invoiceId", response.data.data.invoiceId);
 
@@ -235,23 +235,51 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           }
         }
       } else {
-        throw new Error(
-          `Failed to charge money. Status code: ${response.status}`
-        );
+        // Handle error response
+        if (response.data) {
+          toast({
+            title: `Error ${response.data.StatusCode}`,
+            description: response.data.Error || "An unknown error occurred",
+            variant: "destructive",
+          });
+          console.error("Error details:", {
+            StatusCode: response.data.StatusCode,
+            Error: response.data.Error,
+            TimeStamp: response.data.TimeStamp,
+          });
+        } else {
+          throw new Error(
+            `Failed to charge money. Status code: ${response.status}`
+          );
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error charging money:", error);
-      toast({
-        title: "Error",
-        description: "Failed to charge money. Please try again later.",
-        variant: "destructive",
-      });
+      // Check if error has response data
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        toast({
+          title: `Error ${errorData.StatusCode}`,
+          description: errorData.Error || "An unknown error occurred",
+          variant: "destructive",
+        });
+        console.error("Error details:", {
+          StatusCode: errorData.StatusCode,
+          Error: errorData.Error,
+          TimeStamp: errorData.TimeStamp,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to charge money. Please try again later.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
       setIsPopupOpen(false);
     }
   };
-
   const initiatePayment = async (
     paymentMethod: string,
     invoiceId: string,
@@ -547,18 +575,31 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         packageItem.id,
         activationData
       );
+
       toast({
         title: "ETag Activated",
         description: "The ETag has been successfully activated.",
       });
+
       window.location.reload();
-    } catch (err) {
-      toast({
-        title: "Activation Failed",
-        description:
-          err instanceof Error ? err.message : "An unknown error occurred",
-        variant: "destructive",
-      });
+    } catch (err: any) {
+      // Kiểm tra nếu response có cấu trúc mong muốn
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        toast({
+          title: `Error `,
+          description: `${errorData.Error}`,
+          variant: "destructive",
+        });
+      } else {
+        // Fallback cho các lỗi khác
+        toast({
+          title: "Activation Failed",
+          description:
+            err instanceof Error ? err.message : "An unknown error occurred",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -800,13 +841,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             isLoading={isLoading}
             packageItem={packageItem}
           />
-          {/* <GenerateChildrenVCardDialog
-            isOpen={isChildrenVCardDialogOpen}
-            onOpenChange={setIsChildrenVCardDialogOpen}
-            form={childrenVCardForm}
-            onSubmit={handleGenerateChildrenVCard}
-            isLoading={isLoading}
-          /> */}
+
           <div className="flex justify-end mt-4">
             {packageItem &&
               packageItem.status === "Active" &&

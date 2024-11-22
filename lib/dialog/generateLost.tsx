@@ -161,14 +161,15 @@ const GenerateNewCardDialog = ({
           onClose();
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating new card:", error);
+
+      const errorMessage =
+        error.response?.data?.Error || "Failed to generate new card";
+
       toast({
         title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate new card",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

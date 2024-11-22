@@ -35,6 +35,7 @@ import CountdownTimer from "@/components/countdown/countdown";
 import { Clock, Package, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
+
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -44,17 +45,17 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const customerName = searchParams.get("customerName");
-  const gender = searchParams.get("gender");
   const phoneNumber = searchParams.get("phoneNumber");
   const email = searchParams.get("email");
-  const cccdpassport = searchParams.get("cccdpassport");
+  const cccdPassport = searchParams.get("cccdPassport");
   const isAdultParam = searchParams.get("isAdult");
+
   const customerForm = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
       customerName: customerName || "",
       phoneNumber: phoneNumber || "",
-      cccdpassport: cccdpassport || "",
+      cccdPassport: cccdPassport || "",
       paymentMethod: "Cash",
       email: email || "",
       quantity: 1,
@@ -82,35 +83,50 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     packageData,
     setShowTimer,
   });
+
   useEffect(() => {
     if (packageData?.price) {
       customerForm.setValue("price", packageData.price);
       customerForm.setValue("quantity", 1);
     }
   }, [packageData, customerForm]);
+
   useEffect(() => {
     const fetchPackageData = async () => {
       setIsLoading(true);
       try {
         const {
-          data: { data: packageData },
+          data: { data: packageData, messageResponse },
         } = await PackageServices.getPackageById(params.id);
+
         localStorage.setItem("packageId", params.id);
+
         if (!packageData) {
-          throw new Error("No package data received from the server");
+          setError(messageResponse || "Failed to fetch package data");
+          return;
         }
-        if (!packageData.packageType?.id) {
-          console.warn("Package type information is missing or incomplete");
-        }
+
         setPackageData(packageData);
-      } catch (error) {
-        console.error("Error fetching package data:", error);
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.messageResponse ||
+          error.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred";
+
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
     fetchPackageData();
   }, [params.id, toast]);
+
   const handleTimeout = useCallback(() => {
     if (!isOrderConfirmed) {
       handleCancelOrder();
@@ -123,9 +139,18 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       window.location.reload();
     }
   }, [isOrderConfirmed, handleCancelOrder, toast]);
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center p-4">
+        <div className="text-red-500 text-lg font-medium mb-2">Error</div>
+        <div className="text-gray-700 dark:text-gray-300">{error}</div>
+        <Button className="mt-4" onClick={() => router.push("/user/packages")}>
+          Return to Packages
+        </Button>
+      </div>
+    );
   return (
     <div className="container mx-auto p-4">
       <BackButton text="Back To Packages" link="/user/packages" />
@@ -271,7 +296,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={customerForm.control}
-                  name="cccdpassport"
+                  name="cccdPassport"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">

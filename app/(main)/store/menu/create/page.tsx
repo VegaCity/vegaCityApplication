@@ -11,10 +11,10 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Image as ImageIcon, Save, Trash2 } from "lucide-react";
 import React, { useState } from "react";
-
+import { useRouter } from "next/navigation";
 const MenuCreationForm = () => {
   const { toast } = useToast();
-
+  const router = useRouter();
   const [menuData, setMenuData] = useState({
     name: "",
     dateFilter: "Morning",
@@ -22,24 +22,6 @@ const MenuCreationForm = () => {
     imageFile: null as File | null,
     imagePreview: null as string | null,
   });
-
-  const handleMenuImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const file = files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMenuData({
-          ...menuData,
-          imageFile: file,
-          imagePreview: reader.result as string,
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleCreateMenu = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -58,6 +40,9 @@ const MenuCreationForm = () => {
       toast({
         title: "Success",
         description: "Menu created successfully",
+      });
+      setTimeout(() => {
+        router.push("/store/menu");
       });
     } catch (error) {
       console.error("Error creating menu:", error);
@@ -106,53 +91,6 @@ const MenuCreationForm = () => {
                   <SelectItem value="Afternoon">Afternoon</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <label className="block mb-2 font-medium">Menu Image</label>
-              <div className="relative">
-                {menuData.imagePreview ? (
-                  <div className="relative">
-                    <img
-                      src={menuData.imagePreview}
-                      alt="Preview"
-                      className="w-full h-40 object-cover rounded"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setMenuData({
-                          ...menuData,
-                          imageFile: null,
-                          imagePreview: null,
-                        })
-                      }
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleMenuImageChange}
-                      className="hidden"
-                      id="menu-image-upload"
-                    />
-                    <label
-                      htmlFor="menu-image-upload"
-                      className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:bg-gray-50"
-                    >
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
-                      <span className="mt-2 text-sm text-gray-500">
-                        Add image to menu
-                      </span>
-                    </label>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
