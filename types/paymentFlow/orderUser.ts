@@ -19,7 +19,7 @@ export interface CustomerInfo {
   fullName: string;
   phoneNumber: string;
   // gender: string;
-  cccdpassport: string;
+  cccdPassport: string;
   email: string;
 }
 

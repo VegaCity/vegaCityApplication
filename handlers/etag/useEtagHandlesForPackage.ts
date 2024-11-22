@@ -99,8 +99,7 @@ export const useEtagHandlers = ({
         customerInfo: {
           fullName: data.customerName,
           phoneNumber: data.phoneNumber,
-          // gender: data.gender,
-          cccdPassport: data.cccdpassport,
+          cccdPassport: data.cccdPassport,
           email: data.email,
         },
       };
@@ -331,7 +330,7 @@ export const useEtagHandlers = ({
               await handleGenerateVCardForMinor(1, {
                 fullName: customerInfo.customerName,
                 email: customerInfo.email,
-                cccdPassport: customerInfo.cccdpassport,
+                cccdPassport: customerInfo.cccdPassport,
                 phoneNumber: customerInfo.phoneNumber,
                 packageOrderId: localStorage.getItem("packageOrderId"),
               });
@@ -339,7 +338,7 @@ export const useEtagHandlers = ({
               await handleGenerateVCardForAdult(quantity, {
                 fullName: customerInfo.customerName,
                 email: customerInfo.email,
-                cccdPassport: customerInfo.cccdpassport,
+                cccdPassport: customerInfo.cccdPassport,
                 phoneNumber: customerInfo.phoneNumber,
               });
             }
@@ -360,7 +359,7 @@ export const useEtagHandlers = ({
           await handleGenerateVCardForMinor(1, {
             fullName: customerInfo.customerName,
             email: customerInfo.email,
-            cccdPassport: customerInfo.cccdpassport,
+            cccdPassport: customerInfo.cccdPassport,
             phoneNumber: customerInfo.phoneNumber,
             packageOrderId: localStorage.getItem("packageOrderId"),
           });
@@ -368,7 +367,7 @@ export const useEtagHandlers = ({
           await handleGenerateVCardForAdult(quantity, {
             fullName: customerInfo.customerName,
             email: customerInfo.email,
-            cccdPassport: customerInfo.cccdpassport,
+            cccdPassport: customerInfo.cccdPassport,
             phoneNumber: customerInfo.phoneNumber,
           });
         }

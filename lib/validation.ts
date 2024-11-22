@@ -13,7 +13,7 @@ export const customerFormSchema = z.object({
     message: "Phone number is invalid. Please use Vietnam phone number!",
   }),
 
-  cccdpassport: z
+  cccdPassport: z
     .string()
     .regex(
       /(^\d{12}$)|(^[A-Z]\d{7}$)/,

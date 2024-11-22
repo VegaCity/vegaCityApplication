@@ -104,6 +104,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         description: "RFID has been updated successfully",
       });
       setIsUpdateRFIDDialogOpen(false);
+      await PackageItemServices.getPackageItemById({
+        id: params.id,
+      });
     } catch (error) {
       console.error("Error updating RFID:", error);
       toast({
@@ -141,7 +144,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     const packageId = localStorage.getItem("packageIdCurrent");
 
     router.push(
-      `/user/packages/generate/${packageId}?=gender=${gender}&phoneNumber=${phoneNumber}&email=${cusEmail}&cccdpassport=${cusCccdpassport}&isAdult=${isAdult}`
+      `/user/packages/generate/${packageId}?phoneNumber=${phoneNumber}&email=${cusEmail}&cccdpassport=${cusCccdpassport}&isAdult=${isAdult}`
     );
   };
   const handleChargeMoney = async (data: {
@@ -573,23 +576,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
       <Form {...form}>
         <form className="space-y-4">
-          <div className="flex flex-col items-center space-y-4 w-full">
-            {/* <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
-              {packageItem?.imageUrl ? (
-                <Image
-                  src={packageItem?.imageUrl || ""}
-                  alt="Profile Image"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-lg"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-gray-400">No image uploaded</span>
-                </div>
-              )}
-            </div> */}
-          </div>
+          <div className="flex flex-col items-center space-y-4 w-full"></div>
 
           <Card className="w-full max-w-5xl mx-auto">
             <CardHeader className="pb-2">

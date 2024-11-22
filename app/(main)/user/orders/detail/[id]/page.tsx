@@ -37,7 +37,6 @@ const OrderDetailPage = () => {
         setLoading(true);
         const response = await detailOrder(params.id as string);
         if (response.data.orderExist) {
-          console.log(response.data.orderExist, "sssss");
           setOrder(response.data.orderExist);
         } else {
           setError("Could not find order details");

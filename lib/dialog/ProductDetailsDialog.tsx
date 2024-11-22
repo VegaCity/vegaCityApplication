@@ -67,7 +67,7 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                 <Eye size={20} />
                 {product.name}
               </DialogTitle>
-              <DialogDescription>Chi tiết sản phẩm</DialogDescription>
+              <DialogDescription>Product Detail</DialogDescription>
             </DialogHeader>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -81,7 +81,7 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-500">
-                    Không có hình ảnh
+                    No image
                   </div>
                 )}
               </div>
@@ -89,12 +89,12 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
               {/* Product Details */}
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-600">Tên sản phẩm</p>
+                  <p className="text-sm text-gray-600">Name</p>
                   <h2 className="text-2xl font-bold">{product.name}</h2>
                 </div>
 
                 <div>
-                  <p className="text-sm text-gray-600">Giá</p>
+                  <p className="text-sm text-gray-600">Price</p>
                   <p className="text-xl font-bold text-blue-600">
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
@@ -105,13 +105,13 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
 
                 {product.productCategory && (
                   <div>
-                    <p className="text-sm text-gray-600">Danh mục</p>
+                    <p className="text-sm text-gray-600">Category</p>
                     <p className="text-base">{product.productCategory.name}</p>
                   </div>
                 )}
 
                 <div>
-                  <p className="text-sm text-gray-600">Trạng thái</p>
+                  <p className="text-sm text-gray-600">Status</p>
                   <p
                     className={`
                     inline-block px-3 py-1 rounded-full text-sm 
@@ -122,15 +122,13 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
                     }
                   `}
                   >
-                    {product.status === "Active"
-                      ? "Đang kinh doanh"
-                      : "Ngừng kinh doanh"}
+                    {product.status === "Active" ? "Active" : "InActive"}
                   </p>
                 </div>
 
                 {product.description && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Mô tả</p>
+                    <p className="text-sm text-gray-600 mb-2">Description</p>
                     <p className="text-base text-gray-700 bg-gray-50 p-3 rounded-lg">
                       {product.description}
                     </p>
@@ -141,7 +139,7 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
           </>
         ) : (
           <div className="flex justify-center items-center h-64">
-            <p>Không tìm thấy thông tin sản phẩm</p>
+            <p>No product found</p>
           </div>
         )}
       </DialogContent>

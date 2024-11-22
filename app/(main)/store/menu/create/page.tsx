@@ -73,11 +73,11 @@ const MenuCreationForm = () => {
     <div className="max-w-4xl mx-auto p-6">
       <form onSubmit={handleCreateMenu} className="space-y-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Tạo Menu Mới</h2>
+          <h2 className="text-xl font-semibold mb-4">Create Menu</h2>
 
           <div className="space-y-4">
             <div>
-              <label className="block mb-2 font-medium">Tên Menu</label>
+              <label className="block mb-2 font-medium">Menu Name</label>
               <input
                 type="text"
                 value={menuData.name}
@@ -90,9 +90,7 @@ const MenuCreationForm = () => {
             </div>
 
             <div>
-              <label className="block mb-2 font-medium">
-                Thời gian phục vụ
-              </label>
+              <label className="block mb-2 font-medium">Time</label>
               <Select
                 value={menuData.dateFilter}
                 onValueChange={(value) =>
@@ -103,15 +101,15 @@ const MenuCreationForm = () => {
                   <SelectValue placeholder="Chọn thời gian" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Morning">Buổi sáng</SelectItem>
-                  <SelectItem value="Lunch">Buổi trưa</SelectItem>
-                  <SelectItem value="Afternoon">Buổi chiều</SelectItem>
+                  <SelectItem value="Morning">Morning</SelectItem>
+                  <SelectItem value="Lunch">Lunch</SelectItem>
+                  <SelectItem value="Afternoon">Afternoon</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="block mb-2 font-medium">Hình ảnh Menu</label>
+              <label className="block mb-2 font-medium">Menu Image</label>
               <div className="relative">
                 {menuData.imagePreview ? (
                   <div className="relative">
@@ -149,7 +147,7 @@ const MenuCreationForm = () => {
                     >
                       <ImageIcon className="w-8 h-8 text-gray-400" />
                       <span className="mt-2 text-sm text-gray-500">
-                        Thêm hình ảnh menu
+                        Add image to menu
                       </span>
                     </label>
                   </div>
@@ -165,7 +163,7 @@ const MenuCreationForm = () => {
             className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
           >
             <Save className="w-5 h-5 mr-2" />
-            Tạo Menu
+            Save
           </button>
         </div>
       </form>
