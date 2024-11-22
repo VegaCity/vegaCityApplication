@@ -502,7 +502,7 @@ const LoginForm = () => {
                         onChange={(e) => field.onChange(e.target.value)}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
-                        className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       />
                       <label
                         htmlFor="email"
@@ -542,7 +542,7 @@ const LoginForm = () => {
                         onChange={(e) => field.onChange(e.target.value)}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
-                        className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                       />
                       <label
                         htmlFor="password"
@@ -581,12 +581,12 @@ const LoginForm = () => {
 
             <Button type="submit" className="w-full p-2 rounded hover-gradient">
               <div className="flex flex-row items-center group justify-center w-full gap-2">
-                <span className="text-white text-lg group-hover:text-blue-800 dark:text-white">
+                <span className="text-white text-lg group-hover:text-blue-800 group-hover:scale-150 transition-transform duration-200 dark:text-white">
                   Sign In
                 </span>
                 <LogIn
                   size={20}
-                  className="text-white group-hover:text-blue-800 transition-transform duration-200 group-hover:scale-150 dark:text-white"
+                  className="text-white group-hover:text-blue-800 group-hover:ml-5 transition-transform duration-200 group-hover:scale-150 dark:text-white"
                 />
               </div>
             </Button>

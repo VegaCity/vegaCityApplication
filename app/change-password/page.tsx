@@ -137,7 +137,7 @@ const ChangePasswordForm = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
               <label
                 htmlFor="email"
@@ -163,7 +163,7 @@ const ChangePasswordForm = () => {
                 onChange={(e) => setActivateCode(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
               <label
                 htmlFor="activateCode"
@@ -189,7 +189,7 @@ const ChangePasswordForm = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className="pr-10 h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="pr-10 h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
 
               <label
@@ -227,7 +227,7 @@ const ChangePasswordForm = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                className="h-14 pt-4 pb-2 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               />
               <label
                 htmlFor="confirmPassword"
