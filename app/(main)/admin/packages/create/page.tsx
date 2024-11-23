@@ -34,7 +34,7 @@ import { GetWalletType } from "@/types/walletType/walletType";
 import { Zone } from "@/types/zone/zone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AxiosError } from "axios";
-import { Upload } from "lucide-react";
+import { Camera, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -208,320 +208,340 @@ const PackageCreatePage = () => {
   return (
     <>
       <BackButton text="Back To Packages" link="/admin/packages" />
-      <h4 className="text-2xl font-semibold text-zinc-700 dark:text-white">
-        Package Information
-      </h4>
-      <p className="text-md text-zinc-500 dark:text-zinc-400">
-        Provide details about the zone.
-      </p>
+      {/* Title */}
+      <div className="mb-2">
+        <h4 className="text-2xl font-semibold text-zinc-700 dark:text-white">
+          Package Information
+        </h4>
+        <p className="text-md text-zinc-500 dark:text-zinc-400">
+          Provide details about package.
+        </p>
+      </div>
       {isLoading ? (
         <p>Loading Package Types...</p>
       ) : (
-        <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
+        <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-lg border-2">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6 max-w-md mx-auto"
+              className="space-y-6 max-w-full mx-auto"
             >
-              <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
-                {/* Package Name */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter package name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {/* Div Container */}
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
+                  {/* Package Name */}
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter package name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Package Type */}
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Type</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                          }}
-                          value={field.value}
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an package type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {isLoading ? (
-                              <SelectItem value="loading" disabled>
-                                Loading Package Types...
-                              </SelectItem>
-                            ) : packageTypes.length > 0 ? (
-                              packageTypes.map((pkgType) => (
-                                <SelectItem
-                                  key={pkgType.value}
-                                  value={pkgType.value}
-                                >
-                                  {pkgType.name}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="no-pkgs" disabled>
-                                No Package Types available
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Zone */}
-                <FormField
-                  control={form.control}
-                  name="zoneId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Select Zone</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            handleTypeChange("zone", value);
-                          }}
-                          value={field.value}
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Zone" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {isLoading ? (
-                              <SelectItem value="loading" disabled>
-                                Loading zones...
-                              </SelectItem>
-                            ) : zones.length > 0 ? (
-                              zones.map((zone) => (
-                                <SelectItem key={zone.id} value={zone.id}>
-                                  {zone.name}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="no-zones" disabled>
-                                No Zone Types available
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Image URL */}
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Image URL
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          className=" w-30 bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          placeholder="Enter Image URL"
-                          onChange={(event) =>
-                            handleImageFileChange({
-                              event: event,
-                              setImageUploaded: setImageUploaded,
-                            })
-                          } // Convert empty string back to null if needed
-                        />
-                      </FormControl>
-                      {imageUploaded ? (
-                        <Image
-                          src={imageUploaded || field.value || ""}
-                          alt={field.value || "image"}
-                          width={300}
-                          height={250}
-                          // onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
-                        />
-                      ) : (
-                        "no"
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Description */}
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Enter package description"
-                          onChange={(event) => field.onChange(event)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </Card>
-              <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
-                {/* Price */}
-                <FormField
-                  control={form.control}
-                  name="price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price(VND)</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type="text"
-                            placeholder="Enter Price"
-                            value={field.value?.toLocaleString("vi-VN") ?? 0}
-                            onChange={(e) => {
-                              //convert string to number
-                              const input = e.target.value;
-                              const numericValue = parseFloat(
-                                input.replace(/[.]/g, "")
-                              );
-                              field.onChange(numericValue || 0);
+                  {/* Package Type */}
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Type</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
                             }}
-                          />
-                          <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
-                            VND
-                          </span>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Duration */}
-                <FormField
-                  control={form.control}
-                  name="duration"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Duration(day)</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type="number"
-                            placeholder="Enter duration"
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e.target.valueAsNumber);
-                            }}
-                          />
-                          <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
-                            day
-                          </span>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </Card>
-              <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
-                {/* Wallet Type */}
-                <FormField
-                  control={form.control}
-                  name="walletTypeId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Select Wallet Type</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            handleTypeChange("walletType", value);
-                          }}
-                          value={field.value}
-                          disabled={isLoading}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an Wallet Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {isLoading ? (
-                              <SelectItem value="loading" disabled>
-                                Loading Wallet Types...
-                              </SelectItem>
-                            ) : walletTypes.length > 0 ? (
-                              walletTypes.map((wallet) => (
-                                <SelectItem key={wallet.id} value={wallet.id}>
-                                  {wallet.name}
+                            value={field.value}
+                            disabled={isLoading}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select an package type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {isLoading ? (
+                                <SelectItem value="loading" disabled>
+                                  Loading Package Types...
                                 </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="no-wallets" disabled>
-                                No Wallet Types available
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                              ) : packageTypes.length > 0 ? (
+                                packageTypes.map((pkgType) => (
+                                  <SelectItem
+                                    key={pkgType.value}
+                                    value={pkgType.value}
+                                  >
+                                    {pkgType.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="no-pkgs" disabled>
+                                  No Package Types available
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Money Start */}
-                <FormField
-                  control={form.control}
-                  name="moneyStart"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Money Start(VND)</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type="text"
-                            placeholder="Enter Money Start"
-                            value={field.value?.toLocaleString("vi-VN") ?? 0}
-                            onChange={(e) => {
-                              //convert string to number
-                              const input = e.target.value;
-                              const numericValue = parseFloat(
-                                input.replace(/[.]/g, "")
-                              );
-                              field.onChange(numericValue || 0);
+                  {/* Zone */}
+                  <FormField
+                    control={form.control}
+                    name="zoneId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Select Zone</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleTypeChange("zone", value);
                             }}
-                          />
-                          <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
-                            VND
-                          </span>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </Card>
+                            value={field.value}
+                            disabled={isLoading}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Zone" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {isLoading ? (
+                                <SelectItem value="loading" disabled>
+                                  Loading zones...
+                                </SelectItem>
+                              ) : zones.length > 0 ? (
+                                zones.map((zone) => (
+                                  <SelectItem key={zone.id} value={zone.id}>
+                                    {zone.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="no-zones" disabled>
+                                  No Zone Types available
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="flex justify-end items-end w-full mt-4">
+                  {/* Image URL */}
+                  <FormField
+                    control={form.control}
+                    name="imageUrl"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Image URL
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            className=" w-30 bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            placeholder="Enter Image URL"
+                            onChange={(event) =>
+                              handleImageFileChange({
+                                event: event,
+                                setImageUploaded: setImageUploaded,
+                              })
+                            } // Convert empty string back to null if needed
+                          />
+                        </FormControl>
+                        {imageUploaded ? (
+                          <div className="relative">
+                            <Image
+                              className="relative"
+                              src={imageUploaded || field.value || ""}
+                              alt={field.value || "image"}
+                              width={350}
+                              height={250}
+                              // onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
+                            />
+                            {/* Delete image */}
+                            <div className="absolute top-1 left-1">
+                              <X
+                                size={30}
+                                className="text-red-600 bg-red-400 p-2 cursor-pointer"
+                                onClick={() => {
+                                  setImageUploaded("");
+                                  field.onChange(null);
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center w-2/3  p-6 border-2 border-dashed border-slate-300 text-slate-300">
+                            <Camera size={30} />
+                            Image unavailable
+                          </div>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Description */}
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter package description"
+                            onChange={(event) => field.onChange(event)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </Card>
+                <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
+                  {/* Price */}
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price(VND)</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type="text"
+                              placeholder="Enter Price"
+                              value={field.value?.toLocaleString("vi-VN") ?? 0}
+                              onChange={(e) => {
+                                //convert string to number
+                                const input = e.target.value;
+                                const numericValue = parseFloat(
+                                  input.replace(/[.]/g, "")
+                                );
+                                field.onChange(numericValue || 0);
+                              }}
+                            />
+                            <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                              VND
+                            </span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Duration */}
+                  <FormField
+                    control={form.control}
+                    name="duration"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Duration(day)</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type="number"
+                              placeholder="Enter duration"
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e.target.valueAsNumber);
+                              }}
+                            />
+                            <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                              day
+                            </span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {/* Wallet Type */}
+                  <FormField
+                    control={form.control}
+                    name="walletTypeId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Select Wallet Type</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleTypeChange("walletType", value);
+                            }}
+                            value={field.value}
+                            disabled={isLoading}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select an Wallet Type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {isLoading ? (
+                                <SelectItem value="loading" disabled>
+                                  Loading Wallet Types...
+                                </SelectItem>
+                              ) : walletTypes.length > 0 ? (
+                                walletTypes.map((wallet) => (
+                                  <SelectItem key={wallet.id} value={wallet.id}>
+                                    {wallet.name}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <SelectItem value="no-wallets" disabled>
+                                  No Wallet Types available
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Money Start */}
+                  <FormField
+                    control={form.control}
+                    name="moneyStart"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Money Start(VND)</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              type="text"
+                              placeholder="Enter Money Start"
+                              value={field.value?.toLocaleString("vi-VN") ?? 0}
+                              onChange={(e) => {
+                                //convert string to number
+                                const input = e.target.value;
+                                const numericValue = parseFloat(
+                                  input.replace(/[.]/g, "")
+                                );
+                                field.onChange(numericValue || 0);
+                              }}
+                            />
+                            <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                              VND
+                            </span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </Card>
+              </div>
+              <div className="mt-4 grid justify-items-end">
                 <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
                   <Upload />
                   Create

@@ -42,12 +42,13 @@
       --input: 214.3 31.8% 91.4%;
       --ring: 222.2 84% 4.9%; /* Focus ring color: dark blue */
       --radius: 0.5rem;
-      --sidebar-background: 210 100% 40%; /* Sidebar Color */
-      --sidebar-foreground: 240 5.3% 26.1%;
+      --sidebar-background: 213 94% 68%; /* Sidebar Color */
+      --sidebar-foreground: 0 0% 100%;
       --sidebar-primary: 240 5.9% 10%;
       --sidebar-primary-foreground: 0 0% 98%;
-      --sidebar-accent: 240 4.8% 95.9%;
-      --sidebar-accent-foreground: 240 5.9% 10%;
+      /* --sidebar-accent: 240 4.8% 95.9%; */
+      --sidebar-accent: 281 0% 50% / 0.32; /*Sidebar button hover*/
+      --sidebar-accent-foreground: 213 94% 48%; /*Sidebar text button hover*/
       --sidebar-border: 220 13% 91%;
       --sidebar-ring: 217.2 91.2% 59.8%;
     }
@@ -203,5 +204,9 @@
   max-width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+.sign-out-button :hover {
+  color: #fff;
 }
 

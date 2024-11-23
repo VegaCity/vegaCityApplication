@@ -59,11 +59,11 @@ const config = {
         },
         "hover-button": "#1C86EE",
         sidebar: {
-          DEFAULT: "linear-gradient(to bottom, hsl(var(--sidebar-background)))", //app side bar
+          DEFAULT: "hsl(var(--sidebar-background))", //app side bar
           foreground: "hsl(var(--sidebar-foreground))",
           primary: "hsl(var(--sidebar-primary))",
           "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
+          accent: "hsla(var(--sidebar-accent))",
           "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",

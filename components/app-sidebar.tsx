@@ -327,22 +327,24 @@ export function AppSidebar() {
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <SidebarMenuSub>
-                            {Array.isArray(item.child) &&
-                              item.child.length > 0 &&
-                              item.child.map((itemChild, childIndex) => (
+                          {Array.isArray(item.child) &&
+                            item.child.length > 0 &&
+                            item.child.map((itemChild, childIndex) => (
+                              <SidebarMenuSub>
                                 <SidebarMenuSubItem key={childIndex}>
-                                  <Link href={itemChild?.href || ""}>
-                                    <div className="flex items-center gap-3">
-                                      <itemChild.icon size={20} />
-                                      <span className="text-md">
-                                        {itemChild?.name}
-                                      </span>
-                                    </div>
-                                  </Link>
+                                  <SidebarMenuButton>
+                                    <Link href={itemChild?.href || ""}>
+                                      <div className="flex items-center gap-3">
+                                        <itemChild.icon size={20} />
+                                        <span className="text-md">
+                                          {itemChild?.name}
+                                        </span>
+                                      </div>
+                                    </Link>
+                                  </SidebarMenuButton>
                                 </SidebarMenuSubItem>
-                              ))}
-                          </SidebarMenuSub>
+                              </SidebarMenuSub>
+                            ))}
                         </CollapsibleContent>
                       </SidebarMenuItem>
                     </Collapsible>
@@ -434,21 +436,19 @@ export function AppSidebar() {
             <ThemeToggler />
           </div> */}
           <SidebarSeparator />
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <button onClick={handleLogout}>
-                <div className="flex flex-row items-center justify-between group w-full hover:bg-gray-100 p-2 rounded">
-                  <span className="text-gray-700 group-hover:text-red-500 dark:text-white text-lg">
-                    Sign out
-                  </span>
-                  <LogOut
-                    size={15}
-                    className="text-gray-700 group-hover:text-red-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
-                  />
-                </div>
-              </button>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {/* <SidebarMenuItem> */}
+          <button onClick={handleLogout} className="sign-out-button peer">
+            <div className="group hover:bg-red-300 flex items-center justify-end gap-2 w-full p-2 rounded">
+              <span className="group-hover:text-red-500 font-bold dark:text-white text-lg">
+                Sign out
+              </span>
+              <LogOut
+                size={15}
+                className="group-hover:text-red-500 font-bold transition-transform duration-200 group-hover:scale-110 dark:text-white"
+              />
+            </div>
+          </button>
+          {/* </SidebarMenuItem> */}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
