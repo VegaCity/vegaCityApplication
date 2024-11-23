@@ -2,6 +2,7 @@
 
 export interface Wallet {
   balance: number;
+  walletType: WalletType;
 }
 export interface WalletType {
   id: string;

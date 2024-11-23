@@ -115,12 +115,12 @@ const WithdrawMoney = () => {
         const storeData = response.data.data.storeTrack;
 
         if (!storeData) {
-          throw new Error("Không tìm thấy thông tin cửa hàng.");
+          throw new Error("Can not find store.");
         }
 
         // Check if store has wallets
         if (!storeData.wallets || storeData.wallets.length === 0) {
-          throw new Error("Không có ví trong dữ liệu cửa hàng.");
+          throw new Error("Store has no wallets.");
         }
 
         const wallet = storeData.wallets[0];
@@ -220,9 +220,7 @@ const WithdrawMoney = () => {
           );
 
         if (!isRfid && !isGuid) {
-          throw new Error(
-            "ID không hợp lệ. Vui lòng nhập GUID hoặc RFID (10 số)"
-          );
+          throw new Error("Invalid ID. Please enter GUID or RFID (10 numbers)");
         }
 
         const response = await API.get(
