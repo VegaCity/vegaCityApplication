@@ -281,7 +281,6 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
       <div className="space-y-4">
         <h3 className="text-2xl font-semibold">{title || "Reports"}</h3>
         <div className="text-red-500">Error: {error}</div>
-        <Button onClick={() => fetchReports(currentPage)}>Try Again</Button>
       </div>
     );
   }
