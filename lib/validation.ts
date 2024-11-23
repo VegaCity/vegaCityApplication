@@ -231,11 +231,11 @@ export const userAccountFormSchema = z.object({
     ),
   birthday: z
     .string()
-    .min(1, { message: "Nhập ngày sinh nhật!" })
-    .refine(isOver18, { message: "Người dùng phải trên 18 tuổi!" })
+    .min(1, { message: "Your birthday is required!" })
+    .refine(isOver18, { message: "Customer must be above 18 years old!" })
     .nullable(),
   gender: z.string().min(0, {
-    message: "Nhập giới tính!",
+    message: "Gender is required!",
   }),
   cccdPassport: z
     .string()

@@ -22,6 +22,7 @@ import {
 } from "@/types/walletType/walletType";
 import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
 import { useRouter } from "next/navigation";
+import { Loader } from "@/components/loader/Loader";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -96,7 +97,12 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
     fetchWalletTypeData();
   }, [params.id, form]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   return (

@@ -22,7 +22,7 @@ const WalletTypesPage = () => {
         {/* <BackButton text="Go Back" link="/" /> */}
         <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full transition-colors duration-200">
           <Link href="/admin/walletTypes/create" className="flex items-center">
-            <Plus size={15} /> &nbsp; Add New Package
+            <Plus size={15} /> &nbsp; Add New Wallet Type
           </Link>
         </Button>
       </div>
