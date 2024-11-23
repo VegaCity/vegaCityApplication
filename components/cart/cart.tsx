@@ -318,7 +318,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     <SelectValue placeholder="Select Payment Method" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="QRCode">QR Code</SelectItem>
+                    <SelectItem value="QRCode">QRCode</SelectItem>
                     <SelectItem value="Momo">Momo</SelectItem>
                     <SelectItem value="VnPay">VnPay</SelectItem>
                     <SelectItem value="PayOS">PayOS</SelectItem>

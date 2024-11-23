@@ -20,11 +20,21 @@ import {
   Store,
   User,
   Wallet,
+  PiggyBank,
 } from "lucide-react";
 import { StoreServices } from "@/components/services/Store/storeServices";
 // import { StoreDetail } from "@/types/store/store";
 import { Wallet as WalletType } from "@/types/packageitem";
-
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 type PackageItemDetail = {
   id: string;
   packageId: string;
@@ -37,13 +47,21 @@ type PackageItemDetail = {
 interface WalletInfo {
   id: string;
   balance: number;
+  balanceHistory: number;
+  balanceStart: number;
+  walletTypeId: string;
 }
 interface StoreDetail_FixToDeploy {
   id: string;
   name: string;
   address: string;
   shortName: string;
-  wallets: WalletType;
+  wallets: WalletType[];
+  email: string;
+  phoneNumber: string;
+  status: number;
+  storeType: number;
+  amountCanWithdraw: number;
 }
 
 const MIN_WITHDRAWAL = 50000;
@@ -94,35 +112,48 @@ const WithdrawMoney = () => {
       );
 
       if (response.data?.statusCode === 200) {
-        const data = response.data.data;
+        const storeData = response.data.data.storeTrack;
 
-        if (data) {
-          if (data.wallets && data.wallets.length > 0) {
-            const wallet = data.wallets[0];
-            setWalletInfo({
-              id: wallet.id,
-              balance: wallet.balance,
-            });
-            setStoreDetails({
-              id: data.id,
-              name: data.name,
-              address: data.address,
-              shortName: data.shortName,
-              wallets: wallet,
-            });
-          } else {
-            throw new Error("Không có ví trong dữ liệu cửa hàng.");
-          }
-        } else {
-          throw new Error("Dữ liệu cửa hàng bị thiếu.");
+        if (!storeData) {
+          throw new Error("Không tìm thấy thông tin cửa hàng.");
         }
+
+        // Check if store has wallets
+        if (!storeData.wallets || storeData.wallets.length === 0) {
+          throw new Error("Không có ví trong dữ liệu cửa hàng.");
+        }
+
+        const wallet = storeData.wallets[0];
+
+        // Set wallet information
+        setWalletInfo({
+          id: wallet.id,
+          balance: wallet.balance,
+          balanceHistory: wallet.balanceHistory,
+          balanceStart: wallet.balanceStart,
+          walletTypeId: wallet.walletTypeId,
+        });
+
+        // Set store details
+        setStoreDetails({
+          id: storeData.id,
+          name: storeData.name,
+          address: storeData.address,
+          shortName: storeData.shortName,
+          email: storeData.email,
+          phoneNumber: storeData.phoneNumber,
+          status: storeData.status,
+          storeType: storeData.storeType,
+          amountCanWithdraw: response.data.data.amountCanWithdraw,
+          wallets: storeData.wallets,
+        });
       } else {
         throw new Error(
-          response.data?.messageResponse || "Không thể lấy thông tin cửa hàng"
+          response.data?.messageResponse || "Can not get wallet for store"
         );
       }
     } catch (err) {
-      console.error("Lỗi khi lấy thông tin cửa hàng:", err);
+      console.error("Error finding store wallet:", err);
       setError(
         err instanceof Error
           ? err.message
@@ -148,22 +179,20 @@ const WithdrawMoney = () => {
   const validateWithdrawAmount = useCallback(
     (amount: number, balance: number | null): string | null => {
       if (isNaN(amount) || amount <= 0) {
+        console.log("Failed: Not a positive number");
         return "Money must be a positive number";
       }
+
       if (amount < MIN_WITHDRAWAL) {
+        console.log("Failed: Below minimum withdrawal amount");
         return `Money must be at least ${MIN_WITHDRAWAL.toLocaleString(
           FORMAT_LOCALE
         )} VND`;
       }
-      if (!balance || amount > balance) {
-        return "Money must be less than or equal to your balance";
-      }
-      if (amount % 10000 !== 0) {
-        return "Money must be a multiple of 10,000 VND";
-      }
+
       return null;
     },
-    []
+    [activeTab, storeDetails]
   );
 
   const formatAmount = (value: string): string => {
@@ -229,6 +258,9 @@ const WithdrawMoney = () => {
         setWalletInfo({
           id: wallet.id,
           balance: wallet.balance || 0,
+          balanceHistory: wallet.balanceHistory || 0,
+          balanceStart: wallet.balanceStart || 0,
+          walletTypeId: wallet.walletTypeId,
         });
 
         // Set package item details with all available data
@@ -282,7 +314,7 @@ const WithdrawMoney = () => {
       amount,
       activeTab === "customer"
         ? walletInfo.balance
-        : storeDetails?.wallets?.balance || null
+        : storeDetails?.wallets[0]?.balance || null
     );
 
     if (validationError) {
@@ -357,7 +389,14 @@ const WithdrawMoney = () => {
           title: "Success",
           description: "Withdrawal successfully processed.",
         });
-        fetchPackageItemInfo(packageItemCode);
+
+        // Refresh data based on active tab
+        if (activeTab === "customer") {
+          fetchPackageItemInfo(packageItemCode);
+        } else {
+          // For store tab, refresh store wallet info
+          handleFindStoreWallet();
+        }
       } else {
         throw new Error(response.data.Error || "Cannot process withdrawal");
       }
@@ -374,7 +413,13 @@ const WithdrawMoney = () => {
     } finally {
       setIsWithdrawing(false);
     }
-  }, [walletInfo?.id, pendingTransactionId, toast, activeTab]);
+  }, [
+    walletInfo?.id,
+    pendingTransactionId,
+    toast,
+    activeTab,
+    handleFindStoreWallet,
+  ]);
 
   const renderWithdrawForm = () => (
     <div className="space-y-6">
@@ -491,155 +536,292 @@ const WithdrawMoney = () => {
       ) : null}
     </div>
   );
-  const renderStoreTab = () => (
-    <div className="space-y-6">
-      <div className="space-y-3">
-        <label
-          htmlFor="store-name"
-          className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
-        >
-          <span>Store Name</span>
-          {error && <AlertCircle className="w-4 h-4 text-red-500" />}
-        </label>
-        <Input
-          id="store-name"
-          type="text"
-          value={storeName}
-          onChange={handleStoreNameChange}
-          placeholder="Store Name"
-          className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-          disabled={isLoading}
-        />
-      </div>
-      <div className="space-y-3">
-        <label
-          htmlFor="store-phone"
-          className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
-        >
-          <span>Store Phone</span>
-          {error && <AlertCircle className="w-4 h-4 text-red-500" />}
-        </label>
+  const renderStoreTab = () => {
+    const [isSettling, setIsSettling] = useState(false);
+    const [showSettlementDialog, setShowSettlementDialog] = useState(false);
+    const handleFinalSettlement = async () => {
+      try {
+        setIsSettling(true);
+        setError("");
 
-        <Input
-          id="store-phone"
-          type="text"
-          value={storePhone}
-          onChange={handleStorePhoneChange}
-          placeholder="Store Phone"
-          className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-          disabled={isLoading}
-        />
-      </div>
-      <Button
-        className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
-        onClick={handleFindStoreWallet}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin mr-2" />
-        ) : (
-          <>
-            <Store className="w-5 h-5" />
-            <span>Find Store Wallet</span>
-          </>
-        )}
-      </Button>
-      {error && (
-        <Alert
-          variant="destructive"
-          className="rounded-xl border-2 border-red-200"
-        >
-          <AlertDescription className="text-base">{error}</AlertDescription>
-        </Alert>
-      )}
-      {isLoading ? (
-        <div className="flex justify-center py-6">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        </div>
-      ) : walletInfo && storeDetails ? (
-        <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
-            <div className="space-y-2">
-              <p className="font-medium text-gray-700 text-center text-lg">
-                {activeTab === "customer"
-                  ? "Customer Information"
-                  : "Store Information"}
-              </p>
-              <div className="space-y-1">
-                <p className="text-sm text-gray-600">
-                  Name:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {storeDetails.name}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Phone:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {storeDetails.shortName}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Address:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {storeDetails.address}
-                  </span>
-                </p>
-              </div>
-            </div>
-            <div className="pt-2 border-t border-blue-100">
-              <p className="text-base font-medium text-gray-700">
-                Available Balance
-              </p>
-              <div className="flex items-center space-x-2">
-                <p className="text-3xl font-bold text-gray-900">
-                  {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
-                </p>
-                <span className="text-xl font-semibold text-gray-600">VND</span>
-              </div>
-            </div>
-          </div>
+        const response = await StoreServices.finalSettlement(storeDetails!.id);
 
-          <div className="space-y-3">
-            <label
-              htmlFor="amount-input"
-              className="text-sm font-semibold text-gray-700"
-            >
-              Withdrawal Amount (VND)
-            </label>
+        if (response.data?.statusCode === 200) {
+          toast({
+            title: "Success",
+            description: "Final settlement completed successfully",
+            variant: "success",
+          });
 
-            <Input
-              id="amount-input"
-              type="text"
-              value={formatAmount(withdrawAmount)}
-              onChange={handleAmountChange}
-              placeholder="0"
-              className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
-            />
-          </div>
-          <Button
-            className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
-            onClick={handleRequestWithdraw}
-            disabled={!withdrawAmount || isWithdrawing}
+          // Refresh wallet info after settlement
+          handleFindStoreWallet();
+        } else {
+          throw new Error(
+            response.data?.Error || "Failed to process final settlement"
+          );
+        }
+      } catch (err) {
+        console.error("Error processing final settlement:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An error occurred during final settlement. Please try again."
+        );
+        toast({
+          title: "Error",
+          description: "Failed to process final settlement",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSettling(false);
+      }
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="space-y-3">
+          <label
+            htmlFor="store-name"
+            className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
           >
-            {isWithdrawing ? (
-              <Loader2 className="h-5 w-5 animate-spin mr-2" />
-            ) : (
-              <>
-                <ArrowDownToLine className="w-5 h-5" />
-                <span>Withdraw Funds</span>
-              </>
-            )}
-          </Button>
+            <span>Store Name</span>
+            {error && <AlertCircle className="w-4 h-4 text-red-500" />}
+          </label>
+          <Input
+            id="store-name"
+            type="text"
+            value={storeName}
+            onChange={handleStoreNameChange}
+            placeholder="Store Name"
+            className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            disabled={isLoading}
+          />
         </div>
-      ) : null}
-    </div>
-  );
+
+        <div className="space-y-3">
+          <label
+            htmlFor="store-phone"
+            className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
+          >
+            <span>Store Phone</span>
+            {error && <AlertCircle className="w-4 h-4 text-red-500" />}
+          </label>
+          <Input
+            id="store-phone"
+            type="text"
+            value={storePhone}
+            onChange={handleStorePhoneChange}
+            placeholder="Store Phone"
+            className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            disabled={isLoading}
+          />
+        </div>
+
+        <Button
+          className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
+          onClick={handleFindStoreWallet}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+          ) : (
+            <>
+              <Store className="w-5 h-5" />
+              <span>Find Store Wallet</span>
+            </>
+          )}
+        </Button>
+
+        {error && (
+          <Alert
+            variant="destructive"
+            className="rounded-xl border-2 border-red-200"
+          >
+            <AlertDescription className="text-base">{error}</AlertDescription>
+          </Alert>
+        )}
+
+        {isLoading ? (
+          <div className="flex justify-center py-6">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          </div>
+        ) : (
+          walletInfo &&
+          storeDetails && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
+                <div className="space-y-2">
+                  <p className="font-medium text-gray-700 text-center text-lg">
+                    Store Information
+                  </p>
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-600">
+                      Name:{" "}
+                      <span className="font-semibold text-gray-900">
+                        {storeDetails.name}
+                      </span>
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Phone:{" "}
+                      <span className="font-semibold text-gray-900">
+                        {storeDetails.shortName}
+                      </span>
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Address:{" "}
+                      <span className="font-semibold text-gray-900">
+                        {storeDetails.address}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-blue-100">
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-base font-medium text-gray-700">
+                        Available Balance
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <p className="text-3xl font-bold text-gray-900">
+                          {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
+                        </p>
+                        <span className="text-xl font-semibold text-gray-600">
+                          VND
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-base font-medium text-gray-700">
+                        Amount Can Withdraw
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <p className="text-3xl font-bold text-emerald-600">
+                          {storeDetails.amountCanWithdraw.toLocaleString(
+                            FORMAT_LOCALE
+                          )}
+                        </p>
+                        <span className="text-xl font-semibold text-gray-600">
+                          VND
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label
+                  htmlFor="amount-input"
+                  className="text-sm font-semibold text-gray-700"
+                >
+                  Withdrawal Amount (VND)
+                </label>
+                <Input
+                  id="amount-input"
+                  type="text"
+                  value={formatAmount(withdrawAmount)}
+                  onChange={handleAmountChange}
+                  placeholder="0"
+                  className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button
+                  className="h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
+                  onClick={handleRequestWithdraw}
+                  disabled={!withdrawAmount || isWithdrawing}
+                >
+                  {isWithdrawing ? (
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  ) : (
+                    <>
+                      <ArrowDownToLine className="w-5 h-5" />
+                      <span>Withdraw Funds</span>
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  className="h-14 text-lg font-semibold bg-red-600 hover:bg-red-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
+                  onClick={() => setShowSettlementDialog(true)}
+                  disabled={isSettling || walletInfo.balance <= 0}
+                >
+                  {isSettling ? (
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  ) : (
+                    <>
+                      <PiggyBank className="w-5 h-5" />
+                      <span>Final Settlement</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <AlertDialog
+                open={showSettlementDialog}
+                onOpenChange={setShowSettlementDialog}
+              >
+                <AlertDialogContent className="bg-white rounded-xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle className="text-xl font-semibold text-gray-900">
+                      Confirm Final Settlement
+                    </AlertDialogTitle>
+                    <AlertDialogDescription className="text-base text-gray-600">
+                      Are you sure you want to proceed with final settlement?
+                      This action cannot be undone.
+                      <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-yellow-800">
+                            Current Balance:
+                          </span>
+                          <span className="text-yellow-900">
+                            {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}{" "}
+                            VND
+                          </span>
+                        </div>
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="space-x-3">
+                    <AlertDialogCancel
+                      className="h-11 px-6 rounded-lg border-2 border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+                      onClick={() => setShowSettlementDialog(false)}
+                    >
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      className="h-11 px-6 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
+                      onClick={handleFinalSettlement}
+                      disabled={isSettling}
+                    >
+                      {isSettling ? (
+                        <div className="flex items-center space-x-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Processing...</span>
+                        </div>
+                      ) : (
+                        "Confirm Settlement"
+                      )}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )
+        )}
+      </div>
+    );
+  };
   return (
     <div className="min-h-screen p-6 flex justify-center">
       <div className="w-full max-w-xl rounded-2xl shadow-lg p-8 space-y-8">
         <div className="space-y-3">
           <div className="flex items-center justify-center space-x-3">
             <Wallet className="w-8 h-8 text-blue-600" />
+
             <h1 className="text-3xl font-bold text-gray-900">Withdraw Money</h1>
           </div>
           <p className="text-base text-center text-gray-600">
