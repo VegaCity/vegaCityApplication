@@ -103,6 +103,12 @@ export function AppSidebar() {
 
   const menuItems: MenuItems[] = [
     {
+      name: "Store Information",
+      icon: Store,
+      href: navigatePage("info"),
+      roles: ["Store"],
+    },
+    {
       name: "Dashboard",
       icon: LayoutDashboard,
       href: "/",

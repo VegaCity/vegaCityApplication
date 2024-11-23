@@ -74,31 +74,31 @@ const UserProfileComponent: React.FC = () => {
   useEffect(() => {
     fetchUserData();
   }, []);
-  const handleStoreCloseRequest = async () => {
-    const storeId = localStorage.getItem("storeId");
-    if (!storeId) {
-      toast({
-        title: "Error",
-        description: "Store ID not found",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    try {
-      setRequestingClose(true);
-      await StoreServices.requestClosed(storeId);
-      toast({
-        title: "Success",
-        description: "Store closure request submitted successfully",
-      });
-      setIsCloseDialogOpen(false);
-    } catch (error) {
-      handleError(error);
-    } finally {
-      setRequestingClose(false);
-    }
-  };
+  //   const storeId = localStorage.getItem("storeId");
+  //   if (!storeId) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Store ID not found",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     setRequestingClose(true);
+  //     await StoreServices.requestClosed(storeId);
+  //     toast({
+  //       title: "Success",
+  //       description: "Store closure request submitted successfully",
+  //     });
+  //     setIsCloseDialogOpen(false);
+  //   } catch (error) {
+  //     handleError(error);
+  //   } finally {
+  //     setRequestingClose(false);
+  //   }
+  // };
   const fetchStoreData = async (storeId: string) => {
     try {
       const storeId = localStorage.getItem("storeId");
@@ -144,16 +144,16 @@ const UserProfileComponent: React.FC = () => {
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  const handleStoreInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ): void => {
-    const { name, value } = e.target;
-    setStoreFormData((prev: any) => ({ ...prev, [name]: value }));
+  // const handleStoreInputChange = (
+  //   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  // ): void => {
+  //   const { name, value } = e.target;
+  //   setStoreFormData((prev: any) => ({ ...prev, [name]: value }));
 
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
+  //   if (validationErrors[name]) {
+  //     setValidationErrors((prev) => ({ ...prev, [name]: "" }));
+  //   }
+  // };
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
@@ -286,40 +286,29 @@ const UserProfileComponent: React.FC = () => {
     e.preventDefault();
 
     // Validate based on role
-    if (user?.role?.name === "Store") {
-      if (!validateStoreForm()) return;
-    } else {
-      if (!validateForm()) return;
-    }
+    // if (user?.role?.name === "Store") {
+    //   if (!validateStoreForm()) return;
+    // } else {
+    //   if (!validateForm()) return;
+    // }
 
     setUpdating(true);
     try {
       const userId = localStorage.getItem("userId");
-      const storeId = localStorage.getItem("storeId");
-
+    
       if (!userId) throw new Error("User ID not found");
-
-      if (user?.role?.name === "Store" && storeId) {
-        // Update store profile
-        await StoreServices.editStoreProfile(storeId, storeFormData);
-        await fetchStoreData(storeId);
-        toast({
-          title: "Success",
-          description: "Store profile updated successfully",
-        });
-      } else {
-        // Update user profile
-        await UserServices.updateUserById(userId, formData);
-        toast({
-          title: "Success",
-          description: "Profile updated successfully",
-        });
-      }
+    
+      // Update user profile
+      await UserServices.updateUserById(userId, formData);
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+    
       setEditMode(false);
-      // window.location.reload();
     } catch (error) {
       handleError(error);
-    } finally {
+    }finally {
       setUpdating(false);
     }
   };
@@ -350,204 +339,7 @@ const UserProfileComponent: React.FC = () => {
     setValidationErrors({});
   };
 
-  const renderStoreFields = () => {
-    if (user?.role?.name !== "Store") return null;
 
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Store Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              value={storeFormData.name}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              className={validationErrors.storeName ? "border-destructive" : ""}
-            />
-            {validationErrors.storeName && (
-              <p className="text-sm text-destructive">
-                {validationErrors.storeName}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="shortName">Store Short Name</Label>
-            <Input
-              id="shortName"
-              name="shortName"
-              value={storeFormData.shortName || ""}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="storeEmail">
-              Store Email <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={storeFormData.email}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              className={
-                validationErrors.storeEmail ? "border-destructive" : ""
-              }
-            />
-            {validationErrors.storeEmail && (
-              <p className="text-sm text-destructive">
-                {validationErrors.storeEmail}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="storePhone">Store Phone Number</Label>
-            <Input
-              id="phoneNumber"
-              name="phoneNumber"
-              value={storeFormData.phoneNumber}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              className={
-                validationErrors.storePhone ? "border-destructive" : ""
-              }
-            />
-            {validationErrors.storePhone && (
-              <p className="text-sm text-destructive">
-                {validationErrors.storePhone}
-              </p>
-            )}
-          </div>
-          <div className="col-span-2 space-y-2">
-            <Label htmlFor="storeAddress">Store Address</Label>
-            <Input
-              id="address"
-              name="address"
-              value={storeFormData.address}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-            />
-          </div>
-          <div className="col-span-2 space-y-2">
-            <Label htmlFor="storeStatus">Store Status</Label>
-            <Select
-              value={storeFormData.status?.toString() || "0"}
-              onValueChange={(value) =>
-                setStoreFormData((prev) => ({
-                  ...prev,
-                  status: parseInt(value), // Corrected from storeStatus to status
-                }))
-              }
-              disabled={!editMode}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select store status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Opened</SelectItem>
-                <SelectItem value="1">Closed</SelectItem>
-                <SelectItem value="2">In Active</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="col-span-2 space-y-2">
-            <Label htmlFor="storeStatus">Store Type</Label>
-            <Select
-              value={storeFormData.storeType?.toString() || "0"}
-              onValueChange={(value) =>
-                setStoreFormData((prev) => ({
-                  ...prev,
-                  storeType: parseInt(value), // Corrected from storeStatus to storeType
-                }))
-              }
-              disabled={!editMode}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select store status" />
-              </SelectTrigger>
-              <SelectContent>
-                {storeTypes.map((storeType) => (
-                  <SelectItem
-                    key={storeType.value}
-                    value={storeType.value.toString()}
-                  >
-                    {storeType.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="col-span-2 space-y-2">
-            <Label htmlFor="storeDescription">Store Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={storeFormData.description || ""}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              rows={4}
-              className="resize-none"
-            />
-          </div>
-        </div>
-        <div className="col-span-2 space-y-4 border-t pt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-md font-semibold">Store Closure</h4>
-              <p className="text-sm text-muted-foreground">
-                Request to close your store permanently
-              </p>
-            </div>
-            <AlertDialog
-              open={isCloseDialogOpen}
-              onOpenChange={setIsCloseDialogOpen}
-            >
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <GitPullRequestClosed className="mr-2 h-4 w-4" />
-                  Request Store Close
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action will submit a request to permanently close your
-                    store. This process is irreversible and requires approval
-                    from the system administrator.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleStoreCloseRequest}
-                    disabled={requestingClose}
-                  >
-                    {requestingClose ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Requesting...
-                      </>
-                    ) : (
-                      "Confirm Close Request"
-                    )}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
-      </div>
-    );
-  };
 
   if (loading) {
     return (
@@ -562,169 +354,162 @@ const UserProfileComponent: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>
-            {user?.role?.name === "Store" ? "Store Profile" : "User Profile"}
+            {"User Profile"}
           </span>
           {!editMode && <Button onClick={() => setEditMode(true)}>Edit</Button>}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Only show image upload for non-store profiles */}
-          {user?.role?.name !== "Store" && (
-            <div className="flex justify-center mb-6">
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
-                  <img
-                    src={imagePreview || "/api/placeholder/150/150"}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {editMode && (
-                  <div className="absolute -bottom-2 right-0 flex gap-2">
-                    <label
-                      htmlFor="imageUpload"
-                      className={`p-2 bg-primary hover:bg-primary/90 text-white rounded-full cursor-pointer transition-colors ${
-                        uploading ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      {uploading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Camera className="w-4 h-4" />
-                      )}
-                      <input
-                        type="file"
-                        id="imageUpload"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        disabled={uploading}
-                      />
-                    </label>
-                    {imagePreview && (
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="p-2 bg-destructive hover:bg-destructive/90 text-white rounded-full transition-colors"
-                        disabled={uploading}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                )}
+          {/* Hiển thị hình ảnh và chức năng upload */}
+          <div className="flex justify-center mb-6">
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
+                <img
+                  src={imagePreview || "/api/placeholder/150/150"}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               </div>
-            </div>
-          )}
 
-          {/* Rest of the form remains the same */}
-          {user?.role?.name === "Store" ? (
-            renderStoreFields()
-          ) : (
-            // Personal information fields
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Personal Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">
-                    Full Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    className={
-                      validationErrors.fullName ? "border-destructive" : ""
-                    }
-                  />
-                  {validationErrors.fullName && (
-                    <p className="text-sm text-destructive">
-                      {validationErrors.fullName}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    className={
-                      validationErrors.phoneNumber ? "border-destructive" : ""
-                    }
-                  />
-                  {validationErrors.phoneNumber && (
-                    <p className="text-sm text-destructive">
-                      {validationErrors.phoneNumber}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select
-                    value={formData.gender.toString()}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        gender: parseInt(value),
-                      }))
-                    }
-                    disabled={!editMode}
+              {editMode && (
+                <div className="absolute -bottom-2 right-0 flex gap-2">
+                  <label
+                    htmlFor="imageUpload"
+                    className={`p-2 bg-primary hover:bg-primary/90 text-white rounded-full cursor-pointer transition-colors ${uploading ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">Not Specified</SelectItem>
-                      <SelectItem value="1">Male</SelectItem>
-                      <SelectItem value="2">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cccdPassport">CCCD/Passport</Label>
-                  <Input
-                    id="cccdPassport"
-                    name="cccdPassport"
-                    value={formData.cccdPassport}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    className={
-                      validationErrors.cccdPassport ? "border-destructive" : ""
-                    }
-                  />
-                  {validationErrors.cccdPassport && (
-                    <p className="text-sm text-destructive">
-                      {validationErrors.cccdPassport}
-                    </p>
+                    {uploading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Camera className="w-4 h-4" />
+                    )}
+                    <input
+                      type="file"
+                      id="imageUpload"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploading}
+                    />
+                  </label>
+                  {imagePreview && (
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="p-2 bg-destructive hover:bg-destructive/90 text-white rounded-full transition-colors"
+                      disabled={uploading}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   )}
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Form nhập thông tin cá nhân */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Personal Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  disabled={!editMode}
+                  className={
+                    validationErrors.fullName ? "border-destructive" : ""
+                  }
+                />
+                {validationErrors.fullName && (
+                  <p className="text-sm text-destructive">
+                    {validationErrors.fullName}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description || ""}
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
                   disabled={!editMode}
-                  rows={4}
-                  className="resize-none"
+                  className={
+                    validationErrors.phoneNumber ? "border-destructive" : ""
+                  }
                 />
+                {validationErrors.phoneNumber && (
+                  <p className="text-sm text-destructive">
+                    {validationErrors.phoneNumber}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={formData.gender.toString()}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      gender: parseInt(value),
+                    }))
+                  }
+                  disabled={!editMode}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">Not Specified</SelectItem>
+                    <SelectItem value="1">Male</SelectItem>
+                    <SelectItem value="2">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cccdPassport">CCCD/Passport</Label>
+                <Input
+                  id="cccdPassport"
+                  name="cccdPassport"
+                  value={formData.cccdPassport}
+                  onChange={handleInputChange}
+                  disabled={!editMode}
+                  className={
+                    validationErrors.cccdPassport ? "border-destructive" : ""
+                  }
+                />
+                {validationErrors.cccdPassport && (
+                  <p className="text-sm text-destructive">
+                    {validationErrors.cccdPassport}
+                  </p>
+                )}
               </div>
             </div>
-          )}
 
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description || ""}
+                onChange={handleInputChange}
+                disabled={!editMode}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Nút hành động */}
           {editMode && (
             <div className="flex justify-end space-x-4 pt-4">
               <Button type="button" variant="outline" onClick={resetForm}>
@@ -743,6 +528,7 @@ const UserProfileComponent: React.FC = () => {
             </div>
           )}
         </form>
+
       </CardContent>
     </Card>
   );
