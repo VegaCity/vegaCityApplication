@@ -1,14 +1,7 @@
 // etag.ts
 
 export interface Wallet {
-  id: string;
-  walletTypeId: string;
-  crDate: string;
-  upsDate: string;
   balance: number;
-  balanceHistory: number;
-  deflag: boolean;
-  walletType: WalletType;
 }
 export interface WalletType {
   id: string;

@@ -43,4 +43,7 @@ export const StoreServices = {
   requestClosed(storeId: string) {
     return API.post(`/store/${storeId}/request-close`);
   },
+  finalSettlement(storeId: string) {
+    return API.post(`/store/${storeId}/final-settlement`);
+  },
 };

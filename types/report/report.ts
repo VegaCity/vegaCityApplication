@@ -16,16 +16,15 @@ export interface ReportIssuePost {
   name: string;
 }
 
-export interface ReportPost {
-  packageItemId?: string;
-  userId: string;
+export interface ReportPostStore {
+  creatorStoreId: string;
   issueTypeId: string;
   description: string;
-  solution?: string;
-  solveBy?: string;
-  crDate?: string;
-  upsDate?: string;
-  status: number;
+}
+export interface ReportPostUser {
+  creatorPackageOrderId: string;
+  issueTypeId: string;
+  description: string;
 }
 
 export interface ReportPatchType {
