@@ -193,6 +193,12 @@ export function AppSidebar() {
       roles: ["CashierWeb"],
     },
     {
+      name: "Issue Report",
+      icon: Wallet,
+      href: navigatePage("isssue-types"),
+      roles: ["CashierWeb"],
+    },
+    {
       name: "Manage Users",
       icon: User,
       roles: ["Admin"],
