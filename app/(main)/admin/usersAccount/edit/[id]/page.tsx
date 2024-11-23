@@ -94,9 +94,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
         console.log(user?.birthday, "user birthday fetchhhh");
         console.log(user, "user fetchhhhhhhh");
         if (user) {
-          const convertGenderToDisplay: string = handleGenderToFe(
-            user.gender as number
-          );
+          const convertGenderToDisplay: string = handleGenderToFe(user.gender);
           setUserData(user);
           form.reset({
             fullName: user.fullName,
@@ -341,7 +339,12 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   Gender
                 </FormLabel>
                 <FormControl>
-                  <Select onValueChange={(value) => field.onChange(value)}>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      console.log(value, "gender");
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select gender" />
                     </SelectTrigger>

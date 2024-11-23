@@ -33,11 +33,11 @@ export const handleUserStatusFromBe = (status: number): string => {
 
 export const handleGenderToBe = (gender: string): number => {
   switch (gender.toLowerCase()) {
-    case "Male":
+    case "male":
       return Gender.Male; // returns 0
-    case "Female":
+    case "female":
       return Gender.Female; // returns 1
-    case "Other":
+    case "other":
       return Gender.Other; // returns 2
     default:
       throw new Error("Invalid gender input"); // Optional: handle invalid input

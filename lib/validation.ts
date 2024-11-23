@@ -407,7 +407,7 @@ export const editPackageFormSchema = z.object({
 
   price: z.coerce
     .number()
-    .min(1000, { message: "Price must at least 1.000 VND" })
+    .min(100000, { message: "Price must at least 100.000 VND" })
     .max(10000000, { message: "Price does not exceed 10 millions VND" }),
   description: z.string().min(1).nullable(),
   imageUrl: z.string().nullable(),
@@ -429,7 +429,10 @@ export const createPackageFormSchema = z.object({
     .number()
     .min(100000, { message: "Price must at least 100.000 VND" })
     .max(10000000, { message: "Price does not exceed 10 millions VND" }),
-  duration: z.number().min(1, "At least 1 day"),
+  duration: z
+    .number()
+    .min(1, "At least 1 day!")
+    .max(365, "Day must below 365 days!"),
   zoneId: z.string().min(1),
   walletTypeId: z.string().min(1),
   moneyStart: z.number().min(10000, "Money start at least 100.000 VND"),
