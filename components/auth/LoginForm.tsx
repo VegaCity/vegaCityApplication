@@ -261,8 +261,7 @@ const LoginForm: any = () => {
 
                 // Show success toast
                 toast({
-                  variant: "success",
-                  title: "Login Successful",
+                  title: "✅ Login Successful",
                   description: "Hi! Long time no see ha!",
                 });
 

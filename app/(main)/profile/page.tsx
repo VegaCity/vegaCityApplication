@@ -16,7 +16,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { Loader2, Camera, X } from "lucide-react";
 import { Users, ApiResponse } from "@/types/user/user";
-import { UserAccountPatch } from "@/types/user/userAccount";
+import { UserAccountDetail, UserAccountPatch } from "@/types/user/userAccount";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -34,9 +34,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 const UserProfileComponent: React.FC = () => {
-  const [user, setUser] = useState<Users | null>(null);
+  const [user, setUser] = useState<UserAccountDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [updating, setUpdating] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -190,7 +191,7 @@ const UserProfileComponent: React.FC = () => {
       console.log("API Response:", response.data.data);
 
       if (response.data) {
-        const userData = response.data.data;
+        const userData: UserAccountDetail = response.data.data;
         console.log("User Data:", userData);
         console.log("role", userData.role.name);
 
@@ -203,12 +204,11 @@ const UserProfileComponent: React.FC = () => {
           address: userData.address || "",
           description: userData.description || "",
           phoneNumber: userData.phoneNumber || "",
-
           gender: userData.gender || 0,
           cccdPassport: userData.cccdPassport || "",
           imageUrl: userData.imageUrl || null,
         });
-        setImagePreview(userData.imageUrl);
+        setImagePreview(userData.imageUrl || "");
       }
     } catch (error) {
       handleError(error);
@@ -295,20 +295,20 @@ const UserProfileComponent: React.FC = () => {
     setUpdating(true);
     try {
       const userId = localStorage.getItem("userId");
-    
+
       if (!userId) throw new Error("User ID not found");
-    
+
       // Update user profile
       await UserServices.updateUserById(userId, formData);
       toast({
         title: "Success",
         description: "Profile updated successfully",
       });
-    
+
       setEditMode(false);
     } catch (error) {
       handleError(error);
-    }finally {
+    } finally {
       setUpdating(false);
     }
   };
@@ -339,8 +339,6 @@ const UserProfileComponent: React.FC = () => {
     setValidationErrors({});
   };
 
-
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -353,9 +351,7 @@ const UserProfileComponent: React.FC = () => {
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>
-            {"User Profile"}
-          </span>
+          <span>{"User Profile"}</span>
           {!editMode && <Button onClick={() => setEditMode(true)}>Edit</Button>}
         </CardTitle>
       </CardHeader>
@@ -376,8 +372,9 @@ const UserProfileComponent: React.FC = () => {
                 <div className="absolute -bottom-2 right-0 flex gap-2">
                   <label
                     htmlFor="imageUpload"
-                    className={`p-2 bg-primary hover:bg-primary/90 text-white rounded-full cursor-pointer transition-colors ${uploading ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
+                    className={`p-2 bg-primary hover:bg-primary/90 text-white rounded-full cursor-pointer transition-colors ${
+                      uploading ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   >
                     {uploading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -509,6 +506,34 @@ const UserProfileComponent: React.FC = () => {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <h2 className="text-2xl">Wallet</h2>
+            <p>
+              Wallet name:
+              <strong>{user?.wallets[0].name || "No name"}</strong>
+            </p>
+            <p>
+              Balance:{" "}
+              <strong>
+                {formatVNDCurrencyValue(Number(user?.wallets[0].balance))}
+              </strong>
+            </p>
+            <p>
+              History:{" "}
+              <strong>
+                {formatVNDCurrencyValue(
+                  Number(user?.wallets[0].balanceHistory)
+                )}
+              </strong>
+            </p>
+            <p>
+              Initial Balance:{" "}
+              <strong>
+                {formatVNDCurrencyValue(Number(user?.wallets[0].balanceStart))}
+              </strong>
+            </p>
+          </div>
+
           {/* Nút hành động */}
           {editMode && (
             <div className="flex justify-end space-x-4 pt-4">
@@ -528,7 +553,6 @@ const UserProfileComponent: React.FC = () => {
             </div>
           )}
         </form>
-
       </CardContent>
     </Card>
   );

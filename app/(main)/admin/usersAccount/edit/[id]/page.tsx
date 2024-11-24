@@ -40,7 +40,7 @@ import {
   StorageReference,
   uploadBytes,
 } from "firebase/storage";
-import { Edit } from "lucide-react";
+import { Camera, Edit, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -432,13 +432,34 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                     } // Convert empty string back to null if needed
                   />
                 </FormControl>
-                <Image
-                  src={imageUploaded || field.value || ""}
-                  alt={field.value || "image"}
-                  width={300}
-                  height={250}
-                  // onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
-                />
+                {imageUploaded ? (
+                  <div className="relative">
+                    <Image
+                      className="relative"
+                      src={imageUploaded || field.value || ""}
+                      alt={field.value || "image"}
+                      width={350}
+                      height={250}
+                      // onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
+                    />
+                    {/* Delete image */}
+                    <div className="absolute top-1 left-1">
+                      <X
+                        size={30}
+                        className="text-red-600 bg-red-400 p-2 cursor-pointer"
+                        onClick={() => {
+                          setImageUploaded("");
+                          field.onChange(null);
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center w-2/3  p-6 border-2 border-dashed border-slate-300 text-slate-300">
+                    <Camera size={30} />
+                    Image unavailable
+                  </div>
+                )}
                 <FormMessage />
               </FormItem>
             )}

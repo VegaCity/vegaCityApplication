@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ChevronRight,
+  ChevronLeft,
   ChevronDown,
   Calendar,
   Home,
@@ -66,6 +66,7 @@ import { AuthServices } from "@/components/services/authServices";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 // import { useSidebar } from "@/context/SidebarContext";
 import VegaLogo from "@/img/logo.png";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 
 export function AppSidebar() {
   const [collapsedItem, setCollapsedItem] = useState<Record<string, boolean>>(
@@ -292,7 +293,7 @@ export function AppSidebar() {
                       {user ? (
                         <Avatar>
                           <AvatarImage
-                            src="https://github.com/shadcn.png"
+                            src={validImageUrl(user.imageUrl || "")}
                             alt="@shadcn"
                             className="h-8 w-8 rounded-full"
                           />
@@ -324,13 +325,13 @@ export function AppSidebar() {
                             <item.icon size={20} />
                             <span className="text-base">{item.name}</span>
                             {collapsedItem[item.name] ? (
-                              <ChevronDown
+                              <ChevronLeft
                                 className={
                                   "ml-auto transition-transform duration-150"
                                 }
                               />
                             ) : (
-                              <ChevronUp
+                              <ChevronDown
                                 className={
                                   "ml-auto transition-transform duration-150"
                                 }
