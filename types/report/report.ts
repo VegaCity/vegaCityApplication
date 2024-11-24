@@ -30,4 +30,5 @@ export interface ReportPostUser {
 export interface ReportPatchType {
   solution: string;
   status: number;
+  solveBy: string;
 }

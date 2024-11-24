@@ -23,29 +23,16 @@ import {
   FormValues,
 } from "@/lib/validation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import SearchPackageItem from "@/components/search/searchPackageItem";
+import { FileText, CircleHelp } from "lucide-react";
+import ReportDialog from "@/lib/dialog/ReportDialog";
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  // const DEV_CONFIG = {
-  //   DEMO_ETAG_ID: "52530045-9ca1-4e37-b7ab-6162577def65",
-  //   IS_DEVELOPMENT: true,
-  // };
-
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -142,43 +129,12 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     fetchEtag();
   }, [params?.id, form, toast]); // Lắng nghe sự thay đổi của params?.id
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-    }
-  };
-
-  const uploadImage = async (file: File): Promise<string> => {
-    const timestamp = Date.now();
-    const storageRef = ref(storage, `package-items/${timestamp}_${file.name}`);
-
-    try {
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
-      return downloadUrl;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw new Error("Failed to upload image");
-    }
-  };
-
   const handleUpdate = async () => {
     if (!packageItem) return;
 
     try {
       setIsLoading(true);
       let updatedData = form.getValues();
-      if (imageFile) {
-        const imageUrl = await uploadImage(imageFile);
-        updatedData = {
-          ...updatedData,
-          imageUrl,
-        };
-      }
 
       const response = await PackageItemServices.editInfoPackageItem(
         packageItem.id,
@@ -192,7 +148,6 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       });
       setIsEditing(false);
       setPackageItem((prev) => (prev ? { ...prev, ...updatedData } : null));
-      setImageFile(null);
     } catch (err) {
       if (err instanceof Error) {
         const errorMessage = (err as any).response?.data?.Error;
@@ -227,57 +182,6 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     <>
       <Form {...form}>
         <form className="space-y-4">
-          <div className="flex flex-col items-center space-y-4 w-full">
-            {/* <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600"> */}
-            {/* {packageItem?.imageUrl || imagePreview ? (
-                <Image
-                  src={imagePreview || packageItem?.vcard.imageUrl || ""}
-                  alt="Profile Image"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-lg"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-gray-400">No image uploaded</span>
-                </div>
-              )} */}
-
-            {/* Overlay khi hover */}
-            {/* {isEditing && (
-                <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="imageUpload"
-                  />
-                  <label htmlFor="imageUpload" className="cursor-pointer">
-                    <div className="flex flex-col items-center space-y-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        className="bg-white text-black hover:bg-gray-100"
-                      >
-                        Change Image
-                      </Button>
-                      <span className="text-white text-sm">
-                        Click to upload
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              )} */}
-          </div>
-
-          {/* Hiển thị preview filename nếu có file được chọn */}
-          {/* {imageFile && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Selected: {imageFile.name}
-              </div>
-            )} */}
-          {/* </div> */}
           <Card className="w-full max-w-5xl mx-auto">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
@@ -434,6 +338,22 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
               </div>
             </CardContent>
           </Card>
+          <ReportDialog
+            isOpen={isReportDialogOpen}
+            onClose={() => setIsReportDialogOpen(false)}
+            packageId={params?.id}
+          />
+          <div className="fixed bottom-16 right-16 ">
+            <Button
+              onClick={() => setIsReportDialogOpen(true)}
+              className="w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg flex items-center justify-center group transition-all duration-300 hover:scale-110"
+            >
+              <CircleHelp className="w-10 h-10 text-white" />
+              <span className="absolute right-16 bg-gray-800 text-white px-2 py-1 rounded text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                Report
+              </span>
+            </Button>
+          </div>
         </form>
       </Form>
     </>

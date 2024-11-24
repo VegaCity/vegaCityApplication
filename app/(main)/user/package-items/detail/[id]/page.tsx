@@ -486,7 +486,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         setQrCode(qrCodeData);
         /// packageOrderId
         localStorage.setItem("packageItemId", packageitemData.id);
-
         localStorage.setItem("packageIdCurrent", packageitemData.packageId);
         localStorage.setItem("startDateCustomer", packageitemData.startDate);
         localStorage.setItem("endDateCustomer", packageitemData.endDate);

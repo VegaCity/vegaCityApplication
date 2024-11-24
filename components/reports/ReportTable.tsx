@@ -11,7 +11,6 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ReportServices } from "@/components/services/reportServices";
-import { StoreServices } from "@/components/services/storeServices";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { useForm } from "react-hook-form";
@@ -42,8 +41,8 @@ interface ReportData {
   id: string;
   issueTypeId: string;
   description: string;
-  storeId: string;
-  storeName?: string;
+  solveBy: string;
+  creator: string;
   solution: string;
   status: number;
 }
@@ -58,6 +57,12 @@ interface ApiResponse {
     total: number;
     totalPage: number;
   };
+}
+
+interface ApiError {
+  StatusCode: number;
+  Error: string;
+  TimeStamp: string;
 }
 
 const EditReportDialog = ({
@@ -75,6 +80,7 @@ const EditReportDialog = ({
   const form = useForm({
     defaultValues: {
       solution: report.solution || "",
+      solveBy: "Cashier Web",
       status: report.status?.toString() || "0",
     },
   });
@@ -84,6 +90,7 @@ const EditReportDialog = ({
       await ReportServices.editReport(report.id, {
         solution: values.solution,
         status: parseInt(values.status),
+        solveBy: values.solveBy,
       });
 
       toast({
@@ -92,11 +99,19 @@ const EditReportDialog = ({
       });
       onSuccess();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
+      // Handle the specific error format
+      let errorMessage = "Failed to update report";
+
+      if (error.response?.data) {
+        const apiError = error.response.data as ApiError;
+        errorMessage = `${apiError.Error}`;
+      }
+
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update report",
+        description: errorMessage,
       });
     }
   };
@@ -124,6 +139,19 @@ const EditReportDialog = ({
             />
             <FormField
               control={form.control}
+              name="solveBy"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Solve By</FormLabel>
+                  <FormControl>
+                    <Input readOnly {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="status"
               render={({ field }) => (
                 <FormItem>
@@ -138,10 +166,10 @@ const EditReportDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="0">Pending</SelectItem>
+                      {/* <SelectItem value="0">Pending</SelectItem> */}
                       <SelectItem value="1">Processing</SelectItem>
                       <SelectItem value="2">Done</SelectItem>
-                      <SelectItem value="3">Cancel</SelectItem>
+                      {/* <SelectItem value="3">Cancel</SelectItem> */}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -206,15 +234,6 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
     }
   };
 
-  const fetchStoreName = async (storeId: string) => {
-    try {
-      const response = await StoreServices.getStoreById(storeId);
-      return response?.data?.data?.store?.name || "Unknown Store";
-    } catch {
-      return "Unknown Store";
-    }
-  };
-
   const fetchReports = async (page: number) => {
     try {
       setIsLoading(true);
@@ -229,20 +248,20 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
         throw new Error("No data received from the server");
       }
 
-      const reportData = response.data.data;
-      const updatedReports = await Promise.all(
-        reportData.map(async (report: ReportData) => ({
-          ...report,
-          storeName: await fetchStoreName(report.storeId),
-        }))
-      );
-
-      setReportList(updatedReports);
+      setReportList(response.data.data);
       setMetadata(response.data.metadata);
       setCurrentPage(page);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch reports";
+    } catch (error: any) {
+      // Handle the specific error format
+      let errorMessage = "Failed to fetch reports";
+
+      if (error.response?.data) {
+        const apiError = error.response.data as ApiError;
+        errorMessage = `${apiError.Error} (Status: ${
+          apiError.StatusCode
+        }, Time: ${new Date(apiError.TimeStamp).toLocaleString()})`;
+      }
+
       setError(errorMessage);
       toast({
         variant: "destructive",
@@ -313,8 +332,9 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
           <TableRow>
             <TableHead className="w-16">NO</TableHead>
             <TableHead>Description</TableHead>
-            <TableHead>Store Name</TableHead>
+            <TableHead>Creator</TableHead>
             <TableHead className="hidden md:table-cell w-24">Status</TableHead>
+            <TableHead className="w-24">Solution</TableHead>
             <TableHead className="w-24">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -327,12 +347,13 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
                 <TableCell className="max-w-xs truncate">
                   {report.description}
                 </TableCell>
-                <TableCell>{report.storeName}</TableCell>
+                <TableCell>{report.creator}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Badge className={statusInfo.className}>
                     {statusInfo.label}
                   </Badge>
                 </TableCell>
+                <TableCell>{report.solution}</TableCell>
                 <TableCell>
                   <Button
                     variant="ghost"
