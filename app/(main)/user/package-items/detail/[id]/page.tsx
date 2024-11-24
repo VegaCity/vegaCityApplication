@@ -189,7 +189,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         localStorage.setItem("balance", response.data.data.balance);
         localStorage.setItem(
           "packageItemIdCharge",
-          response.data.data.packageOrderId
+          response.data.data.packageItemId
         );
         localStorage.setItem("invoiceId", response.data.data.invoiceId);
 
