@@ -226,7 +226,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className="w-full bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusEmail")}
                             readOnly
                           />
@@ -241,7 +241,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className="w-full bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("phoneNumber")}
                             readOnly
                           />
@@ -254,7 +254,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className="w-full bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusCccdpassport")}
                             readOnly
                           />
@@ -276,7 +276,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="w-full bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("startDate")
                           )}
@@ -291,7 +291,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="w-full bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("endDate")
                           )}
@@ -314,7 +314,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="w-full bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balance")}
                           readOnly
                         />
@@ -327,7 +327,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="w-full bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balanceHistory")}
                           readOnly
                         />

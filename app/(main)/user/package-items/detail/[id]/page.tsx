@@ -107,11 +107,16 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       await PackageItemServices.getPackageItemById({
         id: params.id,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating RFID:", error);
+
+      // Lấy message lỗi từ response
+      const errorMessage =
+        error.response?.data?.Error || error.response?.data?.messageResponse;
+
       toast({
         title: "Error",
-        description: "Failed to update RFID",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -157,7 +162,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       setIsLoading(true);
       // Ensure charge amount is valid
       const chargeAmount = parseInt(amount) || 0;
-
       if (chargeAmount <= 0) {
         toast({
           title: "Error",
@@ -185,7 +189,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         localStorage.setItem("balance", response.data.data.balance);
         localStorage.setItem(
           "packageItemIdCharge",
-          response.data.data.packageItemId
+          response.data.data.packageOrderId
         );
         localStorage.setItem("invoiceId", response.data.data.invoiceId);
 
@@ -724,9 +728,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className="bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("vcardId")}
-                            readOnly={!isEditing}
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -738,9 +742,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className="bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("customer.fullName")}
-                            readOnly={!isEditing}
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -759,7 +763,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("startDate")
                           )}
@@ -774,7 +778,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("endDate")
                           )}
@@ -788,9 +792,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("status")}
-                          readOnly={!isEditing}
+                          readOnly
                         />
                       </FormControl>
                       <FormMessage />
@@ -809,7 +813,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balance")}
                           readOnly
                         />
@@ -822,7 +826,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-200 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balanceHistory")}
                           readOnly
                         />
