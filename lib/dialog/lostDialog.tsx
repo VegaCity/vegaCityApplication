@@ -105,7 +105,7 @@ const LostPackageItemDialog = ({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader className="space-y-2">
           <AlertDialogTitle className="text-xl font-semibold text-red-500">
-            Report Lost Package Item
+            Report Lost VCard
           </AlertDialogTitle>
           <AlertDialogDescription className="text-sm text-gray-500">
             Please confirm the information about the lost item.

@@ -356,9 +356,7 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">
-        {title || "Package Items"}
-      </h3>
+      <h3 className="text-2xl mb-4 font-semibold">{title || "VCard Table"}</h3>
 
       <div className="flex items-center space-x-4 mb-4">
         <div className="relative flex-1 md:max-w-xs" style={{ width: "300px" }}>

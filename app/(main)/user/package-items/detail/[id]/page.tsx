@@ -612,7 +612,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
   return (
     <>
-      <BackButton text="Back To Etag List" link="/user/package-items" />
+      <BackButton text="Back To VCard" link="/user/package-items" />
 
       <Form {...form}>
         <form className="space-y-4">
@@ -893,7 +893,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   ? "Processing..."
                   : isEditing
                   ? "Confirm"
-                  : "Activate ETag"}
+                  : "Activate"}
               </Button>
             ) : (
               <>
