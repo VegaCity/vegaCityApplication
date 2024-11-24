@@ -52,7 +52,7 @@ interface Metadata {
   page: number;
 }
 
-const ReportList = () => {
+export const ReportList = () => {
   const [reportList, setReportList] = useState<ReportData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

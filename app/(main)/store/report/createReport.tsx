@@ -35,7 +35,7 @@ interface IssueTypeResponse {
   qrCode: null;
 }
 
-const ReportPage = () => {
+export const ReportPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [issueTypes, setIssueTypes] = useState<IssueType[]>([]);
   const [formData, setFormData] = useState<ReportPostStore>({
