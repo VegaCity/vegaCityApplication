@@ -21,6 +21,7 @@ import {
   User,
   Wallet,
   PiggyBank,
+  AlertTriangle,
 } from "lucide-react";
 import { StoreServices } from "@/components/services/Store/storeServices";
 // import { StoreDetail } from "@/types/store/store";
@@ -79,6 +80,7 @@ const WithdrawMoney = () => {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isSettling, setIsSettling] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [error, setError] = useState("");
   const [pendingTransactionId, setPendingTransactionId] = useState("");
@@ -147,6 +149,44 @@ const WithdrawMoney = () => {
           amountCanWithdraw: response.data.data.amountCanWithdraw,
           wallets: storeData.wallets,
         });
+
+        // If store status is 3, automatically trigger final settlement
+        if (storeData.status === 3) {
+          try {
+            setIsSettling(true);
+            const settlementResponse = await StoreServices.finalSettlement(
+              storeData.id
+            );
+
+            if (settlementResponse.data?.statusCode === 200) {
+              const settlementAmount =
+                settlementResponse.data.data?.amountCanWithdraw || 0;
+
+              // Update store details with new settlement amount
+              setStoreDetails((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      amountCanWithdraw: settlementAmount,
+                    }
+                  : null
+              );
+            }
+          } catch (settlementErr) {
+            console.error(
+              "Error in automatic final settlement:",
+              settlementErr
+            );
+            toast({
+              variant: "destructive",
+              title: "Warning",
+              description:
+                "Store is blocked but final settlement calculation failed. Please try calculating manually.",
+            });
+          } finally {
+            setIsSettling(false);
+          }
+        }
       } else {
         throw new Error(
           response.data?.messageResponse || "Can not get wallet for store"
@@ -164,8 +204,7 @@ const WithdrawMoney = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [storeName, storePhone]);
-
+  }, [storeName, storePhone, toast]);
   // Optionally, log the updated state (using useEffect or other methods)
   useEffect(() => {
     if (walletInfo) {
@@ -175,7 +214,49 @@ const WithdrawMoney = () => {
       console.log(storeDetails, "storeDetails updated");
     }
   }, [walletInfo, storeDetails]);
+  const handleFinalSettlement = async () => {
+    if (!storeDetails) return;
 
+    try {
+      setIsSettling(true);
+      setError("");
+
+      const response = await StoreServices.finalSettlement(storeDetails.id);
+
+      if (response.data?.statusCode === 200) {
+        // Extract the settlement amount from the response
+        const settlementAmount = response.data.data?.amountCanWithdraw || 0;
+
+        // Update store details with new settlement amount
+        setStoreDetails((prev) =>
+          prev
+            ? {
+                ...prev,
+                amountCanWithdraw: settlementAmount,
+              }
+            : null
+        );
+      } else {
+        throw new Error(
+          response.data?.messageResponse || "Failed to process final settlement"
+        );
+      }
+    } catch (err) {
+      console.error("Error processing final settlement:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An error occurred during final settlement. Please try again."
+      );
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to calculate final settlement amount",
+      });
+    } finally {
+      setIsSettling(false);
+    }
+  };
   const validateWithdrawAmount = useCallback(
     (amount: number, balance: number | null): string | null => {
       if (isNaN(amount) || amount <= 0) {
@@ -534,47 +615,8 @@ const WithdrawMoney = () => {
       ) : null}
     </div>
   );
+
   const renderStoreTab = () => {
-    const [isSettling, setIsSettling] = useState(false);
-    const [showSettlementDialog, setShowSettlementDialog] = useState(false);
-    const handleFinalSettlement = async () => {
-      try {
-        setIsSettling(true);
-        setError("");
-
-        const response = await StoreServices.finalSettlement(storeDetails!.id);
-
-        if (response.data?.statusCode === 200) {
-          toast({
-            title: "Success",
-            description: "Final settlement completed successfully",
-            variant: "success",
-          });
-
-          // Refresh wallet info after settlement
-          handleFindStoreWallet();
-        } else {
-          throw new Error(
-            response.data?.Error || "Failed to process final settlement"
-          );
-        }
-      } catch (err) {
-        console.error("Error processing final settlement:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An error occurred during final settlement. Please try again."
-        );
-        toast({
-          title: "Error",
-          description: "Failed to process final settlement",
-          variant: "destructive",
-        });
-      } finally {
-        setIsSettling(false);
-      }
-    };
-
     return (
       <div className="space-y-6">
         <div className="space-y-3">
@@ -621,11 +663,11 @@ const WithdrawMoney = () => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+            <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
             <>
               <Store className="w-5 h-5" />
-              <span>Find Store Wallet</span>
+              <span>Find Store</span>
             </>
           )}
         </Button>
@@ -662,7 +704,7 @@ const WithdrawMoney = () => {
                     <p className="text-sm text-gray-600">
                       Phone:{" "}
                       <span className="font-semibold text-gray-900">
-                        {storeDetails.shortName}
+                        {storeDetails.phoneNumber}
                       </span>
                     </p>
                     <p className="text-sm text-gray-600">
@@ -676,137 +718,109 @@ const WithdrawMoney = () => {
 
                 <div className="pt-2 border-t border-blue-100">
                   <div className="space-y-4">
-                    <div>
-                      <p className="text-base font-medium text-gray-700">
-                        Available Balance
-                      </p>
-                      <div className="flex items-center space-x-2">
-                        <p className="text-3xl font-bold text-gray-900">
-                          {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
+                    {storeDetails.status === 3 ? (
+                      <>
+                        <Alert className="bg-yellow-50 border-yellow-200">
+                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                          <AlertDescription className="text-yellow-800">
+                            This store has been blocked. Only the final
+                            settlement amount can be withdrawn.
+                          </AlertDescription>
+                        </Alert>
+
+                        {/* Display Final Settlement Amount if available */}
+                        {storeDetails.amountCanWithdraw > 0 ? (
+                          <div className="space-y-2">
+                            <p className="text-base font-medium text-gray-700">
+                              Final Settlement Amount
+                            </p>
+                            <div className="flex items-center space-x-2">
+                              <p className="text-3xl font-bold text-emerald-600">
+                                {storeDetails.amountCanWithdraw.toLocaleString(
+                                  FORMAT_LOCALE
+                                )}
+                              </p>
+                              <span className="text-xl font-semibold text-gray-600">
+                                VND
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={handleFinalSettlement}
+                              disabled={isSettling}
+                              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center space-x-2"
+                            >
+                              {isSettling ? (
+                                <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                              ) : (
+                                <>
+                                  <PiggyBank className="w-5 h-5" />
+                                  <span>Calculate Final Settlement</span>
+                                </>
+                              )}
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <div>
+                        <p className="text-base font-medium text-gray-700">
+                          Available Balance
                         </p>
-                        <span className="text-xl font-semibold text-gray-600">
-                          VND
-                        </span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-base font-medium text-gray-700">
-                        Amount Can Withdraw
-                      </p>
-                      <div className="flex items-center space-x-2">
-                        <p className="text-3xl font-bold text-emerald-600">
-                          {storeDetails.amountCanWithdraw.toLocaleString(
-                            FORMAT_LOCALE
-                          )}
-                        </p>
-                        <span className="text-xl font-semibold text-gray-600">
-                          VND
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <label
-                  htmlFor="amount-input"
-                  className="text-sm font-semibold text-gray-700"
-                >
-                  Withdrawal Amount (VND)
-                </label>
-                <Input
-                  id="amount-input"
-                  type="text"
-                  value={formatAmount(withdrawAmount)}
-                  onChange={handleAmountChange}
-                  placeholder="0"
-                  className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button
-                  className="h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
-                  onClick={handleRequestWithdraw}
-                  disabled={!withdrawAmount || isWithdrawing}
-                >
-                  {isWithdrawing ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                  ) : (
-                    <>
-                      <ArrowDownToLine className="w-5 h-5" />
-                      <span>Withdraw Funds</span>
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  className="h-14 text-lg font-semibold bg-red-600 hover:bg-red-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
-                  onClick={() => setShowSettlementDialog(true)}
-                  disabled={isSettling || walletInfo.balance <= 0}
-                >
-                  {isSettling ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                  ) : (
-                    <>
-                      <PiggyBank className="w-5 h-5" />
-                      <span>Final Settlement</span>
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              <AlertDialog
-                open={showSettlementDialog}
-                onOpenChange={setShowSettlementDialog}
-              >
-                <AlertDialogContent className="bg-white rounded-xl">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-                      Confirm Final Settlement
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-base text-gray-600">
-                      Are you sure you want to proceed with final settlement?
-                      This action cannot be undone.
-                      <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
                         <div className="flex items-center space-x-2">
-                          <span className="font-medium text-yellow-800">
-                            Current Balance:
-                          </span>
-                          <span className="text-yellow-900">
-                            {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}{" "}
+                          <p className="text-3xl font-bold text-gray-900">
+                            {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
+                          </p>
+                          <span className="text-xl font-semibold text-gray-600">
                             VND
                           </span>
                         </div>
                       </div>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter className="space-x-3">
-                    <AlertDialogCancel
-                      className="h-11 px-6 rounded-lg border-2 border-gray-200 hover:bg-gray-50 transition-colors duration-200"
-                      onClick={() => setShowSettlementDialog(false)}
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Show withdrawal form only if store is not blocked or has settlement amount */}
+              {(storeDetails.status !== 3 ||
+                storeDetails.amountCanWithdraw > 0) && (
+                <>
+                  <div className="space-y-3">
+                    <label
+                      htmlFor="amount-input"
+                      className="text-sm font-semibold text-gray-700"
                     >
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      className="h-11 px-6 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
-                      onClick={handleFinalSettlement}
+                      Withdrawal Amount (VND)
+                    </label>
+                    <Input
+                      id="amount-input"
+                      type="text"
+                      value={formatAmount(withdrawAmount)}
+                      onChange={handleAmountChange}
+                      placeholder="0"
+                      className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
                       disabled={isSettling}
-                    >
-                      {isSettling ? (
-                        <div className="flex items-center space-x-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Processing...</span>
-                        </div>
-                      ) : (
-                        "Confirm Settlement"
-                      )}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+                    />
+                  </div>
+
+                  <Button
+                    className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
+                    onClick={handleRequestWithdraw}
+                    disabled={!withdrawAmount || isWithdrawing || isSettling}
+                  >
+                    {isWithdrawing ? (
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    ) : (
+                      <>
+                        <ArrowDownToLine className="w-5 h-5" />
+                        <span>Withdraw Funds</span>
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           )
         )}

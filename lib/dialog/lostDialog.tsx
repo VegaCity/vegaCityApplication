@@ -75,7 +75,7 @@ const LostPackageItemDialog = ({
       if (response.status === 200) {
         toast({
           title: "Reported Successfully",
-          description: "The package item has been reported successfully.",
+          description: "The VCard has been reported successfully.",
           variant: "default",
         });
         localStorage.setItem(
@@ -88,13 +88,13 @@ const LostPackageItemDialog = ({
         throw new Error("Unexpected response status");
       }
     } catch (error) {
-      console.error("Error reporting lost package item:", error);
+      console.error("Error reporting lost VCard:", error);
       toast({
         title: "Report Failed",
         description:
           error instanceof Error
             ? error.message
-            : "Failed to report lost package item. Please try again later.",
+            : "Failed to report lost VCard. Please try again later.",
         variant: "destructive",
       });
     }
@@ -105,7 +105,7 @@ const LostPackageItemDialog = ({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader className="space-y-2">
           <AlertDialogTitle className="text-xl font-semibold text-red-500">
-            Report Lost Package Item
+            Report Lost VCard
           </AlertDialogTitle>
           <AlertDialogDescription className="text-sm text-gray-500">
             Please confirm the information about the lost item.

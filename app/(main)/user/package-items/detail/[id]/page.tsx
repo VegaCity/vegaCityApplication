@@ -486,7 +486,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         setQrCode(qrCodeData);
         /// packageOrderId
         localStorage.setItem("packageItemId", packageitemData.id);
-
         localStorage.setItem("packageIdCurrent", packageitemData.packageId);
         localStorage.setItem("startDateCustomer", packageitemData.startDate);
         localStorage.setItem("endDateCustomer", packageitemData.endDate);
@@ -613,7 +612,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
   return (
     <>
-      <BackButton text="Back To Etag List" link="/user/package-items" />
+      <BackButton text="Back To VCard" link="/user/package-items" />
 
       <Form {...form}>
         <form className="space-y-4">
@@ -666,7 +665,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusName")}
                             readOnly={!isEditing}
                           />
@@ -679,7 +678,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusEmail")}
                             readOnly={!isEditing}
                           />
@@ -694,7 +693,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("phoneNumber")}
                             readOnly={!isEditing}
                           />
@@ -707,7 +706,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusCccdpassport")}
                             readOnly={!isEditing}
                           />
@@ -725,7 +724,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("vcardId")}
                             readOnly={!isEditing}
                           />
@@ -739,7 +738,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("customer.fullName")}
                             readOnly={!isEditing}
                           />
@@ -760,7 +759,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("startDate")
                           )}
@@ -775,7 +774,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("endDate")
                           )}
@@ -789,7 +788,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("status")}
                           readOnly={!isEditing}
                         />
@@ -810,7 +809,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balance")}
                           readOnly
                         />
@@ -823,7 +822,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balanceHistory")}
                           readOnly
                         />
@@ -894,7 +893,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   ? "Processing..."
                   : isEditing
                   ? "Confirm"
-                  : "Activate ETag"}
+                  : "Activate"}
               </Button>
             ) : (
               <>

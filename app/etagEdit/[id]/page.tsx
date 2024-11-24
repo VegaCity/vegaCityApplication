@@ -23,29 +23,16 @@ import {
   FormValues,
 } from "@/lib/validation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import SearchPackageItem from "@/components/search/searchPackageItem";
+import { FileText, CircleHelp } from "lucide-react";
+import ReportDialog from "@/lib/dialog/ReportDialog";
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
-  // const DEV_CONFIG = {
-  //   DEMO_ETAG_ID: "52530045-9ca1-4e37-b7ab-6162577def65",
-  //   IS_DEVELOPMENT: true,
-  // };
-
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -142,43 +129,12 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     fetchEtag();
   }, [params?.id, form, toast]); // Lắng nghe sự thay đổi của params?.id
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-    }
-  };
-
-  const uploadImage = async (file: File): Promise<string> => {
-    const timestamp = Date.now();
-    const storageRef = ref(storage, `package-items/${timestamp}_${file.name}`);
-
-    try {
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(snapshot.ref);
-      return downloadUrl;
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      throw new Error("Failed to upload image");
-    }
-  };
-
   const handleUpdate = async () => {
     if (!packageItem) return;
 
     try {
       setIsLoading(true);
       let updatedData = form.getValues();
-      if (imageFile) {
-        const imageUrl = await uploadImage(imageFile);
-        updatedData = {
-          ...updatedData,
-          imageUrl,
-        };
-      }
 
       const response = await PackageItemServices.editInfoPackageItem(
         packageItem.id,
@@ -192,7 +148,6 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       });
       setIsEditing(false);
       setPackageItem((prev) => (prev ? { ...prev, ...updatedData } : null));
-      setImageFile(null);
     } catch (err) {
       if (err instanceof Error) {
         const errorMessage = (err as any).response?.data?.Error;
@@ -227,95 +182,51 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     <>
       <Form {...form}>
         <form className="space-y-4">
-          <div className="flex flex-col items-center space-y-4 w-full">
-            {/* <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600"> */}
-            {/* {packageItem?.imageUrl || imagePreview ? (
-                <Image
-                  src={imagePreview || packageItem?.vcard.imageUrl || ""}
-                  alt="Profile Image"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-lg"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-gray-400">No image uploaded</span>
-                </div>
-              )} */}
-
-            {/* Overlay khi hover */}
-            {/* {isEditing && (
-                <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="imageUpload"
-                  />
-                  <label htmlFor="imageUpload" className="cursor-pointer">
-                    <div className="flex flex-col items-center space-y-2">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        className="bg-white text-black hover:bg-gray-100"
-                      >
-                        Change Image
-                      </Button>
-                      <span className="text-white text-sm">
-                        Click to upload
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              )} */}
-          </div>
-
-          {/* Hiển thị preview filename nếu có file được chọn */}
-          {/* {imageFile && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Selected: {imageFile.name}
-              </div>
-            )} */}
-          {/* </div> */}
-          <Card className="w-full max-w-5xl mx-auto">
+          <Card className="w-full max-w-5xl mx-auto p-4 md:p-6">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-center">
-                <CardTitle>VCard Detail</CardTitle>
-                <Button type="button" onClick={() => setIsEditing(!isEditing)}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <CardTitle className="text-xl md:text-2xl">
+                  VCard Detail
+                </CardTitle>
+                <Button
+                  type="button"
+                  onClick={() => setIsEditing(!isEditing)}
+                  className="w-full sm:w-auto"
+                >
                   {isEditing ? "Cancel Edit" : "Edit"}
                 </Button>
               </div>
             </CardHeader>
+
             <CardContent>
-              <div className="max-w-4xl mx-auto pl-20 space-y-12">
-                {/* Personal Details */}
-                <div className="space-y-4 ">
-                  <h4 className="text-lg font-semibold mb-2 mt-10">
+              <div className="space-y-8 md:space-y-12">
+                {/* Customer Information */}
+                <section className="space-y-4">
+                  <h4 className="text-lg font-semibold mb-4">
                     Customer Information
                   </h4>
-                  <div className="space-y-2 mr-14">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center items-center ">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12 ">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <FormItem className="space-y-2">
+                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
                           FullName
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusName")}
                             readOnly={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
 
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Email:
+                      <FormItem className="space-y-2">
+                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Email
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusEmail")}
                             readOnly
                           />
@@ -323,27 +234,27 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       </FormItem>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Phone Number:
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <FormItem className="space-y-2">
+                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Phone Number
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("phoneNumber")}
                             readOnly
                           />
                         </FormControl>
                       </FormItem>
 
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          CCCD/Passport :
+                      <FormItem className="space-y-2">
+                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          CCCD/Passport
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("cusCccdpassport")}
                             readOnly
                           />
@@ -351,21 +262,21 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       </FormItem>
                     </div>
                   </div>
-                </div>
+                </section>
 
-                <div>
-                  <h4 className="text-lg font-semibold mb-2">
+                {/* Duration Information */}
+                <section className="space-y-4">
+                  <h4 className="text-lg font-semibold mb-4">
                     Duration Information
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-9/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Start Date:
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <FormItem className="space-y-2">
+                      <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                        Start Date
                       </FormLabel>
-
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("startDate")
                           )}
@@ -373,14 +284,14 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-9/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        End Date:
-                      </FormLabel>
 
+                    <FormItem className="space-y-2">
+                      <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                        End Date
+                      </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("endDate")
                           )}
@@ -389,44 +300,48 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       </FormControl>
                     </FormItem>
                   </div>
-                </div>
+                </section>
 
                 {/* Wallet Information */}
-                <div>
-                  <h4 className="text-lg font-semibold mb-2">
+                <section className="space-y-4">
+                  <h4 className="text-lg font-semibold mb-4">
                     Wallet Information
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <FormItem className="space-y-2">
+                      <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Balance
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balance")}
                           readOnly
                         />
                       </FormControl>
                     </FormItem>
 
-                    <FormItem className="grid grid-cols-[150px_1fr] items-center gap-1 md:w-8/12 ">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Balance History:
+                    <FormItem className="space-y-2">
+                      <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                        Balance History
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="w-full bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balanceHistory")}
                           readOnly
                         />
                       </FormControl>
                     </FormItem>
                   </div>
-                </div>
+                </section>
+
                 {isEditing && (
-                  <div className="flex justify-end">
-                    <Button onClick={handleUpdate} className="bg-blue-600">
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={handleUpdate}
+                      className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+                    >
                       Save Changes
                     </Button>
                   </div>
@@ -434,6 +349,22 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
               </div>
             </CardContent>
           </Card>
+          <ReportDialog
+            isOpen={isReportDialogOpen}
+            onClose={() => setIsReportDialogOpen(false)}
+            packageId={params?.id}
+          />
+          <div className="fixed bottom-6 sm:bottom-8 md:bottom-16 right-6 sm:right-8 md:right-16">
+            <Button
+              onClick={() => setIsReportDialogOpen(true)}
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg flex items-center justify-center group transition-all duration-300 hover:scale-110"
+            >
+              <CircleHelp className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+              <span className="absolute right-20 sm:right-24 bg-gray-800 text-white px-2 py-1 rounded text-sm sm:text-base opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                Report
+              </span>
+            </Button>
+          </div>
         </form>
       </Form>
     </>
