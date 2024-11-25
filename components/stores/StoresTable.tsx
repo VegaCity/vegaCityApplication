@@ -57,8 +57,8 @@ import { useForm } from "react-hook-form";
 
 interface StoresTableProps {
   params?: { id?: string }; // Optional for fetching all stores
-  limit: number;
-  title: string;
+  limit?: number;
+  title?: string;
 }
 
 interface StoreClosingRequest {
