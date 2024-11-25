@@ -54,4 +54,20 @@ export const UserServices = {
   deletePackageById(id: string) {
     return API.delete(`/user/${id}`);
   },
+  usersClosingRequest({ page, size }: UserPageSize) {
+    return API.get("/user/closing-requests", {
+      params: {
+        apiKey: apiKey,
+        page,
+        size,
+      },
+    });
+  },
+  resolveClosingRequest(userData: {
+    storeName: string;
+    phoneNumber: string;
+    status: string;
+  }) {
+    return API.post("/user/resolve-closing-request", userData);
+  },
 };

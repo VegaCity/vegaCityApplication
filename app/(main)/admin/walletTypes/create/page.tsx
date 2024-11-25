@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
+import { Upload } from "lucide-react";
 
 interface Wallet {
   name: string;
@@ -32,7 +33,7 @@ type FormValues = z.infer<typeof formSchema>;
 const WalletCreatePage = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -42,8 +43,8 @@ const WalletCreatePage = () => {
   });
 
   const handleSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     try {
-      setIsLoading(true);
       const walletResponse = await WalletTypesServices.createWalletType(data);
       toast({
         variant: "success",
@@ -59,7 +60,7 @@ const WalletCreatePage = () => {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -87,9 +88,15 @@ const WalletCreatePage = () => {
             <Button
               type="submit"
               className="bg-blue-500 hover:bg-blue-700"
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
-              {isLoading ? "Creating..." : "Create Wallet"}
+              {isSubmitting ? (
+                "Creating..."
+              ) : (
+                <>
+                  <Upload /> <p>Create</p>
+                </>
+              )}
             </Button>
           </div>
         </form>

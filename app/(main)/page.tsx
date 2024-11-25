@@ -9,6 +9,8 @@ import {
   Wallet,
   ShoppingCart,
   CreditCard,
+  CreditCardIcon,
+  Currency,
 } from "lucide-react";
 import DashboardCard from "@/components/dashboard/DashboardCard";
 import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
@@ -25,11 +27,13 @@ interface StoreTotals {
 }
 
 interface AdminTotals {
+  etagCount: number;
+  name: string;
+  orderCash: number;
+  orderCount: number;
+  otherOrder: number;
   totalTransactions: number;
-  totalAmount: number;
-  totalEtags: number;
-  totalOrders: number;
-  totalPackages: number;
+  totalTransactionsAmount: number;
 }
 interface CashierTotals {
   totalTransactions: number;
@@ -43,11 +47,13 @@ const Home = () => {
   const [analyticsData, setAnalyticsData] = useState<any[]>([]);
   const [userRole, setUserRole] = useState<string>("");
   const [adminTotals, setAdminTotals] = useState<AdminTotals>({
+    etagCount: 0,
+    name: "",
+    orderCash: 0,
+    orderCount: 0,
+    otherOrder: 0,
     totalTransactions: 0,
-    totalAmount: 0,
-    totalEtags: 0,
-    totalOrders: 0,
-    totalPackages: 0,
+    totalTransactionsAmount: 0,
   });
   const [storeTotals, setStoreTotals] = useState<StoreTotals>({
     totalOrders: 0,
@@ -92,31 +98,23 @@ const Home = () => {
         // Fetch analytics data
         const analyticsResponse =
           await AnalyticsServices.getDashboardAnalytics();
-        const data = analyticsResponse.data.data || [];
+        const data = analyticsResponse.data.data[0] || [];
         setAnalyticsData(data);
+        console.log(data, "dashboard");
 
         // Calculate totals based on role
         if (role === "Admin") {
-          const calculatedTotals = data.reduce(
-            (acc: AdminTotals, curr: any): AdminTotals => ({
-              totalTransactions:
-                acc.totalTransactions + (Number(curr.totalTransactions) || 0),
-              totalAmount:
-                acc.totalAmount + (Number(curr.totalTransactionsAmount) || 0),
-              totalEtags: acc.totalEtags + (Number(curr.etagCount) || 0),
-              totalOrders: acc.totalOrders + (Number(curr.orderCount) || 0),
-              totalPackages:
-                acc.totalPackages + (Number(curr.packageCount) || 0),
-            }),
-            {
-              totalTransactions: 0,
-              totalAmount: 0,
-              totalEtags: 0,
-              totalOrders: 0,
-              totalPackages: 0,
-            }
-          );
-          setAdminTotals(calculatedTotals);
+          const adminDashboardData: AdminTotals = {
+            etagCount: data.etagCount,
+            name: data.name,
+            orderCash: data.orderCash,
+            orderCount: data.orderCount,
+            otherOrder: data.otherOrder,
+            totalTransactions: data.totalTransactions,
+            totalTransactionsAmount: data.totalTransactionsAmount,
+          };
+
+          setAdminTotals(adminDashboardData);
         } else if (role === "Store") {
           const calculatedTotals = data.reduce(
             (acc: StoreTotals, curr: any): StoreTotals => ({
@@ -179,28 +177,33 @@ const Home = () => {
     <>
       <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
         <DashboardCard
-          title="Total Orders"
-          count={formatNumber(storeTotals.totalOrders)}
-          icon={<ShoppingCart className="text-slate-500" size={50} />}
+          title="Total V-Card"
+          count={formatNumber(adminTotals.etagCount)}
+          icon={<CreditCardIcon className="text-slate-500" size={50} />}
         />
         <DashboardCard
-          title="Total Revenue"
-          count={formatNumber(storeTotals.totalAmount)}
+          title="Total Order Cash"
+          count={formatNumber(adminTotals.orderCash)}
           icon={<Wallet className="text-slate-500" size={50} />}
         />
         <DashboardCard
-          title="Total Products"
-          count={formatNumber(storeTotals.totalProducts)}
+          title="Total Order Count"
+          count={formatNumber(adminTotals.orderCount)}
           icon={<Package2 className="text-slate-500" size={50} />}
         />
         <DashboardCard
-          title="Order Cash"
-          count={formatNumber(storeTotals.cashOrders)}
+          title="Order Total Transactions"
+          count={formatNumber(adminTotals.totalTransactions)}
+          icon={<Store className="text-slate-500" size={50} />}
+        />
+        <DashboardCard
+          title="Order Total Transactions Amount"
+          count={formatNumber(adminTotals.totalTransactionsAmount)}
           icon={<Store className="text-slate-500" size={50} />}
         />
         <DashboardCard
           title="Other Orders"
-          count={formatNumber(storeTotals.otherOrders)}
+          count={formatNumber(adminTotals.otherOrder)}
           icon={<Tag className="text-slate-500" size={50} />}
         />
       </div>

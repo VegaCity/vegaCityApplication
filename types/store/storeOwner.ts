@@ -2,9 +2,8 @@ import { WalletType } from "@/types/walletType/walletType";
 import { StoreMenu } from "@/types/store/storeMenu";
 
 export enum StoreTypeEnum {
-  Food = 0,
-  Clothing = 1,
-  Service = 2,
+  StoreProduct = 1,
+  StoreService = 2,
 }
 
 export enum StoreStatusTypeEnum {
@@ -22,16 +21,12 @@ interface Store_StoreStatus_Type {
 
 export const storeTypes: Store_StoreStatus_Type[] = [
   {
-    name: StoreTypeEnum[0],
-    value: StoreTypeEnum.Food,
-  },
-  {
     name: StoreTypeEnum[1],
-    value: StoreTypeEnum.Clothing,
+    value: StoreTypeEnum.StoreProduct,
   },
   {
     name: StoreTypeEnum[2],
-    value: StoreTypeEnum.Service,
+    value: StoreTypeEnum.StoreService,
   },
 ];
 
@@ -57,7 +52,6 @@ export const storeStatusTypes: Store_StoreStatus_Type[] = [
 //handle store type from BE (number)
 export function handleStoreTypeFromBe(value: number): string {
   switch (value) {
-    case 0:
     case 1:
     case 2:
       return StoreTypeEnum[value];

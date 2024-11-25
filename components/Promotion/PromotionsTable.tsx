@@ -74,18 +74,19 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
     if (promo.id) {
       PromotionServices.deletePromotionById(promo.id)
         .then((res) => {
-          setDeleteLoading(false);
           toast({
             title: res.data.messageResponse,
             description: `Promotion name: ${promo.name}`,
           });
         })
         .catch((err) => {
-          setDeleteLoading(false);
           toast({
             title: err.data.messageResponse,
             description: "Some errors have been occurred!",
           });
+        })
+        .finally(() => {
+          setDeleteLoading(false);
         });
     }
   };

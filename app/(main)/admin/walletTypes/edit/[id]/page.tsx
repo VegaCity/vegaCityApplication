@@ -23,6 +23,7 @@ import {
 import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/loader/Loader";
+import { Upload } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -43,6 +44,7 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -52,6 +54,7 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
   });
 
   const handleSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     try {
       await WalletTypesServices.updateWalletTypeById(params.id, data);
       toast({
@@ -64,6 +67,8 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -131,9 +136,21 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
             )}
           />
 
-          <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Update Wallet Type
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                "Creating..."
+              ) : (
+                <>
+                  <Upload /> <p>Create</p>
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       </Form>
     </>

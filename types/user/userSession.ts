@@ -1,6 +1,7 @@
 export interface UserSession {
   id: string;
   userId: string;
+  userName: string;
   startDate: string;
   endDate: string;
   totalCashReceive: number;

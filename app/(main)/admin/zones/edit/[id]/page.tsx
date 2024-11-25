@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Edit } from "lucide-react";
 
 const zoneSchema = z.object({
   zoneName: z.string().min(1, { message: "Name is required" }),
@@ -36,6 +37,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // const pkg = packageList.find((pkg) => pkg.id === params.id);
   const form = useForm<FormValues>({
@@ -73,6 +75,7 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
   }, [params.id, form]);
 
   const handleSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
     try {
       // Assuming you have an update method in ZoneServices
       await ZoneServices.editZone(params.id, data);
@@ -85,6 +88,8 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
       setError(
         err instanceof Error ? err.message : "An unknown error occurred"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -137,9 +142,21 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
             )}
           />
 
-          <Button className="w-full dark:bg-slate-800 dark:text-white">
-            Update Zone
-          </Button>
+          <div className="flex justify-end items-end w-full mt-4">
+            <Button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                "Update..."
+              ) : (
+                <>
+                  <Edit /> <p>Update</p>
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       </Form>
     </>

@@ -33,6 +33,8 @@ import {
 import { isObject } from "@/lib/isObject";
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { AxiosError } from "axios";
 
 interface UserDetailProps {
   params: { id: string };
@@ -44,7 +46,8 @@ const UserDetail = ({ params }: UserDetailProps) => {
     null
   );
   const [walletTypes, setWalletTypes] = useState<GetWalletTypeById[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEmpty, setIsEmpty] = useState<boolean>(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -55,16 +58,22 @@ const UserDetail = ({ params }: UserDetailProps) => {
         //fetch user detail
         const userResponse = await UserServices.getUserById(userId);
         const user: UserAccountGetDetail = userResponse.data.data;
+        console.log(userResponse.data, "userRes");
 
         setUserDetail(user);
         // You can now use walletTypes array for further processing
       } catch (err) {
-        toast({
-          title: "Error",
-          description: "Failed to load user details",
-        });
+        if (err instanceof AxiosError) {
+          setIsEmpty(true);
+          toast({
+            title: "Error",
+            description:
+              err.response?.data.Error || "Failed to load user details",
+          });
+        }
       } finally {
         setIsLoading(false);
+        setIsEmpty(false);
       }
     };
 
@@ -72,7 +81,12 @@ const UserDetail = ({ params }: UserDetailProps) => {
   }, [userId]);
 
   if (isLoading) return <Loader isLoading={isLoading} />;
-  if (!userDetail) return <div>No user details found!</div>;
+  if (!userDetail || isEmpty)
+    return (
+      <div>
+        <EmptyDataPage />
+      </div>
+    );
 
   return (
     <div className="mt-10 space-y-6">

@@ -54,6 +54,7 @@ const PackageCreatePage = () => {
     id: string;
     name: string;
   } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   //handleImage from local
   const [imageUploaded, setImageUploaded] = useState<string | null>("");
@@ -160,7 +161,14 @@ const PackageCreatePage = () => {
     }
   };
 
+  const handleChangePackageTypeAndGetValueToWalletType = (pkgType: string) => {
+    if (pkgType === PackageTypesEnum[0]) {
+    }
+  };
+
   const handleSubmit = async (data: CreatePackageFormValues) => {
+    const { type, walletTypeId, ...rest } = data;
+    setIsSubmitting(true);
     try {
       // Tạo package và lấy packageId
       const packageResponse = await PackageServices.uploadPackage({
@@ -202,6 +210,8 @@ const PackageCreatePage = () => {
           variant: "destructive",
         });
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -228,7 +238,7 @@ const PackageCreatePage = () => {
             >
               {/* Div Container */}
               <div className="grid grid-cols-2 gap-4">
-                <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
+                <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md space-y-4">
                   {/* Package Name */}
                   <FormField
                     control={form.control}
@@ -255,6 +265,18 @@ const PackageCreatePage = () => {
                           <Select
                             onValueChange={(value) => {
                               field.onChange(value);
+                              if (value === PackageTypesEnum[0]) {
+                                // Specific Package
+                                form.setValue(
+                                  "walletTypeId",
+                                  "2b346fba-8dac-44ff-98d8-9950777355cb"
+                                );
+                              } else if (value === PackageTypesEnum[1]) {
+                                form.setValue(
+                                  "walletTypeId",
+                                  "21790e2a-85dd-48ba-acec-e9b70ef1fc90"
+                                );
+                              }
                             }}
                             value={field.value}
                             disabled={isLoading}
@@ -406,7 +428,7 @@ const PackageCreatePage = () => {
                     )}
                   />
                 </Card>
-                <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
+                <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md space-y-4">
                   {/* Price */}
                   <FormField
                     control={form.control}
@@ -476,10 +498,10 @@ const PackageCreatePage = () => {
                           <Select
                             onValueChange={(value) => {
                               field.onChange(value);
-                              handleTypeChange("walletType", value);
+                              // handleTypeChange("walletType", value);
                             }}
                             value={field.value}
-                            disabled={isLoading}
+                            disabled={true}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select an Wallet Type" />
@@ -542,9 +564,18 @@ const PackageCreatePage = () => {
                 </Card>
               </div>
               <div className="mt-4 grid justify-items-end">
-                <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
-                  <Upload />
-                  Create
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    "Creating..."
+                  ) : (
+                    <>
+                      <Upload /> <p>Create</p>
+                    </>
+                  )}
                 </Button>
               </div>
             </form>

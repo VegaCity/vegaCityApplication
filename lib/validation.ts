@@ -244,6 +244,7 @@ export const userAccountFormSchema = z.object({
       "CCCD must include 12 digits and Passport must include first character and 7 digits"
     ),
   imageUrl: z.string().nullable(), //does not effect
+  status: z.string().min(1, "Status is required!"),
 });
 
 export const createUserAccountFormSchema = z.object({
@@ -515,6 +516,31 @@ export const editPromotionFormSchema = z
     }
   );
 
+export const userSessionFormSchema = z
+  .object({
+    startDate: z
+      .string()
+      .refine(
+        (date) => new Date(date) >= new Date(),
+        "The begin date must be today or the following day!"
+      ),
+    endDate: z.string(),
+    userId: z.string().min(1, { message: "User is required" }),
+    zoneId: z.string().min(1, { message: "Zone is required" }),
+  })
+  .refine(
+    (data) => {
+      const endDate = new Date(data.endDate);
+      const startDate = new Date(data.startDate);
+      return endDate > startDate;
+    },
+    {
+      message: "The end date must higher than the begin date!",
+      path: ["endDate"],
+    }
+  );
+
+export type UserSessionFormValues = z.infer<typeof userSessionFormSchema>;
 export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
 export type CreatePromotionFormValues = z.infer<
   typeof createPromotionFormSchema

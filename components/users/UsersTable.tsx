@@ -1,6 +1,8 @@
 "use client";
 
 import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Loader } from "@/components/loader/Loader";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { HouseServices } from "@/components/services/houseServices";
 import { UserServices } from "@/components/services/User/userServices";
@@ -142,10 +144,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         title: "User is approved!",
         description: `User - Store ${data.storeName} has been approved successfully.`,
       });
-      setApproveLoading(false);
     } catch (error) {
       if (error instanceof AxiosError) {
-        setApproveLoading(false);
         if (error.status === 500) {
           toast({
             title: "Error",
@@ -154,6 +154,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         }
         console.error(error, "error approve user");
       }
+    } finally {
+      setApproveLoading(false);
     }
   };
 
@@ -192,18 +194,19 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     if (user.id) {
       UserServices.deleteUserById(user.id)
         .then((res) => {
-          setDeleteLoading(false);
           toast({
             title: res.data.messageResponse,
             description: `User name: ${user.fullName}`,
           });
         })
         .catch((err) => {
-          setDeleteLoading(false);
           toast({
             title: err.data.messageResponse,
             description: "Some errors have occurred!",
           });
+        })
+        .finally(() => {
+          setDeleteLoading(false);
         });
     }
   };
@@ -231,7 +234,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     },
   ];
 
-  const filterUserStatus = (): UserAccount[] | undefined => {
+  const filterUserStatus = (): UserAccount[] => {
     switch (userStatusValue) {
       case "active":
         return userList.filter((user) => user.status === 0);
@@ -592,7 +595,17 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
               </div>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button type="submit">Confirm</Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-700"
+                  disabled={approveLoading}
+                >
+                  {approveLoading ? (
+                    <Loader isLoading={approveLoading} />
+                  ) : (
+                    <p>Confirm</p>
+                  )}
+                </Button>
               </AlertDialogFooter>
             </form>
           </Form>
@@ -649,126 +662,134 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             </div>
           </div>
         </div>
-        <Table>
-          <TableCaption>A list of recent users</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">Full Name</TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Role
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Email
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Phone Number
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Address
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                CCCD/Passport
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Status
-              </TableHead>
-              <TableHead className="text-white">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <>
-              {searchTerm && userSearch
-                ? UserFound()
-                : filteredUsers?.map((user, i) => (
-                    <TableRow
-                      onClick={(e) => {
-                        if (user.status === 1) {
-                          e.stopPropagation();
-                          toast({
-                            title: "User is disable!",
-                            description: "You can't access this user!",
-                          });
-                        } else {
-                          router.push(`/admin/usersAccount/detail/${user.id}`);
-                        }
-                      }}
-                      key={user.id}
-                    >
-                      <TableCell>{i + 1}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Image
-                            src={validImageUrl(user?.imageUrl ?? "")} // Use the URL from the user object
-                            alt={user.fullName} // Provide an appropriate alt text
-                            width={100} // Specify a width
-                            height={100} // Specify a height
-                            className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
-                          />
-                          <p className="ml-4">{user.fullName}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <Badge className="bg-slate-400 hover:bg-slate-500 text-white">
-                          {user.roleName}
-                        </Badge>
-                      </TableCell>
-                      <TableCell
-                        onClick={(e) => e.stopPropagation()}
-                        className="hidden md:table-cell"
+        {filteredUsers && filteredUsers.length > 0 ? (
+          <Table>
+            <TableCaption>A list of recent users</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-white">#</TableHead>
+                <TableHead className="text-white">Full Name</TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Role
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Email
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Phone Number
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Address
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  CCCD/Passport
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Status
+                </TableHead>
+                <TableHead className="text-white">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <>
+                {searchTerm && userSearch
+                  ? UserFound()
+                  : filteredUsers?.map((user, i) => (
+                      <TableRow
+                        onClick={(e) => {
+                          if (user.status !== 0) {
+                            e.stopPropagation();
+                            toast({
+                              title: "User is disable!",
+                              description: "You can't access this user!",
+                            });
+                          } else {
+                            router.push(
+                              `/admin/usersAccount/detail/${user.id}`
+                            );
+                          }
+                        }}
+                        key={user.id}
                       >
-                        <p className="text-slate-500">{user.email}</p>
-                        {/* Approve user button and Re-assign email button */}
-
-                        {user.status === 3 && (
-                          <ReassignEmailPopover userId={user.id} />
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {user.phoneNumber}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <p className="text-slate-500">
-                          {user.address || <Minus />}
-                        </p>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {user.cccdPassport}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={handleBadgeStatusColor(user.status)}>
-                          {handleUserStatusFromBe(user.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell
-                        onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
-                      >
-                        {user.status !== 3 && (
-                          <PopoverActionTable
-                            item={user}
-                            editLink={`/admin/usersAccount/edit/${user.id}`}
-                            handleDelete={handleDeleteUser}
-                          />
-                        )}
-                        {user.status === 3 && (
-                          <div className="flex items-center justify-between w-min gap-2">
-                            <div className="flex-row items-end justify-end">
-                              {UserPendingVerifyPopUp(user)}
-                              <Button
-                                type="submit"
-                                className="w-20 bg-red-500 hover:bg-red-600 text-white font-bold"
-                              >
-                                Delete
-                              </Button>
-                            </div>
+                        <TableCell>{i + 1}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Image
+                              src={validImageUrl(user?.imageUrl ?? "")} // Use the URL from the user object
+                              alt={user.fullName} // Provide an appropriate alt text
+                              width={100} // Specify a width
+                              height={100} // Specify a height
+                              className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
+                            />
+                            <p className="ml-4">{user.fullName}</p>
                           </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-            </>
-          </TableBody>
-        </Table>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge className="bg-slate-400 hover:bg-slate-500 text-white">
+                            {user.roleName}
+                          </Badge>
+                        </TableCell>
+                        <TableCell
+                          onClick={(e) => e.stopPropagation()}
+                          className="hidden md:table-cell"
+                        >
+                          <p className="text-slate-500">{user.email}</p>
+                          {/* Approve user button and Re-assign email button */}
+
+                          {user.status === 3 && (
+                            <ReassignEmailPopover userId={user.id} />
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {user.phoneNumber}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <p className="text-slate-500">
+                            {user.address || <Minus />}
+                          </p>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {user.cccdPassport}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={handleBadgeStatusColor(user.status)}
+                          >
+                            {handleUserStatusFromBe(user.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell
+                          onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                        >
+                          {user.status !== 3 && (
+                            <PopoverActionTable
+                              item={user}
+                              editLink={`/admin/usersAccount/edit/${user.id}`}
+                              handleDelete={handleDeleteUser}
+                            />
+                          )}
+                          {user.status === 3 && (
+                            <div className="flex items-center justify-between w-min gap-2">
+                              <div className="flex-row items-end justify-end">
+                                {UserPendingVerifyPopUp(user)}
+                                <Button
+                                  type="submit"
+                                  className="w-20 bg-red-500 hover:bg-red-600 text-white font-bold"
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+              </>
+            </TableBody>
+          </Table>
+        ) : (
+          <EmptyDataPage />
+        )}
       </>
     </div>
   );

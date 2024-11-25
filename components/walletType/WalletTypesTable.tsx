@@ -16,14 +16,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import {
   handleBadgeStoreStatusColor,
-  handleBedageWalletStatusColor,
+  handleBadgeDeflagStatusColor,
 } from "@/lib/utils/statusUtils";
 import {
   GetWalletType,
   handleWalletTypeFromBe,
 } from "@/types/walletType/walletType";
+import { Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -123,32 +125,60 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
               <TableHead className="hidden md:table-cell text-white">
-                Status
+                Create Date
               </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Update Date
+              </TableHead>
+              <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredWalletTypes.map((walletType, i) => (
               <TableRow
-                onClick={() =>
-                  router.push(`/admin/walletTypes/detail/${walletType.id}`)
-                }
+                // onClick={() =>
+                //   router.push(`/admin/walletTypes/detail/${walletType.id}`)
+                // }
                 key={walletType.id}
               >
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{walletType.name}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {/* <div className="flex flex-col items-center"> */}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: walletType.crDate,
+                  })}
+                  {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: walletType.crDate,
+                    })} */}
+                  {/* </div> */}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {/* <div className="flex flex-col items-center"> */}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: walletType.upsDate,
+                  })}
+                  {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: walletType.upsDate,
+                    })} */}
+                  {/* </div> */}
+                </TableCell>
                 <TableCell>
                   <Badge
-                    className={handleBedageWalletStatusColor(walletType.deflag)}
+                    className={handleBadgeDeflagStatusColor(walletType.deflag)}
                   >
                     {handleWalletTypeFromBe(walletType.deflag)}
                   </Badge>
                 </TableCell>
 
-                <TableCell
-                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
-                >
+                <TableCell>
                   <PopoverActionTable
                     item={walletType}
                     editLink={`/admin/walletTypes/edit/${walletType.id}`}

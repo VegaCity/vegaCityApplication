@@ -12,6 +12,7 @@ import { PackageServices } from "@/components/services/Package/packageServices";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 interface PackageDetailProps {
   params: { id: string };
@@ -177,7 +178,8 @@ const PackageDetail = ({ params }: PackageDetailProps) => {
                   <TableRow key={index}>
                     <TableCell>Package Detail: {index + 1}</TableCell>
                     <TableCell>
-                      Package Money Start: {detail.startMoney}
+                      Package Money Start:{" "}
+                      {formatVNDCurrencyValue(detail.startMoney)}
                     </TableCell>
                     <TableCell>Wallet Name: {detail.walletType.name}</TableCell>
                   </TableRow>

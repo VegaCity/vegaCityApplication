@@ -37,7 +37,12 @@ import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 import { Button } from "@/components/ui/button";
-import { Trash, Minus } from "lucide-react";
+import { Trash, Minus, Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface UserSessionTableProps {
   limit?: number;
@@ -123,7 +128,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">User ID</TableHead>
+              <TableHead className="text-white">User Name</TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Start Date
               </TableHead>
@@ -143,32 +148,46 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
           <TableBody>
             {filteredSessions.map((session, i) => (
               <TableRow
-                onClick={() => handleSessionDetails(session.id)}
+                // onClick={() => handleSessionDetails(session.id)}
                 key={session.id}
               >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{session.userId}</TableCell>
                 <TableCell>
-                  {formatDateTime({
-                    type: "date",
-                    dateTime: session.startDate,
-                  })}
-                  <Minus />
-                  {formatDateTime({
-                    type: "time",
-                    dateTime: session.startDate,
-                  })}
+                  <div className="flex flex-row gap-2">
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info color="blue" size={12} />
+                      </TooltipTrigger>
+                      <TooltipContent>UserId: {session.userId}</TooltipContent>
+                    </Tooltip>
+                    <strong>{session.userName}</strong>
+                  </div>
                 </TableCell>
                 <TableCell>
-                  {formatDateTime({
-                    type: "date",
-                    dateTime: session.endDate,
-                  })}
-                  <Minus />
-                  {formatDateTime({
-                    type: "time",
-                    dateTime: session.endDate,
-                  })}
+                  <div className="flex flex-col items-center">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: session.startDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: session.startDate,
+                    })}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col items-center">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: session.endDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: session.endDate,
+                    })}
+                  </div>
                 </TableCell>
                 <TableCell>
                   {formatVNDCurrencyValue(session.totalCashReceive)}
@@ -183,7 +202,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                     {session.status}
                   </Badge>
                 </TableCell>
-                <TableCell onClick={(event) => event.stopPropagation()}>
+                <TableCell>
                   <div>
                     {/* <Label htmlFor="maxWidth">Delete</Label> */}
                     <AlertDialog>

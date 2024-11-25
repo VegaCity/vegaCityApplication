@@ -15,9 +15,8 @@ const handleImageFileChange = async ({
     // const storage = firebase.app().storage("vegacity-utility-card.appspot.com");
     // const storageRef = await storage.ref(storage, `images/${file.name}`);
     const storageRef = ref(storage, `images/${file.name}`);
-    console.log("a");
+
     try {
-      console.log("b");
       // Upload the file
       await uploadBytes(storageRef, file);
       // Get the download URL after upload on firebase storage
@@ -33,7 +32,6 @@ const handleImageFileChange = async ({
 
   const fileChange: File | null = event.target.files?.[0] || null;
   if (fileChange) {
-    console.log("c");
     const imageUrl = await uploadImage(fileChange); // Upload and get the URL
     // You can then use this URL to display the image
     // const downloadImageUrl = await getDownloadURL(imageUrl || null);

@@ -253,6 +253,11 @@ const AnalyticsChart = () => {
               stroke: "#8884d8",
               name: "Transactions",
             },
+            {
+              dataKey: "totalTransactionsAmount",
+              stroke: "#82ca9d",
+              name: "Transactions amount",
+            },
           ]}
         />
       </ChartCard>
@@ -265,8 +270,9 @@ const AnalyticsChart = () => {
         <Chart
           data={analyticsData as AdminAnalytics[]}
           lines={[
-            { dataKey: "orderCount", stroke: "#8884d8", name: "Orders" },
-            { dataKey: "packageCount", stroke: "#82ca9d", name: "Packages" },
+            { dataKey: "orderCash", stroke: "#8884d8", name: "Cash" },
+            { dataKey: "orderCount", stroke: "#82ca9d", name: "Order Count" },
+            { dataKey: "etagCount", stroke: "#825555", name: "V-Card Count" },
           ]}
         />
       </ChartCard>

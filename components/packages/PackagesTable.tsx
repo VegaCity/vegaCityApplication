@@ -35,6 +35,7 @@ import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { Card } from "@/components/ui/card";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 import { Loader } from "@/components/loader/Loader";
+import { handleBadgeDeflagStatusColor } from "@/lib/utils/statusUtils";
 
 interface PackageTableProps {
   limit?: number;
@@ -86,7 +87,6 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
     if (pkg.id) {
       PackageServices.deletePackageById(pkg.id)
         .then((res) => {
-          setDeleteLoading(false);
           toast({
             variant: "success",
             title: res.data.messageResponse,
@@ -94,12 +94,14 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
           });
         })
         .catch((err) => {
-          setDeleteLoading(false);
           toast({
             variant: "destructive",
             title: err.data.messageResponse,
             description: "Some errors have been occured!",
           });
+        })
+        .finally(() => {
+          setDeleteLoading(false);
         });
     }
   };
@@ -138,6 +140,9 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
               </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Duration
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Status
               </TableHead>
               <TableHead className="text-white">Actions</TableHead>
             </TableRow>
@@ -182,6 +187,11 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                       <p>{pkg.duration}</p> &nbsp;
                       <p>days</p>
                     </div>
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className={handleBadgeDeflagStatusColor(pkg.deflag)}>
+                    <p>{pkg.deflag ? "In Active" : "Active"}</p>
                   </Badge>
                 </TableCell>
                 <TableCell

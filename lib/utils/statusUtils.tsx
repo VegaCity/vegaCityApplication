@@ -43,7 +43,7 @@ export const handleBadgePromotionStatusColor = (status: number): string => {
   }
 };
 
-export const handleBedageWalletStatusColor = (status: boolean): string => {
+export const handleBadgeDeflagStatusColor = (status: boolean): string => {
   if (status) {
     return "bg-red-400 hover:bg-red-500";
   } else {

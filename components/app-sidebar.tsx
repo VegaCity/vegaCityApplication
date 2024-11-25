@@ -351,16 +351,16 @@ export function AppSidebar() {
                             item.child.map((itemChild, childIndex) => (
                               <SidebarMenuSub>
                                 <SidebarMenuSubItem key={childIndex}>
-                                  <SidebarMenuButton>
-                                    <Link href={itemChild?.href || ""}>
+                                  <Link href={itemChild?.href || ""}>
+                                    <SidebarMenuButton>
                                       <div className="flex items-center gap-3">
                                         <itemChild.icon size={20} />
                                         <span className="text-md">
                                           {itemChild?.name}
                                         </span>
                                       </div>
-                                    </Link>
-                                  </SidebarMenuButton>
+                                    </SidebarMenuButton>
+                                  </Link>
                                 </SidebarMenuSubItem>
                               </SidebarMenuSub>
                             ))}
