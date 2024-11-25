@@ -34,7 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
+import { useRouter } from "next/navigation";
 const UserProfileComponent: React.FC = () => {
   const [user, setUser] = useState<Users | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -59,7 +59,7 @@ const UserProfileComponent: React.FC = () => {
     cccdPassport: "",
     imageUrl: null,
   });
-
+  const router = useRouter();
   const [storeFormData, setStoreFormData] = useState<StoreOwnerPatch>({
     name: "",
     address: "",
@@ -93,6 +93,9 @@ const UserProfileComponent: React.FC = () => {
         description: "Store closure request submitted successfully",
       });
       setIsCloseDialogOpen(false);
+      setTimeout(() => {
+        router.push("/auth");
+      });
     } catch (error) {
       handleError(error);
     } finally {

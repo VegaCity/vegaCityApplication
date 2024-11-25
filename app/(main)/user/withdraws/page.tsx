@@ -271,11 +271,16 @@ const WithdrawMoney = () => {
         )} VND`;
       }
 
+      // Check if amount is a multiple of 10,000
+      if (amount % 10000 !== 0) {
+        console.log("Failed: Not a multiple of 10,000");
+        return "Amount must be a multiple of 10,000 VND";
+      }
+
       return null;
     },
     [activeTab, storeDetails]
   );
-
   const formatAmount = (value: string): string => {
     return value ? parseInt(value).toLocaleString(FORMAT_LOCALE) : "";
   };

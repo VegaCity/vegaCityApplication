@@ -103,15 +103,23 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         title: "RFID Updated",
         description: "RFID has been updated successfully",
       });
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
       setIsUpdateRFIDDialogOpen(false);
       await PackageItemServices.getPackageItemById({
         id: params.id,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating RFID:", error);
+
+      // Lấy message lỗi từ response
+      const errorMessage =
+        error.response?.data?.Error || error.response?.data?.messageResponse;
+
       toast({
         title: "Error",
-        description: "Failed to update RFID",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -157,7 +165,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       setIsLoading(true);
       // Ensure charge amount is valid
       const chargeAmount = parseInt(amount) || 0;
-
       if (chargeAmount <= 0) {
         toast({
           title: "Error",
@@ -609,7 +616,11 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     setIsConfirming(false);
     form.reset();
   };
-
+  const getInputClassName = (isActive: boolean) => {
+    return isActive
+      ? "bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+      : "bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white";
+  };
   return (
     <>
       <BackButton text="Back To VCard" link="/user/package-items" />
@@ -659,15 +670,19 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   </h4>
                   <div className="space-y-2 mr-14">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center items-center ">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12 ">
+                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           FullName
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
                             {...form.register("cusName")}
-                            readOnly={!isEditing}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
@@ -678,9 +693,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
                             {...form.register("cusEmail")}
-                            readOnly={!isEditing}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
@@ -693,22 +712,29 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
                             {...form.register("phoneNumber")}
-                            readOnly={!isEditing}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
-
                       <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          CCCD/Passport :
+                          CCCD/Passport:
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
                             {...form.register("cusCccdpassport")}
-                            readOnly={!isEditing}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
@@ -724,9 +750,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("vcardId")}
-                            readOnly={!isEditing}
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -738,9 +764,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("customer.fullName")}
-                            readOnly={!isEditing}
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -759,7 +785,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("startDate")
                           )}
@@ -774,7 +800,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("endDate")
                           )}
@@ -788,9 +814,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("status")}
-                          readOnly={!isEditing}
+                          readOnly
                         />
                       </FormControl>
                       <FormMessage />
@@ -809,7 +835,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balance")}
                           readOnly
                         />
@@ -822,7 +848,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("wallets.0.balanceHistory")}
                           readOnly
                         />
