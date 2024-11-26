@@ -1,5 +1,6 @@
 "use client";
 
+import AccessDenied from "@/components/accessDeny/AccessDeny";
 import BackButton from "@/components/BackButton";
 import { Loader } from "@/components/loader/Loader";
 import { UserServices } from "@/components/services/User/userServices";
@@ -35,6 +36,7 @@ import {
   UserAccount,
 } from "@/types/user/userAccount";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
 import {
   getDownloadURL,
   getStorage,
@@ -42,7 +44,7 @@ import {
   StorageReference,
   uploadBytes,
 } from "firebase/storage";
-import { Camera, Edit, Upload, X } from "lucide-react";
+import { Camera, Edit, Upload, X, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -118,15 +120,18 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
           throw new Error("User data is missing in the response");
         }
       } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-        toast({
-          title: "Error",
-          description: "Failed to load user data. Please try again.",
-          variant: "destructive",
-        });
+        if (err instanceof AxiosError) {
+          console.error("Error fetching user data:", err);
+          setError(
+            err ? err.response?.data.Error : "An unknown error occurred"
+          );
+          toast({
+            title: "Fail to get user detail!",
+            description:
+              err.response?.data.messageResponse || err.response?.data.Error,
+            variant: "destructive",
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -155,9 +160,9 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
         router.back();
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
+      if (err instanceof AxiosError) {
+        setError(err ? err.response?.data.Error : "An unknown error occurred");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -169,7 +174,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
         <Loader isLoading={isLoading} />
       </div>
     );
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <AccessDenied error={error} />;
 
   return (
     <>

@@ -278,9 +278,17 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   const UserFound = () => {
     return userSearch?.map((userFound: UserAccount, i) => (
       <TableRow
-        onClick={() =>
-          router.push(`/admin/usersAccount/detail/${userFound.id}`)
-        }
+        onClick={(e) => {
+          if (userFound.status !== 0) {
+            e.stopPropagation();
+            toast({
+              title: "User is disable!",
+              description: "You can't access this user!",
+            });
+          } else {
+            router.push(`/admin/usersAccount/detail/${userFound.id}`);
+          }
+        }}
         key={userFound.id}
       >
         <TableCell>
