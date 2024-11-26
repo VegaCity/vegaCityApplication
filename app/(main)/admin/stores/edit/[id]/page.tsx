@@ -365,7 +365,7 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
                       "Updating..."
                     ) : (
                       <>
-                        <Edit /> <p>Updating</p>
+                        <Edit /> <p>Update</p>
                       </>
                     )}
                   </Button>

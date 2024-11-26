@@ -385,6 +385,10 @@ export const userApproveFormSchema = z.object({
   locationZone: z.string().min(1, "Location zone is invalid"),
   storeName: z.string().min(1, "Store name is invalid"),
   storeType: z.number(),
+  storeTransferRate: z
+    .number()
+    .min(0, "Store Transfer Rate must above 0!")
+    .max(100, "Store Transfer Rate must below 100!"),
   storeAddress: z.string().min(1, "Store address is invalid"),
   phoneNumber: z.string().regex(/^(0|\+84)(\s|-)?[1-9]\d{8}$/, {
     message: "Phone number is invalid!",

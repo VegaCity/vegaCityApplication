@@ -122,6 +122,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
       locationZone: "",
       storeName: "",
       storeType: 0,
+      storeTransferRate: 0,
       storeAddress: "",
       phoneNumber: "",
       storeEmail: "",
@@ -136,9 +137,21 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     console.log(data, "data approveee");
     setApproveLoading(true);
     try {
-      const { approvalStatus, ...restData } = data;
-      const response = await UserServices.approveUser(data.id, data);
+      const { storeTransferRate, ...restData } = data;
 
+      const convertStoreTransferRateToBe = Number(
+        (data?.storeTransferRate ?? 0) / 100
+      );
+
+      const approveStoreData = {
+        ...restData,
+        storeTransferRate: convertStoreTransferRateToBe,
+      };
+
+      const response = await UserServices.approveUser(
+        data.id,
+        approveStoreData
+      );
       console.log(response, "Approve user successfully!");
       toast({
         title: "User is approved!",
@@ -370,6 +383,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         userApproveForm.reset({
           locationZone: "",
           storeName: "",
+          storeTransferRate: 0,
           storeAddress: "",
           phoneNumber: userData.phoneNumber,
           storeEmail: userData.email,
@@ -510,6 +524,39 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                             )}
                           </SelectContent>
                         </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Store Transfer Rate */}
+
+                <FormField
+                  control={userApproveForm.control}
+                  name="storeTransferRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transfer Rate(%)</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            placeholder="Enter discount percent"
+                            value={field.value ?? 0}
+                            onChange={(e) => {
+                              // Ensure only positive values
+                              let value = e.target.valueAsNumber;
+                              if (value < 0) value = 0;
+                              if (value > 100) value = 100;
+
+                              field.onChange(value);
+                            }}
+                          />
+                          <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                            %
+                          </span>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

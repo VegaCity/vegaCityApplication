@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { formatSpaceString } from "@/lib/utils/formatSpaceString";
 import {
   handleBadgeStoreStatusColor,
   handleBadgeDeflagStatusColor,
@@ -143,7 +144,7 @@ const WalletTypesTable = ({ limit, title }: WalletTypeTableProps) => {
                 key={walletType.id}
               >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{walletType.name}</TableCell>
+                <TableCell>{formatSpaceString(walletType.name)}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   {/* <div className="flex flex-col items-center"> */}
                   {formatDateTime({

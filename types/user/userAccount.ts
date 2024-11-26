@@ -268,6 +268,7 @@ export interface UserApprove {
   locationZone: string;
   storeType: StoreTypeEnum | number;
   storeName: string;
+  storeTransferRate: number;
   storeAddress: string;
   phoneNumber: string;
   storeEmail: string;

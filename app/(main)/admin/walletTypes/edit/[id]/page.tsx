@@ -23,7 +23,7 @@ import {
 import { WalletTypesServices } from "@/components/services/User/walletTypesServices";
 import { useRouter } from "next/navigation";
 import { Loader } from "@/components/loader/Loader";
-import { Upload } from "lucide-react";
+import { Edit } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -148,10 +148,10 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  "Creating..."
+                  "Updating..."
                 ) : (
                   <>
-                    <Upload /> <p>Create</p>
+                    <Edit /> <p>Update</p>
                   </>
                 )}
               </Button>

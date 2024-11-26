@@ -452,10 +452,10 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    "Creating..."
+                    "Updating..."
                   ) : (
                     <>
-                      <Upload /> <p>Create</p>
+                      <Upload /> <p>Update</p>
                     </>
                   )}
                 </Button>
