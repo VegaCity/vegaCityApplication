@@ -124,6 +124,7 @@ export interface PackageOrderResponse {
   cusCccdpassport: string;
   phoneNumber: string;
   cusEmail: string;
+  vcardId: string;
 }
 
 export interface OrderDetailResponse {

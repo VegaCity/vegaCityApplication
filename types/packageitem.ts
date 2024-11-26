@@ -30,6 +30,7 @@ export interface PackageItem {
   isVerifyPhone: boolean;
   wallets: Wallet[];
   vcard: Vcard;
+  isChangedInfo: boolean;
 }
 export interface Vcard {
   id: string;
@@ -39,7 +40,8 @@ export interface Vcard {
   email: string;
 }
 export interface PackageItemHandleUpdate {
-  name: string;
-  imageUrl: string | null;
-  gender: string;
+  cusName: string;
+  cusEmail: string;
+  cusCccdpassport: string;
+  phoneNumber: string;
 }
