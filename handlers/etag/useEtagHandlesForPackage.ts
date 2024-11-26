@@ -306,11 +306,12 @@ export const useEtagHandlers = ({
     const quantity = customerForm.getValues("quantity");
     const customerInfo = customerForm.getValues();
 
-    // Ensure quantity is 1 for minor vCard generation
-    if (isAdultParam === "true" && quantity !== 1) {
+    // Ensure quantity is between 1 and 5 for minor vCard generation
+    if (isAdultParam === "true" && (quantity < 1 || quantity > 5)) {
       toast({
         title: "Error",
-        description: "Quantity must be 1 for minor vCard generation.",
+        description:
+          "Quantity must be between 1 and 5 for minor vCard generation.",
         variant: "destructive",
       });
       return;
@@ -328,7 +329,7 @@ export const useEtagHandlers = ({
 
           try {
             if (isAdultParam === "true") {
-              await handleGenerateVCardForMinor(1, {
+              await handleGenerateVCardForMinor(quantity, {
                 fullName: customerInfo.customerName,
                 email: customerInfo.email,
                 cccdPassport: customerInfo.cccdPassport,
@@ -357,7 +358,7 @@ export const useEtagHandlers = ({
         await initiatePayment(paymentMethod, invoiceId);
 
         if (isAdultParam === "true") {
-          await handleGenerateVCardForMinor(1, {
+          await handleGenerateVCardForMinor(quantity, {
             fullName: customerInfo.customerName,
             email: customerInfo.email,
             cccdPassport: customerInfo.cccdPassport,
