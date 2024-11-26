@@ -260,26 +260,26 @@ const WithdrawMoney = () => {
   const validateWithdrawAmount = useCallback(
     (amount: number, balance: number | null): string | null => {
       if (isNaN(amount) || amount <= 0) {
-        console.log("Failed: Not a positive number");
         return "Money must be a positive number";
       }
 
+      if (activeTab === "store") {
+        return null;
+      }
+
       if (amount < MIN_WITHDRAWAL) {
-        console.log("Failed: Below minimum withdrawal amount");
         return `Money must be at least ${MIN_WITHDRAWAL.toLocaleString(
           FORMAT_LOCALE
         )} VND`;
       }
 
-      // Check if amount is a multiple of 10,000
       if (amount % 10000 !== 0) {
-        console.log("Failed: Not a multiple of 10,000");
         return "Amount must be a multiple of 10,000 VND";
       }
 
       return null;
     },
-    [activeTab, storeDetails]
+    [activeTab]
   );
   const formatAmount = (value: string): string => {
     return value ? parseInt(value).toLocaleString(FORMAT_LOCALE) : "";
@@ -330,12 +330,12 @@ const WithdrawMoney = () => {
         const data = response.data.data;
 
         if (!data) {
-          throw new Error("Không tìm thấy thông tin Package-Item.");
+          throw new Error("Can not find package item.");
         }
 
         // Check if wallets array exists and has items
         if (!data.wallets || data.wallets.length === 0) {
-          throw new Error("Không tìm thấy thông tin ví cho Package-Item này.");
+          throw new Error("Can not find wallet.");
         }
 
         const wallet = data.wallets[0];
