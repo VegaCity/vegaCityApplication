@@ -17,7 +17,13 @@ import { Search } from "lucide-react";
 import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 
 interface MetaData {
   page: number;
@@ -137,6 +143,8 @@ const OrdersPage = () => {
   const [open, setOpen] = useState(false);
   const [filterValue, setFilterValue] = useState("ALL");
 
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
   const filterList = [
     { value: "ALL", label: "All" },
     { value: "COMPLETED", label: "Completed" },
@@ -155,7 +163,15 @@ const OrdersPage = () => {
       });
 
       if (response?.statusCode === 200) {
-        setOrders(response.data || []);
+        const sortedOrders = [...(response.data || [])].sort((a, b) => {
+          if (sortOrder === "asc") {
+            return a.paymentType.localeCompare(b.paymentType);
+          } else {
+            return b.paymentType.localeCompare(a.paymentType);
+          }
+        });
+
+        setOrders(sortedOrders);
         setMetadata(response.metaData);
       } else {
         setOrders([]);
@@ -187,7 +203,7 @@ const OrdersPage = () => {
   // Effect riêng để fetch data
   useEffect(() => {
     fetchOrders();
-  }, [metadata.page, filterValue, searchTerm]);
+  }, [metadata.page, filterValue, searchTerm, sortOrder]);
 
   const handlePageChange = (newPage: number) => {
     setMetadata((prev) => ({ ...prev, page: newPage }));
@@ -197,8 +213,13 @@ const OrdersPage = () => {
     router.push(`/user/orders/detail/${orderId}`);
   };
 
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
   return (
     <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Orders Table</h1>
       <div className="flex items-center gap-4 mb-4">
         <ComboboxCustom
           open={open}
@@ -236,8 +257,16 @@ const OrdersPage = () => {
               <TableHead className="font-bold text-white whitespace-nowrap">
                 Name
               </TableHead>
-              <TableHead className="font-bold text-white whitespace-nowrap">
-                Payment Type
+              <TableHead
+                className="font-bold text-white whitespace-nowrap cursor-pointer"
+                onClick={toggleSortOrder}
+              >
+                Payment Type{" "}
+                {sortOrder === "asc" ? (
+                  <ChevronUp className="inline-block ml-1 h-4 w-4" />
+                ) : (
+                  <ChevronDown className="inline-block ml-1 h-4 w-4" />
+                )}
               </TableHead>
               <TableHead className="font-bold text-white whitespace-nowrap">
                 Total Amount

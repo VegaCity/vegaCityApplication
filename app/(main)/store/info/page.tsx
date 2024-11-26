@@ -457,22 +457,12 @@ const UserProfileComponent: React.FC = () => {
               <SelectContent>
                 <SelectItem value="0">Opened</SelectItem>
                 <SelectItem value="1">Closed</SelectItem>
-                <SelectItem value="2">In Active</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="col-span-2 space-y-2">
             <Label htmlFor="storeStatus">Store Type</Label>
-            <Select
-              value={storeFormData.storeType?.toString() || "0"}
-              onValueChange={(value) =>
-                setStoreFormData((prev) => ({
-                  ...prev,
-                  storeType: parseInt(value), // Corrected from storeStatus to storeType
-                }))
-              }
-              disabled={!editMode}
-            >
+            <Select value={storeFormData.storeType?.toString() || "0"} disabled>
               <SelectTrigger>
                 <SelectValue placeholder="Select store status" />
               </SelectTrigger>

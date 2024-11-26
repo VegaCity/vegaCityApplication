@@ -33,12 +33,14 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [isUpdated, setIsUpdated] = useState(false);
   const form = useForm<any>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      imageUrl: "",
-      gender: "" as "Male" | "Female" | "Other" | undefined,
+      cusName: "",
+      cusEmail: "",
+      cusCccdpassport: "",
+      phoneNumber: "",
     },
   });
 
@@ -146,7 +148,11 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
         title: "Success",
         description: messageResponse,
       });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
       setIsEditing(false);
+      setIsUpdated(true);
       setPackageItem((prev) => (prev ? { ...prev, ...updatedData } : null));
     } catch (err) {
       if (err instanceof Error) {
@@ -181,7 +187,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   return (
     <>
       <Form {...form}>
-        <form className="space-y-4">
+        <form className={`space-y-4`}>
           <Card className="w-full max-w-5xl mx-auto p-4 md:p-6">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -190,7 +196,9 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                 </CardTitle>
                 <Button
                   type="button"
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => {
+                    setIsEditing(!isEditing);
+                  }}
                   className="w-full sm:w-auto"
                 >
                   {isEditing ? "Cancel Edit" : "Edit"}
@@ -200,6 +208,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
 
             <CardContent>
               <div className="space-y-8 md:space-y-12">
+                {/* Customer Information */}
                 {/* Customer Information */}
                 <section className="space-y-4">
                   <h4 className="text-lg font-semibold mb-4">
@@ -213,7 +222,8 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("cusName")}
                             readOnly={!isEditing}
                           />
@@ -226,9 +236,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("cusEmail")}
-                            readOnly
+                            readOnly={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
@@ -241,9 +252,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("phoneNumber")}
-                            readOnly
+                            readOnly={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
@@ -254,9 +266,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="w-full bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("cusCccdpassport")}
-                            readOnly
+                            readOnly={!isEditing}
                           />
                         </FormControl>
                       </FormItem>
@@ -339,7 +352,9 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                 {isEditing && (
                   <div className="flex justify-end pt-4">
                     <Button
-                      onClick={handleUpdate}
+                      onClick={() => {
+                        handleUpdate();
+                      }}
                       className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                     >
                       Save Changes
