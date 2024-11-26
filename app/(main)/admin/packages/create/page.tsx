@@ -448,7 +448,19 @@ const PackageCreatePage = () => {
                                 const numericValue = parseFloat(
                                   input.replace(/[.]/g, "")
                                 );
+                                console.log(numericValue, "numericValue");
                                 field.onChange(numericValue || 0);
+
+                                //numericValue become null when erase to the last value
+                                if (Number.isNaN(numericValue)) {
+                                  form.setValue("moneyStart", 0);
+                                } else {
+                                  //Add 200.000 to Money Start
+                                  form.setValue(
+                                    "moneyStart",
+                                    numericValue + 200000
+                                  );
+                                }
                               }}
                             />
                             <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">

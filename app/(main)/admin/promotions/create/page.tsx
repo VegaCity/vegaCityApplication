@@ -340,7 +340,7 @@ const PromotionCreatePage = () => {
                             type="checkbox"
                             id="auto-promotion"
                             className="h-5 w-5 border-gray-300 rounded-md text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:focus:ring-offset-gray-900 dark:bg-gray-700"
-                            onChange={(e) => field.onChange(e.target.checked)} // Reflect the form state
+                            onChange={(event) => handleCheckboxChange(event)} // Reflect the form state
                           />
                           <label
                             htmlFor="auto-promotion"

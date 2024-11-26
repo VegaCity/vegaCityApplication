@@ -146,9 +146,9 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
           <TableBody>
             {filteredPromotions.map((promo, i) => (
               <TableRow
-                onClick={() =>
-                  router.push(`/admin/promotions/detail/${promo.id}`)
-                }
+                // onClick={() =>
+                //   router.push(`/admin/promotions/detail/${promo.id}`)
+                // }
                 key={promo.id}
               >
                 <TableCell>{i + 1}</TableCell>
@@ -224,9 +224,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                     {formatDateTime({ type: "time", dateTime: promo.endDate })}
                   </div>
                 </TableCell>
-                <TableCell
-                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
-                >
+                <TableCell>
                   <PopoverActionTable
                     item={promo}
                     editLink={`/admin/promotions/edit/${promo.id}`}
