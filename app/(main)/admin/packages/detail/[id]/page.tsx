@@ -21,7 +21,10 @@ const PackageDetailPage = ({ params }: PackageDetailProps) => {
         <BackButton text="Go Back to Packages" link="/admin/packages" />
       </div>
       {/* <h1>packageId: {packageId}</h1> */}
-      <PackageDetail params={{ id: packageId }} />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <PackageDetail params={{ id: packageId }} />
+      </div>
     </div>
   );
 };

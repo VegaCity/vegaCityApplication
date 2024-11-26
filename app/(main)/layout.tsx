@@ -14,19 +14,19 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
     redirect("/auth");
   }
 
-  const breadcrumbItems = pathname
-    .split("/")
-    .filter(Boolean)
-    .map((segment, index, arr) => {
-      const isLast = index === arr.length - 1;
-      return {
-        label: segment,
-        href: "/" + arr.slice(0, index + 1).join("/"),
-        isLast,
-      };
-    });
+  // const breadcrumbItems = pathname
+  //   .split("/")
+  //   .filter(Boolean)
+  //   .map((segment, index, arr) => {
+  //     const isLast = index === arr.length - 1;
+  //     return {
+  //       label: segment,
+  //       href: "/" + arr.slice(0, index + 1).join("/"),
+  //       isLast,
+  //     };
+  //   });
 
-  console.log(breadcrumbItems, "breadcrumbItems");
+  // console.log(breadcrumbItems, "breadcrumbItems");
 
   return (
     <SidebarProvider>
@@ -34,25 +34,27 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         {/* <Navbar /> */}
         <div className="flex w-full justify-center">
           {/* Sidebar on the left */}
-          <div className="hidden sm:block h-screen w-18">
+          <div className="hidden sm:block h-screen w-30">
             {/* <Sidebar /> */}
             <AppSidebar />
           </div>
 
           {/* Main content area */}
-          <div className="p-5 w-full max-w-7xl">
-            <div className="fixed left-29 top-1">
-              <SidebarTrigger />
-            </div>
+          <div className="p-5 w-full max-w-8xl">
+            {/* Move SidebarTrigger to AppSidebar */}
+            {/* <div className="fixed left-29 top-1">
+              <SidebarTrigger size={"lg"} />
+            </div> */}
 
             {/* Breadcrumb */}
             <div className="my-4">
-              <Breadcrumb items={breadcrumbItems} />
+              {/* <Breadcrumb items={breadcrumbItems} /> */}
+              <Breadcrumb />
             </div>
 
             {/* Centered children content */}
             <div className="flex p-5 items-center justify-center">
-              <div className="w-full max-w-7xl px-4">{children}</div>{" "}
+              <div className="w-full max-w-8xl px-4">{children}</div>{" "}
               {/* Adjust the max-width as per your preference */}
             </div>
           </div>

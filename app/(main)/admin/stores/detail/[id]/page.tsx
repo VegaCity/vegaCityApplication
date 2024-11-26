@@ -1,6 +1,7 @@
 "use client";
 
 import BackButton from "@/components/BackButton";
+import { Loader } from "@/components/loader/Loader";
 import StoreDetail from "@/components/stores/StoreDetail";
 
 interface StoreDetailProps {
@@ -11,7 +12,7 @@ const StoreDetailPage = ({ params }: StoreDetailProps) => {
   const { id: storeId } = params; // Assuming you're passing the house ID in the params
 
   if (!storeId) {
-    return <div>Loading...</div>; // Display loading state while fetching data
+    return <Loader />; // Display loading state while fetching data
   }
 
   return (
@@ -20,7 +21,10 @@ const StoreDetailPage = ({ params }: StoreDetailProps) => {
         <BackButton text="Go Back" link="/admin/stores" />
       </div>
       {/* <h1>storeId: {storeId}</h1> */}
-      <StoreDetail params={{ id: storeId }} />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <StoreDetail params={{ id: storeId }} />
+      </div>
     </div>
   );
 };

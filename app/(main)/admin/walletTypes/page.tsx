@@ -26,8 +26,11 @@ const WalletTypesPage = () => {
           </Link>
         </Button>
       </div>
-      <WalletTypesTable />
-      <WalletTypesPagination />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <WalletTypesTable />
+        <WalletTypesPagination />
+      </div>
     </div>
   );
 };

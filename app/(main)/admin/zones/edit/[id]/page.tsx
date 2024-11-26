@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Edit } from "lucide-react";
+import { Loader } from "@/components/loader/Loader";
 
 const zoneSchema = z.object({
   zoneName: z.string().min(1, { message: "Name is required" }),
@@ -93,72 +94,83 @@ const ZoneEditPage = ({ params }: ZoneEditPageProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   return (
     <>
       <BackButton text="Back To Zones" link="/admin/zones" />
-      <h3 className="text-2xl mb-4">Edit Zone</h3>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="zoneName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Zone Name
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Zone Name"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="zoneLocation"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Zone Location
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Zone Location"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex justify-end items-end w-full mt-4">
-            <Button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                "Update..."
-              ) : (
-                <>
-                  <Edit /> <p>Update</p>
-                </>
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <h3 className="text-2xl mb-4">Edit Zone</h3>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-8"
+          >
+            <FormField
+              control={form.control}
+              name="zoneName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                    Zone Name
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                      placeholder="Zone Name"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+            />
+
+            <FormField
+              control={form.control}
+              name="zoneLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                    Zone Location
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                      placeholder="Zone Location"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end items-end w-full mt-4">
+              <Button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-700"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  "Update..."
+                ) : (
+                  <>
+                    <Edit /> <p>Update</p>
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </>
   );
 };

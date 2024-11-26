@@ -25,8 +25,11 @@ const UserSessionPage = () => {
           </Link>
         </Button>
       </div>
-      <UserSessionTable />
-      <UserSessionPagination />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <UserSessionTable />
+        <UserSessionPagination />
+      </div>
     </div>
   );
 };

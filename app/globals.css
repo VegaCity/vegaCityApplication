@@ -47,8 +47,8 @@
       --sidebar-primary: 240 5.9% 10%;
       --sidebar-primary-foreground: 0 0% 98%;
       /* --sidebar-accent: 240 4.8% 95.9%; */
-      --sidebar-accent: 281 0% 50% / 0.32; /*Sidebar button hover*/
-      --sidebar-accent-foreground: 213 94% 48%; /*Sidebar text button hover*/
+      --sidebar-accent: 0 0% 6.7% / 0.067; /*Sidebar button hover*/
+      --sidebar-accent-foreground: 213 94% 48%; /* Sidebar text button hover */
       --sidebar-border: 220 13% 91%;
       --sidebar-ring: 217.2 91.2% 59.8%;
     }
@@ -150,6 +150,11 @@
       z-index: 2; /* Ensure content appears above the overlay */
       margin-bottom: 1.5rem;
     }
+
+    .dot-color{
+      color: #61A6FA;
+    }
+
   }
 
 

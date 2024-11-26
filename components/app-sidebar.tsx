@@ -26,6 +26,7 @@ import {
   LucideProps,
   UserCheck2,
   LogOut,
+  Dot,
 } from "lucide-react";
 
 import {
@@ -41,6 +42,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarSeparator,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -67,6 +69,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 // import { useSidebar } from "@/context/SidebarContext";
 import VegaLogo from "@/img/logo.png";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 export function AppSidebar() {
   const [collapsedItem, setCollapsedItem] = useState<Record<string, boolean>>(
@@ -281,110 +288,127 @@ export function AppSidebar() {
   // }, []);
 
   return (
-    <Sidebar className="border-customBorder bg-">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="h-20 flex items-center justify-center">
-            <img src={VegaLogo.src} width={100} alt="logo" />
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem key={user?.id}>
-                <div className="flex items-center w-full justify-between">
-                  <div className="flex items-center">
-                    <SidebarMenuButton
-                      onClick={handleNavigateAccountPage}
-                      className="h-10"
-                    >
-                      {user ? (
-                        <Avatar>
-                          <AvatarImage
-                            src={validImageUrl(user.imageUrl || "")}
-                            alt="@shadcn"
-                            className="h-8 w-8 rounded-full"
-                          />
-                          <AvatarFallback className="text-white">
-                            BT
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                      )}
-                      {user?.fullName}
-                    </SidebarMenuButton>
+    <>
+      <div className="fixed left-0 top-1">
+        <Tooltip>
+          <TooltipTrigger>
+            <SidebarTrigger size={"lg"} className="hover:bg-hover-button" />
+          </TooltipTrigger>
+          <TooltipContent side="right">Open Sidebar</TooltipContent>
+        </Tooltip>
+      </div>
+      <Sidebar className="border-customBorder">
+        <div className="w-min">
+          <Tooltip>
+            <TooltipTrigger>
+              <SidebarTrigger className="w-12 h-12 hover:text-text-button hover:bg-hover-button" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Close Sidebar</TooltipContent>
+          </Tooltip>
+        </div>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel className="h-20 flex items-center justify-center">
+              <img src={VegaLogo.src} width={100} alt="logo" />
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem key={user?.id}>
+                  <div className="flex items-center w-full justify-between">
+                    <div className="flex items-center">
+                      <SidebarMenuButton
+                        onClick={handleNavigateAccountPage}
+                        className="h-10"
+                      >
+                        {user ? (
+                          <Avatar>
+                            <AvatarImage
+                              src={validImageUrl(user.imageUrl || "")}
+                              alt="@shadcn"
+                              className="h-8 w-8 rounded-full"
+                            />
+                            <AvatarFallback className="text-white">
+                              BT
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <Skeleton className="h-10 w-10 rounded-full" />
+                        )}
+                        {user?.fullName}
+                      </SidebarMenuButton>
+                    </div>
+                    <ThemeToggler />
                   </div>
-                  <ThemeToggler />
-                </div>
-              </SidebarMenuItem>
-              <SidebarSeparator />
-              {menuItems.map(
-                (item, i) =>
-                  item.roles.includes(userRole?.name || "") &&
-                  (item.child && item.child.length > 0 ? (
-                    <Collapsible defaultOpen className="group/collapsible">
+                </SidebarMenuItem>
+                <SidebarSeparator />
+                {menuItems.map(
+                  (item, i) =>
+                    item.roles.includes(userRole?.name || "") &&
+                    (item.child && item.child.length > 0 ? (
+                      <Collapsible defaultOpen className="group/collapsible">
+                        <SidebarMenuItem key={i}>
+                          <CollapsibleTrigger
+                            onClick={() => handleCollapsedTrigger(item.name)}
+                            asChild
+                          >
+                            <SidebarMenuButton className="transition-transform duration-200">
+                              <item.icon size={20} />
+                              <span className="text-base">{item.name}</span>
+                              {collapsedItem[item.name] ? (
+                                <ChevronLeft
+                                  className={
+                                    "ml-auto transition-transform duration-150"
+                                  }
+                                />
+                              ) : (
+                                <ChevronDown
+                                  className={
+                                    "ml-auto transition-transform duration-150"
+                                  }
+                                />
+                              )}
+                            </SidebarMenuButton>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            {Array.isArray(item.child) &&
+                              item.child.length > 0 &&
+                              item.child.map((itemChild, childIndex) => (
+                                <SidebarMenuSub>
+                                  <SidebarMenuSubItem key={childIndex}>
+                                    <Link href={itemChild?.href || ""}>
+                                      <SidebarMenuButton>
+                                        <div className="flex items-center gap-3">
+                                          <itemChild.icon size={20} />
+                                          <span className="text-md">
+                                            {itemChild?.name}
+                                          </span>
+                                        </div>
+                                      </SidebarMenuButton>
+                                    </Link>
+                                  </SidebarMenuSubItem>
+                                </SidebarMenuSub>
+                              ))}
+                          </CollapsibleContent>
+                        </SidebarMenuItem>
+                      </Collapsible>
+                    ) : (
                       <SidebarMenuItem key={i}>
-                        <CollapsibleTrigger
-                          onClick={() => handleCollapsedTrigger(item.name)}
-                          asChild
-                        >
-                          <SidebarMenuButton className="transition-transform duration-200">
+                        <SidebarMenuButton asChild>
+                          <Link href={item.href ?? ""}>
                             <item.icon size={20} />
                             <span className="text-base">{item.name}</span>
-                            {collapsedItem[item.name] ? (
-                              <ChevronLeft
-                                className={
-                                  "ml-auto transition-transform duration-150"
-                                }
-                              />
-                            ) : (
-                              <ChevronDown
-                                className={
-                                  "ml-auto transition-transform duration-150"
-                                }
-                              />
-                            )}
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          {Array.isArray(item.child) &&
-                            item.child.length > 0 &&
-                            item.child.map((itemChild, childIndex) => (
-                              <SidebarMenuSub>
-                                <SidebarMenuSubItem key={childIndex}>
-                                  <Link href={itemChild?.href || ""}>
-                                    <SidebarMenuButton>
-                                      <div className="flex items-center gap-3">
-                                        <itemChild.icon size={20} />
-                                        <span className="text-md">
-                                          {itemChild?.name}
-                                        </span>
-                                      </div>
-                                    </SidebarMenuButton>
-                                  </Link>
-                                </SidebarMenuSubItem>
-                              </SidebarMenuSub>
-                            ))}
-                        </CollapsibleContent>
+                          </Link>
+                        </SidebarMenuButton>
                       </SidebarMenuItem>
-                    </Collapsible>
-                  ) : (
-                    <SidebarMenuItem key={i}>
-                      <SidebarMenuButton asChild>
-                        <Link href={item.href ?? ""}>
-                          <item.icon size={20} />
-                          <span className="text-base">{item.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          {/* <SidebarMenuItem key={user?.id}>
+                    ))
+                )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            {/* <SidebarMenuItem key={user?.id}>
             <DropdownMenu>
               <div className="flex items-center w-full justify-between">
                 <DropdownMenuTrigger asChild>
@@ -451,25 +475,26 @@ export function AppSidebar() {
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem> */}
-          {/* <div className="absolute right-0 bottom-12 flex-col justify-end items-end mb-2">
+            {/* <div className="absolute right-0 bottom-12 flex-col justify-end items-end mb-2">
             <ThemeToggler />
           </div> */}
-          <SidebarSeparator />
-          {/* <SidebarMenuItem> */}
-          <button onClick={handleLogout} className="sign-out-button peer">
-            <div className="group hover:bg-red-300 flex items-center justify-end gap-2 w-full p-2 rounded">
-              <span className="group-hover:text-red-500 font-bold dark:text-white text-lg">
-                Sign out
-              </span>
-              <LogOut
-                size={15}
-                className="group-hover:text-red-500 font-bold transition-transform duration-200 group-hover:scale-110 dark:text-white"
-              />
-            </div>
-          </button>
-          {/* </SidebarMenuItem> */}
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+            <SidebarSeparator />
+            {/* <SidebarMenuItem> */}
+            <button onClick={handleLogout} className="sign-out-button peer">
+              <div className="group hover:bg-red-300 flex items-center justify-end gap-2 w-full p-2 rounded">
+                <span className="group-hover:text-red-500 font-bold dark:text-white text-lg">
+                  Sign out
+                </span>
+                <LogOut
+                  size={15}
+                  className="group-hover:text-red-500 font-bold transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                />
+              </div>
+            </button>
+            {/* </SidebarMenuItem> */}
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+    </>
   );
 }

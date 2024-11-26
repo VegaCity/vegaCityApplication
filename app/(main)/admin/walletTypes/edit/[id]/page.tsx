@@ -113,46 +113,52 @@ const WalletTypeEditPage = ({ params }: WalletTypeEditPageProps) => {
   return (
     <>
       <BackButton text="Back To Wallet Types" link="/admin/walletTypes" />
-      <h3 className="text-2xl mb-4">Edit Wallet Type</h3>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                  Wallet Type Name
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                    placeholder="Enter Wallet Type Name"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex justify-end items-end w-full mt-4">
-            <Button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                "Creating..."
-              ) : (
-                <>
-                  <Upload /> <p>Create</p>
-                </>
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <h3 className="text-2xl mb-4">Edit Wallet Type</h3>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-8"
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                    Wallet Type Name
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                      placeholder="Enter Wallet Type Name"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+            />
+
+            <div className="flex justify-end items-end w-full mt-4">
+              <Button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-700"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  "Creating..."
+                ) : (
+                  <>
+                    <Upload /> <p>Create</p>
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </>
   );
 };

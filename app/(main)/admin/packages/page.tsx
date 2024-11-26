@@ -26,8 +26,10 @@ const PackagesPage = () => {
           </Link>
         </Button>
       </div>
-      <PackageTable />
-      <PackagesPagination />
+      <div className="max-w-7xl px-10">
+        <PackageTable />
+        <PackagesPagination />
+      </div>
     </div>
   );
 };

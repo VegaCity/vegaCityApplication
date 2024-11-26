@@ -79,89 +79,92 @@ const ZoneCreatePage = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <>
       <BackButton text="Back To Zones" link="/admin/zones" />
-      <h4 className="text-2xl font-semibold text-zinc-700 dark:text-white">
-        Zone Information
-      </h4>
-      <p className="text-md text-zinc-500 dark:text-zinc-400">
-        Provide details about the zone.
-      </p>
-      <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6 max-w-md mx-auto"
-          >
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Name
-                      </FormLabel>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Provide a unique name for the zone.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <FormControl>
-                    <Input
-                      className={cn(
-                        "bg-slate-100 dark:bg-slate-500 focus-visible:ring-0 border text-black dark:text-white focus-visible:ring-offset-0 ",
-                        fieldState.error ? "border-red-500" : ""
-                      )}
-                      placeholder="Enter a unique name for the zone"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                    Location
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                      placeholder="Enter zone location"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end items-end w-full mt-4">
-              <Button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-700"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  "Creating..."
-                ) : (
-                  <>
-                    <Upload /> <p>Create</p>
-                  </>
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <h4 className="text-2xl font-semibold text-zinc-700 dark:text-white">
+          Zone Information
+        </h4>
+        <p className="text-md text-zinc-500 dark:text-zinc-400">
+          Provide details about the zone.
+        </p>
+        <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6 max-w-md mx-auto"
+            >
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Name
+                        </FormLabel>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Provide a unique name for the zone.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <FormControl>
+                      <Input
+                        className={cn(
+                          "bg-slate-100 dark:bg-slate-500 focus-visible:ring-0 border text-black dark:text-white focus-visible:ring-offset-0 ",
+                          fieldState.error ? "border-red-500" : ""
+                        )}
+                        placeholder="Enter a unique name for the zone"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </Card>
-    </div>
+              />
+
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                      Location
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                        placeholder="Enter zone location"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-end items-end w-full mt-4">
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    "Creating..."
+                  ) : (
+                    <>
+                      <Upload /> <p>Create</p>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </Card>
+      </div>
+    </>
   );
 };
 

@@ -26,8 +26,11 @@ const PackagesPage = () => {
           </Link>
         </Button>
       </div>
-      <ZoneTable />
-      <ZonesPagination />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <ZoneTable />
+        <ZonesPagination />
+      </div>
     </div>
   );
 };

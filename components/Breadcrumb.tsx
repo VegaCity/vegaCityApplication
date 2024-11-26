@@ -68,40 +68,66 @@
 
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { redirect, usePathname } from "next/navigation";
 
+// interface BreadcrumbProps {
+//   items: { label: string; href: string; isLast: boolean }[];
+// }
 interface BreadcrumbProps {
-  items: { label: string; href: string; isLast: boolean }[];
+  label: string;
+  href: string;
+  isLast: boolean;
 }
+[];
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items }) => {
+const Breadcrumb = () => {
+  const pathname = usePathname();
+
+  const breadcrumbItems = pathname
+    .split("/")
+    .filter(Boolean) // Exclude 'admin'
+    .reduce((acc: BreadcrumbProps[], segment, index, arr) => {
+      const href = "/" + arr.slice(0, index + 1).join("/");
+      const isLast = index === arr.length - 1;
+
+      // Combine dynamic segments like 'Package/Detail'
+      if (segment === "detail" && index > 0) {
+        const previousSegment = arr[index - 1];
+        const combinedLabel = `${previousSegment}_detail`;
+        acc.pop(); // Remove the last breadcrumb (previousSegment)
+        acc.push({ label: combinedLabel, href, isLast });
+      } else {
+        acc.push({ label: segment, href, isLast });
+      }
+
+      return acc;
+    }, []);
+
   return (
-    <nav aria-label="breadcrumb" className="flex items-center space-x-2">
-      {items.slice(1).map(
-        //use slice to delete /admin href
-        (item, index) => (
-          <div key={index} className="flex items-center">
-            {/* {!item.isLast ? (
-              <Link
-                href={item.href}
-                className="text-sky-500 hover:underline hover:text-sky-600 transition-colors"
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <span>{item.label}</span>
-            )} */}
-            <span className="p-2 rounded-full bg-slate-100 text-sky-500 hover:text-sky-600 transition-colors">
+    <nav className="flex items-center space-x-2">
+      {breadcrumbItems.map((item, index) => (
+        <div
+          key={item.href}
+          className="flex items-center bg-black/15 p-2 rounded-lg"
+        >
+          {item.isLast ? (
+            <span className="text-muted-foreground">{item.label}</span>
+          ) : (
+            <Link
+              href={item.href}
+              className="text-sky-500 hover:underline hover:text-sky-600 transition-colors"
+            >
               {item.label}
-            </span>
+            </Link>
+          )}
 
-            {index < items.length - 1 && (
-              <span className="mx-0.5">
-                <ChevronRight size={15} />
-              </span>
-            )}
-          </div>
-        )
-      )}
+          {index < breadcrumbItems.length - 1 && (
+            <span className="mx-0.5">
+              <ChevronRight size={15} />
+            </span>
+          )}
+        </div>
+      ))}
     </nav>
   );
 };

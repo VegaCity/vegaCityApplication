@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 
 interface IsLoadingProps {
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
 export const Loader = ({ isLoading }: IsLoadingProps) => {

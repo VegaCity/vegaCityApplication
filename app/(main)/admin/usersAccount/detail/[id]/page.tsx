@@ -19,8 +19,10 @@ const UserDetailPage = ({ params }: UserDetailProps) => {
       <div className="flex justify-between items-center mb-4">
         <BackButton text="Go Back" link="/admin/usersAccount" />
       </div>
-      {/* <h1>userId: {userId}</h1> */}
-      <UserDetail params={{ id: userId }} />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <UserDetail params={{ id: userId }} />
+      </div>
     </div>
   );
 };

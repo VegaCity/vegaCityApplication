@@ -67,40 +67,46 @@ const WalletCreatePage = () => {
   return (
     <>
       <BackButton text="Back To Wallets" link="/admin/wallets" />
-      <h3 className="text-2xl mb-4">Create New Wallet</h3>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter wallet name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex justify-end items-end w-full mt-4">
-            <Button
-              type="submit"
-              className="bg-blue-500 hover:bg-blue-700"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                "Creating..."
-              ) : (
-                <>
-                  <Upload /> <p>Create</p>
-                </>
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <h3 className="text-2xl mb-4">Create New Wallet</h3>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-8"
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter wallet name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+            />
+
+            <div className="flex justify-end items-end w-full mt-4">
+              <Button
+                type="submit"
+                className="bg-blue-500 hover:bg-blue-700"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  "Creating..."
+                ) : (
+                  <>
+                    <Upload /> <p>Create</p>
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </>
   );
 };

@@ -102,134 +102,136 @@ const UserSessionPage = () => {
   return (
     <>
       <BackButton text="Back To User Sessions" link="/admin/userSession" />
-
-      <div className="mb-2 ml-4">
-        <h4 className="text-2xl font-semibold text-zinc-700 dark:text-white">
-          User Session Information
-        </h4>
-        <p className="text-md text-zinc-500 dark:text-zinc-400">
-          Provide details User Session.
-        </p>
-      </div>
-      <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-lg border-2">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-8"
-          >
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Date</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="datetime-local"
-                        placeholder="Enter start date"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Date</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="datetime-local"
-                        placeholder="Enter end date"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="userId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>User</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {users.map((user) => (
-                            <SelectItem key={user.id} value={user.id}>
-                              {user.fullName} - {user.email}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="zoneId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Zone</FormLabel>
-                    <FormControl>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a zone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {zones.map((zone) => (
-                            <SelectItem key={zone.id} value={zone.id}>
-                              {zone.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="flex justify-end items-end w-full mt-4">
-              <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
-                <Button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-700"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    "Creating..."
-                  ) : (
-                    <>
-                      <Upload /> <p>Create</p>
-                    </>
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <div className="mb-2 ml-4">
+          <h4 className="text-2xl font-semibold text-zinc-700 dark:text-white">
+            User Session Information
+          </h4>
+          <p className="text-md text-zinc-500 dark:text-zinc-400">
+            Provide details User Session.
+          </p>
+        </div>
+        <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-lg border-2">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-8"
+            >
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Date</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="datetime-local"
+                          placeholder="Enter start date"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Date</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="datetime-local"
+                          placeholder="Enter end date"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="userId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>User</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a user" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {users.map((user) => (
+                              <SelectItem key={user.id} value={user.id}>
+                                {user.fullName} - {user.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="zoneId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Zone</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a zone" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {zones.map((zone) => (
+                              <SelectItem key={zone.id} value={zone.id}>
+                                {zone.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="flex justify-end items-end w-full mt-4">
+                <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+                  <Button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-700"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      "Creating..."
+                    ) : (
+                      <>
+                        <Upload /> <p>Create</p>
+                      </>
+                    )}
+                  </Button>
                 </Button>
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </Card>
+              </div>
+            </form>
+          </Form>
+        </Card>
+      </div>
     </>
   );
 };

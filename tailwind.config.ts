@@ -57,7 +57,8 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "hover-button": "#1C86EE",
+        "hover-button": "#1111",
+        "text-button": "#ffff",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))", //app side bar
           foreground: "hsl(var(--sidebar-foreground))",
