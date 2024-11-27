@@ -295,14 +295,16 @@ export const editServiceStoreFormSchema = z.object({
 });
 
 export const loginFormSchema = z.object({
-  email: z.string().email("Email của bạn chứa chính xác!"),
+  email: z.string().email("Your Email is invalid!"),
   // password: z
   //   .string()
   //   .regex(
   //     /^[A-Z](?=.*\d)[\w, \W]{6,40}$/,
   //     "Your password must minimium 6 characters"
   //   ), //password minimium 6 characters and Uppercase first character and one digit in
-  password: z.string().min(1, "Password của bạn chứa ít nhất 1 ký tự!"),
+  password: z
+    .string()
+    .min(5, "Your Password must contain at least 5 characters!"),
 });
 
 export const chargeFormSchema = z.object({

@@ -32,6 +32,7 @@ import VegaLogo from "@/img/logo.png";
 import VegaImage from "@/img/banner-vega-city-nha-trang.jpg";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import Link from "next/link";
+import { Loader } from "@/components/loader/Loader";
 
 interface UserRefreshToken {
   email: string;
@@ -47,6 +48,7 @@ const LoginForm: any = () => {
   const [emailLogin, setEmailLogin] = useState<string>("");
   const user = useAuthUser();
   const [isLoading, setIsLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
   const router = useRouter();
 
   const form = useForm<loginFormValues>({
@@ -109,6 +111,7 @@ const LoginForm: any = () => {
 
   // Login function
   const loginUser = async (data: UserLogin) => {
+    setIsLogin(true);
     try {
       const res = await AuthServices.loginUser(data);
       console.log(res.data, "login res");
@@ -356,6 +359,7 @@ const LoginForm: any = () => {
             title: "Login Failed!",
             description: "Invalid email or password!",
           });
+          setIsLogin(false);
         } else {
           // Something went wrong
           toast({
@@ -363,6 +367,7 @@ const LoginForm: any = () => {
             title: "Login Failed!",
             description: "Something went wrong in the server!",
           });
+          setIsLogin(false);
         }
       }
     }
@@ -617,15 +622,22 @@ const LoginForm: any = () => {
                   type="submit"
                   className="w-full p-2 rounded hover-gradient"
                 >
-                  <div className="flex flex-row items-center group justify-center w-full gap-2">
-                    <span className="text-white text-lg group-hover:text-blue-800 transition-transform duration-200 dark:text-white">
-                      Sign In
-                    </span>
-                    <LogIn
-                      size={20}
-                      className="text-white group-hover:text-blue-800 transition-transform duration-200 group-hover:scale-120 dark:text-white"
+                  {isLogin ? (
+                    <Loader
+                      className="text-success-foreground text-2xl"
+                      isLoading={isLogin}
                     />
-                  </div>
+                  ) : (
+                    <div className="flex flex-row items-center group justify-center w-full gap-2">
+                      <span className="text-white text-lg group-hover:text-blue-800 transition-transform duration-200 dark:text-white">
+                        Sign In
+                      </span>
+                      <LogIn
+                        size={20}
+                        className="text-white group-hover:text-blue-800 transition-transform duration-200 group-hover:scale-120 dark:text-white"
+                      />
+                    </div>
+                  )}
                 </Button>
                 <p className="text-sm text-white text-center dark:text-white">
                   <Link
