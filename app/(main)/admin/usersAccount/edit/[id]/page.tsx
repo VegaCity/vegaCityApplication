@@ -82,7 +82,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
       description: "",
       phoneNumber: "",
       birthday: "",
-      gender: "",
+      gender: 0,
       cccdPassport: "",
       imageUrl: null,
       status: "",
@@ -98,6 +98,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
         const user = response.data.data;
         console.log(user?.birthday, "user birthday fetchhhh");
         console.log(user, "user fetchhhhhhhh");
+        console.log(user.gender, "genderrr");
 
         if (user) {
           const convertGenderToDisplay: string = handleGenderToFe(user.gender);
@@ -111,7 +112,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
             description: user.description,
             phoneNumber: user.phoneNumber,
             birthday: handlePlusOneDayFromBe(user?.birthday) || null,
-            gender: convertGenderToDisplay,
+            gender: user.gender,
             cccdPassport: user.cccdPassport,
             imageUrl: user.imageUrl,
             status: convertUserStatustoDisplay,
@@ -140,16 +141,16 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
   }, [params.id, toast]);
 
   const handleSubmit = async (data: UserAccountFormValues) => {
-    const { birthday, gender, ...rest } = data;
+    const { birthday, ...rest } = data;
     // console.log(birthday, "birthdayyyyyy");
-    const renderGenderToNumber: number = handleGenderToBe(gender as string);
+    // console.log(gender, "gender");
+    // const renderGenderToNumber: number = handleGenderToBe(gender as string);
 
     setIsSubmitting(true);
     try {
       const userUpdated = await UserServices.updateUserById(params.id, {
-        ...data,
+        ...rest,
         imageUrl: imageUploaded,
-        gender: renderGenderToNumber,
       });
       toast({
         variant: "success",
@@ -260,16 +261,20 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                         <FormControl>
                           <Select
                             onValueChange={(value) => {
-                              field.onChange(value);
-                              console.log(value, "gender");
+                              field.onChange(Number(value));
+                              console.log(Number(value), "gender");
                             }}
+                            value={field.value.toString()}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                             <SelectContent>
                               {genders.map((gender) => (
-                                <SelectItem key={gender.id} value={gender.name}>
+                                <SelectItem
+                                  key={gender.id}
+                                  value={gender.id.toString()}
+                                >
                                   {gender.name}
                                 </SelectItem>
                               ))}
@@ -379,6 +384,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                               field.onChange(value);
                               console.log(value, "status");
                             }}
+                            value={field.value}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select status" />

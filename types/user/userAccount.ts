@@ -47,11 +47,11 @@ export const handleGenderToBe = (gender: string): number => {
 export const handleGenderToFe = (gender: number): string => {
   switch (gender) {
     case 0:
-      return "Male"; // returns Male
+      return "male"; // returns Male
     case 1:
-      return "Female"; // returns Female
+      return "female"; // returns Female
     case 2:
-      return "Other"; // returns Other
+      return "other"; // returns Other
     default:
       throw new Error("Invalid gender input"); // Optional: handle invalid input
   }

@@ -234,7 +234,7 @@ export const userAccountFormSchema = z.object({
     .min(1, { message: "Your birthday is required!" })
     .refine(isOver18, { message: "Customer must be above 18 years old!" })
     .nullable(),
-  gender: z.string().min(0, {
+  gender: z.number().min(0, {
     message: "Gender is required!",
   }),
   cccdPassport: z
