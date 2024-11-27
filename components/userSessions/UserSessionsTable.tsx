@@ -128,7 +128,10 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">User Name</TableHead>
+              <TableHead className="text-white">User Email</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                User Name
+              </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Start Date
               </TableHead>
@@ -152,6 +155,9 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                 key={session.id}
               >
                 <TableCell>{i + 1}</TableCell>
+                <TableCell>
+                  <strong>{session.email ?? "User Email"}</strong>
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-row gap-2">
                     <Tooltip>

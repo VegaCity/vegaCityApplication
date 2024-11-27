@@ -2,6 +2,7 @@ export interface UserSession {
   id: string;
   userId: string;
   userName: string;
+  email: string;
   startDate: string;
   endDate: string;
   totalCashReceive: number;
