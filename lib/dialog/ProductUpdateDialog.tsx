@@ -65,13 +65,13 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     if (file) {
       // Validate file type
       if (!file.type.startsWith("image/")) {
-        toast.error("Vui lòng chọn file hình ảnh");
+        toast.error("Please select an image file");
         return;
       }
 
       // Validate file size (e.g., max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Kích thước file không được vượt quá 5MB");
+        toast.error("Image size must be less than 5MB");
         return;
       }
 
@@ -109,7 +109,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
       setSelectedImage(null);
       setImagePreview("");
     } catch (error) {
-      toast.error("Cập nhật sản phẩm thất bại");
+      toast.error("Failed to update product");
     }
   };
 
@@ -119,9 +119,9 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Cập nhật sản phẩm</DialogTitle>
+          <DialogTitle>Edit Product</DialogTitle>
           <DialogDescription>
-            Chỉnh sửa thông tin chi tiết của sản phẩm
+            Edit the details of the product.
           </DialogDescription>
         </DialogHeader>
 
@@ -153,7 +153,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-gray-500">
                   <ImageIcon size={48} />
-                  <p className="mt-2">Chưa có hình ảnh</p>
+                  <p className="mt-2">No image selected</p>
                 </div>
               )}
             </div>
@@ -161,14 +161,14 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
             >
-              Tải ảnh lên
+              Upload Image
             </Button>
           </div>
 
           {/* Product Name */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
-              Tên sản phẩm
+              Product Name
             </Label>
             <Input
               id="name"
@@ -183,7 +183,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
           {/* Price */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="price" className="text-right">
-              Giá
+              Price
             </Label>
             <Input
               id="price"
@@ -199,7 +199,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
           {/* Status */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="status" className="text-right">
-              Trạng thái
+              Status
             </Label>
             <Select
               value={formData.status}
@@ -211,8 +211,8 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                 <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Active">Hoạt động</SelectItem>
-                <SelectItem value="InActive">Ngừng kinh doanh</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="InActive">InActive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -220,9 +220,9 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Hủy
+            Cancel
           </Button>
-          <Button onClick={handleSubmit}>Lưu thay đổi</Button>
+          <Button onClick={handleSubmit}>Save</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
