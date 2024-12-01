@@ -35,8 +35,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { useRouter } from "next/navigation";
 
 const UserProfileComponent: React.FC = () => {
+  const router = useRouter();
   const [user, setUser] = useState<UserAccountDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [updating, setUpdating] = useState<boolean>(false);
@@ -352,7 +354,23 @@ const UserProfileComponent: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>{"User Profile"}</span>
-          {!editMode && <Button onClick={() => setEditMode(true)}>Edit</Button>}
+          <div className="space-x-2">
+            <Button
+              onClick={() => {
+                if (user?.email) {
+                  const encodedEmail = encodeURIComponent(user?.email);
+                  router.push(`/change-password-existed/${encodedEmail}`);
+                } else {
+                  router.push(`/change-password-existed/${user?.email}`);
+                }
+              }}
+            >
+              Change Password
+            </Button>
+            {!editMode && (
+              <Button onClick={() => setEditMode(true)}>Edit</Button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
