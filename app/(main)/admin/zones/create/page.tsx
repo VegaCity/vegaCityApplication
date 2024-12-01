@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AxiosError } from "axios";
 import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -67,12 +68,17 @@ const ZoneCreatePage = () => {
       });
       router.push("/admin/zones");
     } catch (error) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Error creating zone",
-        description: "Please try again later.",
-      });
+      if (error instanceof AxiosError) {
+        console.error(error);
+        toast({
+          variant: "destructive",
+          title: "Error creating zone!",
+          description:
+            error.response?.data.Error ||
+            error.response?.data.messageResponse ||
+            "Please try again later!",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

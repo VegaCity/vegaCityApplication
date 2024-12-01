@@ -10,6 +10,11 @@ interface UserPageSize {
   page?: number;
   size?: number;
 }
+
+interface UserReassignEmail {
+  email: string;
+}
+
 export const UserServices = {
   getUsers({ page, size }: UserPageSize) {
     return API.get("/users", {
@@ -39,8 +44,8 @@ export const UserServices = {
   deleteUserById(userId: string) {
     return API.delete(`/user/${userId}`);
   },
-  userReassignEmail(userId: string, email: string) {
-    return API.post(`/user/${userId}/re-assign-email`, email);
+  userReassignEmail(userId: string, userData: UserReassignEmail) {
+    return API.post(`/user/${userId}/re-assign-email`, userData);
   },
   approveUser(userId: string, userApproveData: UserApprove) {
     return API.post(`/user/${userId}/approve-user`, userApproveData);

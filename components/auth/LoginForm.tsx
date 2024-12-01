@@ -365,7 +365,9 @@ const LoginForm: any = () => {
           toast({
             variant: "destructive",
             title: "Login Failed!",
-            description: "Something went wrong in the server!",
+            description:
+              error.response?.data.messageResponse ||
+              "Something went wrong in the server!",
           });
           setIsLogin(false);
         }

@@ -26,7 +26,7 @@ const UsersPage = () => {
         </Button>
       </div>
       {/* Body Container */}
-      <div className="max-w-7xl px-10">
+      <div className="max-w-7xl px-4">
         <UsersTable />
         <UsersPagination />
       </div>

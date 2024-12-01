@@ -106,14 +106,6 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
 
   const filteredZones = limit ? zoneList.slice(0, limit) : zoneList;
 
-  // Function to format price
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
   return (
     <div className="mt-10">
       <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">

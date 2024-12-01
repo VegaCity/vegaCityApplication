@@ -30,6 +30,7 @@ import {
 } from "@/types/store/storeOwner";
 import { Minus } from "lucide-react";
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 interface StoreDetailProps {
   params: { id: string };
@@ -243,19 +244,23 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
               <TableHeader>
                 <TableHead>Name</TableHead>
                 <TableHead>Wallet Type</TableHead>
-                <TableHead>Initial Balance</TableHead>
+                <TableHead>Balance</TableHead>
                 <TableHead>Balance History</TableHead>
                 <TableHead>Transactions</TableHead>
               </TableHeader>
               <TableBody>
                 {storeDetail.store.wallets.map((wallet, index) => (
                   <TableRow key={index}>
+                    <TableCell>{wallet.name}</TableCell>
                     <TableCell>
                       <Badge>{wallet.walletType.name}</Badge>
                     </TableCell>
-                    <TableCell>{wallet.balance}</TableCell>
-                    <TableCell>{wallet.balanceStart}</TableCell>
-                    <TableCell>{wallet.balanceHistory}</TableCell>
+                    <TableCell>
+                      {formatVNDCurrencyValue(wallet.balance)}
+                    </TableCell>
+                    <TableCell>
+                      {formatVNDCurrencyValue(wallet.balanceHistory)}
+                    </TableCell>
                     <TableCell>
                       {wallet.transactions.length > 0
                         ? wallet.transactions

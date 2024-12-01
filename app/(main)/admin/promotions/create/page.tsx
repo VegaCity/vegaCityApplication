@@ -39,7 +39,7 @@ const PromotionCreatePage = () => {
       name: "",
       description: "",
       maxDiscount: 0,
-      quantity: 0,
+      quantity: 1,
       discountPercent: 0,
       requireAmount: 0,
       startDate: "",
@@ -48,13 +48,6 @@ const PromotionCreatePage = () => {
     },
   });
 
-  const VNDcurrencyValue = (numberValue: number) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      minimumFractionDigits: 0,
-    }).format(numberValue);
-
   const handleSubmit = (data: CreatePromotionFormValues) => {
     console.log("New promotion data:", data);
     console.log("Max discount:", data.maxDiscount);
@@ -62,24 +55,37 @@ const PromotionCreatePage = () => {
     const { status, ...restPromoData } = data;
     console.log(status, "status ne");
 
-    const converDiscountPercentToBe = Number(
-      (data?.discountPercent ?? 0) / 100
-    );
+    form.reset({ quantity: 1, discountPercent: 0 });
+    // const converDiscountPercentToBe = Number(
+    //   (data?.discountPercent ?? 0) / 100
+    // );
 
-    const promotionData = {
-      ...data,
-      discountPercent: converDiscountPercentToBe,
-    };
+    // const promotionData = {
+    //   ...data,
+    //   discountPercent: converDiscountPercentToBe,
+    // };
 
     setIsSubmitting(true);
 
-    PromotionServices.uploadPromotion(promotionData)
+    const autoStatusPromotion = form.getValues("status");
+
+    if (autoStatusPromotion !== "Automation") {
+      toast({
+        title: "Can't not create promotion",
+        description: `Please check on ${(
+          <strong>Enable Auto Promotion</strong>
+        )} to create!`,
+      });
+    }
+
+    console.log(data, "data");
+    PromotionServices.uploadPromotion(data)
       .then((res) => {
         console.log(res.data, "Create Promotion");
         toast({
           variant: "success",
           title: "Promotion has been created successfully",
-          description: `Created promotion: ${promotionData.name}`,
+          description: `Created promotion: ${data.name}`,
         });
         router.push("/admin/promotions");
       })
@@ -239,7 +245,7 @@ const PromotionCreatePage = () => {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="discountPercent"
                     render={({ field }) => (
@@ -268,7 +274,7 @@ const PromotionCreatePage = () => {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
 
                   <FormField
                     control={form.control}
@@ -302,7 +308,7 @@ const PromotionCreatePage = () => {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="quantity"
                     render={({ field }) => (
@@ -324,7 +330,7 @@ const PromotionCreatePage = () => {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </Card>
 
                 <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md space-y-4 col-span-2">

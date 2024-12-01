@@ -324,11 +324,11 @@ export function AppSidebar() {
                           <Avatar>
                             <AvatarImage
                               src={validImageUrl(user.imageUrl || "")}
-                              alt="@shadcn"
+                              alt="userAva"
                               className="h-8 w-8 rounded-full"
                             />
                             <AvatarFallback className="text-white">
-                              BT
+                              Avatar
                             </AvatarFallback>
                           </Avatar>
                         ) : (

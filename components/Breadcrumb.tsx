@@ -90,21 +90,27 @@ const Breadcrumb = () => {
       const href = "/" + arr.slice(0, index + 1).join("/");
       const isLast = index === arr.length - 1;
 
-      // Combine dynamic segments like 'Package/Detail'
-      if (segment === "detail" && index > 0) {
-        const previousSegment = arr[index - 1];
-        const combinedLabel = `${previousSegment}_detail`;
-        acc.pop(); // Remove the last breadcrumb (previousSegment)
-        acc.push({ label: combinedLabel, href, isLast });
-      } else {
-        acc.push({ label: segment, href, isLast });
-      }
+      // // Combine dynamic segments like 'Package/Detail'
+      // if (segment === "detail" && index > 0) {
+      //   const previousSegment = arr[index - 1];
+      //   const combinedLabel = `${previousSegment}_detail`;
+      //   acc.pop(); // Remove the last breadcrumb (previousSegment)
+      //   acc.push({ label: combinedLabel, href, isLast });
+      // } else if (segment === "edit" && index > 0) {
+      //   const previousSegment = arr[index - 1];
+      //   const combinedLabel = `${previousSegment}_edit`;
+      //   acc.pop(); // Remove the last breadcrumb (previousSegment)
+      //   acc.push({ label: combinedLabel, href, isLast });
+      // } else {
+      //   acc.push({ label: segment, href, isLast });
+      // }
+      acc.push({ label: segment, href, isLast });
 
       return acc;
     }, []);
 
   return (
-    <nav className="flex items-center space-x-2">
+    <div className="flex items-center space-x-2">
       {breadcrumbItems.map((item, index) => (
         <div
           key={item.href}
@@ -112,6 +118,12 @@ const Breadcrumb = () => {
         >
           {item.isLast ? (
             <span className="text-muted-foreground">{item.label}</span>
+          ) : item.label === "admin" ||
+            item.label === "detail" ||
+            item.label === "edit" ? (
+            <span className={"text-gray-500 cursor-not-allowed"}>
+              {item.label}
+            </span>
           ) : (
             <Link
               href={item.href}
@@ -128,7 +140,7 @@ const Breadcrumb = () => {
           )}
         </div>
       ))}
-    </nav>
+    </div>
   );
 };
 

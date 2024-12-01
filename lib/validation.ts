@@ -421,29 +421,45 @@ export const editPackageFormSchema = z.object({
   duration: z.coerce.number().min(1, "Duration is required!"),
 });
 
-export const createPackageFormSchema = z.object({
-  type: z.string().min(1, "Package's type is required!"),
-  name: z
-    .string()
-    .min(2, { message: "Name must include at least 2 characters" })
-    .max(100, { message: "Name does not exceed 100 characters" })
-    .regex(/^(.*[()]).*$/u, {
-      message: "Name must have (...day)!",
-    }),
-  imageUrl: z.string().nullable(),
-  description: z.string().min(1).nullable(),
-  price: z
-    .number()
-    .min(100000, { message: "Price must at least 100.000 VND" })
-    .max(10000000, { message: "Price does not exceed 10 millions VND" }),
-  duration: z
-    .number()
-    .min(1, "At least 1 day!")
-    .max(365, "Day must below 365 days!"),
-  zoneId: z.string().min(1),
-  walletTypeId: z.string().min(1),
-  moneyStart: z.number().min(10000, "Money start at least 100.000 VND"),
-});
+export const createPackageFormSchema = z
+  .object({
+    type: z.string().min(1, "Package's type is required!"),
+    name: z
+      .string()
+      .min(2, { message: "Name must include at least 2 characters" })
+      .max(100, { message: "Name does not exceed 100 characters" })
+      .regex(/^.+\(\d+\sday\(s\)\)$/u, {
+        message: "Name must have (...day(s))!",
+      }),
+    imageUrl: z.string().nullable(),
+    description: z.string().min(1).nullable(),
+    price: z
+      .number()
+      .min(100000, { message: "Price must at least 100.000 VND" })
+      .max(10000000, { message: "Price does not exceed 10 millions VND" }),
+    duration: z
+      .number()
+      .min(1, "At least 1 day!")
+      .max(365, "Day must below 365 days!"),
+    zoneId: z.string().min(1),
+    walletTypeId: z.string(),
+    moneyStart: z.number().min(100000, "Money start at least 100.000 VND"),
+  })
+  .refine(
+    (data) => {
+      const price = data.price; //200
+      const moneyStart = data.moneyStart; //240
+      const moneyStartBonus = price + price * 0.2; //Price * 20% bonus to Money Start
+      return data.type === "SpecificPackage"
+        ? moneyStart >= moneyStartBonus
+        : moneyStart >= price;
+    },
+    {
+      message:
+        "Money Start must higher or equal Price (if Service Package)! - Higher than 20% from Price (if Specific Package)!",
+      path: ["moneyStart"],
+    }
+  );
 
 export const createPromotionFormSchema = z
   .object({

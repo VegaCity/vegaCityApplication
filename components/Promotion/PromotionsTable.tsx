@@ -122,12 +122,12 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
               <TableHead className="hidden md:table-cell text-white">
                 Max Discount
               </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
+              {/* <TableHead className="hidden md:table-cell text-white">
                 Quantity
               </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Discount %
-              </TableHead>
+              </TableHead> */}
               <TableHead className="hidden md:table-cell text-white">
                 Require Amount
               </TableHead>
@@ -176,7 +176,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                     <Minus />
                   )}
                 </TableCell>
-                <TableCell className="hidden md:table-cell">
+                {/* <TableCell className="hidden md:table-cell">
                   {promo.quantity !== null ? promo.quantity : <Minus />}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
@@ -187,7 +187,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                   ) : (
                     <Minus />
                   )}
-                </TableCell>
+                </TableCell> */}
                 <TableCell className="hidden md:table-cell">
                   {promo.requireAmount !== null ? (
                     <p className="font-bold">

@@ -34,13 +34,13 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
         {/* <Navbar /> */}
         <div className="flex w-full justify-center">
           {/* Sidebar on the left */}
-          <div className="hidden sm:block h-screen w-30">
+          <div className="hidden sm:block h-screen w-auto">
             {/* <Sidebar /> */}
             <AppSidebar />
           </div>
 
           {/* Main content area */}
-          <div className="p-5 w-full max-w-8xl">
+          <div className="p-5 w-full max-w-screen-2xl">
             {/* Move SidebarTrigger to AppSidebar */}
             {/* <div className="fixed left-29 top-1">
               <SidebarTrigger size={"lg"} />
@@ -54,7 +54,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
             {/* Centered children content */}
             <div className="flex p-5 items-center justify-center">
-              <div className="w-full max-w-8xl px-4">{children}</div>{" "}
+              <div className="w-full max-w-screen-xl px-2">{children}</div>
               {/* Adjust the max-width as per your preference */}
             </div>
           </div>
