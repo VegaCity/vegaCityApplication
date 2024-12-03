@@ -477,6 +477,7 @@ export const createPromotionFormSchema = z
       .nullable(),
     requireAmount: z
       .number()
+      .min(100000, "Require amount does not below 100.000 VND")
       .max(1000000000, "Require amount does not exceed 10 millions VND")
       .nullable(),
     startDate: z
@@ -497,6 +498,18 @@ export const createPromotionFormSchema = z
     {
       message: "The end date must higher than the begin date!",
       path: ["endDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.maxDiscount === null || data.requireAmount === null) {
+        return true;
+      }
+      return data.maxDiscount <= data.requireAmount;
+    },
+    {
+      message: "Max Discount must below Require Amount!",
+      path: ["maxDiscount"],
     }
   );
 

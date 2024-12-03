@@ -8,7 +8,7 @@ export const formatDateTime = ({ type, dateTime }: SelectType) => {
   const formatVNDate = new Date(dateTime).toLocaleDateString("vi-VN");
   const formatVNTime = new Date(dateTime).toLocaleTimeString("vi-VN");
 
-  console.log(formatVNTime, "timeee");
+  // console.log(formatVNTime, "timeee");
   if (type === "date") {
     return formatVNDate;
   } else if (type === "time") {
