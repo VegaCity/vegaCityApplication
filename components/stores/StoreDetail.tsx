@@ -43,6 +43,10 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
   const { toast } = useToast();
   const router = useRouter();
 
+  const transferRate = (storeRate: number) => {
+    return storeRate ? storeRate * 100 : 0;
+  };
+
   useEffect(() => {
     const fetchStoreDetail = async () => {
       setIsLoading(true);
@@ -176,6 +180,15 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
                 </TableCell>
                 <TableCell>
                   {storeDetail.store.description ?? "No description"}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>
+                  <strong>Transfer Rate:</strong>
+                </TableCell>
+                <TableCell>
+                  {`${transferRate(storeDetail.store.storeTransferRate)}%` ||
+                    "None"}
                 </TableCell>
               </TableRow>
             </TableBody>

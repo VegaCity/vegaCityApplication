@@ -91,6 +91,7 @@ export interface StoreOwner {
   upsDate: string;
   menus?: StoreMenu[];
   wallets?: WalletStoreDetail[];
+  storeTransferRate: number;
 }
 
 export interface StoreOwnerDetail {
