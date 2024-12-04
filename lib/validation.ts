@@ -515,6 +515,7 @@ export const createPromotionFormSchema = z
 
 export const editPromotionFormSchema = z
   .object({
+    promotionCode: z.string().min(1, "Promotion code is required!"),
     name: z.string().min(1, "Name is required!"),
     description: z.string().min(1).nullable(),
     maxDiscount: z
@@ -528,13 +529,14 @@ export const editPromotionFormSchema = z
       .nullable(),
     requireAmount: z
       .number()
+      .min(100000, "Require amount does not below 100.000 VND")
       .max(1000000000, "Require amount does not exceed 10 millions VND")
       .nullable(),
     startDate: z
       .string()
       .refine(
         (date) => new Date(date) >= new Date(),
-        "The begin date must be today or the following day!"
+        "The begin date must be the following day!"
       ),
     endDate: z.string(),
     status: z.string().nullable(),
@@ -548,6 +550,18 @@ export const editPromotionFormSchema = z
     {
       message: "The end date must higher than the begin date!",
       path: ["endDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.maxDiscount === null || data.requireAmount === null) {
+        return true;
+      }
+      return data.maxDiscount <= data.requireAmount;
+    },
+    {
+      message: "Max Discount must below Require Amount!",
+      path: ["maxDiscount"],
     }
   );
 
