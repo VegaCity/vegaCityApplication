@@ -31,6 +31,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { PencilIcon } from "lucide-react";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface ReportTableProps {
   limit?: number;
@@ -64,7 +66,14 @@ interface ApiError {
   Error: string;
   TimeStamp: string;
 }
-
+const EditReportSchema = z.object({
+  solution: z
+    .string({ required_error: "Solution is required" })
+    .trim()
+    .min(1, { message: "Solution cannot be empty" }),
+  solveBy: z.string(),
+  status: z.string(),
+});
 const EditReportDialog = ({
   report,
   onSuccess,
@@ -78,6 +87,7 @@ const EditReportDialog = ({
 }) => {
   const { toast } = useToast();
   const form = useForm({
+    resolver: zodResolver(EditReportSchema),
     defaultValues: {
       solution: report.solution || "",
       solveBy: "Cashier Web",
@@ -85,7 +95,7 @@ const EditReportDialog = ({
     },
   });
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: z.infer<typeof EditReportSchema>) => {
     try {
       await ReportServices.editReport(report.id, {
         solution: values.solution,
@@ -100,7 +110,6 @@ const EditReportDialog = ({
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      // Handle the specific error format
       let errorMessage = "Failed to update report";
 
       if (error.response?.data) {
@@ -166,10 +175,8 @@ const EditReportDialog = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {/* <SelectItem value="0">Pending</SelectItem> */}
                       <SelectItem value="1">Processing</SelectItem>
                       <SelectItem value="2">Done</SelectItem>
-                      {/* <SelectItem value="3">Cancel</SelectItem> */}
                     </SelectContent>
                   </Select>
                   <FormMessage />
