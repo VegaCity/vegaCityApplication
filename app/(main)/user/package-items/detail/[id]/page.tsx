@@ -583,8 +583,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       );
 
       toast({
-        title: "ETag Activated",
-        description: "The ETag has been successfully activated.",
+        title: "VCard Activated",
+        description: "The VCard has been successfully activated.",
       });
 
       window.location.reload();
