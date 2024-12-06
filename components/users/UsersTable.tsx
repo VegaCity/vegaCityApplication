@@ -204,19 +204,27 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   const handleDeleteUser = (user: UserAccount) => {
     setDeleteLoading(true);
+    console.log(user, "userDelete");
     if (user.id) {
       UserServices.deleteUserById(user.id)
         .then((res) => {
           toast({
-            title: res.data.messageResponse,
+            variant: "success",
+            title: "Delete User Successfully!",
             description: `User name: ${user.fullName}`,
           });
         })
         .catch((err) => {
-          toast({
-            title: err.data.messageResponse,
-            description: "Some errors have occurred!",
-          });
+          if (err instanceof AxiosError) {
+            toast({
+              variant: "destructive",
+              title:
+                err.response?.data?.messageResponse ||
+                err.response?.data?.Error ||
+                "Delete failed!",
+              description: "Delete User Failed!",
+            });
+          }
         })
         .finally(() => {
           setDeleteLoading(false);
@@ -274,6 +282,39 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     console.log(searchEmail, "email searchhhh");
   };
   console.log(handleUserStatusFromBe(2), "status");
+
+  const triggerDeleteButton = (user: UserAccount) => {
+    return (
+      <AlertDialog>
+        <AlertDialogTrigger>
+          <Button
+            variant={"outline"}
+            type="submit"
+            className="mt-2 w-20 border-red-500 hover:text-white hover:bg-red-600 font-bold"
+          >
+            Delete
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this user - {user?.fullName} -?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will delete the user from your
+              list!
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleDeleteUser(user)}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  };
 
   const UserFound = () => {
     return userSearch?.map((userFound: UserAccount, i) => (
@@ -337,10 +378,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             />
           ) : (
             <>
-              {UserPendingVerifyPopUp(userFound)}
+              {userPendingVerifyPopUp(userFound)}
               <AlertDialog>
                 <AlertDialogTrigger>
-                  <Button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                  <Button
+                    variant={"outline"}
+                    type="submit"
+                    className="mt-2 w-20 border-red-500 hover:text-white hover:bg-red-600 font-bold"
+                  >
                     Delete
                   </Button>
                 </AlertDialogTrigger>
@@ -372,9 +417,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     ));
   };
 
-  console.log(zoneList, "Houses List");
+  console.log(zoneList, "Zone List");
 
-  const UserPendingVerifyPopUp = (userData: UserAccount) => {
+  const userPendingVerifyPopUp = (userData: UserAccount) => {
     // const userApproveForm = useForm<UserApproveFormValues>({
     //   defaultValues: {
     //     approvalStatus: "APPROVED",
@@ -409,7 +454,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     return (
       <AlertDialog onOpenChange={handleOpenChange}>
         <AlertDialogTrigger>
-          <Button className="w-20 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4">
+          <Button
+            variant={"outline"}
+            type="submit"
+            className="mt-2 w-20 border-green-500 hover:text-white hover:bg-green-600 font-bold"
+          >
             Approve
           </Button>
         </AlertDialogTrigger>
@@ -652,7 +701,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <Button
                   type="submit"
-                  className="bg-blue-500 hover:bg-blue-700"
+                  className="bg-blue-500 hover:bg-blue-600"
                   disabled={approveLoading}
                 >
                   {approveLoading ? (
@@ -826,13 +875,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           {user.status === 3 && (
                             <div className="flex items-center justify-between w-min gap-2">
                               <div className="flex-row items-end justify-end">
-                                {UserPendingVerifyPopUp(user)}
-                                <Button
-                                  type="submit"
-                                  className="w-20 bg-red-500 hover:bg-red-600 text-white font-bold"
-                                >
-                                  Delete
-                                </Button>
+                                {userPendingVerifyPopUp(user)}
+                                {triggerDeleteButton(user)}
                               </div>
                             </div>
                           )}

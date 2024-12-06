@@ -12,13 +12,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { toast } from "@/components/ui/use-toast";
-import { Pencil, Trash } from "lucide-react";
+import { Pencil, Trash, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -43,11 +44,11 @@ export const PopoverActionTable = <T extends BaseType>({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="border-none">
-          ...
+        <Button variant="ghost" className="border-none">
+          <MoreHorizontal />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-30 bg-blue-200 bg-transparent opacity-85">
+      <PopoverContent className="w-30 bg-blue-950 text-text-button space-y-3">
         {/* <div> */}
         {/* <div className="space-y-2">
             <h4 className="font-medium leading-none">Actions</h4>
@@ -55,25 +56,34 @@ export const PopoverActionTable = <T extends BaseType>({
               Select your next actions...
             </p>
           </div> */}
-        <div className="flex items-center w-full">
-          <div>
-            {/* <Label htmlFor="width">Edit</Label> */}
+        <h3 className="font-medium leading-none">Actions</h3>
+        <div className="flex flex-col items-between justify-center w-full">
+          <div className="space-x-2">
+            <span className="mr-4">
+              <Label className="max-w-15" htmlFor="edit">
+                Edit
+              </Label>
+            </span>
             <Link href={editLink}>
               <Button
                 variant={"ghost"}
-                className="text-blue-500 hover:text-blue-600 font-bold rounded text-xs"
+                className="text-blue-500 hover:text-blue-600 font-bold rounded text-xs w-10"
               >
                 <Pencil />
               </Button>
             </Link>
           </div>
-          <div>
-            {/* <Label htmlFor="maxWidth">Delete</Label> */}
+          <div className="space-x-2">
+            <span className="">
+              <Label className="max-w-15" htmlFor="delete">
+                Delete
+              </Label>
+            </span>
             <AlertDialog>
               <AlertDialogTrigger>
                 <Button
                   variant={"ghost"}
-                  className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
+                  className="text-red-500 hover:text-red-600 font-bold rounded text-xs w-10"
                 >
                   <Trash />
                 </Button>
