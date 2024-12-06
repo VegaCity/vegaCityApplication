@@ -18,7 +18,7 @@ export const IssueTypeServices = {
   },
 
   createIssueType(issueTypeData: CreateIssueType) {
-    return API.patch(`/report/issue-type`, issueTypeData);
+    return API.post(`/report/issue-type`, issueTypeData);
   },
   deleteIssueType(id: string) {
     return API.delete(`/report/issue-type/${id}`);
