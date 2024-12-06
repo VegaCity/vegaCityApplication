@@ -35,6 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import { CommissionRatesDialog } from "@/lib/dialog/TermDialog";
 const UserProfileComponent: React.FC = () => {
   const [user, setUser] = useState<Users | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -462,21 +463,27 @@ const UserProfileComponent: React.FC = () => {
           </div>
           <div className="col-span-2 space-y-2">
             <Label htmlFor="storeStatus">Store Type</Label>
-            <Select value={storeFormData.storeType?.toString() || "0"} disabled>
-              <SelectTrigger>
-                <SelectValue placeholder="Select store status" />
-              </SelectTrigger>
-              <SelectContent>
-                {storeTypes.map((storeType) => (
-                  <SelectItem
-                    key={storeType.value}
-                    value={storeType.value.toString()}
-                  >
-                    {storeType.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center space-x-2">
+              <Select
+                value={storeFormData.storeType?.toString() || "0"}
+                disabled
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select store status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {storeTypes.map((storeType) => (
+                    <SelectItem
+                      key={storeType.value}
+                      value={storeType.value.toString()}
+                    >
+                      {storeType.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <CommissionRatesDialog />
+            </div>
           </div>
           <div className="col-span-2 space-y-2">
             <Label htmlFor="storeDescription">Store Description</Label>
