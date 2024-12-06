@@ -409,13 +409,8 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           type="text"
                           {...field}
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          disabled={isCustomerInfoConfirmed}
-                          value={field.value?.toLocaleString("en-US")}
-                          onChange={(e) => {
-                            const rawValue = e.target.value.replace(/,/g, "");
-                            const numericValue = parseFloat(rawValue) || 0;
-                            field.onChange(numericValue);
-                          }}
+                          disabled={true}
+                          value={formatCurrency(field.value)}
                         />
                       </FormControl>
                       <FormMessage />
