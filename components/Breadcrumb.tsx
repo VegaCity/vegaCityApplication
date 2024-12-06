@@ -83,6 +83,14 @@ interface BreadcrumbProps {
 const Breadcrumb = () => {
   const pathname = usePathname();
 
+  const disableLabel = (label: string) => {
+    if (label === "admin") return true;
+    if (label === "detail") return true;
+    if (label === "edit") return true;
+    if (label === "user") return true;
+    if (label === "generate") return true;
+  };
+
   const breadcrumbItems = pathname
     .split("/")
     .filter(Boolean) // Exclude 'admin'
@@ -118,9 +126,7 @@ const Breadcrumb = () => {
         >
           {item.isLast ? (
             <span className="text-muted-foreground">{item.label}</span>
-          ) : item.label === "admin" ||
-            item.label === "detail" ||
-            item.label === "edit" ? (
+          ) : disableLabel(item.label) ? (
             <span className={"text-gray-500 cursor-not-allowed"}>
               {item.label}
             </span>

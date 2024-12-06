@@ -801,7 +801,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                   : filteredUsers?.map((user, i) => (
                       <TableRow
                         onClick={(e) => {
-                          if (user.status !== 0) {
+                          if (user.status === 1 || user.status === 2) {
                             e.stopPropagation();
                             toast({
                               title: "User is disable!",
