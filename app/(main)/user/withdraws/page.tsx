@@ -192,13 +192,26 @@ const WithdrawMoney = () => {
           response.data?.messageResponse || "Can not get wallet for store"
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error finding store wallet:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Đã có lỗi xảy ra. Vui lòng thử lại."
-      );
+
+      // Check if the error response has a structured format
+      if (err.response && err.response.data) {
+        const errorData = err.response.data;
+        const errorMessage =
+          errorData.Error || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+
+        // Set error with only the error message
+        setError(errorMessage);
+      } else {
+        // Fallback to previous error handling
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Đã có lỗi xảy ra. Vui lòng thử lại."
+        );
+      }
+
       setWalletInfo(null);
       setStoreDetails(null);
     } finally {
