@@ -72,9 +72,7 @@ const PromotionCreatePage = () => {
     if (autoStatusPromotion !== "Automation") {
       toast({
         title: "Can't not create promotion",
-        description: `Please check on ${(
-          <strong>Enable Auto Promotion</strong>
-        )} to create!`,
+        description: "Please check on Enable Auto Promotion to create!",
       });
     }
 

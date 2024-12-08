@@ -28,6 +28,8 @@ import { isObject } from "@/lib/isObject";
 import { Edit } from "lucide-react";
 import { handlePlusOneDayFromBe } from "@/lib/utils/convertDatePlusOne";
 import { Card } from "@/components/ui/card";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { AxiosError } from "axios";
 
 interface PromotionEditPageProps {
   params: {
@@ -55,7 +57,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
       description: "",
       maxDiscount: 0,
       requireAmount: 0,
-      quantity: 0,
+      quantity: 1,
       discountPercent: 0,
       startDate: "",
       endDate: "",
@@ -77,12 +79,16 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
     const startDate = data.startDate;
     const endDate = data.endDate;
     const discountPercent = data.discountPercent ?? 0;
-    console.log(startDate, " - ", endDate);
+    // console.log(startDate, " - ", endDate);
+    console.log(data, "Promotion Edit");
+
     const roundDiscount = roundToOneDecimal(discountPercent);
     const promotionData: PromotionPatch = {
       ...data,
       discountPercent: roundDiscount,
     };
+    console.log(promotionData, "PromotionData Edit");
+
     setIsSubmitting(true);
     try {
       await PromotionServices.editPromotion(params.id, promotionData);
@@ -93,9 +99,15 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
       });
       // router.back();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
+      if (err instanceof AxiosError) {
+        setError(
+          err
+            ? err.response?.data.messageResponse ||
+                err.response?.data.Error ||
+                "Can't edit this Promotion!"
+            : "An unknown error occurred"
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -137,17 +149,24 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
           });
         }
       } catch (err) {
-        console.error("Error fetching promotion data:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An unknown error occurred while fetching promotion data"
-        );
+        if (err instanceof AxiosError) {
+          console.error("Error fetching promotion data:", err.message);
+          setError(
+            err
+              ? err.response?.data.messageResponse ||
+                  err.response?.data.messageResponse ||
+                  "Promotion is not found!"
+              : "An unknown error occurred while fetching promotion data"
+          );
+        }
         toast({
-          title: "Error",
-          description: "Failed to load promotion data. Please try again.",
+          title: "This promotion was expired!",
+          description: "Can't edit this promotion!",
           variant: "destructive",
         });
+        // setTimeout(() => {
+        router.push("/admin/promotions");
+        // }, 2000);
       } finally {
         setIsLoading(false);
       }
@@ -156,7 +175,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
   }, [params.id]);
 
   if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <EmptyDataPage description={error} />;
 
   return (
     <>
@@ -249,7 +268,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="discountPercent"
                     render={({ field }) => (
@@ -278,7 +297,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
 
                   <FormField
                     control={form.control}
@@ -312,7 +331,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="quantity"
                     render={({ field }) => (
@@ -334,7 +353,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                         <FormMessage />
                       </FormItem>
                     )}
-                  />
+                  /> */}
                 </Card>
 
                 <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md space-y-4 col-span-2">

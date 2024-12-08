@@ -66,7 +66,7 @@ const WalletCreatePage = () => {
 
   return (
     <>
-      <BackButton text="Back To Wallets" link="/admin/wallets" />
+      <BackButton text="Back To Wallets" link="/admin/walletTypes" />
       {/* Body Container */}
       <div className="max-w-7xl px-10">
         <h3 className="text-2xl mb-4">Create New Wallet</h3>

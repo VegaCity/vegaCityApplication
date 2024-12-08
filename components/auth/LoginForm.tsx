@@ -422,7 +422,6 @@ const LoginForm: any = () => {
       toast({
         title: "Loading",
         description: "Please wait while we log you in...",
-        duration: 3000,
       });
       setIsLoading(true);
     }
@@ -465,13 +464,13 @@ const LoginForm: any = () => {
               console.log("e");
               loginUser(data);
             } else {
-              console.log("Hệ thống lỗi thiếu Message");
+              console.log(message || "Login failed!");
             }
           } else {
             //Nếu user bị session expired, mà mảng refreshTokenArray trong localStorage rỗng, không có refreshToken trước đó, thì sử dụng api getRefreshTokenByEmail để lấy Token
             //Sau đó có email và refreshToken rồi thì cấp lại refreshToken mới trong refreshTokenArray trong localStorage và cập nhật lại login
             //Xử lý như unauthorized
-            console.log("User không có refreshToken");
+            console.log("User does not have refreshToken");
           }
           // const refreshFromLocal = localStorage.getItem("refreshToken");
           // const latestRefreshToken = refreshFromLocal || "";

@@ -833,16 +833,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                             {user.roleName}
                           </Badge>
                         </TableCell>
-                        <TableCell
-                          onClick={(e) => e.stopPropagation()}
-                          className="hidden md:table-cell"
-                        >
+                        <TableCell className="hidden md:table-cell">
                           <p className="text-slate-500">{user.email}</p>
                           {/* Approve user button and Re-assign email button */}
-
-                          {user.status === 3 && (
-                            <ReassignEmailPopover userId={user.id} />
-                          )}
+                          <div onClick={(e) => e.stopPropagation()}>
+                            {user.status === 3 && (
+                              <ReassignEmailPopover userId={user.id} />
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {user.phoneNumber}
