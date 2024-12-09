@@ -397,8 +397,27 @@ const WithdrawMoney = () => {
   const handlePackageItemChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const searchValue = e.target.value;
-      setPackageItemCode(searchValue);
-      if (searchValue) fetchPackageItemInfo(searchValue);
+
+      // Xử lý trường hợp URL từ mã QR
+      let finalValue = searchValue;
+      try {
+        // Kiểm tra nếu có chứa 'etagEdit/'
+        if (searchValue.includes("etagEdit/")) {
+          // Split theo 'etagEdit/' và lấy phần tử cuối
+          finalValue = searchValue.split("etagEdit/")[1];
+        } else if (searchValue.startsWith("http")) {
+          // Xử lý trường hợp URL đầy đủ
+          const url = new URL(searchValue);
+          const pathSegments = url.pathname.split("/");
+          finalValue = pathSegments[pathSegments.length - 1];
+        }
+      } catch (error) {
+        console.error("Error parsing URL:", error);
+        finalValue = searchValue;
+      }
+
+      setPackageItemCode(finalValue);
+      if (finalValue) fetchPackageItemInfo(finalValue);
     },
     [fetchPackageItemInfo]
   );
