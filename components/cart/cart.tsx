@@ -81,7 +81,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     setIsPaymentModalOpen(false);
     setPaymentStatus("idle");
     setVcardCode("");
-    setCartItems([]); // Optional: clear cart after successful payment
+    setCartItems([]);
   };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
@@ -326,7 +326,6 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                   </SelectContent>
                 </Select>
               </div>
-
               {isQrCodePayment && (
                 <div className="space-y-2">
                   <label htmlFor="vcard-code" className="text-sm font-medium">
@@ -336,7 +335,15 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     id="vcard-code"
                     placeholder="Enter your Vcard code"
                     value={vcardCode}
-                    onChange={(e) => setVcardCode(e.target.value)}
+                    onChange={(e) => {
+                      const input = e.target.value;
+                      const idIndex = input.lastIndexOf("/");
+                      if (idIndex !== -1) {
+                        setVcardCode(input.substring(idIndex + 1));
+                      } else {
+                        setVcardCode(input);
+                      }
+                    }}
                     maxLength={50}
                     className="font-mono"
                   />

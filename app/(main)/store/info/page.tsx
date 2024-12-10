@@ -55,7 +55,6 @@ const UserProfileComponent: React.FC = () => {
     address: "",
     description: "",
     phoneNumber: "",
-
     gender: 0,
     cccdPassport: "",
     imageUrl: null,
@@ -120,6 +119,7 @@ const UserProfileComponent: React.FC = () => {
         status: store.status || 0,
         storeType: store.storeType,
       });
+      const storeType = localStorage.setItem("storeType", `${store.storeType}`);
     } catch (error) {
       handleError(error);
     }
@@ -231,59 +231,6 @@ const UserProfileComponent: React.FC = () => {
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: "" }));
     }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log("File selected:", file.name, file.size);
-
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Error",
-          description: "Image size must be less than 5MB",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      try {
-        setUploading(true);
-
-        const fileName = `${Date.now()}-${file.name}`;
-        const storageRef = ref(storage, `profile-images/${fileName}`);
-
-        console.log("Uploading file to:", storageRef.fullPath);
-
-        const snapshot = await uploadBytes(storageRef, file);
-        console.log("Upload snapshot:", snapshot);
-
-        const downloadURL = await getDownloadURL(storageRef);
-        console.log("Download URL:", downloadURL);
-
-        setFormData((prev) => ({
-          ...prev,
-          imageUrl: downloadURL,
-        }));
-        setImagePreview(downloadURL);
-
-        toast({
-          title: "Success",
-          description: "Image uploaded successfully",
-        });
-      } catch (error) {
-        console.error("Complete error details:", error);
-        handleError(error);
-        setImagePreview(null);
-      } finally {
-        setUploading(false);
-      }
-    }
-  };
-
-  const removeImage = () => {
-    setImagePreview(null);
-    setFormData((prev) => ({ ...prev, imageUrl: null }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -447,7 +394,7 @@ const UserProfileComponent: React.FC = () => {
               onValueChange={(value) =>
                 setStoreFormData((prev) => ({
                   ...prev,
-                  status: parseInt(value), // Corrected from storeStatus to status
+                  status: parseInt(value),
                 }))
               }
               disabled={!editMode}
@@ -569,56 +516,6 @@ const UserProfileComponent: React.FC = () => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Only show image upload for non-store profiles */}
-          {user?.role?.name !== "Store" && (
-            <div className="flex justify-center mb-6">
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
-                  <img
-                    src={imagePreview || "/api/placeholder/150/150"}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {editMode && (
-                  <div className="absolute -bottom-2 right-0 flex gap-2">
-                    <label
-                      htmlFor="imageUpload"
-                      className={`p-2 bg-primary hover:bg-primary/90 text-white rounded-full cursor-pointer transition-colors ${
-                        uploading ? "opacity-50 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      {uploading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Camera className="w-4 h-4" />
-                      )}
-                      <input
-                        type="file"
-                        id="imageUpload"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        disabled={uploading}
-                      />
-                    </label>
-                    {imagePreview && (
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="p-2 bg-destructive hover:bg-destructive/90 text-white rounded-full transition-colors"
-                        disabled={uploading}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* Rest of the form remains the same */}
           {user?.role?.name === "Store" ? (
             renderStoreFields()

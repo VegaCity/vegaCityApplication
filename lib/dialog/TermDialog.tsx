@@ -11,15 +11,28 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
+import { storeTypes } from "@/types/store/storeOwner";
 
 // Define commission rates for different product types
 const commissionRates = [
-  { type: "Food", rate: "5%" },
-  { type: "Service", rate: "10%" },
+  { type: "Product", rate: "3%" },
+  { type: "Service", rate: "5%" },
 ];
 
 export const CommissionRatesDialog: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const storeType = localStorage.getItem("storeType")
+    ? parseInt(localStorage.getItem("storeType") as string)
+    : 0;
+
+  const currentStoreType = storeTypes.find((type) => type.value === storeType);
+
+  const relevantCommissionRates = commissionRates.filter(
+    (rate) =>
+      (storeType === 1 && rate.type === "Product") ||
+      (storeType === 2 && rate.type === "Service")
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -32,15 +45,15 @@ export const CommissionRatesDialog: React.FC = () => {
         <DialogHeader>
           <DialogTitle>Store Commission Rates</DialogTitle>
           <DialogDescription>
-            Important business terms regarding commission rates for different
-            product types
+            Important business terms regarding commission rates for{" "}
+            {currentStoreType?.name} stores
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            As a store owner, you will receive a percentage of each order based
-            on the product type sold:
+            As a {currentStoreType?.name} store owner, you will receive a
+            percentage of each order:
           </p>
 
           <table className="w-full border-collapse">
@@ -51,7 +64,7 @@ export const CommissionRatesDialog: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {commissionRates.map((item) => (
+              {relevantCommissionRates.map((item) => (
                 <tr key={item.type} className="hover:bg-muted/50">
                   <td className="border p-2">{item.type}</td>
                   <td className="border p-2 text-right font-semibold">

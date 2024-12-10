@@ -192,13 +192,26 @@ const WithdrawMoney = () => {
           response.data?.messageResponse || "Can not get wallet for store"
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error finding store wallet:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Đã có lỗi xảy ra. Vui lòng thử lại."
-      );
+
+      // Check if the error response has a structured format
+      if (err.response && err.response.data) {
+        const errorData = err.response.data;
+        const errorMessage =
+          errorData.Error || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+
+        // Set error with only the error message
+        setError(errorMessage);
+      } else {
+        // Fallback to previous error handling
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Đã có lỗi xảy ra. Vui lòng thử lại."
+        );
+      }
+
       setWalletInfo(null);
       setStoreDetails(null);
     } finally {
@@ -384,8 +397,27 @@ const WithdrawMoney = () => {
   const handlePackageItemChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const searchValue = e.target.value;
-      setPackageItemCode(searchValue);
-      if (searchValue) fetchPackageItemInfo(searchValue);
+
+      // Xử lý trường hợp URL từ mã QR
+      let finalValue = searchValue;
+      try {
+        // Kiểm tra nếu có chứa 'etagEdit/'
+        if (searchValue.includes("etagEdit/")) {
+          // Split theo 'etagEdit/' và lấy phần tử cuối
+          finalValue = searchValue.split("etagEdit/")[1];
+        } else if (searchValue.startsWith("http")) {
+          // Xử lý trường hợp URL đầy đủ
+          const url = new URL(searchValue);
+          const pathSegments = url.pathname.split("/");
+          finalValue = pathSegments[pathSegments.length - 1];
+        }
+      } catch (error) {
+        console.error("Error parsing URL:", error);
+        finalValue = searchValue;
+      }
+
+      setPackageItemCode(finalValue);
+      if (finalValue) fetchPackageItemInfo(finalValue);
     },
     [fetchPackageItemInfo]
   );

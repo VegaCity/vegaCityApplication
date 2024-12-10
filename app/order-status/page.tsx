@@ -46,7 +46,7 @@ function OrderStatusContent() {
       <Card className="w-[850px]">
         <CardHeader>
           <CardTitle className="text-center">
-            {isSuccess ? "Thanh toán thành công!" : "Thanh toán thất bại"}
+            {isSuccess ? "Payment successful!" : "Payment failed!"}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-center">
@@ -54,7 +54,7 @@ function OrderStatusContent() {
             <>
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <p className="text-gray-600 mb-4">
-                Đơn hàng #{invoiceId} đã được thanh toán thành công.
+                Order #{invoiceId} payment was successful.
               </p>
               {/* {orderDetails.total && (
                 <p className="text-sm text-gray-500">

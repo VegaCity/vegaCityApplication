@@ -52,7 +52,7 @@ const TransactionTable = ({
     switch (status?.toUpperCase()) {
       case "SUCCESS":
         return "text-green-600";
-      case "FAILED":
+      case "CANCEL":
         return "text-red-600";
       default:
         return "text-gray-600";
