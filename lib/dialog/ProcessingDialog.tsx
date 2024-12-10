@@ -59,14 +59,14 @@ export const ProcessingDialog: React.FC<ProcessingDialogProps> = ({
           <h2 className="text-2xl font-bold text-white mb-1">
             Order Processing
           </h2>
-          <p className="text-blue-100 text-lg">Transaction Details</p>
+          <p className="text-blue-100 text-lg">Order Details</p>
         </div>
 
         <div className="p-4">
           <Card className="p-4 bg-gray-50 shadow-md">
             <InfoRow label="Seller" value={seller} />
             <InfoRow label="Balance" value={balance} />
-            <InfoRow label="PackageOrderId" value={packageItemId} />
+            {/* <InfoRow label="PackageOrderId" value={packageItemId} /> */}
             <InfoRow label="InvoiceId" value={invoiceId} />
             <InfoRow label="Customer" value={customerName} />
 
