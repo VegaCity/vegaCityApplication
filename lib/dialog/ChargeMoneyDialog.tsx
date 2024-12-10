@@ -54,11 +54,7 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
 }) => {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(
-    null
-  );
   const [amountError, setAmountError] = useState<string | null>(null);
-  const [showPromotionDetails, setShowPromotionDetails] = useState(false);
 
   useEffect(() => {
     const fetchPromotions = async () => {
@@ -102,17 +98,6 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
       setAmountError("Amount must be a multiple of 10,000 VND");
       return false;
     }
-    if (
-      selectedPromotion &&
-      numericAmount < (selectedPromotion.requireAmount ?? 0)
-    ) {
-      setAmountError(
-        `Require Amount for this promotion is ${formatCurrency(
-          selectedPromotion.requireAmount ?? 0
-        )}`
-      );
-      return false;
-    }
     setAmountError(null);
     return true;
   };
@@ -140,14 +125,6 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
     onOpenChange(open);
   };
 
-  const handlePromotionClick = (promotion: Promotion) => {
-    if (selectedPromotion && selectedPromotion.id === promotion.id) {
-      setSelectedPromotion(null);
-    } else {
-      setSelectedPromotion(promotion);
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogClose}>
       <DialogContent className="w-full max-h-[85vh] overflow-y-auto bg-white rounded-xl shadow-lg">
@@ -164,27 +141,21 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
         <div className="mt-2 px-2 ml-4">
           <div className="flex items-center text-blue-700 font-medium mb-1">
             <Gift className="mr-2" size={20} />
-            Ongoing Promotions
+            Active Promotions
           </div>
 
           <div className="flex overflow-x-auto space-x-2 pb-1/100">
             {promotions.map((promotion) => (
               <div
                 key={promotion.id}
-                onClick={() => handlePromotionClick(promotion)}
-                className={`flex-shrink-0 w-64 p-4 rounded-lg cursor-pointer transition duration-200 
-                  ${
-                    selectedPromotion?.id === promotion.id
-                      ? "bg-blue-100 border-blue-300 shadow-md"
-                      : "bg-gray-50 border-gray-200 hover:bg-blue-50"
-                  } border`}
+                className="flex-shrink-0 w-64 p-4 rounded-lg bg-gray-50 border border-gray-200"
               >
                 <div className="flex justify-between items-center">
                   <span className="font-semibold text-blue-800 text-sm">
                     {promotion.name}
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-2 truncate">
+                <p className="text-xs text-gray-600 mt-2">
                   {promotion.description}
                 </p>
               </div>
