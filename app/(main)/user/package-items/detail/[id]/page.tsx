@@ -885,8 +885,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             amount={amount}
             onAmountChange={handleAmountChange}
             formatAmount={formatAmount}
-            promotions={promotions}
-            isLoadingPromotions={isLoadingPromotions}
           />
 
           <ProcessingDialog
