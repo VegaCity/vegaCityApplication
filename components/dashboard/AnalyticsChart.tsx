@@ -30,6 +30,7 @@ import {
   ShoppingCart,
   LucideIcon,
 } from "lucide-react";
+import { ChartByDate } from "@/components/dashboard/ChartByDate";
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -240,41 +241,60 @@ const AnalyticsChart = () => {
 
   const renderAdminCharts = () => (
     <div className="flex flex-wrap w-full gap-6">
-      <ChartCard
-        title="Transaction Overview"
-        description="Monthly Transaction Count"
-        icon={TrendingUp}
-      >
-        <Chart
-          data={analyticsData as AdminAnalytics[]}
-          lines={[
-            {
-              dataKey: "totalTransactions",
-              stroke: "#8884d8",
-              name: "Transactions",
-            },
-            {
-              dataKey: "totalTransactionsAmount",
-              stroke: "#82ca9d",
-              name: "Transactions amount",
-            },
-          ]}
-        />
-      </ChartCard>
-
-      <ChartCard
-        title="Orders & Packages"
+      {/* <ChartCard
+        title="Orders & V-Cards"
         description="Monthly Overview"
         icon={Package}
       >
         <Chart
           data={analyticsData as AdminAnalytics[]}
           lines={[
-            { dataKey: "orderCash", stroke: "#8884d8", name: "Cash" },
-            { dataKey: "orderCount", stroke: "#82ca9d", name: "Order Count" },
-            { dataKey: "etagCount", stroke: "#825555", name: "V-Card Count" },
+            {
+              dataKey: "orderCash",
+              stroke: "#8884d8",
+              name: "Orders with Cash",
+            },
+            { dataKey: "orderCount", stroke: "#82ca9d", name: "Orders" },
+            { dataKey: "etagCount", stroke: "#825555", name: "V-Cards " },
           ]}
         />
+      </ChartCard> */}
+
+      <ChartCard
+        title="Total Transactions"
+        description="Monthly Overview"
+        icon={Package}
+      >
+        <Chart
+          data={analyticsData as AdminAnalytics[]}
+          lines={[
+            {
+              dataKey: "orderCash",
+              stroke: "#8884d8",
+              name: "Orders with Cash",
+            },
+            {
+              dataKey: "totalTransactions",
+              stroke: "#82ca9d",
+              name: "Total Transactions",
+            },
+            { dataKey: "orderCount", stroke: "#825555", name: "Orders" },
+            {
+              dataKey: "totalTransactionsAmount",
+              stroke: "#822555",
+              name: "Total Revenue",
+            },
+          ]}
+        />
+      </ChartCard>
+      {/* <Chart /> */}
+
+      <ChartCard
+        title="Chart By Date"
+        description="Date Monthly Overview"
+        icon={Package}
+      >
+        <ChartByDate />
       </ChartCard>
     </div>
   );

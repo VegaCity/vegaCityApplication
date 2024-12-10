@@ -69,6 +69,11 @@ const config = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Badge Purple
+        badgePurple: {
+          DEFAULT: "hsl(var(--badge-specific))",
+          hover: "hsl(var(--badge-specific-hover))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

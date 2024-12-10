@@ -27,6 +27,7 @@ import { AxiosError } from "axios";
 import { Minus, ArrowUp10, ArrowUp01 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { twMerge } from "tailwind-merge";
 
 interface PromotionTableProps {
   limit?: number;
@@ -261,7 +262,9 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Badge
-                    className={handleBadgePromotionStatusColor(promo.status)}
+                    className={twMerge(
+                      handleBadgePromotionStatusColor(promo.status)
+                    )}
                   >
                     {handlePromotionStatusFromBe(promo.status)}
                   </Badge>

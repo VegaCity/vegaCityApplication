@@ -13,6 +13,9 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { Minus } from "lucide-react";
+import { handleBadgePackageTypeColorString } from "@/lib/utils/statusUtils";
 
 interface PackageDetailProps {
   params: { id: string };
@@ -65,7 +68,8 @@ const PackageDetail = ({ params }: PackageDetailProps) => {
               className="rounded-md"
             />
             <CardTitle className="text-3xl font-semibold text-center flex-1">
-              <p>{packageDetail.name}</p>
+              <p>{packageDetail.name}</p> -
+              <p className="text-gray-500">{packageDetail.duration} day(s)</p>
             </CardTitle>
             <Badge
               className={cn(
@@ -86,13 +90,24 @@ const PackageDetail = ({ params }: PackageDetailProps) => {
                 <TableCell>
                   <strong>Type:</strong>
                 </TableCell>
-                <TableCell>{packageDetail.type}</TableCell>
+                <TableCell>
+                  <Badge
+                    className={handleBadgePackageTypeColorString(
+                      packageDetail.type
+                    )}
+                  >
+                    <span className="bg-badgePurple hover:bg-badgePurple-hover"></span>
+                    {packageDetail.type}
+                  </Badge>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Price:</strong>
                 </TableCell>
-                <TableCell>{packageDetail.price} VND</TableCell>
+                <TableCell>
+                  {formatVNDCurrencyValue(packageDetail.price)}
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
@@ -102,9 +117,9 @@ const PackageDetail = ({ params }: PackageDetailProps) => {
               </TableRow>
               <TableRow>
                 <TableCell>
-                  <strong>Zone ID:</strong>
+                  <strong>Zone Name:</strong>
                 </TableCell>
-                <TableCell>{packageDetail.zoneId}</TableCell>
+                <TableCell>{packageDetail.zone?.name}</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
@@ -119,7 +134,17 @@ const PackageDetail = ({ params }: PackageDetailProps) => {
                   <strong>Created Date:</strong>
                 </TableCell>
                 <TableCell>
-                  {new Date(packageDetail.crDate).toLocaleString("vi-VN")}
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: packageDetail.crDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: packageDetail.crDate,
+                    })}
+                  </div>
                 </TableCell>
               </TableRow>
               <TableRow>
@@ -127,7 +152,17 @@ const PackageDetail = ({ params }: PackageDetailProps) => {
                   <strong>Last Updated:</strong>
                 </TableCell>
                 <TableCell>
-                  {new Date(packageDetail.upsDate).toLocaleString("vi-VN")}
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: packageDetail.upsDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: packageDetail.upsDate,
+                    })}
+                  </div>
                 </TableCell>
               </TableRow>
             </TableBody>

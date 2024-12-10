@@ -1,3 +1,5 @@
+import { Zone } from "@/types/zone/zone";
+
 export enum PackageTypesEnum {
   SpecificPackage = 0,
   ServicePackage = 1,
@@ -28,7 +30,7 @@ export interface PackageDetailType {
   crDate: string;
   upsDate: string;
   deflag: boolean;
-  zone: null;
+  zone: Zone | null;
   duration: number;
   orders: [];
   packageDetails: PackageDetails[];

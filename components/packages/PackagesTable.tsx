@@ -35,7 +35,10 @@ import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { Card } from "@/components/ui/card";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 import { Loader } from "@/components/loader/Loader";
-import { handleBadgeDeflagStatusColor } from "@/lib/utils/statusUtils";
+import {
+  handleBadgeDeflagStatusColor,
+  handleBadgePackageTypeColorString,
+} from "@/lib/utils/statusUtils";
 
 interface PackageTableProps {
   limit?: number;
@@ -155,10 +158,22 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
               >
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>
-                  <p className="font-bold">{pkg.name}</p>
+                  <p className="font-bold">
+                    {pkg.name} - &nbsp;
+                    <span className="font-bold text-gray-500">
+                      {pkg.duration} day(s)
+                    </span>
+                  </p>
                 </TableCell>
                 <TableCell>
-                  <p className="font-semibold">{pkg.type}</p>
+                  <p className="font-semibold">
+                    <Badge
+                      className={handleBadgePackageTypeColorString(pkg.type)}
+                    >
+                      {/* <span className="bg-badgePurple hover:bg-badgePurple-hover"></span> */}
+                      {pkg.type}
+                    </Badge>
+                  </p>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Image

@@ -67,17 +67,20 @@ const PromotionCreatePage = () => {
 
     setIsSubmitting(true);
 
-    const autoStatusPromotion = form.getValues("status");
+    //If Status Is Not Automation
+    // const autoStatusPromotion = form.getValues("status");
 
-    if (autoStatusPromotion !== "Automation") {
-      toast({
-        title: "Can't not create promotion",
-        description: "Please check on Enable Auto Promotion to create!",
-      });
-    }
+    // if (autoStatusPromotion !== "Automation") {
+    //   toast({
+    //     title: "Can't not create promotion",
+    //     description: "Please check on Enable Auto Promotion to create!",
+    //   });
+    // }
 
-    console.log(data, "data");
-    PromotionServices.uploadPromotion(data)
+    const promoData = { ...data, status: "Automation" };
+
+    console.log(promoData, "data");
+    PromotionServices.uploadPromotion(promoData)
       .then((res) => {
         console.log(res.data, "Create Promotion");
         toast({
@@ -99,7 +102,7 @@ const PromotionCreatePage = () => {
             }`,
           });
         }
-        console.error(err, "Error creating promotion");
+        console.error(err.response.status, "Error creating promotion");
       })
       .finally(() => {
         setIsSubmitting(false);
@@ -343,8 +346,10 @@ const PromotionCreatePage = () => {
                         <FormControl>
                           <div className="flex items-center space-x-2">
                             <Input
+                              disabled
                               type="checkbox"
                               id="auto-promotion"
+                              checked={true}
                               className="h-5 w-5 border-gray-300 rounded-md text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:focus:ring-offset-gray-900 dark:bg-gray-700"
                               onChange={(event) => handleCheckboxChange(event)} // Reflect the form state
                             />

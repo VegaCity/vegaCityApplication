@@ -30,6 +30,7 @@ import { handlePlusOneDayFromBe } from "@/lib/utils/convertDatePlusOne";
 import { Card } from "@/components/ui/card";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 import { AxiosError } from "axios";
+import { Loader } from "@/components/loader/Loader";
 
 interface PromotionEditPageProps {
   params: {
@@ -61,7 +62,6 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
       discountPercent: 0,
       startDate: "",
       endDate: "",
-      status: "",
     },
   });
 
@@ -82,6 +82,16 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
     // console.log(startDate, " - ", endDate);
     console.log(data, "Promotion Edit");
 
+    //If Status Is Not Automation
+    // const autoStatusPromotion = form.getValues("status");
+
+    // if (autoStatusPromotion !== "Automation") {
+    //   toast({
+    //     title: "Can't not create promotion",
+    //     description: "Please check on Enable Auto Promotion to create!",
+    //   });
+    // }
+
     const roundDiscount = roundToOneDecimal(discountPercent);
     const promotionData: PromotionPatch = {
       ...data,
@@ -97,7 +107,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
         title: "Promotion has been updated successfully",
         description: `Promotion ${data.name} was updated.`,
       });
-      // router.back();
+      router.back();
     } catch (err) {
       if (err instanceof AxiosError) {
         setError(
@@ -110,17 +120,6 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
       }
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const isChecked = e.target.checked;
-    setIsAutomationEnabled(isChecked);
-    if (isChecked) {
-      // Set Automation
-      form.setValue("status", "Automation");
-    } else {
-      form.setValue("status", null);
     }
   };
 
@@ -139,6 +138,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
         const roundDiscountPercent: number = convertDiscountPercent(
           discountPercent || 0
         );
+        console.log(promoData, "promoData");
 
         if (promoData) {
           form.reset({
@@ -174,7 +174,12 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
     fetchPromotionData();
   }, [params.id]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <EmptyDataPage description={error} />;
 
   return (
@@ -209,7 +214,7 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                           <Input
                             type="text"
                             placeholder="Enter promotion name"
-                            onChange={(event) => field.onChange(event)}
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -357,35 +362,6 @@ const PromotionEditPage = ({ params }: PromotionEditPageProps) => {
                 </Card>
 
                 <Card className="bg-white dark:bg-zinc-800 p-6 rounded-lg shadow-md space-y-4 col-span-2">
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Auto Promotion
-                        </FormLabel>
-                        <FormControl>
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="checkbox"
-                              id="auto-promotion"
-                              className="h-5 w-5 border-gray-300 rounded-md text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:focus:ring-offset-gray-900 dark:bg-gray-700"
-                              onChange={(event) => handleCheckboxChange(event)}
-                            />
-                            <label
-                              htmlFor="auto-promotion"
-                              className="text-sm text-gray-700 dark:text-gray-300"
-                            >
-                              Enable auto promotion
-                            </label>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <div className="flex items-center justify-start gap-44">
                     <FormField
                       control={form.control}

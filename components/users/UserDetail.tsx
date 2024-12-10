@@ -22,6 +22,7 @@ import { WalletTypesServices } from "@/components/services/User/walletTypesServi
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import Image from "next/image";
+import { Minus } from "lucide-react";
 import {
   UserAccountDetail,
   UserAccountGetDetail,
@@ -35,6 +36,7 @@ import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 import { AxiosError } from "axios";
+import { handleBadgeRoleColorString } from "@/lib/utils/statusUtils";
 
 interface UserDetailProps {
   params: { id: string };
@@ -161,13 +163,37 @@ const UserDetail = ({ params }: UserDetailProps) => {
                 <TableCell>
                   <strong>Created Date:</strong>
                 </TableCell>
-                <TableCell>{userDetail.crDate}</TableCell>
+                <TableCell>
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: userDetail.crDate,
+                    })}
+                    {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: userDetail.crDate,
+                    })} */}
+                  </div>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Last Updated:</strong>
                 </TableCell>
-                <TableCell>{userDetail.upsDate}</TableCell>
+                <TableCell>
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: userDetail.upsDate,
+                    })}
+                    {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: userDetail.upsDate,
+                    })} */}
+                  </div>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
@@ -182,7 +208,11 @@ const UserDetail = ({ params }: UserDetailProps) => {
                   <strong>Role:</strong>
                 </TableCell>
                 <TableCell>
-                  <Badge className="bg-slate-500 text-white text-lg">
+                  <Badge
+                    className={handleBadgeRoleColorString(
+                      userDetail?.role.name
+                    )}
+                  >
                     {userDetail?.role.name}
                   </Badge>
                 </TableCell>
@@ -224,16 +254,17 @@ const UserDetail = ({ params }: UserDetailProps) => {
                       {wallet.walletType.name}
                     </TableCell>
                     <TableCell>
-                      <p className="font-bold">Last Updated</p>
-                      {formatDateTime({
-                        type: "date",
-                        dateTime: wallet.upsDate,
-                      })}{" "}
-                      -
-                      {formatDateTime({
-                        type: "time",
-                        dateTime: wallet.upsDate,
-                      })}
+                      <div className="flex flex-row">
+                        {formatDateTime({
+                          type: "date",
+                          dateTime: wallet.upsDate,
+                        })}
+                        <Minus />
+                        {formatDateTime({
+                          type: "time",
+                          dateTime: wallet.upsDate,
+                        })}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

@@ -60,7 +60,7 @@
     "react-modal": "^3.16.1",
     "react-number-format": "^5.4.2",
     "react-slick": "^0.30.2",
-    "recharts": "^2.12.7",
+    "recharts": "^2.14.1",
     "shadcn-ui": "^0.2.3",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",

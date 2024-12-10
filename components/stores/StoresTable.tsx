@@ -39,6 +39,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { isObject } from "@/lib/isObject";
@@ -52,7 +63,7 @@ import {
   StoreTypeEnum,
 } from "@/types/store/storeOwner";
 import { AxiosError } from "axios";
-import { Minus } from "lucide-react";
+import { Minus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -111,6 +122,39 @@ const StoresTable = ({ limit, title }: StoresTableProps) => {
     }
   };
 
+  const deleteButton = (store: StoreOwner) => {
+    return (
+      <div>
+        <AlertDialog>
+          <AlertDialogTrigger>
+            <Button
+              variant={"ghost"}
+              className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
+            >
+              <Trash />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Are sure for delete this -{store.name}-?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will deflag in list!
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDeleteStore(store)}>
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
+
   const filterStoreStatus = (): StoreOwner[] | undefined => {
     switch (storeStatusValue) {
       case "all":
@@ -151,7 +195,7 @@ const StoresTable = ({ limit, title }: StoresTableProps) => {
     };
 
     fetchStores();
-  }, [storeStatusValue, isSubmitting]);
+  }, [storeStatusValue, isSubmitting, deleteLoading]);
 
   if (isLoading)
     return (
@@ -160,7 +204,7 @@ const StoresTable = ({ limit, title }: StoresTableProps) => {
       </div>
     );
   if (error) return <div>Error: {error}</div>;
-  <Loader isLoading={deleteLoading} />;
+  if (deleteLoading) return <Loader isLoading={deleteLoading} />;
 
   return (
     <>
@@ -252,11 +296,7 @@ const StoresTable = ({ limit, title }: StoresTableProps) => {
                       <TableCell
                         onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
                       >
-                        <PopoverActionTable
-                          item={store}
-                          editLink={`/admin/stores/edit/${store.id}`}
-                          handleDelete={handleDeleteStore}
-                        />
+                        {deleteButton(store)}
                       </TableCell>
                     </TableRow>
                   ))}

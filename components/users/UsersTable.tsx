@@ -62,7 +62,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { ReassignEmailPopover } from "@/components/users/ReassignEmailPopover";
 import { cn } from "@/lib/utils";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
-import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import {
+  handleBadgeRoleColorString,
+  handleBadgeStatusColor,
+} from "@/lib/utils/statusUtils";
 import {
   userApproveFormSchema,
   UserApproveFormValues,
@@ -88,6 +91,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { twMerge } from "tailwind-merge";
 
 interface UsersTableProps {
   limit?: number;
@@ -265,8 +269,10 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         return userList.filter((user) => user.status === 2);
       case "pendingVerify":
         return userList.filter((user) => user.status === 3);
-      default:
+      case "all":
         return userList;
+      default:
+        return userList.filter((user) => user.status === 0);
     }
   };
   const filteredUsersWithStatus = filterUserStatus();
@@ -290,7 +296,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           <Button
             variant={"outline"}
             type="submit"
-            className="mt-2 w-20 border-red-500 hover:text-white hover:bg-red-600 font-bold"
+            className="mt-2 w-20 border-red-500 bg-red-100 text-red-500 hover:text-white hover:bg-red-600 font-bold"
           >
             Delete
           </Button>
@@ -384,7 +390,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                   <Button
                     variant={"outline"}
                     type="submit"
-                    className="mt-2 w-20 border-red-500 hover:text-white hover:bg-red-600 font-bold"
+                    className="mt-2 w-20 border-red-500 bg-red-100 text-red-500 hover:text-white hover:bg-red-600 font-bold"
                   >
                     Delete
                   </Button>
@@ -457,7 +463,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           <Button
             variant={"outline"}
             type="submit"
-            className="mt-2 w-20 border-green-500 hover:text-white hover:bg-green-600 font-bold"
+            className="mt-2 w-20 border-green-500 bg-green-100 text-green-500 hover:text-white hover:bg-green-600 font-bold"
           >
             Approve
           </Button>
@@ -783,12 +789,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                   Phone Number
                 </TableHead>
                 <TableHead className="hidden md:table-cell text-white">
-                  Address
-                </TableHead>
-                <TableHead className="hidden md:table-cell text-white">
-                  CCCD/Passport
-                </TableHead>
-                <TableHead className="hidden md:table-cell text-white">
                   Status
                 </TableHead>
                 <TableHead className="text-white">Actions</TableHead>
@@ -829,7 +829,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           </div>
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          <Badge className="bg-slate-400 hover:bg-slate-500 text-white">
+                          <Badge
+                            className={handleBadgeRoleColorString(
+                              user.roleName
+                            )}
+                          >
                             {user.roleName}
                           </Badge>
                         </TableCell>
@@ -844,14 +848,6 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {user.phoneNumber}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          <p className="text-slate-500">
-                            {user.address || <Minus />}
-                          </p>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {user.cccdPassport}
                         </TableCell>
                         <TableCell>
                           <Badge

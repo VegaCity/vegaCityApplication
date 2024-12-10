@@ -427,10 +427,10 @@ export const createPackageFormSchema = z
     name: z
       .string()
       .min(2, { message: "Name must include at least 2 characters" })
-      .max(100, { message: "Name does not exceed 100 characters" })
-      .regex(/^.+\(\d+\sday\(s\)\)$/u, {
-        message: "Name must have (...day(s))!",
-      }),
+      .max(100, { message: "Name does not exceed 100 characters" }),
+    // .regex(/^.+\(\s\)$/u, {
+    //   message: "Name is only string!",
+    // })
     imageUrl: z.string().nullable(),
     description: z.string().min(1).nullable(),
     price: z
@@ -539,7 +539,6 @@ export const editPromotionFormSchema = z
         "The begin date must be the following day!"
       ),
     endDate: z.string(),
-    status: z.string().nullable(),
   })
   .refine(
     (data) => {

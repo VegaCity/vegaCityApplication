@@ -16,6 +16,7 @@ import DashboardCard from "@/components/dashboard/DashboardCard";
 import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
 import TransactionTable from "@/components/transactions/TransactionTable";
 import { AnalyticsServices } from "@/components/services/Dashboard/analyticsServices";
+import { ChartByDate } from "@/components/dashboard/ChartByDate";
 
 interface StoreTotals {
   totalOrders: number;
@@ -283,6 +284,7 @@ const Home = () => {
       {userRole === "Store" && renderStoreDashboard()}
       {userRole === "CashierWeb" && renderCashierDashboard()}
       <AnalyticsChart />
+      <TransactionTable />
     </div>
   );
 };

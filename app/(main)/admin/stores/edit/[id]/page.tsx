@@ -355,21 +355,21 @@ const StoreEditPage = ({ params }: StoreEditPageProps) => {
                     )}
                   />
                 </Card>
-                <div className="flex justify-end items-end w-full mt-4">
-                  <Button
-                    type="submit"
-                    className="bg-blue-500 hover:bg-blue-700"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      "Updating..."
-                    ) : (
-                      <>
-                        <Edit /> <p>Update</p>
-                      </>
-                    )}
-                  </Button>
-                </div>
+              </div>
+              <div className="flex justify-end items-end w-full mt-4">
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    "Updating..."
+                  ) : (
+                    <>
+                      <Edit /> <p>Update</p>
+                    </>
+                  )}
+                </Button>
               </div>
             </form>
           </Form>

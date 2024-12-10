@@ -89,6 +89,7 @@ const Breadcrumb = () => {
     if (label === "edit") return true;
     if (label === "user") return true;
     if (label === "generate") return true;
+    if (label === "store") return true;
   };
 
   const breadcrumbItems = pathname

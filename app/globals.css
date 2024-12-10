@@ -51,6 +51,17 @@
       --sidebar-accent-foreground: 213 94% 48%; /* Sidebar text button hover */
       --sidebar-border: 220 13% 91%;
       --sidebar-ring: 217.2 91.2% 59.8%;
+
+      /* Chart */
+      --chart-1: 221 83.2% 53.3%;
+      --chart-2: 213 93.9% 67.8%;
+      --chart-3: 197 37% 24%;
+      --chart-4: 43 74% 66%;
+      --chart-5: 27 87% 67%;
+
+      /* Badge Color */
+      --badge-specific: 255 95% 45%;/* Purple */
+      --badge-specific-hover: 255 95% 35%;
     }
 
     .dark {
@@ -89,7 +100,14 @@
       --sidebar-accent-foreground: 240 4.8% 95.9%;
       --sidebar-border: 240 3.7% 15.9%;
       --sidebar-ring: 217.2 91.2% 59.8%;
-      }
+
+      /* Chart */
+      --chart-1: 220 70% 50%;
+      --chart-2: 160 60% 45%;
+      --chart-3: 30 80% 55%;
+      --chart-4: 280 65% 60%;
+      --chart-5: 340 75% 55%;
+    }
   }
 
   @layer base {
