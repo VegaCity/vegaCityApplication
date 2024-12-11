@@ -65,7 +65,10 @@ export const ProcessingDialog: React.FC<ProcessingDialogProps> = ({
         <div className="p-4">
           <Card className="p-4 bg-gray-50 shadow-md">
             <InfoRow label="Seller" value={seller} />
-            <InfoRow label="Balance" value={balance} />
+            <InfoRow
+              label="Balance"
+              value={balance ? formatCurrency(+balance) : "0đ"}
+            />
             {/* <InfoRow label="PackageOrderId" value={packageItemId} /> */}
             <InfoRow label="InvoiceId" value={invoiceId} />
             <InfoRow label="Customer" value={customerName} />

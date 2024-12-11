@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Promotion } from "@/types/promotion/Promotion";
 import { UseFormReturn } from "react-hook-form";
-import { CreditCard, Wallet, AlertTriangle } from "lucide-react";
+import {
+  CreditCard,
+  Wallet,
+  AlertTriangle,
+  Gift,
+  ChevronRight,
+  X,
+} from "lucide-react";
+import { PromotionServices } from "@/components/services/Promotion/promotionServices";
 
 interface ChargeMoneyDialogProps {
   isOpen: boolean;
@@ -26,9 +34,14 @@ interface ChargeMoneyDialogProps {
   amount: string;
   onAmountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   formatAmount: (value: string) => string;
-  promotions: Promotion[];
-  isLoadingPromotions: boolean;
 }
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(amount);
+};
 
 export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
   isOpen,
@@ -38,10 +51,35 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
   amount,
   onAmountChange,
   formatAmount,
-  promotions,
-  isLoadingPromotions,
 }) => {
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [loading, setLoading] = useState(false);
   const [amountError, setAmountError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      if (!isOpen) return;
+      try {
+        setLoading(true);
+        const response = await PromotionServices.getPromotions({
+          page: 1,
+          size: 10,
+        });
+        if (response.data?.data) {
+          const activePromotions = response.data.data.filter(
+            (promotion: Promotion) => promotion.status === 3
+          );
+          setPromotions(activePromotions);
+        }
+      } catch (error) {
+        console.error("Error fetching promotions:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, [isOpen]);
 
   const validateAmount = (value: string) => {
     const numericAmount = parseFloat(value.replace(/[^\d]/g, ""));
@@ -60,7 +98,6 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
       setAmountError("Amount must be a multiple of 10,000 VND");
       return false;
     }
-
     setAmountError(null);
     return true;
   };
@@ -79,7 +116,6 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
 
   const handleDialogClose = (open: boolean) => {
     if (!open) {
-      // Reset amount to 0 when dialog closes
       onAmountChange({
         target: { value: "0" },
       } as React.ChangeEvent<HTMLInputElement>);
@@ -91,18 +127,43 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-      <DialogContent className="w-[550px] max-h-[85vh] overflow-y-auto bg-white rounded-xl shadow-lg">
+      <DialogContent className="w-full max-h-[85vh] overflow-y-auto bg-white rounded-xl shadow-lg">
         <DialogHeader className="border-b pb-4">
           <DialogTitle className="text-2xl font-semibold text-center text-blue-800">
             <Wallet
               className="inline-block mr-2 mb-1 text-blue-700"
               size={28}
             />
-            Deposit Money
+            Charge Money
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="mt-5 px-6">
+        <div className="mt-2 px-2 ml-4">
+          <div className="flex items-center text-blue-700 font-medium mb-1">
+            <Gift className="mr-2" size={20} />
+            Active Promotions
+          </div>
+
+          <div className="flex overflow-x-auto space-x-2 pb-1/100">
+            {promotions.map((promotion) => (
+              <div
+                key={promotion.id}
+                className="flex-shrink-0 w-64 p-4 rounded-lg bg-gray-50 border border-gray-200"
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-blue-800 text-sm">
+                    {promotion.name}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  {promotion.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-2 px-8">
           <div className="space-y-6">
             {/* Amount Section */}
             <div className="p-6 bg-gray-50 shadow-md rounded-lg">
