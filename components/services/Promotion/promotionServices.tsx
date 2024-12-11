@@ -15,6 +15,14 @@ export const PromotionServices = {
       },
     });
   },
+  getPromotionsForCustomer({ page, size }: PromotionPageSize) {
+    return API.get("/customer/promotions", {
+      params: {
+        page,
+        size,
+      },
+    });
+  },
   getPromotionById(id: string) {
     return API.get(`/promotion/${id}`);
   },

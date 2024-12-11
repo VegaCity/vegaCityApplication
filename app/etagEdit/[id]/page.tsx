@@ -26,6 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SearchPackageItem from "@/components/search/searchPackageItem";
 import { FileText, CircleHelp } from "lucide-react";
 import ReportDialog from "@/lib/dialog/ReportDialog";
+import { PromotionAlert } from "@/components/Promotion/PromotionAlert";
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -189,11 +190,13 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       <Form {...form}>
         <form className={`space-y-4`}>
           <Card className="w-full max-w-5xl mx-auto p-4 md:p-6">
+            <PromotionAlert />
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <CardTitle className="text-xl md:text-2xl">
                   VCard Detail
                 </CardTitle>
+
                 <Button
                   type="button"
                   onClick={() => {
@@ -208,7 +211,8 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
 
             <CardContent>
               <div className="space-y-8 md:space-y-12">
-                {/* Customer Information */}
+                {/* Promotion Information */}
+
                 {/* Customer Information */}
                 <section className="space-y-4">
                   <h4 className="text-lg font-semibold mb-4">
