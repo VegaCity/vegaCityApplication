@@ -16,7 +16,7 @@ import DashboardCard from "@/components/dashboard/DashboardCard";
 import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
 import TransactionTable from "@/components/transactions/TransactionTable";
 import { AnalyticsServices } from "@/components/services/Dashboard/analyticsServices";
-import { ChartByDate } from "@/components/dashboard/ChartByDate";
+import { ChartByDate } from "@/components/dashboard/_components/ChartByDate";
 
 interface StoreTotals {
   totalOrders: number;
@@ -275,7 +275,7 @@ const Home = () => {
     </>
   );
   if (isLoading) {
-    return <div>Đang tải...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
