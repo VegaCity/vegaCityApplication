@@ -50,3 +50,21 @@ export interface AnalyticsPostProps {
   startDate: string;
   days: number;
 }
+
+export interface TopSaleStores {
+  name: "Nov";
+  topStores: {
+    storeId: string;
+    storeName: string;
+    storeEmail: string;
+    totalTransactions: number;
+    totalAmount: number;
+  }[];
+}
+
+export interface TopSaleStoresPost {
+  startDate: string;
+  endDate: string;
+  storeType: "Product" | "Service" | "All" | string;
+  groupBy: "Month" | "Date" | string;
+}

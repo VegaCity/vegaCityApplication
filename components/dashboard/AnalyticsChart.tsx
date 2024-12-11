@@ -27,10 +27,12 @@ import {
   DollarSign,
   CreditCard,
   Package,
+  Trophy,
   ShoppingCart,
   LucideIcon,
 } from "lucide-react";
-import { ChartByDate } from "@/components/dashboard/ChartByDate";
+import { ChartByDate } from "@/components/dashboard/_components/ChartByDate";
+import { TopSale } from "@/components/dashboard/_components/TopSale";
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -286,6 +288,15 @@ const AnalyticsChart = () => {
             },
           ]}
         />
+      </ChartCard>
+
+      {/* Top Sale Store */}
+      <ChartCard
+        title="Top Sale Stores"
+        description="Top Stores in Month"
+        icon={Trophy}
+      >
+        <TopSale />
       </ChartCard>
       {/* <Chart /> */}
 
