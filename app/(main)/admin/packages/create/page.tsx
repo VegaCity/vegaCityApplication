@@ -459,12 +459,22 @@ const PackageCreatePage = () => {
                                   field.onChange(numericValue || 0);
 
                                   let moneyStartValue = 0;
+                                  const packageType = form.getValues("type");
                                   //numericValue become null when erase to the last value
                                   if (Number.isNaN(numericValue)) {
                                     form.setValue("moneyStart", 0);
-                                  } else {
+                                  } else if (
+                                    packageType === "SpecificPackage"
+                                  ) {
                                     moneyStartValue = numericValue * 0.2;
                                     //Bonus 20% from Price to Money Start
+                                    form.setValue(
+                                      "moneyStart",
+                                      numericValue + moneyStartValue
+                                    );
+                                  } else {
+                                    moneyStartValue = numericValue * 0.05;
+                                    //Bonus 5% from Price to Money Start
                                     form.setValue(
                                       "moneyStart",
                                       numericValue + moneyStartValue
@@ -564,6 +574,7 @@ const PackageCreatePage = () => {
                           <FormControl>
                             <div className="relative">
                               <Input
+                                disabled
                                 type="text"
                                 placeholder="Enter Money Start"
                                 value={

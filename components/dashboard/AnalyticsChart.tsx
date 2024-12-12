@@ -18,10 +18,13 @@ import {
 } from "@/components/ui/card";
 import {
   StoreAnalytics,
-  AdminAnalytics,
+  AdminAnalyticsByMonth,
   CashierAnalytics,
+  AnalyticsPostProps,
 } from "@/types/analytics";
 import { AnalyticsServices } from "../services/Dashboard/analyticsServices";
+import SaleStore from "@/components/dashboard/_components/SaleStore";
+
 import {
   TrendingUp,
   DollarSign,
@@ -33,6 +36,8 @@ import {
 } from "lucide-react";
 import { ChartByDate } from "@/components/dashboard/_components/ChartByDate";
 import { TopSale } from "@/components/dashboard/_components/TopSale";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -124,6 +129,12 @@ interface ChartProps {
   lines: ChartLineConfig[];
 }
 
+interface AnalyticsChartProps {
+  params: {
+    dateRange: DateRange | undefined;
+  };
+}
+
 const Chart = ({ data, lines }: ChartProps) => {
   const [hoveredLine, setHoveredLine] = useState<string | null>(null);
 
@@ -165,17 +176,28 @@ const Chart = ({ data, lines }: ChartProps) => {
   );
 };
 
-const AnalyticsChart = () => {
+const AnalyticsChart = ({ params }: AnalyticsChartProps) => {
+  const selectedDate: DateRange | undefined = params.dateRange;
   const [analyticsData, setAnalyticsData] = useState<
-    StoreAnalytics[] | AdminAnalytics[] | CashierAnalytics[]
+    StoreAnalytics[] | AdminAnalyticsByMonth[] | CashierAnalytics[]
   >([]);
   const [userRole, setUserRole] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  console.log(selectedDate, "AnalyticsChartProps");
 
   useEffect(() => {
     const fetchUserAndAnalytics = async () => {
       setIsLoading(true);
       try {
+        if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+
+        const chartBodyData: AnalyticsPostProps = {
+          startDate: format(selectedDate.from, "yyyy-MM-dd"),
+          endDate: format(selectedDate.to, "yyyy-MM-dd"),
+          saleType: "All",
+          groupBy: "Date",
+        };
+
         const userId = localStorage.getItem("userId");
         const userResponse = await AnalyticsServices.getUserById(
           userId as string
@@ -183,8 +205,9 @@ const AnalyticsChart = () => {
         const role = userResponse.data.data.role.name;
         setUserRole(role);
 
-        const analyticsResponse =
-          await AnalyticsServices.getDashboardAnalytics();
+        const analyticsResponse = await AnalyticsServices.getDashboardAnalytics(
+          chartBodyData
+        );
         setAnalyticsData(analyticsResponse.data.data || []);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -262,13 +285,38 @@ const AnalyticsChart = () => {
         />
       </ChartCard> */}
 
+      {/* <Chart /> */}
+      {/* <ChartCard
+        title="Chart By Date"
+        description="Date Monthly Overview"
+        icon={Package}
+      > */}
+      <div className="grid grid-cols-12 gap-3 w-full">
+        {/* Left column */}
+        <div className="col-span-8">
+          <ChartByDate params={{ dateRange: selectedDate }} />
+        </div>
+
+        {/* Right column */}
+        <div className="col-span-4">
+          <ChartCard
+            title="Top Sale Stores"
+            description="Top Stores in Month"
+            icon={Trophy}
+          >
+            <TopSale params={{ dateRange: selectedDate }} />
+          </ChartCard>
+        </div>
+      </div>
+
+      {/* Chart by Month
       <ChartCard
         title="Total Transactions"
         description="Monthly Overview"
         icon={Package}
       >
         <Chart
-          data={analyticsData as AdminAnalytics[]}
+          data={analyticsData as AdminAnalyticsByMonth[]}
           lines={[
             {
               dataKey: "orderCash",
@@ -288,25 +336,7 @@ const AnalyticsChart = () => {
             },
           ]}
         />
-      </ChartCard>
-
-      {/* Top Sale Store */}
-      <ChartCard
-        title="Top Sale Stores"
-        description="Top Stores in Month"
-        icon={Trophy}
-      >
-        <TopSale />
-      </ChartCard>
-      {/* <Chart /> */}
-
-      <ChartCard
-        title="Chart By Date"
-        description="Date Monthly Overview"
-        icon={Package}
-      >
-        <ChartByDate />
-      </ChartCard>
+      </ChartCard> */}
     </div>
   );
 

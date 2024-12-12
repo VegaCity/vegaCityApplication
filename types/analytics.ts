@@ -29,14 +29,57 @@ export interface StoreAnalytics {
   totalProduct: number;
 }
 
-export interface AdminAnalytics {
+export interface GroupedStaticsAdminByMonth {
+  endDayCheckWalletCashierBalance: number;
+  endDayCheckWalletCashierBalanceHistory: number;
   name: string;
-  totalTransactions: number;
-  totalTransactionsAmount: number;
-  etagCount: number;
-  orderCount: number;
-  packageCount: number;
+  totalAmountCashOrder: number;
+  totalAmountCustomerMoneyTransfer: number;
+  totalAmountCustomerMoneyWithdraw: number;
+  totalAmountOrder: number;
+  totalAmountOrderFeeCharge: number;
+  totalAmountOrderOnlineMethod: number;
+  totalOrder: number;
+  totalOrderCash: number;
+  totalOrderFeeCharge: number;
+  totalOrderOnlineMethods: number;
+  vegaDepositsAmountFromStore: number;
 }
+
+export interface AdminAnalyticsByMonth {
+  adminBalance: number;
+  adminBalanceHistory: number;
+  vcardsCurrentActive: number;
+  groupedStaticsAdmin: GroupedStaticsAdminByMonth[];
+}
+
+export interface GroupedStaticsAdminByDate {
+  month: string;
+  year: number;
+  date: string;
+  formattedDate: string;
+  totalOrder: number;
+  totalAmountOrder: number;
+  totalOrderCash: number;
+  totalAmountCashOrder: number;
+  totalOrderOnlineMethods: number;
+  totalAmountOrderOnlineMethod: number;
+  totalOrderFeeCharge: number;
+  totalAmountOrderFeeCharge: number;
+  endDayCheckWalletCashierBalance: number;
+  endDayCheckWalletCashierBalanceHistory: number;
+  vegaDepositsAmountFromStore: number;
+  totalAmountCustomerMoneyWithdraw: number;
+  totalAmountCustomerMoneyTransfer: number;
+}
+
+export interface AdminAnalyticsByDate {
+  adminBalance: number;
+  adminBalanceHistory: number;
+  vcardsCurrentActive: number;
+  groupedStaticsAdmin: GroupedStaticsAdminByDate[];
+}
+
 export interface CashierAnalytics {
   name: string;
   totalTransactions: number;
@@ -46,9 +89,12 @@ export interface CashierAnalytics {
   orderCash: number;
   otherOrder: number;
 }
+
 export interface AnalyticsPostProps {
   startDate: string;
-  days: number;
+  endDate: string;
+  saleType: "All" | "Package" | "PackageItem Charge" | "Product" | string;
+  groupBy: "Month" | "Date" | string;
 }
 
 export interface TopSaleStores {

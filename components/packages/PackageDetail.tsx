@@ -211,12 +211,18 @@ const PackageDetail = ({ params }: PackageDetailProps) => {
               <TableBody>
                 {packageDetail.packageDetails.map((detail, index) => (
                   <TableRow key={index}>
-                    <TableCell>Package Detail: {index + 1}</TableCell>
+                    <TableCell>
+                      Package Detail: <strong>{index + 1}</strong>
+                    </TableCell>
                     <TableCell>
                       Package Money Start:{" "}
-                      {formatVNDCurrencyValue(detail.startMoney)}
+                      <strong>
+                        {formatVNDCurrencyValue(detail.startMoney)}
+                      </strong>
                     </TableCell>
-                    <TableCell>Wallet Name: {detail.walletType.name}</TableCell>
+                    <TableCell>
+                      Wallet Name: <strong>{detail.walletType.name}</strong>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

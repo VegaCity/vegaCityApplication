@@ -15,7 +15,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import SaleStore from "@/components/dashboard/_components/SaleStore";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Loader } from "@/components/loader/Loader";
 import { AxiosError } from "axios";
 import EmptyDataPage from "@/components/emptyData/emptyData";
@@ -31,36 +31,38 @@ interface TopSaleListProps {
   };
 }
 
-export function TopSaleList({ params }: TopSaleListProps) {
+export const TopSaleList = React.memo(function TopSaleList({
+  params,
+}: TopSaleListProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const [topSaleList, setTopSaleList] = useState<TopSaleStores[] | null>([]);
   const tabsValue: string = params.tabsValue;
-  const dateRange = params.dateRange;
+  const dateRange: DateRange | undefined = params.dateRange;
 
   //Body Params
-  let topSaleBodyData: TopSaleStoresPost = {
-    startDate: "2024-07-01",
-    endDate: "2025-03-03",
-    storeType: tabsValue || "All",
-    groupBy: "Month",
-  };
+  // let topSaleBodyData: TopSaleStoresPost = {
+  //   startDate: "2024-07-01",
+  //   endDate: "2025-03-03",
+  //   storeType: tabsValue || "All",
+  //   groupBy: "Month",
+  // };
 
   // format(dateRange.from, "yyyy-MM-dd"),
   // format(dateRange.from, "yyyy-MM-dd")
   useEffect(() => {
+    if (!dateRange || !dateRange.from || !dateRange.to) return;
     // setIsLoading(true);
     // fetch data from API
-    if (dateRange && dateRange.from && dateRange.to) {
-      topSaleBodyData = {
-        startDate: format(dateRange.from, "yyyy-MM-dd"),
-        endDate: format(dateRange.to, "yyyy-MM-dd"),
-        storeType: tabsValue || "All",
-        groupBy: "Month",
-      };
-    }
 
-    console.log(topSaleBodyData, "topSaleBodyData");
+    const topSaleBodyData: TopSaleStoresPost = {
+      startDate: format(dateRange.from, "yyyy-MM-dd"),
+      endDate: format(dateRange.to, "yyyy-MM-dd"),
+      storeType: tabsValue || "All",
+      groupBy: "Month",
+    };
+
+    // console.log(topSaleBodyData, "topSaleBodyData");
     const fetchTopSaleData = async () => {
       try {
         const topSaleData = await AnalyticsServices.getTopSaleStoreInMonth(
@@ -82,9 +84,9 @@ export function TopSaleList({ params }: TopSaleListProps) {
       }
     };
     fetchTopSaleData();
-  }, [isLoading, tabsValue, dateRange]);
+  }, [tabsValue, dateRange]);
 
-  if (isLoading) return <Loader isLoading={isLoading} />;
+  // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
   return (
@@ -107,4 +109,4 @@ export function TopSaleList({ params }: TopSaleListProps) {
       )}
     </div>
   );
-}
+});

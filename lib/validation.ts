@@ -447,16 +447,20 @@ export const createPackageFormSchema = z
   })
   .refine(
     (data) => {
-      const price = data.price; //200
-      const moneyStart = data.moneyStart; //240
-      const moneyStartBonus = price + price * 0.2; //Price * 20% bonus to Money Start
-      return data.type === "SpecificPackage"
-        ? moneyStart >= moneyStartBonus
-        : moneyStart >= price;
+      let price = data.price; //200
+      let moneyStart = data.moneyStart; //240
+      let moneyStartSpecificBonus = price + price * 0.2; //Price * 20% bonus to Money Start
+      let moneyStartServiceBonus = price + price * 0.05; //Price * 5% bonus to Money Start
+
+      if (data.type === "SpecificPackage") {
+        return moneyStart >= moneyStartSpecificBonus;
+      } else if (data.type === "ServicePackage") {
+        return moneyStart >= moneyStartServiceBonus;
+      }
     },
     {
       message:
-        "Money Start must higher or equal Price (if Service Package)! - Higher than 20% from Price (if Specific Package)!",
+        "Money Start must higher 5% Price (if Service Package)! - Higher than 20% from Price (if Specific Package)! Please refill Price field!",
       path: ["moneyStart"],
     }
   );

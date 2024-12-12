@@ -17,6 +17,33 @@ import AnalyticsChart from "@/components/dashboard/AnalyticsChart";
 import TransactionTable from "@/components/transactions/TransactionTable";
 import { AnalyticsServices } from "@/components/services/Dashboard/analyticsServices";
 import { ChartByDate } from "@/components/dashboard/_components/ChartByDate";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { addDays, format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import {
+  AdminAnalyticsByDate,
+  AdminAnalyticsByMonth,
+  AnalyticsPostProps,
+  GroupedStaticsAdminByMonth,
+} from "@/types/analytics";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+} from "@/components/ui/table";
+import { Loader } from "@/components/loader/Loader";
+import TotalCountCard from "@/components/dashboard/_components/_Admin/TotalCountCard";
 
 interface StoreTotals {
   totalOrders: number;
@@ -27,15 +54,26 @@ interface StoreTotals {
   otherOrders: number;
 }
 
-interface AdminTotals {
-  etagCount: number;
-  name: string;
-  orderCash: number;
-  orderCount: number;
-  otherOrder: number;
-  totalTransactions: number;
-  totalTransactionsAmount: number;
-}
+// interface AdminStatics {
+//   month: string;
+//   year: number;
+//   date: string;
+//   formattedDate: string;
+//   totalOrder: number;
+//   totalAmountOrder: number;
+//   totalOrderCash: number;
+//   totalAmountCashOrder: number;
+//   totalOrderOnlineMethods: number;
+//   totalAmountOrderOnlineMethod: number;
+//   totalOrderFeeCharge: number;
+//   totalAmountOrderFeeCharge: number;
+//   endDayCheckWalletCashierBalance: number;
+//   endDayCheckWalletCashierBalanceHistory: number;
+//   vegaDepositsAmountFromStore: number;
+//   totalAmountCustomerMoneyWithdraw: number;
+//   totalAmountCustomerMoneyTransfer: number;
+// }
+
 interface CashierTotals {
   totalTransactions: number;
   totalAmount: number;
@@ -45,17 +83,33 @@ interface CashierTotals {
   otherOrders: number;
 }
 const Home = () => {
-  const [analyticsData, setAnalyticsData] = useState<any[]>([]);
-  const [userRole, setUserRole] = useState<string>("");
-  const [adminTotals, setAdminTotals] = useState<AdminTotals>({
-    etagCount: 0,
-    name: "",
-    orderCash: 0,
-    orderCount: 0,
-    otherOrder: 0,
-    totalTransactions: 0,
-    totalTransactionsAmount: 0,
+  // Select Calendar
+  const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
+    from: new Date(2024, 6, 1), // Note: Month is 0-based
+    to: addDays(new Date(2025, 2, 2), 1),
   });
+
+  if (!selectedDate || !selectedDate.from || !selectedDate.to)
+    return <div>error</div>;
+
+  // const chartBodyDataByDate: AnalyticsPostProps = {
+  //   startDate: format(selectedDate.from, "yyyy-MM-dd"),
+  //   endDate: format(selectedDate.to, "yyyy-MM-dd"),
+  //   saleType: "All",
+  //   groupBy: "Date",
+  // };
+
+  const [userRole, setUserRole] = useState<string>("");
+
+  //--------------------- Admin Section ------------------------
+  const [analyticsDataByMonth, setAnalyticsDataByMonth] =
+    useState<AdminAnalyticsByMonth | null>(null);
+  const [analyticsDataByDate, setAnalyticsDataByDate] =
+    useState<AdminAnalyticsByDate | null>(null);
+  // const [adminTotals, setAdminTotals] = useState<GroupedStaticsAdminByMonth[]>(
+  //   []
+  // );
+
   const [storeTotals, setStoreTotals] = useState<StoreTotals>({
     totalOrders: 0,
     totalAmount: 0,
@@ -81,7 +135,14 @@ const Home = () => {
     } else if (num >= 1000) {
       return `${(num / 1000).toFixed(1)} K`;
     }
-    return num.toString();
+    return String(num);
+  };
+
+  //Format Title like totalCashOrder -> Total Cash Order
+  const formatTitle = (str: string) => {
+    return str
+      .replace(/([A-Z])/g, " $1") // Add space before uppercase letters
+      .replace(/^./, (char: string) => char.toUpperCase()); // Capitalize the first letter
   };
 
   useEffect(() => {
@@ -96,73 +157,63 @@ const Home = () => {
         const role = userResponse.data.data.role.name;
         setUserRole(role);
 
-        // Fetch analytics data
-        const analyticsResponse =
-          await AnalyticsServices.getDashboardAnalytics();
-        const data = analyticsResponse.data.data[0] || [];
-        setAnalyticsData(data);
-        console.log(data, "dashboard");
-
-        // Calculate totals based on role
         if (role === "Admin") {
-          const adminDashboardData: AdminTotals = {
-            etagCount: data.etagCount,
-            name: data.name,
-            orderCash: data.orderCash,
-            orderCount: data.orderCount,
-            otherOrder: data.otherOrder,
-            totalTransactions: data.totalTransactions,
-            totalTransactionsAmount: data.totalTransactionsAmount,
-          };
-
-          setAdminTotals(adminDashboardData);
+          // const adminDashboardData: AdminStatics = {
+          //   etagCount: data.etagCount,
+          //   name: data.name,
+          //   orderCash: data.orderCash,
+          //   orderCount: data.orderCount,
+          //   otherOrder: data.otherOrder,
+          //   totalTransactions: data.totalTransactions,
+          //   totalTransactionsAmount: data.totalTransactionsAmount,
+          // };
         } else if (role === "Store") {
-          const calculatedTotals = data.reduce(
-            (acc: StoreTotals, curr: any): StoreTotals => ({
-              totalOrders: acc.totalOrders + (Number(curr.orderCount) || 0),
-              totalAmount:
-                acc.totalAmount +
-                (Number(curr.totalAmountFromTransaction) || 0),
-              totalProducts:
-                acc.totalProducts + (Number(curr.totalProduct) || 0),
-              totalMenu: acc.totalMenu + (Number(curr.totalMenu) || 0),
-              cashOrders: acc.cashOrders + (Number(curr.orderCashCount) || 0),
-              otherOrders:
-                acc.otherOrders + (Number(curr.otherOrderCount) || 0),
-            }),
-            {
-              totalOrders: 0,
-              totalAmount: 0,
-              totalProducts: 0,
-              totalMenu: 0,
-              cashOrders: 0,
-              otherOrders: 0,
-            }
-          );
-          setStoreTotals(calculatedTotals);
+          // const calculatedTotals = data.reduce(
+          //   (acc: StoreTotals, curr: any): StoreTotals => ({
+          //     totalOrders: acc.totalOrders + (Number(curr.orderCount) || 0),
+          //     totalAmount:
+          //       acc.totalAmount +
+          //       (Number(curr.totalAmountFromTransaction) || 0),
+          //     totalProducts:
+          //       acc.totalProducts + (Number(curr.totalProduct) || 0),
+          //     totalMenu: acc.totalMenu + (Number(curr.totalMenu) || 0),
+          //     cashOrders: acc.cashOrders + (Number(curr.orderCashCount) || 0),
+          //     otherOrders:
+          //       acc.otherOrders + (Number(curr.otherOrderCount) || 0),
+          //   }),
+          //   {
+          //     totalOrders: 0,
+          //     totalAmount: 0,
+          //     totalProducts: 0,
+          //     totalMenu: 0,
+          //     cashOrders: 0,
+          //     otherOrders: 0,
+          //   }
+          // );
+          // setStoreTotals(calculatedTotals);
         } else if (role === "CashierWeb") {
-          const calculatedTotals = data.reduce(
-            (acc: CashierTotals, curr: any): CashierTotals => ({
-              totalTransactions:
-                acc.totalTransactions + (Number(curr.totalTransactions) || 0),
-              totalAmount:
-                acc.totalAmount +
-                (Number(curr.totalAmountFromTransaction) || 0),
-              totalEtags: acc.totalEtags + (Number(curr.etagCount) || 0),
-              totalOrders: acc.totalOrders + (Number(curr.orderCount) || 0),
-              cashOrders: acc.cashOrders + (Number(curr.orderCash) || 0),
-              otherOrders: acc.otherOrders + (Number(curr.otherOrder) || 0),
-            }),
-            {
-              totalTransactions: 0,
-              totalAmount: 0,
-              totalEtags: 0,
-              totalOrders: 0,
-              cashOrders: 0,
-              otherOrders: 0,
-            }
-          );
-          setCashierTotals(calculatedTotals);
+          // const calculatedTotals = data.reduce(
+          //   (acc: CashierTotals, curr: any): CashierTotals => ({
+          //     totalTransactions:
+          //       acc.totalTransactions + (Number(curr.totalTransactions) || 0),
+          //     totalAmount:
+          //       acc.totalAmount +
+          //       (Number(curr.totalAmountFromTransaction) || 0),
+          //     totalEtags: acc.totalEtags + (Number(curr.etagCount) || 0),
+          //     totalOrders: acc.totalOrders + (Number(curr.orderCount) || 0),
+          //     cashOrders: acc.cashOrders + (Number(curr.orderCash) || 0),
+          //     otherOrders: acc.otherOrders + (Number(curr.otherOrder) || 0),
+          //   }),
+          //   {
+          //     totalTransactions: 0,
+          //     totalAmount: 0,
+          //     totalEtags: 0,
+          //     totalOrders: 0,
+          //     cashOrders: 0,
+          //     otherOrders: 0,
+          //   }
+          // );
+          // setCashierTotals(calculatedTotals);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -174,42 +225,11 @@ const Home = () => {
     fetchUserAndAnalytics();
   }, []);
 
-  const renderAdminDashboard = () => (
-    <>
-      <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
-        <DashboardCard
-          title="Total V-Card"
-          count={formatNumber(adminTotals.etagCount)}
-          icon={<CreditCardIcon className="text-slate-500" size={50} />}
-        />
-        <DashboardCard
-          title="Total Order Cash"
-          count={formatNumber(adminTotals.orderCash)}
-          icon={<Wallet className="text-slate-500" size={50} />}
-        />
-        <DashboardCard
-          title="Total Order Count"
-          count={formatNumber(adminTotals.orderCount)}
-          icon={<Package2 className="text-slate-500" size={50} />}
-        />
-        <DashboardCard
-          title="Order Total Transactions"
-          count={formatNumber(adminTotals.totalTransactions)}
-          icon={<Store className="text-slate-500" size={50} />}
-        />
-        <DashboardCard
-          title="Order Total Transactions Amount"
-          count={formatNumber(adminTotals.totalTransactionsAmount)}
-          icon={<Store className="text-slate-500" size={50} />}
-        />
-        <DashboardCard
-          title="Other Orders"
-          count={formatNumber(adminTotals.otherOrder)}
-          icon={<Tag className="text-slate-500" size={50} />}
-        />
-      </div>
-    </>
-  );
+  const renderAdminDashboard = () => {
+    return (
+      <TotalCountCard key={"admin"} params={{ dateRange: selectedDate }} />
+    );
+  };
 
   const renderStoreDashboard = () => (
     <>
@@ -275,15 +295,75 @@ const Home = () => {
     </>
   );
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
+      {/* Calendar Section */}
+      <div className="mb-6">
+        <h3 className="text-lg font-medium mb-4">Select a Date</h3>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              id="date"
+              variant={"outline"}
+              className={cn(
+                "w-[240px] justify-start text-left font-normal",
+                !selectedDate && "text-muted-foreground"
+              )}
+            >
+              <CalendarIcon />
+              {selectedDate?.from ? (
+                selectedDate.to ? (
+                  <>
+                    {format(selectedDate.from, "LLL dd, y")} -{" "}
+                    {format(selectedDate.to, "LLL dd, y")}
+                  </>
+                ) : (
+                  format(selectedDate.from, "LLL dd, y")
+                )
+              ) : (
+                <span>Pick a date</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={selectedDate?.from || new Date()}
+              selected={selectedDate || undefined} // Ensure `undefined` if no date selected
+              onSelect={setSelectedDate}
+              numberOfMonths={2}
+            />
+          </PopoverContent>
+        </Popover>
+        {selectedDate?.from && selectedDate.to ? (
+          <div className="mt-4 text-sm">
+            <p>
+              <strong>Selected Date:</strong>{" "}
+              {format(selectedDate.from, "yyyy-MM-dd")} to{" "}
+              {format(selectedDate.to, "yyyy-MM-dd")}
+            </p>
+            <p>
+              <strong>Selected Month:</strong>{" "}
+              {format(selectedDate.from, "MMM")} -{" "}
+              {format(selectedDate.to, "MMM")}
+            </p>
+          </div>
+        ) : null}
+      </div>
+
       {userRole === "Admin" && renderAdminDashboard()}
       {userRole === "Store" && renderStoreDashboard()}
       {userRole === "CashierWeb" && renderCashierDashboard()}
-      <AnalyticsChart />
+
+      <AnalyticsChart params={{ dateRange: selectedDate }} />
       <TransactionTable />
     </div>
   );

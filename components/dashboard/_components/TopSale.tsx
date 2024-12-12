@@ -18,98 +18,22 @@ import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { format, addDays } from "date-fns";
 
-// const chartData = [
-//   { month: "January", desktop: 186, mobile: 80 },
-//   { month: "February", desktop: 305, mobile: 200 },
-//   { month: "March", desktop: 237, mobile: 120 },
-//   { month: "April", desktop: 73, mobile: 190 },
-//   { month: "May", desktop: 209, mobile: 130 },
-//   { month: "June", desktop: 214, mobile: 140 },
-// ];
+interface TopSaleProps {
+  params: {
+    dateRange?: DateRange | undefined;
+  };
+}
 
-// const chartConfig = {
-//   desktop: {
-//     label: "Desktop",
-//     color: "hsl(var(--chart-1))",
-//   },
-//   mobile: {
-//     label: "Mobile",
-//     color: "hsl(var(--chart-2))",
-//   },
-// } satisfies ChartConfig;
-
-export function TopSale() {
+export function TopSale({ params }: TopSaleProps) {
+  const selectedDate: DateRange | undefined = params.dateRange;
   const [valueTrigger, setValueTrigger] = useState<string>("");
-  const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
-    from: new Date(2024, 6, 1), // Note: Month is 0-based
-    to: addDays(new Date(2025, 2, 2), 1),
-  });
 
   const handleTriggerValue = (value: string) => {
     setValueTrigger(value);
   };
 
-  //   console.log("Original Date:", selectedDate);
-  //   console.log("Selected Date:", format(selectedDate || "", "yyyy-MM-dd"));
-  //   console.log("Selected Month:", format(selectedDate || "", "MMMM"));
-
   return (
     <div>
-      {/* Calendar Section */}
-      <div className="mb-6">
-        <h3 className="text-lg font-medium mb-4">Select a Date</h3>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              id="date"
-              variant={"outline"}
-              className={cn(
-                "w-[240px] justify-start text-left font-normal",
-                !selectedDate && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon />
-              {selectedDate?.from ? (
-                selectedDate.to ? (
-                  <>
-                    {format(selectedDate.from, "LLL dd, y")} -{" "}
-                    {format(selectedDate.to, "LLL dd, y")}
-                  </>
-                ) : (
-                  format(selectedDate.from, "LLL dd, y")
-                )
-              ) : (
-                <span>Pick a date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              initialFocus
-              mode="range"
-              defaultMonth={selectedDate?.from}
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              numberOfMonths={2}
-            />
-          </PopoverContent>
-        </Popover>
-        {selectedDate && selectedDate.from && selectedDate.to && (
-          <div className="mt-4 text-sm">
-            <p>
-              <strong>Selected Date:</strong>{" "}
-              {format(selectedDate.from, "yyyy-MM-dd")} to{" "}
-              {format(selectedDate.to, "yyyy-MM-dd")}
-            </p>
-            <p>
-              <strong>Selected Month:</strong>{" "}
-              {format(selectedDate.from, "MMM")} -{" "}
-              {format(selectedDate.to, "MMM")}
-            </p>
-          </div>
-        )}
-      </div>
       <Tabs defaultValue="all">
         <TabsList>
           <TabsTrigger onClick={() => handleTriggerValue("All")} value="all">
