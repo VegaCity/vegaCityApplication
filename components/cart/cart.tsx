@@ -1,4 +1,9 @@
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useEffect,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -41,7 +46,16 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [paymentError, setPaymentError] = useState("");
-
+  const [startRent, setStartRent] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
+  const [endRent, setEndRent] = useState(new Date().toISOString().slice(0, 16));
+  const [storeType, setStoreType] = useState<string>("");
+  useEffect(() => {
+    const type = localStorage.getItem("storeType");
+    console.log("storeType loaded:", type);
+    setStoreType(type || "");
+  }, []);
   useImperativeHandle(ref, () => ({
     addToCart: (product: Product) => {
       setCartItems((prevItems) => {
@@ -402,7 +416,26 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                   />
                 </div>
               )}
-
+              {storeType === "2" && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Start Rent</label>
+                    <Input
+                      type="datetime-local"
+                      value={startRent}
+                      onChange={(e) => setStartRent(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">End Rent</label>
+                    <Input
+                      type="datetime-local"
+                      value={endRent}
+                      onChange={(e) => setEndRent(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
               <div className="font-semibold">
                 Total Amount: {totalPrice.toLocaleString("vi-VN")} đ
               </div>

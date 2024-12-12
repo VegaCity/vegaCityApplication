@@ -541,44 +541,48 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                   <div className="mt-4 flex space-x-3">
                     {!isOwnerMode ? (
                       <>
-                        <button
-                          className="flex-1 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
-                  flex items-center justify-center gap-2 font-semibold"
-                          onClick={() =>
-                            cartRef.current?.addToCart({
-                              ...item,
-                              quantity: item.quantity,
-                            })
-                          }
-                        >
-                          <ShoppingCart size={18} />
-                          Buy
-                        </button>
-                        <button
-                          onClick={() => setSelectedProductId(item.id)}
-                          className="w-16 flex items-center justify-center py-3 text-blue-600 border border-blue-600 
-                  rounded-lg hover:bg-blue-50 transition-colors"
-                        >
-                          <Eye size={18} />
-                        </button>
+                        {item.quantity > 0 ? (
+                          <>
+                            <button
+                              className="flex-1 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
+            flex items-center justify-center gap-2 font-semibold"
+                              onClick={() =>
+                                cartRef.current?.addToCart({
+                                  ...item,
+                                  quantity: item.quantity,
+                                })
+                              }
+                            >
+                              <ShoppingCart size={18} />
+                              Mua
+                            </button>
+                            <button
+                              onClick={() => setSelectedProductId(item.id)}
+                              className="w-16 flex items-center justify-center py-3 text-blue-600 border border-blue-600 
+            rounded-lg hover:bg-blue-50 transition-colors"
+                            >
+                              <Eye size={18} />
+                            </button>
+                          </>
+                        ) : null}
                       </>
                     ) : (
                       <>
                         <button
                           onClick={() => handleUpdateClick(item)}
                           className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-green-600 
-                  rounded-lg hover:bg-green-700 transition-colors font-semibold"
+        rounded-lg hover:bg-green-700 transition-colors font-semibold"
                         >
                           <Pencil size={16} />
-                          Update
+                          Cập nhật
                         </button>
                         <button
                           onClick={() => setItemToDelete(item.id)}
                           className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-red-600 
-                  rounded-lg hover:bg-red-700 transition-colors font-semibold"
+        rounded-lg hover:bg-red-700 transition-colors font-semibold"
                         >
                           <Trash2 size={16} />
-                          Delete
+                          Xóa
                         </button>
                       </>
                     )}
