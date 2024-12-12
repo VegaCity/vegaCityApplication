@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { PromotionServices } from "../services/Promotion/promotionServices";
 import { AlertCircle } from "lucide-react";
+import { Loader } from "@/components/loader/Loader";
 
 interface Promotion {
   id: string;
@@ -50,7 +51,11 @@ export const PromotionAlert = () => {
   }, []);
 
   if (isLoading) {
-    return <div className="w-full py-4">Đang tải khuyến mãi...</div>;
+    return (
+      <div className="w-full py-4">
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   }
 
   if (promotions.length === 0) {
