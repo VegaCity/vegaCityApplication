@@ -554,7 +554,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                               }
                             >
                               <ShoppingCart size={18} />
-                              Mua
+                              Buy
                             </button>
                             <button
                               onClick={() => setSelectedProductId(item.id)}
@@ -574,7 +574,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
         rounded-lg hover:bg-green-700 transition-colors font-semibold"
                         >
                           <Pencil size={16} />
-                          Cập nhật
+                          Update
                         </button>
                         <button
                           onClick={() => setItemToDelete(item.id)}
@@ -582,7 +582,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
         rounded-lg hover:bg-red-700 transition-colors font-semibold"
                         >
                           <Trash2 size={16} />
-                          Xóa
+                          Delete
                         </button>
                       </>
                     )}
