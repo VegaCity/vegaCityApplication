@@ -117,6 +117,8 @@ const OrderDetailPage = () => {
         return "bg-yellow-50 text-yellow-700 ring-1 ring-yellow-600/20";
       case "CANCELED":
         return "bg-red-50 text-red-700 ring-1 ring-red-600/20";
+      case "RENTING":
+        return "bg-green-50 text-green-700 ring-1 ring-green-600/20";
       default:
         return "bg-gray-50 text-gray-700 ring-1 ring-gray-600/20";
     }
@@ -182,7 +184,7 @@ const OrderDetailPage = () => {
                       VCard Id
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder.vcardId}
+                      {order.packageOrder?.vcardId}
                     </p>
                   </div>
                 </div>

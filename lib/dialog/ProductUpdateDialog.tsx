@@ -39,8 +39,9 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
   const [formData, setFormData] = useState<ProductPatch>({
     name: "",
     price: 0,
-    status: "InActive",
+
     imageUrl: "",
+    quantity: 1,
   });
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -53,8 +54,9 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
       setFormData({
         name: product.name,
         price: product.price,
-        status: product.status,
+
         imageUrl: product.imageUrl || "",
+        quantity: product.quantity || 0,
       });
       setImagePreview(product.imageUrl || "");
     }
@@ -103,8 +105,9 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
       setFormData({
         name: "",
         price: 0,
-        status: "InActive",
+
         imageUrl: "",
+        quantity: 0,
       });
       setSelectedImage(null);
       setImagePreview("");
@@ -167,7 +170,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
 
           {/* Product Name */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
+            <Label htmlFor="name" className="text-left">
               Product Name
             </Label>
             <Input
@@ -182,7 +185,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
 
           {/* Price */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="price" className="text-right">
+            <Label htmlFor="price" className="text-left">
               Price
             </Label>
             <Input
@@ -197,25 +200,23 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
           </div>
 
           {/* Status */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="status" className="text-right">
-              Status
-            </Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) =>
-                setFormData({ ...formData, status: value })
-              }
-            >
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Chọn trạng thái" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Active">Active</SelectItem>
-                <SelectItem value="InActive">InActive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        </div>
+
+        {/* Quantity */}
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="quantity" className="text-left">
+            Số lượng
+          </Label>
+          <Input
+            id="quantity"
+            type="number"
+            min="0"
+            value={formData.quantity}
+            onChange={(e) =>
+              setFormData({ ...formData, quantity: Number(e.target.value) })
+            }
+            className="col-span-3"
+          />
         </div>
 
         <DialogFooter>
