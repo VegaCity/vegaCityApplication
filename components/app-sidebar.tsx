@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  ChevronRight,
+  ChevronLeft,
   ChevronDown,
   Calendar,
   Home,
@@ -25,6 +25,8 @@ import {
   Tags,
   LucideProps,
   UserCheck2,
+  LogOut,
+  Dot,
 } from "lucide-react";
 
 import {
@@ -40,6 +42,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarSeparator,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   Collapsible,
@@ -64,6 +67,13 @@ import { Badge } from "@/components/ui/badge";
 import { AuthServices } from "@/components/services/authServices";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 // import { useSidebar } from "@/context/SidebarContext";
+import VegaLogo from "@/img/logo.png";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 export function AppSidebar() {
   const [collapsedItem, setCollapsedItem] = useState<Record<string, boolean>>(
@@ -101,21 +111,33 @@ export function AppSidebar() {
 
   const menuItems: MenuItems[] = [
     {
+      name: "Store Information",
+      icon: Store,
+      href: navigatePage("info"),
+      roles: ["Store"],
+    },
+    {
       name: "Dashboard",
       icon: LayoutDashboard,
       href: "/",
       roles: ["Admin", "CashierWeb", "Store"],
     },
     {
-      name: "Product",
+      name: "ProductCategory",
       icon: LayoutDashboard,
-      href: navigatePage("product"),
+      href: navigatePage("productCategory"),
       roles: ["Store"],
     },
     {
       name: "Menu",
       icon: LayoutDashboard,
       href: navigatePage("menu"),
+      roles: ["Store"],
+    },
+    {
+      name: "Reports",
+      icon: LayoutDashboard,
+      href: navigatePage("report"),
       roles: ["Store"],
     },
     {
@@ -128,18 +150,7 @@ export function AppSidebar() {
       name: "Manage Packages",
       icon: Package,
       roles: ["Admin"],
-      child: [
-        {
-          name: "Packages",
-          icon: Package,
-          href: navigatePage("packages"),
-        },
-        {
-          name: "Package Types",
-          icon: Tags,
-          href: navigatePage("packageTypes"),
-        },
-      ],
+      href: navigatePage("packages"),
     },
     {
       name: "Orders",
@@ -168,11 +179,6 @@ export function AppSidebar() {
           icon: Store,
           href: navigatePage("stores"),
         },
-        {
-          name: "Services Stores",
-          icon: Pizza,
-          href: navigatePage("servicesStore"),
-        },
       ],
     },
     {
@@ -187,12 +193,7 @@ export function AppSidebar() {
       href: navigatePage("orders"),
       roles: ["CashierWeb"],
     },
-    {
-      name: "Reports",
-      icon: MessageSquareWarning,
-      href: navigatePage("reports"),
-      roles: ["CashierWeb"],
-    },
+
     {
       name: "Transactions",
       icon: ArrowRightLeft,
@@ -205,12 +206,18 @@ export function AppSidebar() {
     //   href: navigatePage("servicesStore"),
     //   roles: ["Admin"],
     // },
-    // {
-    //   name: "Wallet Type",
-    //   icon: Wallet,
-    //   href: navigatePage("walletTypes"),
-    //   roles: ["Admin"],
-    // },
+    {
+      name: "Reports",
+      icon: Wallet,
+      href: navigatePage("reports"),
+      roles: ["CashierWeb"],
+    },
+    {
+      name: "Issue Report",
+      icon: Wallet,
+      href: navigatePage("isssue-types"),
+      roles: ["CashierWeb"],
+    },
     {
       name: "Manage Users",
       icon: User,
@@ -267,6 +274,11 @@ export function AppSidebar() {
     router.push("/auth"); // Redirect to auth page
   };
 
+  // Navigate Account Page
+  const handleNavigateAccountPage = () => {
+    router.push("/profile");
+  };
+
   // // Check if accessToken is present, if not, log out the user
   // useEffect(() => {
   //   const accessToken = localStorage.getItem("accessToken");
@@ -276,77 +288,127 @@ export function AppSidebar() {
   // }, []);
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map(
-                (item, i) =>
-                  item.roles.includes(userRole?.name || "") &&
-                  (item.child && item.child.length > 0 ? (
-                    <Collapsible defaultOpen className="group/collapsible">
-                      <SidebarMenuItem key={i}>
-                        <CollapsibleTrigger
-                          onClick={() => handleCollapsedTrigger(item.name)}
-                          asChild
-                        >
-                          <SidebarMenuButton className="transition-transform duration-200">
-                            <item.icon />
-                            {item.name}
-                            {collapsedItem[item.name] ? (
-                              <ChevronDown
-                                className={
-                                  "ml-auto transition-transform duration-150"
-                                }
-                              />
-                            ) : (
-                              <ChevronRight
-                                className={
-                                  "ml-auto transition-transform duration-150"
-                                }
-                              />
-                            )}
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <SidebarMenuSub>
+    <>
+      <div className="fixed left-0 top-1">
+        <Tooltip>
+          <TooltipTrigger>
+            <SidebarTrigger size={"lg"} className="hover:bg-hover-button" />
+          </TooltipTrigger>
+          <TooltipContent side="right">Open Sidebar</TooltipContent>
+        </Tooltip>
+      </div>
+      <Sidebar className="border-customBorder">
+        <div className="w-min">
+          <Tooltip>
+            <TooltipTrigger>
+              <SidebarTrigger className="w-12 h-12 hover:text-text-button hover:bg-hover-button" />
+            </TooltipTrigger>
+            <TooltipContent side="right">Close Sidebar</TooltipContent>
+          </Tooltip>
+        </div>
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel className="h-20 flex items-center justify-center">
+              <img src={VegaLogo.src} width={100} alt="logo" />
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem key={user?.id}>
+                  <div className="flex items-center w-full justify-between">
+                    <div className="flex items-center">
+                      <SidebarMenuButton
+                        onClick={handleNavigateAccountPage}
+                        className="h-10"
+                      >
+                        {user ? (
+                          <Avatar>
+                            <AvatarImage
+                              src={validImageUrl(user.imageUrl || "")}
+                              alt="userAva"
+                              className="h-8 w-8 rounded-full"
+                            />
+                            <AvatarFallback className="text-white">
+                              Avatar
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <Skeleton className="h-10 w-10 rounded-full" />
+                        )}
+                        {user?.fullName}
+                      </SidebarMenuButton>
+                    </div>
+                    <ThemeToggler />
+                  </div>
+                </SidebarMenuItem>
+                <SidebarSeparator />
+                {menuItems.map(
+                  (item, i) =>
+                    item.roles.includes(userRole?.name || "") &&
+                    (item.child && item.child.length > 0 ? (
+                      <Collapsible defaultOpen className="group/collapsible">
+                        <SidebarMenuItem key={i}>
+                          <CollapsibleTrigger
+                            onClick={() => handleCollapsedTrigger(item.name)}
+                            asChild
+                          >
+                            <SidebarMenuButton className="transition-transform duration-200">
+                              <item.icon size={20} />
+                              <span className="text-base">{item.name}</span>
+                              {collapsedItem[item.name] ? (
+                                <ChevronLeft
+                                  className={
+                                    "ml-auto transition-transform duration-150"
+                                  }
+                                />
+                              ) : (
+                                <ChevronDown
+                                  className={
+                                    "ml-auto transition-transform duration-150"
+                                  }
+                                />
+                              )}
+                            </SidebarMenuButton>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
                             {Array.isArray(item.child) &&
                               item.child.length > 0 &&
                               item.child.map((itemChild, childIndex) => (
-                                <SidebarMenuSubItem key={childIndex}>
-                                  <Link href={itemChild?.href || ""}>
-                                    <div className="flex items-center gap-3">
-                                      <itemChild.icon size={15} />
-                                      {itemChild?.name}
-                                    </div>
-                                  </Link>
-                                </SidebarMenuSubItem>
+                                <SidebarMenuSub>
+                                  <SidebarMenuSubItem key={childIndex}>
+                                    <Link href={itemChild?.href || ""}>
+                                      <SidebarMenuButton>
+                                        <div className="flex items-center gap-3">
+                                          <itemChild.icon size={20} />
+                                          <span className="text-md">
+                                            {itemChild?.name}
+                                          </span>
+                                        </div>
+                                      </SidebarMenuButton>
+                                    </Link>
+                                  </SidebarMenuSubItem>
+                                </SidebarMenuSub>
                               ))}
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
+                          </CollapsibleContent>
+                        </SidebarMenuItem>
+                      </Collapsible>
+                    ) : (
+                      <SidebarMenuItem key={i}>
+                        <SidebarMenuButton asChild>
+                          <Link href={item.href ?? ""}>
+                            <item.icon size={20} />
+                            <span className="text-base">{item.name}</span>
+                          </Link>
+                        </SidebarMenuButton>
                       </SidebarMenuItem>
-                    </Collapsible>
-                  ) : (
-                    <SidebarMenuItem key={i}>
-                      <SidebarMenuButton asChild>
-                        <Link href={item.href ?? ""}>
-                          <item.icon />
-                          <span>{item.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarSeparator />
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem key={user?.id}>
+                    ))
+                )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter>
+          <SidebarMenu>
+            {/* <SidebarMenuItem key={user?.id}>
             <DropdownMenu>
               <div className="flex items-center w-full justify-between">
                 <DropdownMenuTrigger asChild>
@@ -375,22 +437,64 @@ export function AppSidebar() {
                 <ThemeToggler />
               </div>
               <DropdownMenuContent side="top" className="w-10 md:ml-20">
-                <DropdownMenuItem>
-                  <Link href={"/profile"}>
-                    <span>Account</span>
-                  </Link>
+                <DropdownMenuItem onClick={handleNavigateAccountPage}>
+                  <div className="flex flex-row items-center justify-between w-full group hover:bg-gray-100 p-2 rounded">
+                    <span className="text-gray-700 group-hover:text-sky-500 dark:text-white">
+                      Account
+                    </span>
+                    <User2
+                      size={15}
+                      className="text-gray-700 group-hover:text-sky-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                    />
+                  </div>
                 </DropdownMenuItem>
-                {/* <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem> */}
                 <DropdownMenuItem onClick={handleLogout}>
-                  <span>Sign out</span>
+                  <div className="flex flex-row items-center justify-between w-full group hover:bg-gray-100 p-2 rounded">
+                    <span className="text-gray-700 group-hover:text-red-500 dark:text-white">
+                      Sign out
+                    </span>
+                    <LogOut
+                      size={15}
+                      className="text-gray-700 group-hover:text-red-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                    />
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <div className="flex flex-row items-center justify-between w-full group hover:bg-gray-100 p-2 rounded">
+                    <span className="text-gray-700 group-hover:text-red-500 dark:text-white">
+                      Sign out
+                    </span>
+                    <LogOut
+                      size={15}
+                      className="text-gray-700 group-hover:text-red-500 transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                    />
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+          </SidebarMenuItem> */}
+            {/* <div className="absolute right-0 bottom-12 flex-col justify-end items-end mb-2">
+            <ThemeToggler />
+          </div> */}
+            <SidebarSeparator />
+            {/* <SidebarMenuItem> */}
+            <button onClick={handleLogout} className="sign-out-button peer">
+              <div className="group hover:bg-red-300 flex items-center justify-end gap-2 w-full p-2 rounded">
+                <span className="group-hover:text-red-500 font-bold dark:text-white text-lg">
+                  Sign out
+                </span>
+                <LogOut
+                  size={15}
+                  className="group-hover:text-red-500 font-bold transition-transform duration-200 group-hover:scale-110 dark:text-white"
+                />
+              </div>
+            </button>
+            {/* </SidebarMenuItem> */}
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+    </>
   );
 }

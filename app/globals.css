@@ -1,115 +1,186 @@
 @tailwind base;
-  @tailwind components;
-  @tailwind utilities;
+@tailwind components;
+@tailwind utilities;
 
-  /* Important things should add in global.css | It's could help u prevent scroll when wrapping Provider */
-  /* html, body { */
-    /* height: 100%; */
-    /* margin: 0; */
-    /* padding: 0; */
-    /* overflow: auto; Allow natural scrolling */
-  /* } */
+/* Important things should add in global.css | It's could help u prevent scroll when wrapping Provider */
+/* html, body { */
+/* height: 100%; */
+/* margin: 0; */
+/* padding: 0; */
+/* overflow: auto; Allow natural scrolling */
+/* } */
 
-  @layer base {
-    :root {
-      --background: 0 0% 100%;
-      --foreground: 222.2 84% 4.9%;
-      --fixed-background-image: url('../img/vegaCityBackground.jpg');
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --fixed-background-image: url("../img/backgroundLogin.jpg");
+    --fixed-login-image: url("../img/logo.png");
 
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-      --card: 0 0% 100%;
-      --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-      --popover: 0 0% 100%;
-      --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-      --primary: 222.2 47.4% 11.2%;
-      --primary-foreground: 210 40% 98%;
-      --secondary: 210 40% 96.1%;
-      --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-      --muted: 210 40% 96.1%;
-      --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
-      --accent: 210 40% 96.1%;
-      --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-      --destructive: 0 84.2% 60.2%;
-      --destructive-foreground: 210 40% 98%;
-      
-      --border: 214.3 31.8% 91.4%;
-      --input: 214.3 31.8% 91.4%;
-      --ring: 222.2 84% 4.9%;
-      --radius: 0.5rem;
-      --sidebar-background: 0 0% 98%;
-      --sidebar-foreground: 240 5.3% 26.1%;
-      --sidebar-primary: 240 5.9% 10%;
-      --sidebar-primary-foreground: 0 0% 98%;
-      --sidebar-accent: 240 4.8% 95.9%;
-      --sidebar-accent-foreground: 240 5.9% 10%;
-      --sidebar-border: 220 13% 91%;
-      --sidebar-ring: 217.2 91.2% 59.8%;
-    }
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%; /* Focus ring color: dark blue */
+    --radius: 0.5rem;
+    --sidebar-background: 213 94% 68%; /* Sidebar Color */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    /* --sidebar-accent: 240 4.8% 95.9%; */
+    --sidebar-accent: 0 0% 6.7% / 0.067; /*Sidebar button hover*/
+    --sidebar-accent-foreground: 213 94% 48%; /* Sidebar text button hover */
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
-    .dark {
-      --background: 222.2 84% 4.9%;
-      --foreground: 210 40% 98%;
+    /* Chart */
+    --chart-1: 221 83.2% 53.3%;
+    --chart-2: 213 93.9% 67.8%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
 
-      --card: 222.2 84% 4.9%;
-      --card-foreground: 210 40% 98%;
-
-      --popover: 222.2 84% 4.9%;
-      --popover-foreground: 210 40% 98%;
-
-      --primary: 210 40% 98%;
-      --primary-foreground: 222.2 47.4% 11.2%;
-
-      --secondary: 217.2 32.6% 17.5%;
-      --secondary-foreground: 210 40% 98%;
-
-      --muted: 217.2 32.6% 17.5%;
-      --muted-foreground: 215 20.2% 65.1%;
-
-      --accent: 217.2 32.6% 17.5%;
-      --accent-foreground: 210 40% 98%;
-
-      --destructive: 0 62.8% 30.6%;
-      --destructive-foreground: 210 40% 98%;
-
-      --border: 217.2 32.6% 17.5%;
-      --input: 217.2 32.6% 17.5%;
-      --ring: 212.7 26.8% 83.9%;
-      --sidebar-background: 240 5.9% 10%;
-      --sidebar-foreground: 240 4.8% 95.9%;
-      --sidebar-primary: 224.3 76.3% 48%;
-      --sidebar-primary-foreground: 0 0% 100%;
-      --sidebar-accent: 240 3.7% 15.9%;
-      --sidebar-accent-foreground: 240 4.8% 95.9%;
-      --sidebar-border: 240 3.7% 15.9%;
-      --sidebar-ring: 217.2 91.2% 59.8%;
-      }
+    /* Badge Color */
+    --badge-specific: 255 95% 45%; /* Purple */
+    --badge-specific-hover: 255 95% 35%;
   }
 
-  @layer base {
-    * {
-      @apply border-border;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Chart */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  .button-style {
+    @apply bg-blue-500 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200 hover:bg-blue-700;
+    /* Add any other common styles here */
+  }
+}
+
+@layer utilities {
+  @keyframes gradient-slide {
+    0% {
+      background-position: 100% 0;
     }
-    body {
-      @apply bg-background text-foreground;
+    100% {
+      background-position: 0 0;
     }
-    .button-style {
-      @apply bg-blue-500 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200 hover:bg-blue-700;
-      /* Add any other common styles here */
-    }    
+  }
+  .hover-gradient {
+    background-image: linear-gradient(to right, #3b82f6, #60a5fa, #93c5fd);
+    background-size: 200% auto;
+    transition: background-color 2s ease-in-out;
+  }
+  .hover-gradient:hover {
+    animation: gradient-slide 2s infinite forwards;
   }
 
- /* HTML: <div class="loader"></div> */
+  .form-gradient {
+    flex: 1;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(to right, #0e5caa, #05294d, #00172d);
+    color: #fff;
+  }
+
+  .form-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent overlay */
+    z-index: 1; /* Ensure it appears above the gradient */
+  }
+
+  .form-gradient:hover {
+    animation: gradient-slide 2s infinite forwards;
+  }
+
+  .form-content {
+    position: relative;
+    z-index: 2; /* Ensure content appears above the overlay */
+    margin-bottom: 1.5rem;
+  }
+
+  .dot-color {
+    color: #61a6fa;
+  }
+}
+
+/* HTML: <div class="loader"></div> */
 .loader {
-  width: calc(6*30px);
+  width: calc(6 * 30px);
   height: 50px;
   display: flex;
   color: #8d7958;
-  filter: drop-shadow(30px 25px 0 currentColor) drop-shadow(60px 0 0 currentColor) drop-shadow(120px 0 0 currentColor);
+  filter: drop-shadow(30px 25px 0 currentColor)
+    drop-shadow(60px 0 0 currentColor) drop-shadow(120px 0 0 currentColor);
   clip-path: inset(0 100% 0 0);
   animation: l12 2s infinite steps(7);
 }
@@ -117,14 +188,93 @@
   content: "";
   width: 30px;
   height: 25px;
-  --c:no-repeat radial-gradient(farthest-side,currentColor 92%,#0000);
-  background: 
-    var(--c) left /70% 70%,
-    var(--c) right/20% 20%,
-    var(--c) top    0 right 15%/20% 20%,
-    var(--c) bottom 0 right 15%/20% 20%;
+  --c: no-repeat radial-gradient(farthest-side, currentColor 92%, #0000);
+  background: var(--c) left / 70% 70%, var(--c) right/20% 20%,
+    var(--c) top 0 right 15%/20% 20%, var(--c) bottom 0 right 15%/20% 20%;
 }
 @keyframes l12 {
-  100% {clip-path: inset(0 -30px 0 0)}
+  100% {
+    clip-path: inset(0 -30px 0 0);
+  }
 }
 
+.login-container {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  width: 80%;
+  height: 80vh; /* Full height */
+  border-radius: 16px;
+  overflow: hidden; /* For clean rounded corners */
+}
+
+.loginImage {
+  flex: 1;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginImage img {
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.sign-out-button :hover {
+  color: #fff;
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+@keyframes rainbow-border {
+  0% {
+    border-color: rgb(255, 0, 0);
+  }
+  14% {
+    border-color: rgb(255, 165, 0);
+  }
+  28% {
+    border-color: rgb(255, 255, 0);
+  }
+  42% {
+    border-color: rgb(0, 128, 0);
+  }
+  56% {
+    border-color: rgb(0, 0, 255);
+  }
+  70% {
+    border-color: rgb(75, 0, 130);
+  }
+  84% {
+    border-color: rgb(238, 130, 238);
+  }
+  100% {
+    border-color: rgb(255, 0, 0);
+  }
+}
+
+.rainbow-border {
+  border-width: 1px;
+  animation: rainbow-border 5s linear infinite;
+}
+
+.rainbow-border:hover {
+  animation-duration: 2s;
+}

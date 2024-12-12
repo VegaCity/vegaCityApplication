@@ -54,7 +54,7 @@ export const ComboboxCustom: React.FC<ComboboxProps> = ({
       <PopoverContent className="w-[200px] p-0">
         <Command>
           <CommandInput placeholder={placeholder} className="h-9" />
-          <CommandList>
+          <CommandList className="w-full">
             <CommandEmpty>No {placeholder} found!</CommandEmpty>
             <CommandGroup>
               {filterList.map((currentValue) => (

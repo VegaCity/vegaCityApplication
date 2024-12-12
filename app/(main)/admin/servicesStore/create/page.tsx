@@ -32,6 +32,7 @@ import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { Edit } from "lucide-react";
 
 const ServiceStoreCreatePage = () => {
   const { toast } = useToast();
@@ -179,8 +180,9 @@ const ServiceStoreCreatePage = () => {
           />
 
           <div className="flex justify-end items-end w-full mt-4">
-            <Button className="bg-blue-500 hover:bg-blue-700">
-              Create Store's service
+            <Button type="submit" className="bg-blue-500 hover:bg-blue-700">
+              <Edit />
+              Create
             </Button>
           </div>
         </form>

@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { PackageItemServices } from "@/components/services/packageItemService";
+import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import { PackageItem } from "@/types/packageitem";
 import Image from "next/image";
 import {
@@ -53,6 +53,7 @@ import {
 import {
   confirmOrder,
   confirmOrderForCharge,
+  confirmOrderForChargeVCard,
   GetOrdersById,
 } from "@/components/services/orderuserServices";
 import { AlertDialogAction } from "@radix-ui/react-alert-dialog";
@@ -102,12 +103,23 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         title: "RFID Updated",
         description: "RFID has been updated successfully",
       });
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
       setIsUpdateRFIDDialogOpen(false);
-    } catch (error) {
+      await PackageItemServices.getPackageItemById({
+        id: params.id,
+      });
+    } catch (error: any) {
       console.error("Error updating RFID:", error);
+
+      // Lấy message lỗi từ response
+      const errorMessage =
+        error.response?.data?.Error || error.response?.data?.messageResponse;
+
       toast({
         title: "Error",
-        description: "Failed to update RFID",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -135,25 +147,24 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   }, [packageItem, childrenVCardForm]);
 
   const handleGenerateChildrenVCard = () => {
-    const { name, gender, phoneNumber, email, cccdpassport, isAdult } =
+    const { cusName, gender, phoneNumber, cusEmail, cusCccdpassport, isAdult } =
       form.getValues();
     const packageId = localStorage.getItem("packageIdCurrent");
 
     router.push(
-      `/user/packages/generate/${packageId}?customerName=${name}&gender=${gender}&phoneNumber=${phoneNumber}&email=${email}&cccdpassport=${cccdpassport}&isAdult=${isAdult}`
+      `/user/packages/generate/${packageId}?phoneNumber=${phoneNumber}&email=${cusEmail}&cccdPassport=${cusCccdpassport}&isAdult=${isAdult}`
     );
   };
   const handleChargeMoney = async (data: {
-    packageItemId: string;
+    packageOrderId: string;
     chargeAmount: number;
-    cccdpassport: any;
+    cccdPassport: any;
     paymentType: string;
   }) => {
     try {
       setIsLoading(true);
       // Ensure charge amount is valid
       const chargeAmount = parseInt(amount) || 0;
-
       if (chargeAmount <= 0) {
         toast({
           title: "Error",
@@ -162,13 +173,12 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         });
         return;
       }
-
+      const cusCccdpassport = form.getValues("cusCccdpassport");
       const response = await PackageItemServices.chargeMoney({
-        packageItemId: params.id,
+        packageOrderId: params.id,
         chargeAmount: data.chargeAmount,
-        cccdPassport: data.cccdpassport,
+        cccdPassport: cusCccdpassport,
         paymentType: data.paymentType,
-        promoCode: "no_promotion",
       });
 
       if (response.status === 200 && response.data?.data) {
@@ -196,9 +206,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
               const discountAmount =
                 orderData.promotionOrders?.[0]?.discountAmount ?? 0;
               const totalAmount = orderData.totalAmount ?? 0;
-              const cusName = orderData.packageOrders?.[0]?.cusName ?? "";
+              const cusName = orderData.packageOrder?.cusName ?? "";
               const seller = responseOrder.data?.data?.seller ?? "";
-
               localStorage.setItem("discountAmount", discountAmount.toString());
               localStorage.setItem("totalAmount", totalAmount.toString());
               localStorage.setItem("cusName", cusName);
@@ -223,43 +232,103 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             setShouldShowAlertDialog(true);
             setIsProcessingPopupOpen(true);
           } else {
-            await initiatePayment(data.paymentType, invoiceId);
+            await initiatePayment(
+              data.paymentType,
+              invoiceId,
+              response.data.data.key,
+              response.data.data.urlDirect,
+              response.data.data.urlIpn
+            );
           }
         }
       } else {
-        throw new Error(
-          `Failed to charge money. Status code: ${response.status}`
-        );
+        // Handle error response
+        if (response.data) {
+          toast({
+            title: `Error ${response.data.StatusCode}`,
+            description: response.data.Error || "An unknown error occurred",
+            variant: "destructive",
+          });
+          console.error("Error details:", {
+            StatusCode: response.data.StatusCode,
+            Error: response.data.Error,
+            TimeStamp: response.data.TimeStamp,
+          });
+        } else {
+          throw new Error(
+            `Failed to charge money. Status code: ${response.status}`
+          );
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error charging money:", error);
-      toast({
-        title: "Error",
-        description: "Failed to charge money. Please try again later.",
-        variant: "destructive",
-      });
+      // Check if error has response data
+      if (error.response?.data) {
+        const errorData = error.response.data;
+        toast({
+          title: `Error ${errorData.StatusCode}`,
+          description: errorData.Error || "An unknown error occurred",
+          variant: "destructive",
+        });
+        console.error("Error details:", {
+          StatusCode: errorData.StatusCode,
+          Error: errorData.Error,
+          TimeStamp: errorData.TimeStamp,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to charge money. Please try again later.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
       setIsPopupOpen(false);
     }
   };
-
-  const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
+  const initiatePayment = async (
+    paymentMethod: string,
+    invoiceId: string,
+    key?: string,
+    urlDirect?: string,
+    urlIpn?: string
+  ) => {
     try {
       let paymentResponse;
 
       switch (paymentMethod.toLowerCase()) {
         case "momo":
-          paymentResponse = await paymentService.momo({ invoiceId });
+          paymentResponse = await paymentService.momo({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         case "vnpay":
-          paymentResponse = await paymentService.vnpay({ invoiceId });
+          paymentResponse = await paymentService.vnpay({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         case "payos":
-          paymentResponse = await paymentService.payos({ invoiceId });
+          paymentResponse = await paymentService.payos({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         case "zalopay":
-          paymentResponse = await paymentService.zalopay({ invoiceId });
+          paymentResponse = await paymentService.zalopay({
+            invoiceId,
+            key,
+            urlDirect,
+            urlIpn,
+          });
           break;
         default:
           throw new Error(`Unsupported payment method: ${paymentMethod}`);
@@ -313,9 +382,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       const confirmData = {
         invoiceId: pendingInvoiceId,
         transactionChargeId: localStorage.getItem("transactionChargeId") || "",
-        transactionId: localStorage.getItem("transactionId") || "",
       };
-      const result = await confirmOrderForCharge(confirmData);
+      const result = await confirmOrderForChargeVCard(confirmData);
       if (result.statusCode === 200 || result.statusCode === "200") {
         toast({
           title: "Payment Confirmed",
@@ -350,33 +418,34 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      cusName: "",
       phoneNumber: "",
-      cccdpassport: "",
-      birthday: "",
-      gender: "" as "Male" | "Female" | "Other" | undefined,
+      cusCccdpassport: "",
       startDate: "",
       endDate: "",
-      email: "",
+      cusEmail: "",
       status: 0,
       imageUrl: "",
       isAdult: true,
-
-      wallet: {
-        balance: 0,
-        balanceHistory: 0,
+      vcardId: "",
+      customer: {
+        fullName: "",
       },
+      wallets: [
+        {
+          balance: 0,
+          balanceHistory: 0,
+        },
+      ],
     },
   });
   const formCharge = useForm({
     defaultValues: {
       promoCode: "",
       chargeAmount: 0,
-      cccdpassport: form.getValues("cccdpassport"),
+      cccdPassport: "",
       paymentType: "Cash",
-      packageItemId: params.id,
-      // startDate: form.getValues("startDate"),
-      // endDate: form.getValues("endDate"),
+      packageOrderId: params.id,
     },
   });
 
@@ -422,12 +491,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         console.log(response.data.qrCode, "QRcode");
         setPackageItem(packageitemData);
         setQrCode(qrCodeData);
-        if (packageitemData.isAdult === false) {
-          // Remove packageItemId from localStorage
-          localStorage.removeItem("packageItemId");
-        } else {
-          localStorage.setItem("packageItemId", packageitemData.id);
-        }
+        /// packageOrderId
+        localStorage.setItem("packageItemId", packageitemData.id);
         localStorage.setItem("packageIdCurrent", packageitemData.packageId);
         localStorage.setItem("startDateCustomer", packageitemData.startDate);
         localStorage.setItem("endDateCustomer", packageitemData.endDate);
@@ -435,23 +500,27 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         if (!packageitemData) {
           throw new Error("No etag data received");
         }
-
         form.reset({
-          name: packageitemData.name || "",
+          cusName: packageitemData.cusName || "",
           phoneNumber: packageitemData.phoneNumber || "",
-          cccdpassport: packageitemData.cccdpassport || "",
+          cusCccdpassport: packageitemData.cusCccdpassport || "",
           birthday: formatDateForInput(packageitemData.birthday) || "",
           startDate: formatDateTimeForInput(packageitemData.startDate) || "",
           endDate: formatDateTimeForInput(packageitemData.endDate) || "",
-          gender: packageitemData.gender,
+          vcardId: packageitemData.vcardId || "",
           status: packageitemData.status || 0,
           imageUrl: packageitemData.imageUrl || "",
-          email: packageitemData.email || "",
+          cusEmail: packageitemData.cusEmail || "",
           isAdult: packageitemData.isAdult,
-          wallet: {
-            balance: packageitemData.wallet?.balance || 0,
-            balanceHistory: packageitemData.wallet?.balanceHistory || 0,
+          customer: {
+            fullName: packageitemData.customer?.fullName || "",
           },
+          wallets: [
+            {
+              balance: packageitemData.wallets[0]?.balance || 0,
+              balanceHistory: packageitemData.wallets[0]?.balanceHistory || 0,
+            },
+          ],
         });
         localStorage.setItem(
           "walletBalance",
@@ -459,10 +528,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         );
         // Reset charge form
         formCharge.reset({
-          // promoCode: "",
           chargeAmount: 0,
-          cccdpassport: (packageitemData.cccdpassport || "").trim(),
+          cccdPassport: packageitemData.cusCccdpassport || "",
           paymentType: "Cash",
+          packageOrderId: params.id,
         });
       } catch (err) {
         setError(
@@ -500,32 +569,43 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     setIsLoading(true);
     try {
       const formData = form.getValues();
-      const activateData = {
-        cccdPassport: formData.cccdpassport,
-        name: formData.name,
+
+      const activationData = {
+        email: formData.cusEmail,
+        fullName: formData.cusName,
         phoneNumber: formData.phoneNumber,
-        gender: formData.gender,
-        birthday: formData.birthday || new Date().toISOString(),
-        isAdult: true,
-        email: formData.email,
+        cccdPassport: formData.cusCccdpassport,
       };
 
       await PackageItemServices.activatePackageItem(
         packageItem.id,
-        activateData
+        activationData
       );
+
       toast({
-        title: "ETag Activated",
-        description: "The ETag has been successfully activated.",
+        title: "VCard Activated",
+        description: "The VCard has been successfully activated.",
       });
+
       window.location.reload();
-    } catch (err) {
-      toast({
-        title: "Activation Failed",
-        description:
-          err instanceof Error ? err.message : "An unknown error occurred",
-        variant: "destructive",
-      });
+    } catch (err: any) {
+      // Kiểm tra nếu response có cấu trúc mong muốn
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        toast({
+          title: `Error `,
+          description: `${errorData.Error}`,
+          variant: "destructive",
+        });
+      } else {
+        // Fallback cho các lỗi khác
+        toast({
+          title: "Activation Failed",
+          description:
+            err instanceof Error ? err.message : "An unknown error occurred",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -536,31 +616,18 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     setIsConfirming(false);
     form.reset();
   };
-
+  const getInputClassName = (isActive: boolean) => {
+    return isActive
+      ? "bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+      : "bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white";
+  };
   return (
     <>
-      <BackButton text="Back To Etag List" link="/user/package-items" />
-      <h3 className="text-2xl mb-4">VCard Detail</h3>
+      <BackButton text="Back To VCard" link="/user/package-items" />
 
       <Form {...form}>
         <form className="space-y-4">
-          <div className="flex flex-col items-center space-y-4 w-full">
-            <div className="relative w-64 h-64 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600">
-              {packageItem?.imageUrl ? (
-                <Image
-                  src={packageItem?.imageUrl || ""}
-                  alt="Profile Image"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-lg"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-gray-400">No image uploaded</span>
-                </div>
-              )}
-            </div>
-          </div>
+          <div className="flex flex-col items-center space-y-4 w-full"></div>
 
           <Card className="w-full max-w-5xl mx-auto">
             <CardHeader className="pb-2">
@@ -603,15 +670,19 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   </h4>
                   <div className="space-y-2 mr-14">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center items-center ">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12 ">
+                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           FullName
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("name")}
-                            readOnly={!isEditing}
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
+                            {...form.register("cusName")}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
@@ -622,9 +693,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("email")}
-                            readOnly={!isEditing}
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
+                            {...form.register("cusEmail")}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
@@ -637,56 +712,64 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
                             {...form.register("phoneNumber")}
-                            readOnly={!isEditing}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
-
                       <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          CCCD/Passport :
+                          CCCD/Passport:
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                            {...form.register("cccdpassport")}
-                            readOnly={!isEditing}
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
+                            {...form.register("cusCccdpassport")}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
                           />
                         </FormControl>
                       </FormItem>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="gender"
-                        render={({ field }) => (
-                          <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1  md:w-10/12">
-                            <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                              Gender
-                            </FormLabel>
-                            <Select
-                              onValueChange={(value) => field.onChange(value)}
-                              defaultValue={field.value}
-                              disabled={!isEditing}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Male">Male</SelectItem>
-                                <SelectItem value="Female">Female</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
-                        )}
-                      />
                       <CustomerStatusField
                         isAdult={form.getValues("isAdult")}
                       />
+                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                          VCard ID:
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            {...form.register("vcardId")}
+                            readOnly
+                          />
+                        </FormControl>
+                      </FormItem>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                          Buyer:
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            {...form.register("customer.fullName")}
+                            readOnly
+                          />
+                        </FormControl>
+                      </FormItem>
                     </div>
                   </div>
                 </div>
@@ -695,14 +778,14 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     Duration Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Start Date:
                       </FormLabel>
 
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("startDate")
                           )}
@@ -710,14 +793,14 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         End Date:
                       </FormLabel>
 
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           value={formatDateTimeForDisplay(
                             form.getValues("endDate")
                           )}
@@ -725,15 +808,15 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Status
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                           {...form.register("status")}
-                          readOnly={!isEditing}
+                          readOnly
                         />
                       </FormControl>
                       <FormMessage />
@@ -746,27 +829,27 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     Wallet Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Balance
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("wallet.balance")}
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          {...form.register("wallets.0.balance")}
                           readOnly
                         />
                       </FormControl>
                     </FormItem>
 
-                    <FormItem className="grid grid-cols-[150px_1fr] items-center gap-1 md:w-8/12 ">
+                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Balance History:
+                        History:
                       </FormLabel>
                       <FormControl>
                         <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          {...form.register("wallet.balanceHistory")}
+                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                          {...form.register("wallets.0.balanceHistory")}
                           readOnly
                         />
                       </FormControl>
@@ -783,17 +866,11 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             isLoading={isLoading}
             packageItem={packageItem}
           />
-          {/* <GenerateChildrenVCardDialog
-            isOpen={isChildrenVCardDialogOpen}
-            onOpenChange={setIsChildrenVCardDialogOpen}
-            form={childrenVCardForm}
-            onSubmit={handleGenerateChildrenVCard}
-            isLoading={isLoading}
-          /> */}
+
           <div className="flex justify-end mt-4">
             {packageItem &&
               packageItem.status === "Active" &&
-              packageItem.wallet.walletType.name === "ServiceWallet" && (
+              packageItem.wallets[0].walletType.name === "ServiceWallet" && (
                 <Button type="button" onClick={() => setIsPopupOpen(true)}>
                   Charge Money
                 </Button>
@@ -808,8 +885,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
             amount={amount}
             onAmountChange={handleAmountChange}
             formatAmount={formatAmount}
-            promotions={promotions}
-            isLoadingPromotions={isLoadingPromotions}
           />
 
           <ProcessingDialog
@@ -830,36 +905,39 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         </form>
       </Form>
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
-        {packageItem && packageItem.status === "Inactive" && !isConfirming && (
-          <Button
-            className="mt-12 px-6 py-2"
-            onClick={handleActivateEtag}
-            disabled={isLoading}
-          >
-            {isLoading
-              ? "Processing..."
-              : isEditing
-              ? "Confirm"
-              : "Activate ETag"}
-          </Button>
-        )}
-        {isConfirming && (
+        {packageItem && packageItem.status === "InActive" && (
           <>
-            <Button
-              className="mt-12 px-6 py-2"
-              onClick={handleConfirmActivation}
-              disabled={isLoading}
-            >
-              {isLoading ? "Activating..." : "Confirm Activation"}
-            </Button>
-            <Button
-              className="mt-12 px-6 py-2"
-              onClick={handleCancelActivation}
-              disabled={isLoading}
-              variant="outline"
-            >
-              Cancel
-            </Button>
+            {!isConfirming ? (
+              <Button
+                className="mt-12 px-6 py-2"
+                onClick={handleActivateEtag}
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? "Processing..."
+                  : isEditing
+                  ? "Confirm"
+                  : "Activate"}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  className="mt-12 px-6 py-2"
+                  onClick={handleConfirmActivation}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Activating..." : "Confirm Activation"}
+                </Button>
+                <Button
+                  className="mt-12 px-6 py-2"
+                  onClick={handleCancelActivation}
+                  disabled={isLoading}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
           </>
         )}
       </div>

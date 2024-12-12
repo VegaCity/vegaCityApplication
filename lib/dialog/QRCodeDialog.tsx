@@ -40,7 +40,7 @@ export const QRCodeDialog: React.FC<QRCodeDialogProps> = ({ qrCode }) => {
             className="w-48 h-48"
           />
           <p className="mt-4 text-sm text-center text-gray-500 dark:text-gray-400">
-            Scan this QR code to access package item details
+            Scan this QR code to access vcard details
           </p>
         </div>
       </DialogContent>

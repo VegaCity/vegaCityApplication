@@ -5,7 +5,7 @@ import { useUserRole } from "@/components/hooks/useUserRole";
 import ZonesPagination from "@/components/zones/ZonesPagination";
 import ZoneTable from "@/components/zones/ZonesTable";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 const PackagesPage = () => {
@@ -22,12 +22,15 @@ const PackagesPage = () => {
         {/* <BackButton text="Go Back" link="/" /> */}
         <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full transition-colors duration-200">
           <Link href="/admin/zones/create" className="flex items-center">
-            <Upload size={15} /> &nbsp; Create New Zone
+            <Plus size={15} /> &nbsp; Add New Zone
           </Link>
         </Button>
       </div>
-      <ZoneTable />
-      <ZonesPagination />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <ZoneTable />
+        <ZonesPagination />
+      </div>
     </div>
   );
 };

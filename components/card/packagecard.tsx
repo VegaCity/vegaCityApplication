@@ -1,12 +1,8 @@
 import React from "react";
 import { Package } from "@/types/packageType/package";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Sparkles, Tag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -25,42 +21,52 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg }) => {
       .replace("₫", "đ");
   };
 
-  const validImageUrl =
-    pkg.imageUrl && pkg.imageUrl.startsWith("https")
-      ? pkg.imageUrl
-      : "/default-image.png";
+  const validImageUrl = pkg.imageUrl?.startsWith("https")
+    ? pkg.imageUrl
+    : "/default-image.png";
 
   return (
-    <Card className="w-full max-w-sm overflow-hidden shadow-lg rounded-lg hover:shadow-xl transition-shadow duration-300">
-      <div className="relative h-60">
+    <Card className="w-full bg-white rounded shadow-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl group">
+      <div className="relative aspect-[16/9]  w-full overflow-hidden">
         <Image
           src={validImageUrl}
           alt={pkg.name || "Package Image"}
           fill
-          className="object-cover"
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
           loading="eager"
         />
-      </div>
-      <CardHeader className="px-4 pt-2">
-        <h3 className="text-lg font-semibold">{pkg.name}</h3>
-      </CardHeader>
-      <div>
-        <p className="text-lg font-semibold text-primary ml-4 mb-4">
-          {typeof pkg.description}
-        </p>
-      </div>
-      <div className="flex flex-row  items-center ml-8 mb-5">
-        <div>
-          <p className="text-lg font-semibold text-primary mr-4">
-            {typeof pkg.price === "number" ? formatCurrency(pkg.price) : "N/A"}
-          </p>
+        <div className="absolute top-4 right-4 flex items-center space-x-2">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 shadow-sm">
+            <Sparkles className="w-4 h-4 mr-1 text-blue-500" />
+            New
+          </span>
         </div>
-        <Link href={`/user/packages/generate/${pkg.id}`}>
-          <Button className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-all">
-            Generate
-          </Button>
-        </Link>
       </div>
+      <CardContent className="p-4 flex flex-col gap-4">
+        <div className="flex items-start justify-between">
+          <h3 className="text-lg font-semibold text-gray-900 pr-2 transition-colors group-hover:text-blue-600">
+            {pkg.name}
+          </h3>
+        </div>
+        <p className="text-sm text-gray-600 min-h-[40px] opacity-80">
+          {pkg.description || "This package can't charge when using."}
+        </p>
+        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+          <div className="flex items-center space-x-2">
+            <span className="text-lg font-bold text-blue-700">
+              {typeof pkg.price === "number"
+                ? formatCurrency(pkg.price)
+                : "N/A"}
+            </span>
+          </div>
+          <Button
+            asChild
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full h-10 px-5 font-medium shadow-md hover:shadow-lg transition-all"
+          >
+            <Link href={`/user/packages/generate/${pkg.id}`}>Generate</Link>
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 };

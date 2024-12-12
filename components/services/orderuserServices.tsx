@@ -5,10 +5,32 @@ import {
   ConfirmOrderForChargeData,
   OrderStoreData,
   ConfirmOrderForGenerateNewCardData,
+  ConfirmOrderForChargeVCardData,
+  OrderResponse,
 } from "@/types/paymentFlow/orderUser";
-export const GetOrders = async (page: number) => {
+export const GetOrders = async ({
+  page = 1,
+  size = 10,
+  status = "ALL",
+  searchTerm = "",
+}: {
+  page?: number;
+  size?: number;
+  status?: string;
+  searchTerm?: string;
+} = {}) => {
   try {
-    const response = await API.get(`/orders?page=${page}`);
+    const params: Record<string, string | number> = {
+      page,
+      size,
+      status,
+    };
+
+    if (searchTerm.trim()) {
+      params.searchTerm = searchTerm;
+    }
+
+    const response = await API.get("/orders", { params });
     return response.data;
   } catch (error) {
     console.error("Error getting orders:", error);
@@ -76,6 +98,17 @@ export const confirmOrderForCharge = async (
     throw error;
   }
 };
+export const confirmOrderForChargeVCard = async (
+  confirmData: ConfirmOrderForChargeVCardData
+) => {
+  try {
+    const response = await API.post("/order/cashier/confirm", confirmData);
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming order:", error);
+    throw error;
+  }
+};
 export const confirmOrder = async (confirmData: ConfirmOrderData) => {
   try {
     const response = await API.post("/order/confirm", confirmData);
@@ -97,7 +130,7 @@ export const deleteOrder = async (id: string) => {
 };
 export const detailOrder = async (id: string) => {
   try {
-    const response = await API.get(`/order/${id}`);
+    const response = await API.get(`/order/?id=${id}`);
     return response.data;
   } catch (error) {
     console.error("Error deleting order:", error);

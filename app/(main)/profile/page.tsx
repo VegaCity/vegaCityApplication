@@ -16,17 +16,30 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { Loader2, Camera, X } from "lucide-react";
 import { Users, ApiResponse } from "@/types/user/user";
-import { UserAccountPost } from "@/types/user/userAccount";
+import { UserAccountDetail, UserAccountPatch } from "@/types/user/userAccount";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
+import { StoreOwnerPatch, storeTypes } from "@/types/store/storeOwner";
+import { GitPullRequestClosed } from "lucide-react";
 import {
-  StoreOwnerPatch,
-  StoreOwnerPatchStore,
-} from "@/types/store/storeOwner";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { useRouter } from "next/navigation";
+
 const UserProfileComponent: React.FC = () => {
-  const [user, setUser] = useState<Users | null>(null);
+  const router = useRouter();
+  const [user, setUser] = useState<UserAccountDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [updating, setUpdating] = useState<boolean>(false);
   const [editMode, setEditMode] = useState<boolean>(false);
@@ -36,37 +49,64 @@ const UserProfileComponent: React.FC = () => {
     Record<string, string>
   >({});
   const [storeId, setStoreId] = useState<string | null>(null);
-  const [storeData, setStoreData] = useState<StoreOwnerPatchStore | null>(null);
-  const [formData, setFormData] = useState<UserAccountPost>({
+  const [storeData, setStoreData] = useState<StoreOwnerPatch | null>(null);
+  const [requestingClose, setRequestingClose] = useState(false);
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<UserAccountPatch>({
     fullName: "",
     address: "",
     description: "",
     phoneNumber: "",
-    birthday: "",
+
     gender: 0,
     cccdPassport: "",
     imageUrl: null,
   });
 
-  const [storeFormData, setStoreFormData] = useState<StoreOwnerPatchStore>({
+  const [storeFormData, setStoreFormData] = useState<StoreOwnerPatch>({
     name: "",
     address: "",
     phoneNumber: "",
     shortName: "",
     email: "",
     description: "",
-    storeStatus: 0,
+    status: 0,
+    storeType: 0,
   });
 
   useEffect(() => {
     fetchUserData();
   }, []);
 
+  //   const storeId = localStorage.getItem("storeId");
+  //   if (!storeId) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Store ID not found",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+
+  //   try {
+  //     setRequestingClose(true);
+  //     await StoreServices.requestClosed(storeId);
+  //     toast({
+  //       title: "Success",
+  //       description: "Store closure request submitted successfully",
+  //     });
+  //     setIsCloseDialogOpen(false);
+  //   } catch (error) {
+  //     handleError(error);
+  //   } finally {
+  //     setRequestingClose(false);
+  //   }
+  // };
   const fetchStoreData = async (storeId: string) => {
     try {
       const storeId = localStorage.getItem("storeId");
       const response = await StoreServices.getStoreById(storeId as string);
-      const store = response.data.data.store;
+      const store: StoreOwnerPatch = response.data.data.store;
 
       setStoreData(store);
       setStoreFormData({
@@ -76,7 +116,8 @@ const UserProfileComponent: React.FC = () => {
         shortName: store.shortName || "",
         email: store.email || "",
         description: store.description || "",
-        storeStatus: store.status,
+        status: store.status || 0,
+        storeType: store.storeType,
       });
     } catch (error) {
       handleError(error);
@@ -106,16 +147,16 @@ const UserProfileComponent: React.FC = () => {
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
-  const handleStoreInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ): void => {
-    const { name, value } = e.target;
-    setStoreFormData((prev) => ({ ...prev, [name]: value }));
+  // const handleStoreInputChange = (
+  //   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  // ): void => {
+  //   const { name, value } = e.target;
+  //   setStoreFormData((prev: any) => ({ ...prev, [name]: value }));
 
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
+  //   if (validationErrors[name]) {
+  //     setValidationErrors((prev) => ({ ...prev, [name]: "" }));
+  //   }
+  // };
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
@@ -152,7 +193,7 @@ const UserProfileComponent: React.FC = () => {
       console.log("API Response:", response.data.data);
 
       if (response.data) {
-        const userData = response.data.data;
+        const userData: UserAccountDetail = response.data.data;
         console.log("User Data:", userData);
         console.log("role", userData.role.name);
 
@@ -165,12 +206,11 @@ const UserProfileComponent: React.FC = () => {
           address: userData.address || "",
           description: userData.description || "",
           phoneNumber: userData.phoneNumber || "",
-          birthday: userData.birthday ? userData.birthday.split("T")[0] : "", // Xử lý định dạng ngày
           gender: userData.gender || 0,
           cccdPassport: userData.cccdPassport || "",
           imageUrl: userData.imageUrl || null,
         });
-        setImagePreview(userData.imageUrl);
+        setImagePreview(userData.imageUrl || "");
       }
     } catch (error) {
       handleError(error);
@@ -194,6 +234,8 @@ const UserProfileComponent: React.FC = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log("File selected:", file.name, file.size);
+
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "Error",
@@ -203,38 +245,32 @@ const UserProfileComponent: React.FC = () => {
         return;
       }
 
-      // Preview image
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-
       try {
         setUploading(true);
 
-        // Tạo unique filename với timestamp
         const fileName = `${Date.now()}-${file.name}`;
         const storageRef = ref(storage, `profile-images/${fileName}`);
 
-        // Upload file
-        await uploadBytes(storageRef, file);
+        console.log("Uploading file to:", storageRef.fullPath);
 
-        // Lấy download URL
+        const snapshot = await uploadBytes(storageRef, file);
+        console.log("Upload snapshot:", snapshot);
+
         const downloadURL = await getDownloadURL(storageRef);
+        console.log("Download URL:", downloadURL);
 
-        // Cập nhật formData
         setFormData((prev) => ({
           ...prev,
           imageUrl: downloadURL,
         }));
+        setImagePreview(downloadURL);
 
         toast({
           title: "Success",
           description: "Image uploaded successfully",
         });
       } catch (error) {
-        console.error("Error uploading image:", error);
+        console.error("Complete error details:", error);
         handleError(error);
         setImagePreview(null);
       } finally {
@@ -252,37 +288,26 @@ const UserProfileComponent: React.FC = () => {
     e.preventDefault();
 
     // Validate based on role
-    if (user?.role?.name === "Store") {
-      if (!validateStoreForm()) return;
-    } else {
-      if (!validateForm()) return;
-    }
+    // if (user?.role?.name === "Store") {
+    //   if (!validateStoreForm()) return;
+    // } else {
+    //   if (!validateForm()) return;
+    // }
 
     setUpdating(true);
     try {
       const userId = localStorage.getItem("userId");
-      const storeId = localStorage.getItem("storeId");
 
       if (!userId) throw new Error("User ID not found");
 
-      if (user?.role?.name === "Store" && storeId) {
-        // Update store profile
-        await StoreServices.editStoreProfile(storeId, storeFormData);
-        await fetchStoreData(storeId);
-        toast({
-          title: "Success",
-          description: "Store profile updated successfully",
-        });
-      } else {
-        // Update user profile
-        await UserServices.updateUserById(userId, formData);
-        toast({
-          title: "Success",
-          description: "Profile updated successfully",
-        });
-      }
+      // Update user profile
+      await UserServices.updateUserById(userId, formData);
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+
       setEditMode(false);
-      // window.location.reload();
     } catch (error) {
       handleError(error);
     } finally {
@@ -306,9 +331,6 @@ const UserProfileComponent: React.FC = () => {
         address: user.address || "",
         description: user.description || "",
         phoneNumber: user.phoneNumber || "",
-        birthday: user.birthday
-          ? format(new Date(user.birthday), "yyyy-MM-dd")
-          : "",
         gender: user.gender || 0,
         cccdPassport: user.cccdPassport || "",
         imageUrl: user.imageUrl || null,
@@ -317,137 +339,6 @@ const UserProfileComponent: React.FC = () => {
     }
     setEditMode(false);
     setValidationErrors({});
-  };
-
-  const isApiError = (
-    error: unknown
-  ): error is { response?: { storeStatus: number } } => {
-    return typeof error === "object" && error !== null && "response" in error;
-  };
-  const renderStoreFields = () => {
-    if (user?.role?.name !== "Store") return null;
-
-    return (
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold">Store Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              Store Name <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              value={storeFormData.name}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              className={validationErrors.storeName ? "border-destructive" : ""}
-            />
-            {validationErrors.storeName && (
-              <p className="text-sm text-destructive">
-                {validationErrors.storeName}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="shortName">Store Short Name</Label>
-            <Input
-              id="shortName"
-              name="shortName"
-              value={storeFormData.shortName}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="storeEmail">
-              Store Email <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={storeFormData.email}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              className={
-                validationErrors.storeEmail ? "border-destructive" : ""
-              }
-            />
-            {validationErrors.storeEmail && (
-              <p className="text-sm text-destructive">
-                {validationErrors.storeEmail}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="storePhone">Store Phone Number</Label>
-            <Input
-              id="phoneNumber"
-              name="phoneNumber"
-              value={storeFormData.phoneNumber}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              className={
-                validationErrors.storePhone ? "border-destructive" : ""
-              }
-            />
-            {validationErrors.storePhone && (
-              <p className="text-sm text-destructive">
-                {validationErrors.storePhone}
-              </p>
-            )}
-          </div>
-          <div className="col-span-2 space-y-2">
-            <Label htmlFor="storeAddress">Store Address</Label>
-            <Input
-              id="address"
-              name="address"
-              value={storeFormData.address}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-            />
-          </div>
-          <div className="col-span-2 space-y-2">
-            <Label htmlFor="storeStatus">Store Status</Label>
-            <Select
-              value={storeFormData.storeStatus?.toString() || "0"}
-              onValueChange={(value) =>
-                setStoreFormData((prev) => ({
-                  ...prev,
-                  storeStatus: parseInt(value),
-                }))
-              }
-              disabled={!editMode}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select store status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Opened</SelectItem>
-                <SelectItem value="1">Closed</SelectItem>
-                <SelectItem value="2">In Active</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="col-span-2 space-y-2">
-            <Label htmlFor="storeDescription">Store Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={storeFormData.description}
-              onChange={handleStoreInputChange}
-              disabled={!editMode}
-              rows={4}
-              className="resize-none"
-            />
-          </div>
-        </div>
-      </div>
-    );
   };
 
   if (loading) {
@@ -462,16 +353,29 @@ const UserProfileComponent: React.FC = () => {
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>
-            {user?.role?.name === "Store" ? "Store Profile" : "User Profile"}
-          </span>
-          {!editMode && (
-            <Button onClick={() => setEditMode(true)}>Edit Profile</Button>
-          )}
+          <span>{"User Profile"}</span>
+          <div className="space-x-2">
+            <Button
+              onClick={() => {
+                if (user?.email) {
+                  const encodedEmail = encodeURIComponent(user?.email);
+                  router.push(`/change-password-existed/${encodedEmail}`);
+                } else {
+                  router.push(`/change-password-existed/${user?.email}`);
+                }
+              }}
+            >
+              Change Password
+            </Button>
+            {!editMode && (
+              <Button onClick={() => setEditMode(true)}>Edit</Button>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Hiển thị hình ảnh và chức năng upload */}
           <div className="flex justify-center mb-6">
             <div className="relative">
               <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-200">
@@ -519,126 +423,136 @@ const UserProfileComponent: React.FC = () => {
             </div>
           </div>
 
-          {user?.role?.name === "Store" ? (
-            // For Store role, show only store fields
-            renderStoreFields()
-          ) : (
-            // For other roles, show only personal information
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Personal Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">
-                    Full Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    className={
-                      validationErrors.fullName ? "border-destructive" : ""
-                    }
-                  />
-                  {validationErrors.fullName && (
-                    <p className="text-sm text-destructive">
-                      {validationErrors.fullName}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    className={
-                      validationErrors.phoneNumber ? "border-destructive" : ""
-                    }
-                  />
-                  {validationErrors.phoneNumber && (
-                    <p className="text-sm text-destructive">
-                      {validationErrors.phoneNumber}
-                    </p>
-                  )}
-                </div>
-
-                {/* Birthday */}
-                <div className="space-y-2">
-                  <Label htmlFor="birthday">Birthday</Label>
-                  <Input
-                    id="birthday"
-                    name="birthday"
-                    type="date"
-                    value={formData.birthday ?? ""}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    max={format(new Date(), "yyyy-MM-dd")}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select
-                    value={formData.gender.toString()}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        gender: parseInt(value),
-                      }))
-                    }
-                    disabled={!editMode}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">Not Specified</SelectItem>
-                      <SelectItem value="1">Male</SelectItem>
-                      <SelectItem value="2">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cccdPassport">CCCD/Passport</Label>
-                  <Input
-                    id="cccdPassport"
-                    name="cccdPassport"
-                    value={formData.cccdPassport}
-                    onChange={handleInputChange}
-                    disabled={!editMode}
-                    className={
-                      validationErrors.cccdPassport ? "border-destructive" : ""
-                    }
-                  />
-                  {validationErrors.cccdPassport && (
-                    <p className="text-sm text-destructive">
-                      {validationErrors.cccdPassport}
-                    </p>
-                  )}
-                </div>
+          {/* Form nhập thông tin cá nhân */}
+          <div className="space-y-6">
+            <h3 className="text-lg font-semibold">Personal Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="fullName">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  disabled={!editMode}
+                  className={
+                    validationErrors.fullName ? "border-destructive" : ""
+                  }
+                />
+                {validationErrors.fullName && (
+                  <p className="text-sm text-destructive">
+                    {validationErrors.fullName}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={formData.description || ""}
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <Input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
                   onChange={handleInputChange}
                   disabled={!editMode}
-                  rows={4}
-                  className="resize-none"
+                  className={
+                    validationErrors.phoneNumber ? "border-destructive" : ""
+                  }
                 />
+                {validationErrors.phoneNumber && (
+                  <p className="text-sm text-destructive">
+                    {validationErrors.phoneNumber}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={formData.gender.toString()}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      gender: parseInt(value),
+                    }))
+                  }
+                  disabled={!editMode}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">Not Specified</SelectItem>
+                    <SelectItem value="1">Male</SelectItem>
+                    <SelectItem value="2">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cccdPassport">CCCD/Passport</Label>
+                <Input
+                  id="cccdPassport"
+                  name="cccdPassport"
+                  value={formData.cccdPassport}
+                  onChange={handleInputChange}
+                  disabled={!editMode}
+                  className={
+                    validationErrors.cccdPassport ? "border-destructive" : ""
+                  }
+                />
+                {validationErrors.cccdPassport && (
+                  <p className="text-sm text-destructive">
+                    {validationErrors.cccdPassport}
+                  </p>
+                )}
               </div>
             </div>
-          )}
 
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formData.description || ""}
+                onChange={handleInputChange}
+                disabled={!editMode}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl">Wallet</h2>
+            <p>
+              Wallet name:
+              <strong>{user?.wallets[0].name || "No name"}</strong>
+            </p>
+            <p>
+              Balance:{" "}
+              <strong>
+                {formatVNDCurrencyValue(Number(user?.wallets[0].balance))}
+              </strong>
+            </p>
+            <p>
+              History:{" "}
+              <strong>
+                {formatVNDCurrencyValue(
+                  Number(user?.wallets[0].balanceHistory)
+                )}
+              </strong>
+            </p>
+            <p>
+              Initial Balance:{" "}
+              <strong>
+                {formatVNDCurrencyValue(Number(user?.wallets[0].balanceStart))}
+              </strong>
+            </p>
+          </div>
+
+          {/* Nút hành động */}
           {editMode && (
             <div className="flex justify-end space-x-4 pt-4">
               <Button type="button" variant="outline" onClick={resetForm}>

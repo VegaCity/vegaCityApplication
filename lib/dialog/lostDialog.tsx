@@ -11,15 +11,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PackageItemServices } from "@/components/services/packageItemService";
+import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import { useToast } from "@/components/ui/use-toast";
 
 interface PackageItem {
   id: string;
   packageId: string;
-  cccdpassport: string | null;
-  email: string | null;
-  name: string | null;
+  cusCccdpassport: string | null;
+  cusEmail: string | null;
+  cusName: string | null;
   phoneNumber: string | null;
   rfid: string | null;
   status: string;
@@ -53,10 +53,10 @@ const LostPackageItemDialog = ({
     if (packageItem) {
       setFormData({
         packageItemId: packageItem.id,
-        cccdpassport: packageItem.cccdpassport || "",
-        name: packageItem.name || "",
+        cccdpassport: packageItem.cusCccdpassport || "",
+        name: packageItem.cusName || "",
         phoneNumber: packageItem.phoneNumber || "",
-        email: packageItem.email || "",
+        email: packageItem.cusEmail || "",
         rfid: packageItem.rfid || "",
         reason: "",
       });
@@ -75,7 +75,7 @@ const LostPackageItemDialog = ({
       if (response.status === 200) {
         toast({
           title: "Reported Successfully",
-          description: "The package item has been reported successfully.",
+          description: "The VCard has been reported successfully.",
           variant: "default",
         });
         localStorage.setItem(
@@ -88,13 +88,13 @@ const LostPackageItemDialog = ({
         throw new Error("Unexpected response status");
       }
     } catch (error) {
-      console.error("Error reporting lost package item:", error);
+      console.error("Error reporting lost VCard:", error);
       toast({
         title: "Report Failed",
         description:
           error instanceof Error
             ? error.message
-            : "Failed to report lost package item. Please try again later.",
+            : "Failed to report lost VCard. Please try again later.",
         variant: "destructive",
       });
     }
@@ -105,7 +105,7 @@ const LostPackageItemDialog = ({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader className="space-y-2">
           <AlertDialogTitle className="text-xl font-semibold text-red-500">
-            Report Lost Package Item
+            Report Lost VCard
           </AlertDialogTitle>
           <AlertDialogDescription className="text-sm text-gray-500">
             Please confirm the information about the lost item.

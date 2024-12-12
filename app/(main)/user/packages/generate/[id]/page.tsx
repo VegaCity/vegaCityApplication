@@ -35,6 +35,7 @@ import CountdownTimer from "@/components/countdown/countdown";
 import { Clock, Package, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
+
 const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -42,24 +43,20 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
   const [packageData, setPackageData] = useState<any>(null);
   const [showTimer, setShowTimer] = useState(false);
   const router = useRouter();
-
   const searchParams = useSearchParams();
-
   const customerName = searchParams.get("customerName");
-  const gender = searchParams.get("gender");
   const phoneNumber = searchParams.get("phoneNumber");
   const email = searchParams.get("email");
-  const cccdpassport = searchParams.get("cccdpassport");
+  const cccdPassport = searchParams.get("cccdPassport");
   const isAdultParam = searchParams.get("isAdult");
+
   const customerForm = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
     defaultValues: {
       customerName: customerName || "",
       phoneNumber: phoneNumber || "",
-      address: "",
-      cccdpassport: cccdpassport || "",
+      cccdPassport: cccdPassport || "",
       paymentMethod: "Cash",
-      gender: (gender as "Male" | "Female" | "Other") || "",
       email: email || "",
       quantity: 1,
       price: 0,
@@ -86,35 +83,50 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
     packageData,
     setShowTimer,
   });
+
   useEffect(() => {
     if (packageData?.price) {
       customerForm.setValue("price", packageData.price);
       customerForm.setValue("quantity", 1);
     }
   }, [packageData, customerForm]);
+
   useEffect(() => {
     const fetchPackageData = async () => {
       setIsLoading(true);
       try {
         const {
-          data: { data: packageData },
+          data: { data: packageData, messageResponse },
         } = await PackageServices.getPackageById(params.id);
+
         localStorage.setItem("packageId", params.id);
+
         if (!packageData) {
-          throw new Error("No package data received from the server");
+          setError(messageResponse || "Failed to fetch package data");
+          return;
         }
-        if (!packageData.packageType?.id) {
-          console.warn("Package type information is missing or incomplete");
-        }
+
         setPackageData(packageData);
-      } catch (error) {
-        console.error("Error fetching package data:", error);
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.messageResponse ||
+          error.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred";
+
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
     fetchPackageData();
   }, [params.id, toast]);
+
   const handleTimeout = useCallback(() => {
     if (!isOrderConfirmed) {
       handleCancelOrder();
@@ -127,9 +139,18 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
       window.location.reload();
     }
   }, [isOrderConfirmed, handleCancelOrder, toast]);
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
 
+  if (isLoading) return <div>Loading...</div>;
+  if (error)
+    return (
+      <div className="flex flex-col items-center justify-center p-4">
+        <div className="text-red-500 text-lg font-medium mb-2">Error</div>
+        <div className="text-gray-700 dark:text-gray-300">{error}</div>
+        <Button className="mt-4" onClick={() => router.push("/user/packages")}>
+          Return to Packages
+        </Button>
+      </div>
+    );
   return (
     <div className="container mx-auto p-4">
       <BackButton text="Back To Packages" link="/user/packages" />
@@ -175,7 +196,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
 
                   {/* Package Type */}
                   <div className="flex items-center space-x-2">
-                    <Package className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     <span className="text-gray-600 dark:text-gray-400">
                       {packageData?.packageType?.name}
                     </span>
@@ -276,7 +296,7 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={customerForm.control}
-                  name="cccdpassport"
+                  name="cccdPassport"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -296,28 +316,20 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 />
                 <FormField
                   control={customerForm.control}
-                  name="gender"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Gender
+                        Email
                       </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        disabled={isCustomerInfoConfirmed}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Please select gender" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Input
+                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
+                          placeholder="Please enter email"
+                          {...field}
+                          disabled={isCustomerInfoConfirmed}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -397,13 +409,8 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           type="text"
                           {...field}
                           className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          disabled={isCustomerInfoConfirmed}
-                          value={field.value?.toLocaleString("en-US")}
-                          onChange={(e) => {
-                            const rawValue = e.target.value.replace(/,/g, "");
-                            const numericValue = parseFloat(rawValue) || 0;
-                            field.onChange(numericValue);
-                          }}
+                          disabled={true}
+                          value={formatCurrency(field.value)}
                         />
                       </FormControl>
                       <FormMessage />
@@ -412,27 +419,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={customerForm.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Address
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Please enter address"
-                          {...field}
-                          disabled={isCustomerInfoConfirmed}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
                 <FormField
                   control={customerForm.control}
                   name="paymentMethod"
@@ -459,26 +445,6 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
                           <SelectItem value="ZaloPay">ZaloPay</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={customerForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Email
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus-visible:ring-2 focus-visible:ring-blue-500 text-gray-900 dark:text-white"
-                          placeholder="Please enter email"
-                          {...field}
-                          disabled={isCustomerInfoConfirmed}
-                        />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

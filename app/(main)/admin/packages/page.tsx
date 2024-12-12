@@ -5,7 +5,7 @@ import { useUserRole } from "@/components/hooks/useUserRole";
 import PackagesPagination from "@/components/packages/PackagesPagination";
 import PackageTable from "@/components/packages/PackagesTable";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Upload, Plus } from "lucide-react";
 import Link from "next/link";
 
 const PackagesPage = () => {
@@ -22,12 +22,14 @@ const PackagesPage = () => {
         {/* <BackButton text="Go Back" link="/" /> */}
         <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full transition-colors duration-200">
           <Link href="/admin/packages/create" className="flex items-center">
-            <Upload size={15} /> &nbsp; Create New Package
+            <Plus size={15} /> &nbsp; Add New Package
           </Link>
         </Button>
       </div>
-      <PackageTable />
-      <PackagesPagination />
+      <div className="max-w-7xl px-10">
+        <PackageTable />
+        <PackagesPagination />
+      </div>
     </div>
   );
 };

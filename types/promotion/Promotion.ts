@@ -46,7 +46,7 @@ export interface PromotionPatch {
   discountPercent: number | null;
   startDate: string;
   endDate: string;
-  status: string | null;
+  status?: string | number | null;
 }
 
 export interface PromotionPost extends PromotionPatch {

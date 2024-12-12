@@ -1,9 +1,35 @@
 "use client";
 
+import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 import { Loader } from "@/components/loader/Loader";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
-import { HouseServices } from "@/components/services/houseServices";
 import { StoreServices } from "@/components/services/Store/storeServices";
+import { UserServices } from "@/components/services/User/userServices";
+import StoreCloseRequestList from "@/components/stores/StoreCloseRequest";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Form,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormField,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -13,59 +39,65 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { isObject } from "@/lib/isObject";
-import { StoreHouseType } from "@/types/house";
-import { StoreOwner, StoreTypeEnum } from "@/types/store/storeOwner";
-import { Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatSpaceString } from "@/lib/utils/formatSpaceString";
+import { handleBadgeStoreStatusColor } from "@/lib/utils/statusUtils";
+import {
+  handleStoreStatusFromBe,
+  handleStoreTypeFromBe,
+  StoreOwner,
+  StoreTypeEnum,
+} from "@/types/store/storeOwner";
+import { AxiosError } from "axios";
+import { Minus, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 
-interface StoreTableProps {
+interface StoresTableProps {
   params?: { id?: string }; // Optional for fetching all stores
+  limit?: number;
+  title?: string;
 }
 
-const StoresTable = ({ params }: StoreTableProps) => {
-  const houseId = params?.id;
-  const [house, setHouse] = useState<StoreHouseType | null>(null);
+interface StoreClosingRequest {
+  storeName: string;
+  phoneNumber: string;
+  status: string;
+}
+
+const StoresTable = ({ limit, title }: StoresTableProps) => {
   const [stores, setStores] = useState<StoreOwner[]>([]); // For handling all stores
+  const [storesClosingRequest, setStoresClosingRequest] = useState<
+    StoreOwner[]
+  >([]); // For handling all stores
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchStores = async () => {
-      setIsLoading(true);
-      try {
-        if (houseId) {
-          // Fetch store by house ID
-          const response = await HouseServices.getHouseById(houseId);
-          const house = isObject(response.data.data.house)
-            ? response.data.data.house
-            : null;
-          setHouse(house);
-        } else {
-          // Fetch all stores
-          const response = await StoreServices.getStores({ page: 1, size: 10 });
-          const stores = Array.isArray(response.data.data)
-            ? response.data.data
-            : [];
-          setStores(stores);
-          console.log(response.data.data, "all store");
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //Count store closing request
+  const [storeClosingCount, setStoreClosingCount] = useState<number>(0);
 
-    fetchStores();
-  }, [houseId]);
+  //fitler stores by status
+  const [open, setOpen] = useState<boolean>(false);
+  const [storeStatusValue, setStoreStatusValue] = useState<string>("");
 
   const handleDeleteStore = (store: StoreOwner) => {
     const { id, name } = store;
@@ -83,128 +115,206 @@ const StoresTable = ({ params }: StoreTableProps) => {
         .catch((err) => {
           setDeleteLoading(false);
           toast({
-            title: err.data.messageResponse,
+            title: err.data.messageResponse || err.data.Error,
             description: "Some errors have occurred!",
           });
         });
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  const deleteButton = (store: StoreOwner) => {
+    return (
+      <div>
+        <AlertDialog>
+          <AlertDialogTrigger>
+            <Button
+              variant={"ghost"}
+              className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
+            >
+              <Trash />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Are sure for delete this -{store.name}-?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will deflag in list!
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => handleDeleteStore(store)}>
+                Confirm
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  };
+
+  const filterStoreStatus = (): StoreOwner[] | undefined => {
+    switch (storeStatusValue) {
+      case "all":
+        return stores;
+      case "closingRequest":
+        return storesClosingRequest;
+      default:
+        return stores;
+    }
+  };
+  const filteredStoresWithStatus = filterStoreStatus();
+
+  const filteredStores = limit
+    ? filteredStoresWithStatus?.slice(0, limit)
+    : filteredStoresWithStatus;
+
+  console.log(filteredStores, "filtered");
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch all stores
+        const response = await StoreServices.getStores({ page: 1, size: 10 });
+        const stores = Array.isArray(response.data.data)
+          ? response.data.data
+          : [];
+        setStores(stores);
+
+        console.log(response.data.data, "all store");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStores();
+  }, [storeStatusValue, isSubmitting, deleteLoading]);
+
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
-  <Loader isLoading={deleteLoading} />;
+  if (deleteLoading) return <Loader isLoading={deleteLoading} />;
 
   return (
-    <div className="mt-5">
-      <h3 className="text-2xl mb-4 font-semibold">
-        {houseId ? "Stores by House" : "All Stores"}
-      </h3>
-      {houseId && house && isObject(house) ? (
-        <Table>
-          <TableCaption>Stores associated with the house</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead>House Name</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Stores</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow key={house.id}>
-              <TableCell>{house.houseName}</TableCell>
-              <TableCell>{house.location}</TableCell>
-              <TableCell>{house.address}</TableCell>
-              <TableCell>
-                {house?.stores?.length > 0 ? (
-                  house?.stores?.map((store, index) => (
-                    <div key={store.id} className="mb-2">
-                      <p>
-                        <strong>
-                          {index + 1}. {store.name}
-                        </strong>{" "}
-                        <br />
-                        Description: {store.description} <br />
-                        Email: {store.email} <br />
-                        Status:{" "}
-                        {store.status === StoreTypeEnum.Clothing
-                          ? "Clothing"
-                          : store.status === StoreTypeEnum.Food
-                          ? "Food"
-                          : "Other"}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <div>No stores available!</div>
-                )}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      ) : stores?.length > 0 ? (
-        <Table>
-          <TableCaption>A list of all stores</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">Store Name</TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Email
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                PhoneNumber
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                ShortName
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Address
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Description
-              </TableHead>
-              <TableHead className="text-white">StoreType</TableHead>
-              <TableHead className="text-white">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {stores.map((store, index) => (
-              <TableRow
-                onClick={() => router.push(`/admin/stores/detail/${store.id}`)}
-                key={store.id}
-              >
-                <TableCell>{index + 1}</TableCell>
-                <TableCell>{store.name}</TableCell>
-                <TableCell>{store.email}</TableCell>
-                <TableCell>{store.phoneNumber}</TableCell>
-                <TableCell>
-                  {store.shortName ? store.shortName : <Minus />}
-                </TableCell>
-                <TableCell>{store.address}</TableCell>
-                <TableCell>
-                  {store.description ? store.description : <Minus />}
-                </TableCell>
-                <TableCell>
-                  {store.storeType ? store.storeType : <Minus />}
-                </TableCell>
-                <TableCell
-                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
-                >
-                  <PopoverActionTable
-                    item={store}
-                    editLink={`/admin/stores/edit/${store.id}`}
-                    handleDelete={handleDeleteStore}
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <div>No stores found!</div>
-      )}
-    </div>
+    <>
+      <div className="mt-5">
+        <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+          All Stores
+        </h3>
+        {/* Tabs Stores */}
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList>
+            <TabsTrigger value="all">Stores</TabsTrigger>
+            <TabsTrigger className="relative" value="storeCloseRequest">
+              <p>Stores Close Request</p>
+              <Badge className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-[0.6rem] bg-gray-400 text-white rounded-full h-4 w-4 flex items-center justify-center">
+                {storeClosingCount}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="all">
+            {filteredStores && filteredStores?.length > 0 ? (
+              <Table>
+                <TableCaption>A list of all stores</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-white">#</TableHead>
+                    <TableHead className="text-white">Store Name</TableHead>
+                    <TableHead className="text-white">Store Type</TableHead>
+                    <TableHead className="hidden md:table-cell text-white">
+                      Email
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell text-white">
+                      PhoneNumber
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell text-white">
+                      Zone Name
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell text-white">
+                      Address
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell text-white">
+                      Description
+                    </TableHead>
+                    <TableHead className=" text-white">Status</TableHead>
+
+                    <TableHead className="text-white">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredStores.map((store, index) => (
+                    <TableRow
+                      onClick={() =>
+                        router.push(`/admin/stores/detail/${store.id}`)
+                      }
+                      key={store.id}
+                    >
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{store.name}</TableCell>
+                      <TableCell>
+                        {store.storeType ? (
+                          formatSpaceString(
+                            handleStoreTypeFromBe(store.storeType)
+                          )
+                        ) : (
+                          <Minus />
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {store.email}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {store.phoneNumber}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {store.zoneName ? store.zoneName : <Minus />}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {store.address}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {store.description ? store.description : <Minus />}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={handleBadgeStoreStatusColor(store.status)}
+                        >
+                          {handleStoreStatusFromBe(store.status)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell
+                        onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                      >
+                        {deleteButton(store)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <EmptyDataPage />
+            )}
+          </TabsContent>
+          <TabsContent value="storeCloseRequest">
+            <StoreCloseRequestList
+              storeClosingCount={storeClosingCount}
+              setStoreClosingCount={setStoreClosingCount}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
   );
 };
 

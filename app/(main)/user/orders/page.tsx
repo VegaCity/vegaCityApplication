@@ -3,8 +3,6 @@ import React, { useState, useEffect } from "react";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 import { GetOrders } from "@/components/services/orderuserServices";
 import { Order } from "@/types/paymentFlow/orderUser";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import {
   Table,
   TableHeader,
@@ -15,54 +13,117 @@ import {
   TableHead,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
-import { Eye, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 
-interface PaginationProps {
+interface MetaData {
   page: number;
-  perPage: number;
+  size: number;
   total: number;
-  onPageChange: (newPage: number) => void;
+  totalPage: number;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  page,
-  perPage,
-  total,
-  onPageChange,
-}) => {
-  const totalPages = Math.ceil(total / perPage);
+interface PaginationProps {
+  metadata: MetaData;
+  onPageChange: (page: number) => void;
+}
+
+const Pagination = ({ metadata, onPageChange }: PaginationProps) => {
+  const generatePagination = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    const { page, totalPage } = metadata;
+
+    if (totalPage <= maxVisiblePages) {
+      for (let i = 1; i <= totalPage; i++) {
+        pages.push({ type: "page", number: i });
+      }
+    } else {
+      pages.push({ type: "page", number: 1 });
+
+      if (page <= 3) {
+        for (let i = 2; i <= 4; i++) {
+          pages.push({ type: "page", number: i });
+        }
+        pages.push({ type: "ellipsis" });
+        pages.push({ type: "page", number: totalPage });
+      } else if (page >= totalPage - 2) {
+        pages.push({ type: "ellipsis" });
+        for (let i = totalPage - 3; i <= totalPage; i++) {
+          pages.push({ type: "page", number: i });
+        }
+      } else {
+        pages.push({ type: "ellipsis" });
+        pages.push({ type: "page", number: page - 1 });
+        pages.push({ type: "page", number: page });
+        pages.push({ type: "page", number: page + 1 });
+        pages.push({ type: "ellipsis" });
+        pages.push({ type: "page", number: totalPage });
+      }
+    }
+
+    return pages;
+  };
+
+  const startItem = (metadata.page - 1) * metadata.size + 1;
+  const endItem = Math.min(metadata.page * metadata.size, metadata.total);
 
   return (
-    <div className="flex items-center justify-center gap-4 py-4">
-      <button
-        className={`px-4 py-2 border rounded-md text-sm font-medium transition-all ${
-          page <= 1
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-blue-500 text-white hover:bg-blue-600"
-        }`}
-        onClick={() => page > 1 && onPageChange(page - 1)}
-        disabled={page <= 1}
-      >
-        Prev
-      </button>
+    <div className="flex items-center justify-center space-x-2 my-4">
+      <div className="flex items-center space-x-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(metadata.page - 1)}
+          disabled={metadata.page === 1}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
 
-      <span className="text-sm font-semibold">
-        Page {page} of {totalPages}
-      </span>
+        <div className="flex items-center space-x-2">
+          {generatePagination().map((item, index) => {
+            if (item.type === "ellipsis") {
+              return (
+                <div
+                  key={`ellipsis-${index}`}
+                  className="flex items-center justify-center w-9 h-9"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </div>
+              );
+            }
 
-      <button
-        className={`px-4 py-2 border rounded-md text-sm font-medium transition-all ${
-          page >= totalPages
-            ? "bg-gray-300 cursor-not-allowed"
-            : "bg-blue-500 text-white hover:bg-blue-600"
-        }`}
-        onClick={() => page < totalPages && onPageChange(page + 1)}
-        disabled={page >= totalPages}
-      >
-        Next
-      </button>
+            return (
+              <Button
+                key={item.number}
+                variant={metadata.page === item.number ? "default" : "outline"}
+                size="icon"
+                onClick={() => onPageChange(item.number as number)}
+              >
+                {item.number}
+              </Button>
+            );
+          })}
+        </div>
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => onPageChange(metadata.page + 1)}
+          disabled={metadata.page === metadata.totalPage}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 };
@@ -70,13 +131,19 @@ const Pagination: React.FC<PaginationProps> = ({
 const OrdersPage = () => {
   const { user } = useAuthUser();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [metadata, setMetadata] = useState<MetaData>({
+    page: 1,
+    size: 10,
+    total: 0,
+    totalPage: 1,
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-
   const [open, setOpen] = useState(false);
-  const [filterValue, setFilterValue] = useState("");
+  const [filterValue, setFilterValue] = useState("ALL");
+
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const filterList = [
     { value: "ALL", label: "All" },
@@ -85,51 +152,74 @@ const OrdersPage = () => {
     { value: "CANCELED", label: "Canceled" },
   ];
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await GetOrders(page);
-        console.log("response:", response);
+  const fetchOrders = async () => {
+    setIsLoading(true);
+    try {
+      const response = await GetOrders({
+        page: metadata.page,
+        size: metadata.size,
+        status: filterValue,
+        ...(searchTerm.trim() && { searchTerm: searchTerm.trim() }),
+      });
 
-        if (response.statusCode === 200 && Array.isArray(response.data)) {
-          let processedOrders = [...response.data];
-
-          // Áp dụng filter theo status
-          if (filterValue && filterValue !== "ALL") {
-            processedOrders = processedOrders.filter(
-              (order) => order.status === filterValue
-            );
+      if (response?.statusCode === 200) {
+        const sortedOrders = [...(response.data || [])].sort((a, b) => {
+          if (sortOrder === "asc") {
+            return a.paymentType.localeCompare(b.paymentType);
+          } else {
+            return b.paymentType.localeCompare(a.paymentType);
           }
+        });
 
-          // Áp dụng filter theo search term
-          if (searchTerm.trim()) {
-            processedOrders = processedOrders.filter((order) =>
-              order.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-          }
-
-          setOrders(processedOrders);
-          setTotalPages(response.metaData.totalPage);
-        } else {
-          setOrders([]);
-          setTotalPages(1);
-        }
-      } catch (error) {
-        console.error("Error fetching orders:", error);
+        setOrders(sortedOrders);
+        setMetadata(response.metaData);
+      } else {
         setOrders([]);
-        setTotalPages(1);
+        setMetadata({
+          page: 1,
+          size: 10,
+          total: 0,
+          totalPage: 1,
+        });
       }
-    };
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setOrders([]);
+      setMetadata({
+        page: 1,
+        size: 10,
+        total: 0,
+        totalPage: 1,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    setMetadata((prev) => ({ ...prev, page: 1 }));
+  }, [filterValue, searchTerm]);
+
+  // Effect riêng để fetch data
+  useEffect(() => {
     fetchOrders();
-  }, [page, filterValue, searchTerm]);
+  }, [metadata.page, filterValue, searchTerm, sortOrder]);
 
   const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+    setMetadata((prev) => ({ ...prev, page: newPage }));
+  };
+
+  const handleRowClick = (orderId: string) => {
+    router.push(`/user/orders/detail/${orderId}`);
+  };
+
+  const toggleSortOrder = () => {
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   return (
     <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Orders Table</h1>
       <div className="flex items-center gap-4 mb-4">
         <ComboboxCustom
           open={open}
@@ -151,81 +241,83 @@ const OrdersPage = () => {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="font-bold text-white whitespace-nowrap">
-              No
-            </TableHead>
-            <TableHead className="font-bold text-white whitespace-nowrap">
-              Name
-            </TableHead>
-            <TableHead className="font-bold text-white whitespace-nowrap">
-              Payment Type
-            </TableHead>
-            <TableHead className="font-bold text-white whitespace-nowrap">
-              Total Amount
-            </TableHead>
-            <TableHead className="font-bold text-white whitespace-nowrap">
-              Status
-            </TableHead>
-            <TableHead className="font-bold text-white whitespace-nowrap">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {orders.map((order, index) => (
-            <TableRow key={order.id}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell>{order.name}</TableCell>
-              <TableCell>{order.paymentType}</TableCell>
-              <TableCell>{order.totalAmount.toLocaleString()} VND</TableCell>
-              <TableCell>
-                <span
-                  className={`font-medium ${
-                    order.status === "COMPLETED"
-                      ? "text-green-600"
-                      : order.status === "PENDING"
-                      ? "text-yellow-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {order.status}
-                </span>
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2">
-                  <Link href={`/user/orders/detail/${order.id}`}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Details
-                    </Button>
-                  </Link>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {orders.length === 0 && (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-8">
-                No orders found
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+      <div className="relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        )}
 
-      <Pagination
-        page={page}
-        perPage={10}
-        total={totalPages * 10}
-        onPageChange={handlePageChange}
-      />
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="font-bold text-white whitespace-nowrap">
+                No
+              </TableHead>
+              <TableHead className="font-bold text-white whitespace-nowrap">
+                Name
+              </TableHead>
+              <TableHead
+                className="font-bold text-white whitespace-nowrap cursor-pointer"
+                onClick={toggleSortOrder}
+              >
+                Payment Type{" "}
+                {sortOrder === "asc" ? (
+                  <ChevronUp className="inline-block ml-1 h-4 w-4" />
+                ) : (
+                  <ChevronDown className="inline-block ml-1 h-4 w-4" />
+                )}
+              </TableHead>
+              <TableHead className="font-bold text-white whitespace-nowrap">
+                Total Amount
+              </TableHead>
+              <TableHead className="font-bold text-white whitespace-nowrap">
+                Status
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {orders.map((order, index) => (
+              <TableRow
+                key={order.id}
+                onClick={() => handleRowClick(order.id)}
+                className="cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                <TableCell>
+                  {(metadata.page - 1) * metadata.size + index + 1}
+                </TableCell>
+                <TableCell>{order.name}</TableCell>
+                <TableCell>{order.paymentType}</TableCell>
+                <TableCell>
+                  {order.totalAmount?.toLocaleString() || 0} VND
+                </TableCell>
+                <TableCell>
+                  <span
+                    className={`font-medium ${
+                      order.status === "COMPLETED"
+                        ? "text-green-600"
+                        : order.status === "PENDING"
+                        ? "text-yellow-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {order.status}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+            {!isLoading && orders.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8">
+                  No orders found
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Pagination metadata={metadata} onPageChange={handlePageChange} />
     </div>
   );
 };

@@ -27,6 +27,11 @@ import { Zone } from "@/types/zone/zone";
 import { ZoneServices } from "@/components/services/zoneServices";
 import { useRouter } from "next/navigation";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
+import { Card } from "@/components/ui/card";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { Badge } from "@/components/ui/badge";
+import { handleBadgeDeflagStatusColor } from "@/lib/utils/statusUtils";
 
 interface ZoneTableProps {
   limit?: number;
@@ -101,17 +106,11 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
 
   const filteredZones = limit ? zoneList.slice(0, limit) : zoneList;
 
-  // Function to format price
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Zones"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Zones"}
+      </h3>
       {filteredZones.length > 0 ? (
         <Table>
           <TableCaption>A list of recent zones</TableCaption>
@@ -122,30 +121,56 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
               <TableHead className="hidden md:table-cell text-white">
                 Location
               </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Create Date
+              </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Update Date
+              </TableHead>
+              <TableHead className="text-white">Status</TableHead>
               <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredZones.map((zns, i) => (
-              <TableRow
-                onClick={() => router.push(`/admin/zones/detail/${zns.id}`)}
-                key={zns.id}
-              >
+              <TableRow key={zns.id}>
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>{zns.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
                   {zns.location}
                 </TableCell>
-                {/* {zns.houses.map((house) => (
-                  <React.Fragment key={house.id}>
-                    <TableCell className='hidden md:table-cell'>{house.id}</TableCell>
-                    <TableCell className='hidden md:table-cell'>{house.houseName}</TableCell>
-                    <TableCell className='hidden md:table-cell'>{house.location}</TableCell>
-                  </React.Fragment>
-                ))} */}
-                <TableCell
-                  onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
-                >
+                <TableCell className="hidden md:table-cell">
+                  {/* <div className="flex flex-col items-center"> */}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: zns.crDate,
+                  })}
+                  {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: walletType.crDate,
+                    })} */}
+                  {/* </div> */}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  {/* <div className="flex flex-col items-center"> */}
+                  {formatDateTime({
+                    type: "date",
+                    dateTime: zns.upsDate,
+                  })}
+                  {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: walletType.upsDate,
+                    })} */}
+                  {/* </div> */}
+                </TableCell>
+                <TableCell>
+                  <Badge className={handleBadgeDeflagStatusColor(zns.deflag)}>
+                    {zns.deflag ? "In Active" : "Active"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
                   <PopoverActionTable
                     item={zns}
                     editLink={`/admin/zones/edit/${zns.id}`}
@@ -157,7 +182,7 @@ const ZoneTable = ({ limit, title }: ZoneTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <EmptyDataPage />
       )}
     </div>
   );

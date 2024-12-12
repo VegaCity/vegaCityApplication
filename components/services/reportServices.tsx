@@ -1,5 +1,9 @@
 import { API } from "@/components/services/api";
-import { ReportPatchType } from "@/types/report/report";
+import {
+  ReportPatchType,
+  ReportPostStore,
+  ReportPostUser,
+} from "@/types/report/report";
 
 interface ReportPageSize {
   page?: number;
@@ -20,5 +24,11 @@ export const ReportServices = {
   },
   editReport(reportId: string, reportData: ReportPatchType) {
     return API.patch(`/report/${reportId}`, reportData);
+  },
+  createReportByStore(reportData: ReportPostStore) {
+    return API.post(`/report`, reportData);
+  },
+  createReportByUser(reportData: ReportPostUser) {
+    return API.post(`/report`, reportData);
   },
 };

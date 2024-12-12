@@ -38,7 +38,7 @@ export function useAuthUser(): {
           })
           .catch((err) => {
             setLoading(false);
-            const error401 = err.response.status;
+            const error401 = err.response?.status;
             const fetchLogoutUser = async () => {
               try {
                 const error = await error401;
@@ -63,10 +63,10 @@ export function useAuthUser(): {
       } else {
         setLoading(false);
         console.log("User is unauthorized!");
-        toast({
-          title: "Something went wrong!",
-          description: "User is unauthorized!",
-        });
+        // toast({
+        //   title: "Something went wrong!",
+        //   description: "User is unauthorized!",
+        // });
         router.push("/auth");
       }
     }

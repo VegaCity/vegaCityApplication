@@ -5,7 +5,7 @@ import { useUserRole } from "@/components/hooks/useUserRole";
 import ServiceStoresPagination from "@/components/serviceStore/ServiceStoresPagination";
 import ServiceStoresTable from "@/components/serviceStore/ServiceStoresTable";
 import { Button } from "@/components/ui/button";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 const ServicesStorePage = () => {
@@ -25,7 +25,7 @@ const ServicesStorePage = () => {
             href="/admin/servicesStore/create"
             className="flex items-center"
           >
-            <Upload size={15} /> &nbsp; Create New Store's Service
+            <Plus size={15} /> &nbsp; Add New Store's Service
           </Link>
         </Button>
       </div>

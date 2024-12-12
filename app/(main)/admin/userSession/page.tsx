@@ -5,7 +5,7 @@ import { useUserRole } from "@/components/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import UserSessionTable from "@/components/userSessions/UserSessionsTable";
 import UserSessionPagination from "@/components/userSessions/UserSessionsPagination";
-import { Upload } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 const UserSessionPage = () => {
@@ -21,12 +21,15 @@ const UserSessionPage = () => {
         {/* <BackButton text="Go Back" link="/" /> */}
         <Button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-full transition-colors duration-200">
           <Link href="/admin/userSession/create" className="flex items-center">
-            <Upload size={15} /> &nbsp; Create New User Session
+            <Plus size={15} /> &nbsp; Add New User Session
           </Link>
         </Button>
       </div>
-      <UserSessionTable />
-      <UserSessionPagination />
+      {/* Body Container */}
+      <div className="max-w-7xl px-10">
+        <UserSessionTable />
+        <UserSessionPagination />
+      </div>
     </div>
   );
 };

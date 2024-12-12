@@ -3,7 +3,14 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableHead,
+  TableHeader,
+} from "@/components/ui/table";
 import { Loader } from "@/components/loader/Loader";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
@@ -15,6 +22,21 @@ import { WalletTypesServices } from "@/components/services/User/walletTypesServi
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import Image from "next/image";
+import { Minus } from "lucide-react";
+import {
+  UserAccountDetail,
+  UserAccountGetDetail,
+} from "@/types/user/userAccount";
+import {
+  handleStoreStatusFromBe,
+  handleStoreTypeFromBe,
+} from "@/types/store/storeOwner";
+import { isObject } from "@/lib/isObject";
+import { formatDateTime } from "@/lib/utils/dateTimeUtils";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { AxiosError } from "axios";
+import { handleBadgeRoleColorString } from "@/lib/utils/statusUtils";
 
 interface UserDetailProps {
   params: { id: string };
@@ -22,9 +44,12 @@ interface UserDetailProps {
 
 const UserDetail = ({ params }: UserDetailProps) => {
   const { id: userId } = params;
-  const [userDetail, setUserDetail] = useState<GetUserById | null>(null);
+  const [userDetail, setUserDetail] = useState<UserAccountGetDetail | null>(
+    null
+  );
   const [walletTypes, setWalletTypes] = useState<GetWalletTypeById[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEmpty, setIsEmpty] = useState<boolean>(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -34,30 +59,23 @@ const UserDetail = ({ params }: UserDetailProps) => {
       try {
         //fetch user detail
         const userResponse = await UserServices.getUserById(userId);
-        const user: GetUserById = userResponse.data.data;
-
-        //fetch walletType
-        const walletTypePromises = user.wallets.map((wallet) =>
-          WalletTypesServices.getWalletTypeById(wallet.walletTypeId)
-        );
-        const walletTypeResponses = await Promise.all(walletTypePromises);
-        const walletTypes = walletTypeResponses.map(
-          (response) => response.data.data
-        );
-        console.log(walletTypes, "walletTypes");
-
-        // const walletType: GetWalletTypeById = walletTypeResponse.data.data;
+        const user: UserAccountGetDetail = userResponse.data.data;
+        console.log(userResponse.data, "userRes");
 
         setUserDetail(user);
         // You can now use walletTypes array for further processing
-        setWalletTypes(walletTypes);
       } catch (err) {
-        toast({
-          title: "Error",
-          description: "Failed to load user details",
-        });
+        if (err instanceof AxiosError) {
+          setIsEmpty(true);
+          toast({
+            title: "Error",
+            description:
+              err.response?.data.Error || "Failed to load user details",
+          });
+        }
       } finally {
         setIsLoading(false);
+        setIsEmpty(false);
       }
     };
 
@@ -65,7 +83,12 @@ const UserDetail = ({ params }: UserDetailProps) => {
   }, [userId]);
 
   if (isLoading) return <Loader isLoading={isLoading} />;
-  if (!userDetail) return <div>No user details found!</div>;
+  if (!userDetail || isEmpty)
+    return (
+      <div>
+        <EmptyDataPage />
+      </div>
+    );
 
   return (
     <div className="mt-10 space-y-6">
@@ -140,13 +163,37 @@ const UserDetail = ({ params }: UserDetailProps) => {
                 <TableCell>
                   <strong>Created Date:</strong>
                 </TableCell>
-                <TableCell>{userDetail.crDate}</TableCell>
+                <TableCell>
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: userDetail.crDate,
+                    })}
+                    {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: userDetail.crDate,
+                    })} */}
+                  </div>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
                   <strong>Last Updated:</strong>
                 </TableCell>
-                <TableCell>{userDetail.upsDate}</TableCell>
+                <TableCell>
+                  <div className="flex flex-row">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: userDetail.upsDate,
+                    })}
+                    {/* <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: userDetail.upsDate,
+                    })} */}
+                  </div>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>
@@ -161,7 +208,11 @@ const UserDetail = ({ params }: UserDetailProps) => {
                   <strong>Role:</strong>
                 </TableCell>
                 <TableCell>
-                  <Badge className="bg-slate-500 text-white text-lg">
+                  <Badge
+                    className={handleBadgeRoleColorString(
+                      userDetail?.role.name
+                    )}
+                  >
                     {userDetail?.role.name}
                   </Badge>
                 </TableCell>
@@ -177,20 +228,44 @@ const UserDetail = ({ params }: UserDetailProps) => {
           <CardTitle>User's Wallets</CardTitle>
         </CardHeader>
         <CardContent>
-          {walletTypes && walletTypes.length > 0 ? (
+          {userDetail && isObject(userDetail) ? (
             <Table>
               <TableBody>
-                {walletTypes.map((wallet, index) => (
+                {userDetail.wallets.map((wallet, index) => (
                   <TableRow key={index}>
-                    <TableCell>Wallet {index + 1}</TableCell>
-                    <TableCell>{wallet.name}</TableCell>
-                    {/* {userDetail.wallets.map((wallet, index) => (
-                      <>
-                        <TableCell>Balance: {wallet.balance}</TableCell>
-                        <TableCell>Balance: {wallet.balanceHistory}</TableCell>
-                      </>
-                    ))} */}
-                    <TableCell>Last Updated: {wallet.upsDate}</TableCell>
+                    <TableCell>
+                      <p className="font-bold">Wallet</p> {wallet.name}
+                    </TableCell>
+
+                    <TableCell>
+                      <p className="font-bold">Balance</p>
+                      {formatVNDCurrencyValue(wallet.balance)}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-bold">Initial Balance</p>
+                      {formatVNDCurrencyValue(wallet.balanceStart)}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-bold">History</p>
+                      {formatVNDCurrencyValue(wallet.balanceHistory)}
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-bold">Type</p>
+                      {wallet.walletType.name}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-row">
+                        {formatDateTime({
+                          type: "date",
+                          dateTime: wallet.upsDate,
+                        })}
+                        <Minus />
+                        {formatDateTime({
+                          type: "time",
+                          dateTime: wallet.upsDate,
+                        })}
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -205,16 +280,35 @@ const UserDetail = ({ params }: UserDetailProps) => {
       {/* Example for Reports */}
       <Card>
         <CardHeader>
-          <CardTitle>User's Reports</CardTitle>
+          <CardTitle>User's Store</CardTitle>
         </CardHeader>
         <CardContent>
-          {userDetail.reports?.length > 0 ? (
+          {userDetail.userStoreMappings?.length > 0 ? (
             <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Phone number</TableHead>
+                  <TableHead>Address</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
-                {userDetail.reports.length > 0 &&
-                  userDetail.reports.map((report, index) => (
+                {userDetail.userStoreMappings.length > 0 &&
+                  userDetail.userStoreMappings.map((userStore, index) => (
                     <TableRow key={index}>
-                      <TableCell>Report {index + 1}</TableCell>
+                      <TableCell>Store {index + 1}</TableCell>
+                      <TableCell>{userStore.store.name}</TableCell>
+                      <TableCell>
+                        {handleStoreTypeFromBe(userStore.store.storeType)}
+                      </TableCell>
+                      <TableCell>
+                        {handleStoreStatusFromBe(userStore.store.status)}
+                      </TableCell>
+                      <TableCell>{userStore.store.phoneNumber}</TableCell>
+                      <TableCell>{userStore.store.address}</TableCell>
                       {/* <TableCell>{report.details}</TableCell> */}
                     </TableRow>
                   ))}

@@ -13,12 +13,7 @@ export const customerFormSchema = z.object({
     message: "Phone number is invalid. Please use Vietnam phone number!",
   }),
 
-  address: z
-    .string()
-    .min(5, { message: "Address at least 5 characters" })
-    .max(200, { message: "Address at least 5 characters" }),
-
-  cccdpassport: z
+  cccdPassport: z
     .string()
     .regex(
       /(^\d{12}$)|(^[A-Z]\d{7}$)/,
@@ -29,12 +24,6 @@ export const customerFormSchema = z.object({
     required_error: "Payment method is required!",
     invalid_type_error: "Your payment method is invalid!",
   }),
-
-  gender: z.enum(["Male", "Female", "Other"], {
-    required_error: "Gender is required!",
-    invalid_type_error: "Gender is invalid!",
-  }),
-
   quantity: z
     .number()
     .int({ message: "Quality must be positive number!" })
@@ -92,7 +81,7 @@ export interface GenerateEtag {
 }
 export const formSchema = z
   .object({
-    name: z
+    cusName: z
       .string()
       .min(2, { message: "Full name must include at least 2 characters" })
       .max(100, { message: "Full name does not exceed 100 characters" })
@@ -110,16 +99,24 @@ export const formSchema = z
     // cccdPassport: z
     //   .string()
     //   .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
-    email: z
+    cusEmail: z
       .string()
       .email("Email của không hợp lệ. Vui lý sử dụng email hợp lệ"),
-    cccdpassport: z
+    cusCccdpassport: z
       .string()
       .regex(
         /(^\d{12}$)|(^[A-Z]\d{7}$)/,
         "CCCD must include 12 digits and Passport must include first character and 7 digits"
       ),
-
+    customer: z.object({
+      fullName: z
+        .string()
+        .min(2, { message: "Full name must include at least 2 characters" })
+        .max(100, { message: "Full name does not exceed 100 characters" })
+        .regex(/^[\p{L}\s]+$/u, {
+          message: "Name have not special character and space!",
+        }),
+    }),
     birthday: z.string().refine((date) => {
       const birthDate = new Date(date);
       const today = new Date();
@@ -165,7 +162,13 @@ export const formSchema = z
     //     .min(1000, { message: "Price must at least 1.000 VND" })
     //     .max(10000000, { message: "Price does not exceed 10 triệu VND" }),
     // }),
-
+    vcardId: z.string().optional(),
+    wallets: z.array(
+      z.object({
+        balance: z.number(),
+        balanceHistory: z.number(),
+      })
+    ),
     marketZone: z.object({
       name: z
         .string()
@@ -178,17 +181,6 @@ export const formSchema = z
           20,
           "Tên viết tắt khu vực thị trường không được vượt quá 20 ký tự"
         ),
-    }),
-
-    wallet: z.object({
-      balance: z
-        .number()
-        .min(0, "Số dư phải là số không âm")
-        .max(1000000000, "Số dư không được vượt quá 1.000.000.000"),
-      balanceHistory: z
-        .number()
-        .min(0, "Lịch sử số dư phải là số không âm")
-        .max(10000000, "Lịch sử số dư không được vượt quá 1.000.000.000"),
     }),
   })
   .refine(
@@ -239,11 +231,11 @@ export const userAccountFormSchema = z.object({
     ),
   birthday: z
     .string()
-    .min(1, { message: "Nhập ngày sinh nhật!" })
-    .refine(isOver18, { message: "Người dùng phải trên 18 tuổi!" })
+    .min(1, { message: "Your birthday is required!" })
+    .refine(isOver18, { message: "Customer must be above 18 years old!" })
     .nullable(),
-  gender: z.string().min(0, {
-    message: "Nhập giới tính!",
+  gender: z.number().min(0, {
+    message: "Gender is required!",
   }),
   cccdPassport: z
     .string()
@@ -252,6 +244,7 @@ export const userAccountFormSchema = z.object({
       "CCCD must include 12 digits and Passport must include first character and 7 digits"
     ),
   imageUrl: z.string().nullable(), //does not effect
+  status: z.string().min(1, "Status is required!"),
 });
 
 export const createUserAccountFormSchema = z.object({
@@ -281,6 +274,7 @@ export const createUserAccountFormSchema = z.object({
     .email({ message: "Invalid email format" }),
   description: z.string().optional(),
   roleName: z.string().min(1, { message: "Role Name is required" }),
+  registerStoreType: z.number().nullable(),
 });
 
 export const serviceStoreFormSchema = z.object({
@@ -301,14 +295,16 @@ export const editServiceStoreFormSchema = z.object({
 });
 
 export const loginFormSchema = z.object({
-  email: z.string().email("Email của bạn chứa chính xác!"),
+  email: z.string().email("Your Email is invalid!"),
   // password: z
   //   .string()
   //   .regex(
   //     /^[A-Z](?=.*\d)[\w, \W]{6,40}$/,
   //     "Your password must minimium 6 characters"
   //   ), //password minimium 6 characters and Uppercase first character and one digit in
-  password: z.string().min(1, "Password của bạn chứa ít nhất 1 ký tự!"),
+  password: z
+    .string()
+    .min(5, "Your Password must contain at least 5 characters!"),
 });
 
 export const chargeFormSchema = z.object({
@@ -360,14 +356,15 @@ export const storeFormSchema = z.object({
   shortName: z
     .string()
     .min(2, { message: "Tên viết tắt phải có ít nhất 2 ký tự" })
-    .max(10, { message: "Tên viết tắt không được vượt quá 10 ký tự" }),
+    .max(10, { message: "Tên viết tắt không được vượt quá 10 ký tự" })
+    .nullable(),
   email: z.string().email("Your email is invalid!"),
   description: z.string().min(1).nullable(),
   storeType: z.coerce.number({
     required_error: "Store Type is required!",
     invalid_type_error: "Store Type must be a number!",
   }),
-  storeStatus: z.coerce.number({
+  status: z.coerce.number({
     required_error: "Store Status is required!",
     invalid_type_error: "Store Status must be a number!",
   }),
@@ -389,6 +386,11 @@ export const etagTypeFormSchema = z.object({
 export const userApproveFormSchema = z.object({
   locationZone: z.string().min(1, "Location zone is invalid"),
   storeName: z.string().min(1, "Store name is invalid"),
+  storeType: z.number(),
+  storeTransferRate: z
+    .number()
+    .min(0, "Store Transfer Rate must above 0!")
+    .max(100, "Store Transfer Rate must below 100!"),
   storeAddress: z.string().min(1, "Store address is invalid"),
   phoneNumber: z.string().regex(/^(0|\+84)(\s|-)?[1-9]\d{8}$/, {
     message: "Phone number is invalid!",
@@ -412,32 +414,56 @@ export const editPackageFormSchema = z.object({
 
   price: z.coerce
     .number()
-    .min(1000, { message: "Price must at least 1.000 VND" })
+    .min(100000, { message: "Price must at least 100.000 VND" })
     .max(10000000, { message: "Price does not exceed 10 millions VND" }),
   description: z.string().min(1).nullable(),
   imageUrl: z.string().nullable(),
   duration: z.coerce.number().min(1, "Duration is required!"),
 });
 
-export const createPackageFormSchema = z.object({
-  name: z
-    .string()
-    .min(2, { message: "Name must include at least 2 characters" })
-    .max(100, { message: "Name does not exceed 100 characters" })
-    .regex(/^(.*[()]).*$/u, {
-      message: "Name must have (...day)!",
-    }),
-  imageUrl: z.string().nullable(),
-  description: z.string().min(1).nullable(),
-  price: z
-    .number()
-    .min(1000, { message: "Price must at least 1.000 VND" })
-    .max(10000000, { message: "Price does not exceed 10 millions VND" }),
-  duration: z.number().min(1, "At least 1 day"),
-  packageTypeId: z.string().min(1),
-  walletTypeId: z.string().min(1),
-  moneyStart: z.number().min(50000, "Money start at least 50.000 VND"),
-});
+export const createPackageFormSchema = z
+  .object({
+    type: z.string().min(1, "Package's type is required!"),
+    name: z
+      .string()
+      .min(2, { message: "Name must include at least 2 characters" })
+      .max(100, { message: "Name does not exceed 100 characters" }),
+    // .regex(/^.+\(\s\)$/u, {
+    //   message: "Name is only string!",
+    // })
+    imageUrl: z.string().nullable(),
+    description: z.string().min(1).nullable(),
+    price: z
+      .number()
+      .min(100000, { message: "Price must at least 100.000 VND" })
+      .max(10000000, { message: "Price does not exceed 10 millions VND" }),
+    duration: z
+      .number()
+      .min(1, "At least 1 day!")
+      .max(365, "Day must below 365 days!"),
+    zoneId: z.string().min(1),
+    walletTypeId: z.string(),
+    moneyStart: z.number().min(100000, "Money start at least 100.000 VND"),
+  })
+  .refine(
+    (data) => {
+      let price = data.price; //200
+      let moneyStart = data.moneyStart; //240
+      let moneyStartSpecificBonus = price + price * 0.2; //Price * 20% bonus to Money Start
+      let moneyStartServiceBonus = price + price * 0.05; //Price * 5% bonus to Money Start
+
+      if (data.type === "SpecificPackage") {
+        return moneyStart >= moneyStartSpecificBonus;
+      } else if (data.type === "ServicePackage") {
+        return moneyStart >= moneyStartServiceBonus;
+      }
+    },
+    {
+      message:
+        "Money Start must higher 5% Price (if Service Package)! - Higher than 20% from Price (if Specific Package)! Please refill Price field!",
+      path: ["moneyStart"],
+    }
+  );
 
 export const createPromotionFormSchema = z
   .object({
@@ -455,6 +481,7 @@ export const createPromotionFormSchema = z
       .nullable(),
     requireAmount: z
       .number()
+      .min(100000, "Require amount does not below 100.000 VND")
       .max(1000000000, "Require amount does not exceed 10 millions VND")
       .nullable(),
     startDate: z
@@ -476,10 +503,23 @@ export const createPromotionFormSchema = z
       message: "The end date must higher than the begin date!",
       path: ["endDate"],
     }
+  )
+  .refine(
+    (data) => {
+      if (data.maxDiscount === null || data.requireAmount === null) {
+        return true;
+      }
+      return data.maxDiscount <= data.requireAmount;
+    },
+    {
+      message: "Max Discount must below Require Amount!",
+      path: ["maxDiscount"],
+    }
   );
 
 export const editPromotionFormSchema = z
   .object({
+    promotionCode: z.string().min(1, "Promotion code is required!"),
     name: z.string().min(1, "Name is required!"),
     description: z.string().min(1).nullable(),
     maxDiscount: z
@@ -493,8 +533,43 @@ export const editPromotionFormSchema = z
       .nullable(),
     requireAmount: z
       .number()
+      .min(100000, "Require amount does not below 100.000 VND")
       .max(1000000000, "Require amount does not exceed 10 millions VND")
       .nullable(),
+    startDate: z
+      .string()
+      .refine(
+        (date) => new Date(date) >= new Date(),
+        "The begin date must be the following day!"
+      ),
+    endDate: z.string(),
+  })
+  .refine(
+    (data) => {
+      const endDate = new Date(data.endDate);
+      const startDate = new Date(data.startDate);
+      return endDate > startDate;
+    },
+    {
+      message: "The end date must higher than the begin date!",
+      path: ["endDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.maxDiscount === null || data.requireAmount === null) {
+        return true;
+      }
+      return data.maxDiscount <= data.requireAmount;
+    },
+    {
+      message: "Max Discount must below Require Amount!",
+      path: ["maxDiscount"],
+    }
+  );
+
+export const userSessionFormSchema = z
+  .object({
     startDate: z
       .string()
       .refine(
@@ -502,7 +577,8 @@ export const editPromotionFormSchema = z
         "The begin date must be today or the following day!"
       ),
     endDate: z.string(),
-    status: z.string().nullable(),
+    userId: z.string().min(1, { message: "User is required" }),
+    zoneId: z.string().min(1, { message: "Zone is required" }),
   })
   .refine(
     (data) => {
@@ -516,6 +592,7 @@ export const editPromotionFormSchema = z
     }
   );
 
+export type UserSessionFormValues = z.infer<typeof userSessionFormSchema>;
 export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
 export type CreatePromotionFormValues = z.infer<
   typeof createPromotionFormSchema

@@ -1,181 +1,451 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, ChevronRight, Clock, ShoppingCart, Eye } from 'lucide-react';
+"use client";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Search,
+  Plus,
+  Clock,
+  Eye,
+  Pencil,
+  Trash2,
+  Image as ImageIcon,
+} from "lucide-react";
 import Link from "next/link";
+import ShoppingCartComponent, { CartRef } from "@/components/cart/cart";
+import { useRouter } from "next/navigation";
+import { StoreMenuServices } from "@/components/services/storeMenuService";
 
-const SESSIONS = {
-  sang: {
-    start: '07:00',
-    end: '10:30',
-    label: 'Ca sáng (7:00 - 10:30)'
-  },
-  trua: {
-    start: '10:30',
-    end: '14:00',
-    label: 'Ca trưa (10:30 - 14:00)'
-  },
-  toi: {
-    start: '14:00',
-    end: '22:00',
-    label: 'Ca tối (14:00 - 22:00)'
-  }
+import ProductUpdateDialog from "@/lib/dialog/ProductUpdateDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ProductServices } from "@/components/services/productServices";
+import { toast } from "react-hot-toast";
+import { ProductPatch } from "@/types/product";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Product } from "@/types/store/store";
+import ProductDetailsDialog from "@/lib/dialog/ProductDetailsDialog";
+interface Menu {
+  id: string;
+  name: string;
+  itemCount: number;
+  lastUpdated: string;
+  dateFilter: number;
+  products?: MenuItem[];
+}
+
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  count?: number;
+}
+
+interface MenuItem extends Product {
+  id: string;
+  name: string;
+  price: number;
+  imageUrl: string | null;
+  categoryId: string;
+  status: string;
+  dateFilter: number;
+  productCategoryId: string;
+  menuId: string;
+  crDate: string;
+  upsDate: string;
+  quantity: number;
+}
+const DATE_FILTERS = {
+  MORNING: 1,
+  AFTERNOON: 2,
+  LUNCH: 3,
 };
 
-const CATEGORIES = [
-  "Tất cả",
-  "Cơm",
-  "Bún",
-  "Món nước", 
-  "Bánh",
-  "Mì",
-  "Món sáng"
-];
+const DATE_FILTER_LABELS = {
+  [DATE_FILTERS.MORNING]: "7h - 10h30",
+  [DATE_FILTERS.AFTERNOON]: "14h - 22h",
+  [DATE_FILTERS.LUNCH]: "10h30 - 14h",
+};
 
-const menuData = [
-  { id: 1, name: "Phở bò", price: 45000, originalPrice: 50000, session: "sang", category: "Món nước" },
-  { id: 2, name: "Cơm gà", price: 40000, originalPrice: 45000, session: "trua", category: "Cơm" },
-  { id: 3, name: "Bún chả", price: 35000, originalPrice: 40000, session: "trua", category: "Bún" },
-  { id: 4, name: "Bánh mì", price: 20000, originalPrice: 25000, session: "sang", category: "Bánh" },
-  { id: 5, name: "Cơm rang", price: 35000, originalPrice: 38000, session: "toi", category: "Cơm" },
-  { id: 6, name: "Mì xào", price: 40000, originalPrice: 45000, session: "toi", category: "Mì" },
-  { id: 7, name: "Xôi", price: 15000, originalPrice: 18000, session: "sang", category: "Món sáng" },
-  { id: 8, name: "Bún bò", price: 45000, originalPrice: 50000, session: "trua", category: "Bún" }
-];
-
-const MenuUI = () => {
-  const [selectedSession, setSelectedSession] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('Tất cả');
-  const [searchTerm, setSearchTerm] = useState('');
+const MenuUI = ({ params }: { params: { id: string } }) => {
+  const router = useRouter();
+  const [menu, setMenu] = useState<Menu | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedDateFilter, setSelectedDateFilter] = useState<number | "all">(
+    "all"
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [currentSession, setCurrentSession] = useState<keyof typeof SESSIONS | null>(null);
+  const [currentDateFilter, setCurrentDateFilter] = useState<number | null>(
+    null
+  );
   const [isOwnerMode, setIsOwnerMode] = useState(false);
-  const [cart, setCart] = useState<Array<{id: number, quantity: number}>>([]);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const cartRef = useRef<CartRef>(null);
+  const [itemToUpdate, setItemToUpdate] = useState<Product | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateFormData, setUpdateFormData] = useState<ProductPatch>({
+    name: "",
+    price: 0,
+    imageUrl: "",
+    quantity: 1,
+  });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isProductUpdateDialogOpen, setIsProductUpdateDialogOpen] =
+    useState(false);
+  const [storeType, setStoreType] = useState<string>("1");
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-
-    return () => clearInterval(timer);
+    const storedType = localStorage.getItem("storeType");
+    if (storedType) {
+      setStoreType(storedType);
+    }
   }, []);
 
-  useEffect(() => {
-    const currentTimeStr = currentTime.toLocaleTimeString('en-US', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-
-    const isInTimeRange = (start: string | number, end: string | number) => {
-      const current = currentTimeStr;
-      if (end < start) {
-        return current >= start || current < end;
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "bg-green-100 text-green-800";
+      case "inactive":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Vui lòng chọn file hình ảnh");
+        return;
       }
-      return current >= start && current < end;
+
+      // Validate file size (e.g., max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Kích thước file không được vượt quá 5MB");
+        return;
+      }
+
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImageToFirebase = async (file: File): Promise<string> => {
+    try {
+      // Create a unique filename
+      const timestamp = Date.now();
+      const fileName = `products/${timestamp}_${file.name}`;
+      const storageRef = ref(storage, fileName);
+
+      // Upload file
+      const uploadTask = uploadBytes(storageRef, file);
+
+      // Wait for upload to complete
+      await uploadTask;
+
+      // Get download URL
+      const downloadURL = await getDownloadURL(storageRef);
+
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading to Firebase:", error);
+      throw new Error("Failed to upload image");
+    }
+  };
+
+  // Fetch menu data and process categories
+  useEffect(() => {
+    const fetchMenuAndCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await StoreMenuServices.getStoreMenuById(params.id);
+        const menuData = response.data.data;
+
+        // Process products and create category map
+        const categoryMap = new Map<string, Category>();
+        const products = menuData.menuProductMappings
+          .map((mapping: any) => {
+            const product = mapping.product;
+
+            // Only process products based on user role
+            if (!isOwnerMode && product.status !== "Active") return null;
+
+            const category = product.productCategory;
+
+            // Update category count only for active or owner-visible products
+            if (!categoryMap.has(category.id)) {
+              categoryMap.set(category.id, {
+                id: category.id,
+                name: category.name,
+                description: category.description,
+                count: 1,
+              });
+            } else {
+              const existing = categoryMap.get(category.id)!;
+              categoryMap.set(category.id, {
+                ...existing,
+                count: (existing.count || 0) + 1,
+              });
+            }
+
+            return {
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              imageUrl: product.imageUrl,
+              categoryId: product.productCategoryId,
+              status: product.status,
+              dateFilter: menuData.dateFilter,
+              quantity: product.quantity || 0,
+            } as MenuItem;
+          })
+          .filter((product: Product) => product !== null);
+
+        setMenu({
+          id: menuData.id,
+          name: menuData.name,
+          itemCount: products.length,
+          lastUpdated: menuData.upsDate,
+          dateFilter: menuData.dateFilter,
+          products: products,
+        });
+
+        setCategories(Array.from(categoryMap.values()));
+        setMenuItems(products);
+      } catch (err) {
+        setError("Failed to load menu data");
+        console.error("Error fetching menu:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    let activeSession = null;
-    Object.entries(SESSIONS).forEach(([session, time]) => {
-      if (isInTimeRange(time.start, time.end)) {
-        activeSession = session;
-      }
-    });
+    fetchMenuAndCategories();
+  }, [params.id, isOwnerMode]); // Added isOwnerMode to dependency array
 
-    setCurrentSession(activeSession);
-  }, [currentTime]);
+  // Filter menu items remains the same
+  const filteredMenu = menuItems.filter((item) => {
+    const matchesDateFilter =
+      selectedDateFilter === "all" || item.dateFilter === selectedDateFilter;
+    const matchesCategory =
+      selectedCategory === "all" || item.categoryId === selectedCategory;
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-  const isItemAvailable = (itemSession: string | null) => {
-    return itemSession === currentSession;
-  };
+    // Different status filtering based on mode
+    const isStatusValid = isOwnerMode
+      ? true // Show all items in owner mode
+      : item.status === "Active"; // Only show active items in staff mode
 
-  const handleAddToCart = (itemId: number) => {
-    setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === itemId);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === itemId 
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prevCart, { id: itemId, quantity: 1 }];
-    });
-  };
-
-  const getCartTotal = () => {
-    return cart.reduce((total, cartItem) => {
-      const menuItem = menuData.find(item => item.id === cartItem.id);
-      return total + (menuItem ? menuItem.price * cartItem.quantity : 0);
-    }, 0);
-  };
-
-  const filteredMenu = menuData.filter(item => {
-    const matchesSession = selectedSession === 'all' || item.session === selectedSession;
-    const matchesCategory = selectedCategory === 'Tất cả' || item.category === selectedCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch && matchesSession && matchesCategory;
+    return (
+      matchesSearch && matchesDateFilter && matchesCategory && isStatusValid
+    );
   });
-
-  const formatPrice = (price: number | bigint) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
+  const handleDelete = async (itemId: string) => {
+    try {
+      setLoading(true);
+      await ProductServices.deleteProductById(itemId);
+      setMenuItems((prev) => prev.filter((item) => item.id !== itemId));
+      toast.success("Deleted product successfully.");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("Failed to delete product.");
+    } finally {
+      setLoading(false);
+      setItemToDelete(null); // Reset the itemToDelete after deletion
+    }
+  };
+  const DeleteConfirmationDialog = ({ itemId }: { itemId: string }) => (
+    <AlertDialog
+      open={itemToDelete === itemId}
+      onOpenChange={(open) => !open && setItemToDelete(null)}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            Are you absolutely sure delete this?
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            product and remove its data from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => handleDelete(itemId)}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+  const handleUpdateClick = async (item: MenuItem) => {
+    setItemToUpdate(item);
+    setIsProductUpdateDialogOpen(true);
   };
 
-  const getCategoryCount = (category: string) => {
-    if (category === 'Tất cả') return menuData.length;
-    return menuData.filter(item => item.category === category).length;
+  const handleProductUpdate = async (updatedData: ProductPatch) => {
+    if (!itemToUpdate) return;
+
+    try {
+      // Upload new image if needed
+      let finalImageUrl = updatedData.imageUrl;
+      if (selectedImage) {
+        finalImageUrl = await uploadImageToFirebase(selectedImage);
+      }
+
+      // Prepare update data
+      const updatePayload = {
+        ...updatedData,
+        imageUrl: finalImageUrl,
+      };
+
+      // Update product via service
+      await ProductServices.editProduct(itemToUpdate.id, updatePayload);
+
+      // Update local state
+      setMenuItems((prev) =>
+        prev.map((item) =>
+          item.id === itemToUpdate.id
+            ? {
+                ...item,
+                ...updatePayload,
+              }
+            : item
+        )
+      );
+
+      toast.success("Product updated successfully.");
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+      setItemToUpdate(null);
+      setSelectedImage(null);
+      setIsProductUpdateDialogOpen(false);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Failed to update product.");
+    }
   };
+
+  // Category sidebar component
+  const CategorySidebar = () => (
+    <div className="w-64 flex-shrink-0">
+      <h2 className="font-semibold mb-4">Category</h2>
+      <div className="space-y-2">
+        <button
+          onClick={() => setSelectedCategory("all")}
+          className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
+            selectedCategory === "all"
+              ? "bg-blue-600 text-white"
+              : "hover:bg-gray-100"
+          }`}
+        >
+          <span>All Products</span>
+          <span className="text-sm bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
+            {menuItems.length}
+          </span>
+        </button>
+
+        {categories.map((category) => (
+          <button
+            key={category.id}
+            onClick={() => setSelectedCategory(category.id)}
+            className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
+              selectedCategory === category.id
+                ? "bg-blue-600 text-white"
+                : "hover:bg-gray-100"
+            }`}
+          >
+            <span>{category.name}</span>
+            <span className="text-sm bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
+              {category.count || 0}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      {/* Keep existing header section */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Menu Nhà hàng</h1>
+          <h1 className="text-3xl font-bold mb-2">{menu?.name || "Menu "}</h1>
           <div className="flex items-center text-gray-600">
             <Clock size={20} className="mr-2" />
             {currentTime.toLocaleTimeString()}
-            {currentSession && (
+            {currentDateFilter && (
               <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                {SESSIONS[currentSession].label}
+                {DATE_FILTER_LABELS[currentDateFilter]}
               </span>
             )}
           </div>
         </div>
+
+        {/* Modify the existing div with the mode selection and buttons */}
         <div className="flex items-center gap-4">
-          {/* Role Switch */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Chế độ:</span>
-            <select 
+            <span className="text-sm text-gray-600">Mode:</span>
+            <select
               className="p-2 border rounded-lg"
               value={isOwnerMode ? "owner" : "staff"}
               onChange={(e) => setIsOwnerMode(e.target.value === "owner")}
             >
-              <option value="staff">Nhân viên</option>
-              <option value="owner">Chủ cửa hàng</option>
+              <option value="staff">Seller</option>
+              <option value="owner">Manager</option>
             </select>
           </div>
-          
-          {/* Conditional buttons based on role */}
-          {isOwnerMode ? (
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              <Link href="/store/product/create" className="flex items-center">
-                <Plus size={20} />
-                Thêm món
-              </Link>
-            </button>
-          ) : (
+
+          {isOwnerMode && menu && (
             <div className="flex items-center gap-2">
-              <span className="font-medium">
-                Giỏ hàng ({cart.reduce((sum, item) => sum + item.quantity, 0)})
-              </span>
-              <span className="text-blue-600 font-bold">
-                {formatPrice(getCartTotal())}
-              </span>
-              <button className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                <ShoppingCart size={20} />
-                Thanh toán
+              <button
+                onClick={() => router.push(`/store/menu/edit/${menu.id}`)}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
+                <Plus size={20} />
+                Add Product
+              </button>
+              <button
+                onClick={() => router.push(`/store/menu/update/${menu.id}`)}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              >
+                <Pencil size={20} />
+                Update Menu
               </button>
             </div>
           )}
@@ -183,144 +453,161 @@ const MenuUI = () => {
       </div>
 
       <div className="flex gap-8">
-        {/* Category sidebar */}
-        <div className="w-64 flex-shrink-0">
-          <h2 className="font-semibold mb-4">Danh mục món ăn</h2>
-          <div className="space-y-2">
-            {CATEGORIES.map(category => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
-                  selectedCategory === category
-                    ? 'bg-blue-600 text-white'
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                <span>{category}</span>
-                <span className="text-sm bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
-                  {getCategoryCount(category)}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <CategorySidebar />
 
         <div className="flex-1">
-          {/* Search and Session filters */}
+          {/* Keep existing search and filters section */}
           <div className="mb-8">
             <div className="relative mb-6">
               <input
                 type="text"
-                placeholder="Tìm kiếm món ăn..."
+                placeholder="Search..."
                 className="w-full p-3 pl-10 border rounded-lg"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Search className="absolute left-3 top-3.5 text-gray-400" size={20} />
-            </div>
-
-            <div className="flex gap-4 mb-6">
-              <button
-                onClick={() => setSelectedSession('all')}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedSession === 'all'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200'
-                }`}
-              >
-                Tất cả
-              </button>
-              {Object.entries(SESSIONS).map(([session, time]) => (
-                <button
-                  key={session}
-                  onClick={() => setSelectedSession(session)}
-                  className={`px-4 py-2 rounded-lg ${
-                    selectedSession === session
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 hover:bg-gray-200'
-                  }`}
-                >
-                  {time.label}
-                </button>
-              ))}
+              <Search
+                className="absolute left-3 top-3.5 text-gray-400"
+                size={20}
+              />
             </div>
           </div>
 
-          {/* Product grid */}
+          {/* Modified product grid with update/delete buttons for manager mode */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMenu.map((item) => {
-              const isAvailable = isItemAvailable(item.session);
-              const cartItem = cart.find(cartItem => cartItem.id === item.id);
-              
-              return (
-                <div
-                  key={item.id}
-                  className={`bg-white rounded-lg shadow-md transition-all ${
-                    isAvailable ? 'hover:shadow-lg' : 'opacity-60'
-                  }`}
-                >
-                  {/* Product image */}
-                  <div className="aspect-square bg-gray-100 rounded-t-lg relative">
-                    {!isAvailable && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-t-lg flex items-center justify-center">
-                        <span className="px-3 py-1 bg-red-500 text-white rounded-full text-sm">
-                          Hết giờ bán
-                        </span>
+            {filteredMenu.map((item) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+              >
+                <div className="aspect-square bg-gray-100 rounded-t-lg relative overflow-hidden">
+                  {!isOwnerMode && item.quantity === 0 && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+                      <div className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-xl transform -rotate-45">
+                        {storeType === "1"
+                          ? "SOLD OUT"
+                          : storeType === "2"
+                          ? "OUT OF RENT"
+                          : ""}
                       </div>
+                    </div>
+                  )}
+                  {item.imageUrl && (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    />
+                  )}
+                </div>
+                <div className="p-4 flex flex-col justify-between h-[calc(100%-300px)]">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-xl mb-2 text-gray-800">
+                        {item.name}
+                      </h3>
+                      {isOwnerMode && (
+                        <Badge
+                          className={`${
+                            item.status === "InActive"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {item.status}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-semibold text-blue-600">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(item.price)}
+                      </span>
+                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                        {
+                          categories.find((cat) => cat.id === item.categoryId)
+                            ?.name
+                        }
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 mt-2">
+                      Quantity: {item.quantity}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex space-x-3">
+                    {!isOwnerMode ? (
+                      <>
+                        {item.quantity > 0 ? (
+                          <>
+                            <button
+                              className="flex-1 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
+            flex items-center justify-center gap-2 font-semibold"
+                              onClick={() =>
+                                cartRef.current?.addToCart({
+                                  ...item,
+                                  quantity: item.quantity,
+                                })
+                              }
+                            >
+                              <ShoppingCart size={18} />
+                              Buy
+                            </button>
+                            <button
+                              onClick={() => setSelectedProductId(item.id)}
+                              className="w-16 flex items-center justify-center py-3 text-blue-600 border border-blue-600 
+            rounded-lg hover:bg-blue-50 transition-colors"
+                            >
+                              <Eye size={18} />
+                            </button>
+                          </>
+                        ) : null}
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => handleUpdateClick(item)}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-green-600 
+        rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                        >
+                          <Pencil size={16} />
+                          Update
+                        </button>
+                        <button
+                          onClick={() => setItemToDelete(item.id)}
+                          className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-red-600 
+        rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                        >
+                          <Trash2 size={16} />
+                          Delete
+                        </button>
+                      </>
                     )}
                   </div>
-
-                  {/* Product info */}
-                  <div className="p-4">
-                    <h3 className="font-medium text-lg mb-2">{item.name}</h3>
-
-                    <div className="flex items-baseline gap-2 mb-4">
-                      <span className="text-lg font-semibold text-blue-600">
-                        {formatPrice(item.price)}
-                      </span>
-                      <span className="text-sm text-gray-400 line-through">
-                        {formatPrice(item.originalPrice)}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600">
-                        {SESSIONS[item.session as keyof typeof SESSIONS].label}
-                      </span>
-                      <span className="text-sm text-gray-500">{item.category}</span>
-                    </div>
-
-                    {/* Action buttons - different for each role */}
-                    <div className="flex gap-2">
-                      {!isOwnerMode && (
-                        <button
-                          className="flex-1 flex items-center justify-center gap-1 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          onClick={() => handleAddToCart(item.id)}
-                          disabled={!isAvailable}
-                        >
-                         
-                          {cartItem ? `Order (${cartItem.quantity})` : 'Add'}
-                        </button>
-                      )}
-
-                      <Link
-                        href={`/store/product/${item.id}`}
-                        className={`flex items-center justify-center gap-1 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors ${
-                          isOwnerMode ? 'flex-1' : 'w-32'
-                        }`}
-                      >
-                        <Eye size={16} />
-                        Chi tiết
-                      </Link>
-                    </div>
-                  </div>
                 </div>
-              );
-            })}
+
+                <DeleteConfirmationDialog itemId={item.id} />
+                <ProductDetailsDialog
+                  productId={selectedProductId}
+                  onClose={() => setSelectedProductId(null)}
+                />
+                <ProductUpdateDialog
+                  open={isProductUpdateDialogOpen}
+                  onClose={() => setIsProductUpdateDialogOpen(false)}
+                  product={itemToUpdate}
+                  onUpdate={handleProductUpdate}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* Shopping Cart */}
+      {!isOwnerMode && <ShoppingCartComponent ref={cartRef} />}
     </div>
   );
 };

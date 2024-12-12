@@ -32,6 +32,13 @@ import { useRouter } from "next/navigation";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { Badge } from "@/components/ui/badge";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { Card } from "@/components/ui/card";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Loader } from "@/components/loader/Loader";
+import {
+  handleBadgeDeflagStatusColor,
+  handleBadgePackageTypeColorString,
+} from "@/lib/utils/statusUtils";
 
 interface PackageTableProps {
   limit?: number;
@@ -83,30 +90,40 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
     if (pkg.id) {
       PackageServices.deletePackageById(pkg.id)
         .then((res) => {
-          setDeleteLoading(false);
           toast({
+            variant: "success",
             title: res.data.messageResponse,
             description: `Package name: ${pkg.name}`,
           });
         })
         .catch((err) => {
-          setDeleteLoading(false);
           toast({
+            variant: "destructive",
             title: err.data.messageResponse,
             description: "Some errors have been occured!",
           });
+        })
+        .finally(() => {
+          setDeleteLoading(false);
         });
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   const filteredPackages = limit ? packageList.slice(0, limit) : packageList;
 
   return (
     <div className="mt-5">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Packages"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Packages"}
+      </h3>
       {filteredPackages.length > 0 ? (
         <Table>
           <TableCaption>A list of recent packages</TableCaption>
@@ -114,6 +131,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
             <TableRow>
               <TableHead className="text-white">#</TableHead>
               <TableHead className="text-white">Name</TableHead>
+              <TableHead className="text-white">Type</TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Image
               </TableHead>
@@ -126,6 +144,9 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
               <TableHead className="hidden md:table-cell text-white">
                 Duration
               </TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                Status
+              </TableHead>
               <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -137,7 +158,22 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
               >
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>
-                  <p className="font-bold">{pkg.name}</p>
+                  <p className="font-bold">
+                    {pkg.name} - &nbsp;
+                    <span className="font-bold text-gray-500">
+                      {pkg.duration} day(s)
+                    </span>
+                  </p>
+                </TableCell>
+                <TableCell>
+                  <p className="font-semibold">
+                    <Badge
+                      className={handleBadgePackageTypeColorString(pkg.type)}
+                    >
+                      {/* <span className="bg-badgePurple hover:bg-badgePurple-hover"></span> */}
+                      {pkg.type}
+                    </Badge>
+                  </p>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   <Image
@@ -150,7 +186,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
                   {pkg.description ? (
-                    <p className="text-slate-500">{pkg.description}</p>
+                    <p className="text-muted-foreground">{pkg.description}</p>
                   ) : (
                     <Minus />
                   )}
@@ -161,8 +197,16 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
                   </p>
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
-                  <Badge className="bg-slate-500 text-white">
-                    {pkg.duration} days
+                  <Badge className="bg-slate-500 text-white w-full">
+                    <div className="flex flex-row items-center justify-center w-full">
+                      <p>{pkg.duration}</p> &nbsp;
+                      <p>days</p>
+                    </div>
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge className={handleBadgeDeflagStatusColor(pkg.deflag)}>
+                    <p>{pkg.deflag ? "In Active" : "Active"}</p>
                   </Badge>
                 </TableCell>
                 <TableCell
@@ -179,7 +223,7 @@ const PackageTable = ({ limit, title }: PackageTableProps) => {
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <EmptyDataPage />
       )}
     </div>
   );

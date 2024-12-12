@@ -18,9 +18,8 @@ export interface ProductStoreData {
 export interface CustomerInfo {
   fullName: string;
   phoneNumber: string;
-  address: string;
-  gender: string;
-  cccdPassport: string;
+  // gender: string;
+  cccdpassport: string;
   email: string;
 }
 
@@ -29,7 +28,7 @@ export interface OrderData {
   paymentType: string;
   totalAmount: number;
   productData: ProductData[];
-  customerInfo: CustomerInfo;
+  customerInfo: VCardCustomerInfo;
 }
 
 export interface ConfirmOrderData {
@@ -39,8 +38,12 @@ export interface ConfirmOrderData {
 
 export interface ConfirmOrderForChargeData {
   invoiceId: string;
-  transactionChargeId: string;
+  // transactionChargeId: string;
   transactionId: string;
+}
+export interface ConfirmOrderForChargeVCardData {
+  invoiceId: string;
+  transactionChargeId: string;
 }
 export interface ConfirmOrderForGenerateNewCardData {
   invoiceId: string;
@@ -61,7 +64,7 @@ export interface OrderStoreData {
   saleType: string;
   storeId: string;
   totalAmount: number;
-  packageItemId: string;
+  packageOrderId: string | null;
   productData: ProductStoreData[];
 }
 
@@ -98,20 +101,30 @@ export interface OrderExistData {
   package: string | null;
   packageItem: string | null;
   store: string | null;
-  user: string | null;
+  user: UserResponse;
   deposits: any[]; // Define structure if known
   orderDetails: OrderDetailData[];
-  packageOrders: PackageOrderResponse[]; // Define structure if known
+  packageOrder: PackageOrderResponse; // Define structure if known
   promotionOrders: any[]; // Define structure if known
   transactions: any[]; // Define structure if known
+  payments: PaymentResponse[]; // Define structure if known
+  customer: CustomerInfo | null;
 }
-
+export interface PaymentResponse {
+  name: string;
+}
+export interface UserResponse {
+  fullName: string;
+  email: string;
+  cccdPassport: string;
+}
 export interface PackageOrderResponse {
   id: string;
   cusName: string;
   cusCccdpassport: string;
   phoneNumber: string;
   cusEmail: string;
+  vcardId: string;
 }
 
 export interface OrderDetailResponse {
@@ -120,6 +133,24 @@ export interface OrderDetailResponse {
   data: {
     orderExist: OrderExistData;
     productJson: any | null; // Define structure if known
-    customer: CustomerInfo | null;
   };
+}
+export interface VCardCustomerInfo {
+  fullName: string;
+  phoneNumber: string;
+  cccdPassport: string;
+  email: string;
+}
+export interface OrderResponse {
+  statusCode: number;
+  messageResponse: string;
+  data: Order[];
+  metaData: {
+    page: number;
+    size: number;
+    total: number;
+    totalPage: number;
+  };
+  parentName: null;
+  qrCode: null;
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { ComboboxCustom } from "@/components/ComboboxCustomize/ComboboxCustom";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Loader } from "@/components/loader/Loader";
 import { PopoverActionTable } from "@/components/popover/PopoverAction";
 import { HouseServices } from "@/components/services/houseServices";
 import { UserServices } from "@/components/services/User/userServices";
@@ -31,6 +33,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -59,17 +62,22 @@ import { useToast } from "@/components/ui/use-toast";
 import { ReassignEmailPopover } from "@/components/users/ReassignEmailPopover";
 import { cn } from "@/lib/utils";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
-import { handleBadgeStatusColor } from "@/lib/utils/statusUtils";
+import {
+  handleBadgeRoleColorString,
+  handleBadgeStatusColor,
+} from "@/lib/utils/statusUtils";
 import {
   userApproveFormSchema,
   UserApproveFormValues,
   userReAssignEmailFormSchema,
   UserReAssignEmailValues,
 } from "@/lib/validation";
+import { storeTypes } from "@/types/store/storeOwner";
 import {
+  approveStatuses,
   handleUserStatusFromBe,
-  UserAccountGet,
   UserApprove,
+  UserAccount,
   UserApproveSubmit,
   UserStatus,
 } from "@/types/user/userAccount";
@@ -77,12 +85,14 @@ import { Zone } from "@/types/zone/zone";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CaretSortIcon } from "@radix-ui/react-icons";
 import { AxiosError } from "axios";
-import { CheckIcon, PenLine, SearchIcon } from "lucide-react";
+import { CheckIcon, Minus, PenLine, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { twMerge } from "tailwind-merge";
+import { ReassignPasswordPopover } from "@/components/users/ReassignPasswordPopover";
 
 interface UsersTableProps {
   limit?: number;
@@ -92,7 +102,7 @@ interface UsersTableProps {
 const UsersTable = ({ limit, title }: UsersTableProps) => {
   const router = useRouter();
   const { toast } = useToast();
-  const [userList, setUserList] = useState<UserAccountGet[]>([]);
+  const [userList, setUserList] = useState<UserAccount[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [approveLoading, setApproveLoading] = useState(false);
@@ -104,7 +114,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   //search user by email, cccdPassport, phone number
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [userSearch, setUserSearch] = useState<UserAccountGet[]>([]);
+  const [userSearch, setUserSearch] = useState<UserAccount[]>([]);
   const [isUserFound, setIsUserFound] = useState<boolean>(false);
 
   //get zone api for approve user pending verify
@@ -116,10 +126,12 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     defaultValues: {
       locationZone: "",
       storeName: "",
+      storeType: 0,
+      storeTransferRate: 0,
       storeAddress: "",
       phoneNumber: "",
       storeEmail: "",
-      approvalStatus: "APPROVED",
+      approvalStatus: "",
     },
   });
 
@@ -130,21 +142,28 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     console.log(data, "data approveee");
     setApproveLoading(true);
     try {
-      const { approvalStatus, ...restData } = data;
-      const response = await UserServices.approveUser(data.id, {
-        ...restData,
-        approvalStatus: "APPROVED",
-      });
+      const { storeTransferRate, ...restData } = data;
 
+      const convertStoreTransferRateToBe = Number(
+        (data?.storeTransferRate ?? 0) / 100
+      );
+
+      const approveStoreData = {
+        ...restData,
+        storeTransferRate: convertStoreTransferRateToBe,
+      };
+
+      const response = await UserServices.approveUser(
+        data.id,
+        approveStoreData
+      );
       console.log(response, "Approve user successfully!");
       toast({
         title: "User is approved!",
         description: `User - Store ${data.storeName} has been approved successfully.`,
       });
-      setApproveLoading(false);
     } catch (error) {
       if (error instanceof AxiosError) {
-        setApproveLoading(false);
         if (error.status === 500) {
           toast({
             title: "Error",
@@ -153,6 +172,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         }
         console.error(error, "error approve user");
       }
+    } finally {
+      setApproveLoading(false);
     }
   };
 
@@ -166,7 +187,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         // console.log(response.data, "get users list"); // Log the response for debugging
         // console.log(zoneResponse.data, "response zonessss"); // Log the response for debugging
 
-        const users: UserAccountGet[] = Array.isArray(userResponse.data.data)
+        const users: UserAccount[] = Array.isArray(userResponse.data.data)
           ? userResponse.data.data
           : [];
         const zones: Zone[] = Array.isArray(zoneResponse.data.data)
@@ -186,23 +207,32 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     fetchUsersAndHouses();
   }, [isLoading, deleteLoading, approveLoading]);
 
-  const handleDeleteUser = (user: UserAccountGet) => {
+  const handleDeleteUser = (user: UserAccount) => {
     setDeleteLoading(true);
+    console.log(user, "userDelete");
     if (user.id) {
       UserServices.deleteUserById(user.id)
         .then((res) => {
-          setDeleteLoading(false);
           toast({
-            title: res.data.messageResponse,
+            variant: "success",
+            title: "Delete User Successfully!",
             description: `User name: ${user.fullName}`,
           });
         })
         .catch((err) => {
+          if (err instanceof AxiosError) {
+            toast({
+              variant: "destructive",
+              title:
+                err.response?.data?.messageResponse ||
+                err.response?.data?.Error ||
+                "Delete failed!",
+              description: "Delete User Failed!",
+            });
+          }
+        })
+        .finally(() => {
           setDeleteLoading(false);
-          toast({
-            title: err.data.messageResponse,
-            description: "Some errors have occurred!",
-          });
         });
     }
   };
@@ -230,7 +260,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     },
   ];
 
-  const filterUserStatus = (): UserAccountGet[] | undefined => {
+  const filterUserStatus = (): UserAccount[] => {
     switch (userStatusValue) {
       case "active":
         return userList.filter((user) => user.status === 0);
@@ -240,8 +270,10 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         return userList.filter((user) => user.status === 2);
       case "pendingVerify":
         return userList.filter((user) => user.status === 3);
-      default:
+      case "all":
         return userList;
+      default:
+        return userList.filter((user) => user.status === 0);
     }
   };
   const filteredUsersWithStatus = filterUserStatus();
@@ -258,13 +290,57 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   };
   console.log(handleUserStatusFromBe(2), "status");
 
+  const triggerDeleteButton = (user: UserAccount) => {
+    return (
+      <AlertDialog>
+        <AlertDialogTrigger>
+          <Button
+            variant={"outline"}
+            type="submit"
+            className="mt-2 w-20 border-red-500 bg-red-100 text-red-500 hover:text-white hover:bg-red-600 font-bold"
+          >
+            Delete
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this user - {user?.fullName} -?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will delete the user from your
+              list!
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => handleDeleteUser(user)}>
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+  };
+
   const UserFound = () => {
-    return userSearch?.map((userFound: UserAccountGet, i) => (
-      <TableRow key={userFound.id}>
+    return userSearch?.map((userFound: UserAccount, i) => (
+      <TableRow
+        onClick={(e) => {
+          if (userFound.status !== 0) {
+            e.stopPropagation();
+            toast({
+              title: "User is disable!",
+              description: "You can't access this user!",
+            });
+          } else {
+            router.push(`/admin/usersAccount/detail/${userFound.id}`);
+          }
+        }}
+        key={userFound.id}
+      >
         <TableCell>
-          <div className="flex items-center">
-            <PenLine size={20} />.{i}
-          </div>
+          <div className="flex items-center">{i + 1}.</div>
         </TableCell>
         <TableCell>
           <div className="flex items-center">
@@ -277,6 +353,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             />
             <p className="ml-4">{userFound.fullName}</p>
           </div>
+        </TableCell>
+        <TableCell className="hidden md:table-cell">
+          <Badge className="bg-slate-400 hover:bg-slate-500">
+            {userFound.roleName}
+          </Badge>
         </TableCell>
         <TableCell className="hidden md:table-cell">
           {userFound.email}
@@ -295,7 +376,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             {handleUserStatusFromBe(userFound.status)}
           </Badge>
         </TableCell>
-        <TableCell>
+        <TableCell onClick={(e) => e.stopPropagation()}>
           {userFound.status !== 3 ? (
             <PopoverActionTable
               item={userFound}
@@ -304,10 +385,14 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             />
           ) : (
             <>
-              {UserPendingVerifyPopUp(userFound)}
+              {userPendingVerifyPopUp(userFound)}
               <AlertDialog>
                 <AlertDialogTrigger>
-                  <Button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+                  <Button
+                    variant={"outline"}
+                    type="submit"
+                    className="mt-2 w-20 border-red-500 bg-red-100 text-red-500 hover:text-white hover:bg-red-600 font-bold"
+                  >
                     Delete
                   </Button>
                 </AlertDialogTrigger>
@@ -339,9 +424,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     ));
   };
 
-  console.log(zoneList, "Houses List");
+  console.log(zoneList, "Zone List");
 
-  const UserPendingVerifyPopUp = (userData: UserAccountGet) => {
+  const userPendingVerifyPopUp = (userData: UserAccount) => {
     // const userApproveForm = useForm<UserApproveFormValues>({
     //   defaultValues: {
     //     approvalStatus: "APPROVED",
@@ -358,10 +443,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         userApproveForm.reset({
           locationZone: "",
           storeName: "",
+          storeTransferRate: 0,
           storeAddress: "",
           phoneNumber: userData.phoneNumber,
           storeEmail: userData.email,
-          approvalStatus: "APPROVED",
+          approvalStatus: "",
         }); // Reset form fields when the popup is reopened
       }
     };
@@ -375,7 +461,11 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     return (
       <AlertDialog onOpenChange={handleOpenChange}>
         <AlertDialogTrigger>
-          <Button className="w-20 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-xs transition-colors duration-200">
+          <Button
+            variant={"outline"}
+            type="submit"
+            className="mt-2 w-20 border-green-500 bg-green-100 text-green-500 hover:text-white hover:bg-green-600 font-bold"
+          >
             Approve
           </Button>
         </AlertDialogTrigger>
@@ -415,7 +505,7 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                                   key={i}
                                   value={zone.location || "-"}
                                 >
-                                  {zone.location || "-"}
+                                  {zone.name || "-"}
                                 </SelectItem>
                               ))}
                           </SelectContent>
@@ -458,6 +548,85 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                     </FormItem>
                   )}
                 />
+
+                {/* Store type */}
+                <FormField
+                  control={userApproveForm.control}
+                  name="storeType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select Type</FormLabel>
+                      <FormControl>
+                        <Select
+                          onValueChange={(value) => {
+                            const valueAsNumber = Number(value);
+                            field.onChange(valueAsNumber);
+                          }}
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Loading types...
+                              </SelectItem>
+                            ) : storeTypes.length > 0 ? (
+                              storeTypes.map((type) => (
+                                <SelectItem
+                                  key={type.value}
+                                  value={String(type.value)}
+                                >
+                                  {type.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="no-typess" disabled>
+                                No types available!
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Store Transfer Rate */}
+
+                <FormField
+                  control={userApproveForm.control}
+                  name="storeTransferRate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transfer Rate(%)</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            placeholder="Enter discount percent"
+                            value={field.value ?? 0}
+                            onChange={(e) => {
+                              // Ensure only positive values
+                              let value = e.target.valueAsNumber;
+                              if (value < 0) value = 0;
+                              if (value > 100) value = 100;
+
+                              field.onChange(value);
+                            }}
+                          />
+                          <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                            %
+                          </span>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={userApproveForm.control}
                   name="storeAddress"
@@ -490,27 +659,64 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                     </FormItem>
                   )}
                 />
-                {/* <FormField
+                {/* approveStatus */}
+                <FormField
                   control={userApproveForm.control}
                   name="approvalStatus"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel>Select Status</FormLabel>
                       <FormControl>
-                        <Input
-                          className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                          placeholder="Enter Approval Status"
-                          {...field}
-                        />
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                          }}
+                          value={field.value}
+                          disabled={isLoading}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {isLoading ? (
+                              <SelectItem value="loading" disabled>
+                                Loading status...
+                              </SelectItem>
+                            ) : approveStatuses.length > 0 ? (
+                              approveStatuses.map((status) => (
+                                <SelectItem
+                                  key={status.value}
+                                  value={status.value}
+                                >
+                                  {status.name}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="no-statuses" disabled>
+                                No status available!
+                              </SelectItem>
+                            )}
+                          </SelectContent>
+                        </Select>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
-                /> */}
-                {/* <Button type="submit">Confirm</Button> */}
+                />
               </div>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button type="submit">Confirm</Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-600"
+                  disabled={approveLoading}
+                >
+                  {approveLoading ? (
+                    <Loader isLoading={approveLoading} />
+                  ) : (
+                    <p>Confirm</p>
+                  )}
+                </Button>
               </AlertDialogFooter>
             </form>
           </Form>
@@ -535,7 +741,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">{title || "Users"}</h3>
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
+        {title || "Users"}
+      </h3>
       <>
         <div className="mb-3">
           <div className="flex items-center space-x-2">
@@ -565,103 +773,120 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
             </div>
           </div>
         </div>
-        <Table>
-          <TableCaption>A list of recent users</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">Full Name</TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Email
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Phone Number
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Address
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                CCCD/Passport
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Status
-              </TableHead>
-              <TableHead className="text-white">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <>
-              {searchTerm && userSearch
-                ? UserFound()
-                : filteredUsers?.map((user, i) => (
-                    <TableRow
-                      onClick={() =>
-                        router.push(`/admin/usersAccount/detail/${user.id}`)
-                      }
-                      key={user.id}
-                    >
-                      <TableCell>{i + 1}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Image
-                            src={validImageUrl(user?.imageUrl ?? "")} // Use the URL from the user object
-                            alt={user.fullName} // Provide an appropriate alt text
-                            width={100} // Specify a width
-                            height={100} // Specify a height
-                            className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
-                          />
-                          <p className="ml-4">{user.fullName}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <p className="text-slate-500">{user.email}</p>
-                        {user.status === 3 && (
-                          <ReassignEmailPopover userId={user.id} />
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {user.phoneNumber}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <p className="text-slate-500">{user.address}</p>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {user.cccdPassport}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={cn(handleBadgeStatusColor(user.status))}
-                        >
-                          {handleUserStatusFromBe(user.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell
-                        onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+        {filteredUsers && filteredUsers.length > 0 ? (
+          <Table>
+            <TableCaption>A list of recent users</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-white">#</TableHead>
+                <TableHead className="text-white">Full Name</TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Role
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Email
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Phone Number
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Status
+                </TableHead>
+                <TableHead className="text-white">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <>
+                {searchTerm && userSearch
+                  ? UserFound()
+                  : filteredUsers?.map((user, i) => (
+                      <TableRow
+                        onClick={(e) => {
+                          if (user.status === 1 || user.status === 2) {
+                            e.stopPropagation();
+                            toast({
+                              title: "User is disable!",
+                              description: "You can't access this user!",
+                            });
+                          } else {
+                            router.push(
+                              `/admin/usersAccount/detail/${user.id}`
+                            );
+                          }
+                        }}
+                        key={user.id}
                       >
-                        {user.status !== 3 && (
-                          <PopoverActionTable
-                            item={user}
-                            editLink={`/admin/usersAccount/edit/${user.id}`}
-                            handleDelete={handleDeleteUser}
-                          />
-                        )}
-                        {/* Approve user button and Re-assign email button */}
-                        {user.status === 3 && (
-                          <div className="flex items-center justify-between w-min gap-2">
-                            <div className="flex-row items-end justify-end">
-                              {UserPendingVerifyPopUp(user)}
-                              <Button className="w-auto bg-red-500 hover:bg-red-700 text-white font-bold">
-                                Delete
-                              </Button>
-                            </div>
+                        <TableCell>{i + 1}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <Image
+                              src={validImageUrl(user?.imageUrl ?? "")} // Use the URL from the user object
+                              alt={user.fullName} // Provide an appropriate alt text
+                              width={100} // Specify a width
+                              height={100} // Specify a height
+                              className="w-12 h-12 rounded-full object-cover" // Add any additional classes if needed
+                            />
+                            <p className="ml-4">{user.fullName}</p>
                           </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-            </>
-          </TableBody>
-        </Table>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Badge
+                            className={handleBadgeRoleColorString(
+                              user.roleName
+                            )}
+                          >
+                            {user.roleName}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <p className="text-slate-500">{user.email}</p>
+                          {/* Approve user button and Re-assign email/password button */}
+                          <div onClick={(e) => e.stopPropagation()}>
+                            {user.status === 3 && (
+                              <ReassignEmailPopover userId={user.id} />
+                            )}
+                            {user.status === 0 && (
+                              <ReassignPasswordPopover userId={user.id} />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {user.phoneNumber}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={handleBadgeStatusColor(user.status)}
+                          >
+                            {handleUserStatusFromBe(user.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell
+                          onClick={(event) => event.stopPropagation()} //Prvent onClick from TableRow
+                        >
+                          {user.status !== 3 && (
+                            <PopoverActionTable
+                              item={user}
+                              editLink={`/admin/usersAccount/edit/${user.id}`}
+                              handleDelete={handleDeleteUser}
+                            />
+                          )}
+                          {user.status === 3 && (
+                            <div className="flex items-center justify-between w-min gap-2">
+                              <div className="flex-row items-end justify-end">
+                                {userPendingVerifyPopUp(user)}
+                                {triggerDeleteButton(user)}
+                              </div>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+              </>
+            </TableBody>
+          </Table>
+        ) : (
+          <EmptyDataPage />
+        )}
       </>
     </div>
   );

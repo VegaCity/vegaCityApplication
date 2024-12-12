@@ -1,13 +1,7 @@
 // etag.ts
 
 export interface Wallet {
-  id: string;
-  walletTypeId: string;
-  crDate: string;
-  upsDate: string;
   balance: number;
-  balanceHistory: number;
-  deflag: boolean;
   walletType: WalletType;
 }
 export interface WalletType {
@@ -34,11 +28,20 @@ export interface PackageItem {
   status: string;
   walletId: string;
   isVerifyPhone: boolean;
-  wallet: Wallet;
+  wallets: Wallet[];
+  vcard: Vcard;
+  isChangedInfo: boolean;
 }
-
-export interface PackageItemHandleUpdate {
+export interface Vcard {
+  id: string;
+  imageUrl: string;
   name: string;
-  imageUrl: string | null;
-  gender: string;
+  phoneNumber: string;
+  email: string;
+}
+export interface PackageItemHandleUpdate {
+  cusName: string;
+  cusEmail: string;
+  cusCccdpassport: string;
+  phoneNumber: string;
 }

@@ -35,6 +35,14 @@ import {
 } from "@/lib/utils/statusUtils";
 import { formatDateTime } from "@/lib/utils/dateTimeUtils";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import EmptyDataPage from "@/components/emptyData/emptyData";
+import { Button } from "@/components/ui/button";
+import { Trash, Minus, Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface UserSessionTableProps {
   limit?: number;
@@ -52,7 +60,6 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        setIsLoading(true);
         const response = await UserSessionServices.getUserSessions({
           page: 1,
           size: 10,
@@ -71,7 +78,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
     };
 
     fetchSessions();
-  }, []);
+  }, [isLoading, deleteLoading]);
 
   const handleSessionDetails = (sessionId: string) => {
     router.push(`/admin/userSession/detail/${sessionId}`);
@@ -84,6 +91,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
         .then((res) => {
           setDeleteLoading(false);
           toast({
+            variant: "success",
             title: res.data.messageResponse,
             description: `Session ID: ${session.id}`,
           });
@@ -91,6 +99,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
         .catch((err) => {
           setDeleteLoading(false);
           toast({
+            variant: "destructive",
             title: "Error",
             description: "An error occurred while deleting the session.",
           });
@@ -110,7 +119,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
 
   return (
     <div className="mt-10">
-      <h3 className="text-2xl mb-4 font-semibold">
+      <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
         {title || "User Sessions"}
       </h3>
       {filteredSessions.length > 0 ? (
@@ -119,7 +128,10 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">User ID</TableHead>
+              <TableHead className="text-white">User Email</TableHead>
+              <TableHead className="hidden md:table-cell text-white">
+                User Name
+              </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Start Date
               </TableHead>
@@ -139,22 +151,49 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
           <TableBody>
             {filteredSessions.map((session, i) => (
               <TableRow
-                onClick={() => handleSessionDetails(session.id)}
+                // onClick={() => handleSessionDetails(session.id)}
                 key={session.id}
               >
                 <TableCell>{i + 1}</TableCell>
-                <TableCell>{session.userId}</TableCell>
                 <TableCell>
-                  {formatDateTime({
-                    type: "date",
-                    dateTime: session.startDate,
-                  })}
+                  <strong>{session.email ?? "User Email"}</strong>
                 </TableCell>
                 <TableCell>
-                  {formatDateTime({
-                    type: "date",
-                    dateTime: session.endDate,
-                  })}
+                  <div className="flex flex-row gap-2">
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info color="blue" size={12} />
+                      </TooltipTrigger>
+                      <TooltipContent>UserId: {session.userId}</TooltipContent>
+                    </Tooltip>
+                    <strong>{session.userName}</strong>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col items-center">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: session.startDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: session.startDate,
+                    })}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-col items-center">
+                    {formatDateTime({
+                      type: "date",
+                      dateTime: session.endDate,
+                    })}
+                    <Minus />
+                    {formatDateTime({
+                      type: "time",
+                      dateTime: session.endDate,
+                    })}
+                  </div>
                 </TableCell>
                 <TableCell>
                   {formatVNDCurrencyValue(session.totalCashReceive)}
@@ -169,19 +208,46 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                     {session.status}
                   </Badge>
                 </TableCell>
-                <TableCell onClick={(event) => event.stopPropagation()}>
-                  <PopoverActionTable
-                    item={session}
-                    editLink={`/admin/userSession/edit/${session.id}`}
-                    handleDelete={handleDeleteSession}
-                  />
+                <TableCell>
+                  <div>
+                    {/* <Label htmlFor="maxWidth">Delete</Label> */}
+                    <AlertDialog>
+                      <AlertDialogTrigger>
+                        <Button
+                          variant={"ghost"}
+                          className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
+                        >
+                          <Trash />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are sure for delete this -{session.userId}-?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will deflag in
+                            list!
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteSession(session)}
+                          >
+                            Confirm
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       ) : (
-        <div>Data is fetching... Please wait...</div>
+        <EmptyDataPage />
       )}
     </div>
   );

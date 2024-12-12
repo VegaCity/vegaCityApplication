@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { DateRange } from "react-day-picker";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,47 +11,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { TransactionServices } from "@/components/services/transactionServices";
 import { AlertCircle } from "lucide-react";
+import { TransactionServices } from "@/components/services/transactionServices";
 import { Transaction } from "@/types/paymentFlow/transaction";
 import DateRangePicker from "../ui/date-picker";
 import EnhancedPagination from "@/lib/EnhancedPagination";
 
-interface TransactionTableProps {
+const TransactionTable = ({
+  limit,
+  title,
+}: {
   limit?: number;
   title?: string;
-}
-
-interface TransactionPageSize {
-  page?: number;
-  size?: number;
-}
-
-interface TransactionPageSizeWithDates extends TransactionPageSize {
-  startDate?: string;
-  endDate?: string;
-}
-
-const TransactionTable = ({ limit, title }: TransactionTableProps) => {
+}) => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [sortType, setSortType] = useState<"asc" | "desc">("desc");
   const pageSize = limit || 10;
 
+  useEffect(() => {
+    fetchTransactions();
+  }, [currentPage, sortType]);
   const formatCurrency = (amount: number, currency: string) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -61,13 +46,13 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [currentPage, limit]);
+  }, [currentPage, limit, sortType]);
 
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
       case "SUCCESS":
         return "text-green-600";
-      case "FAILED":
+      case "CANCEL":
         return "text-red-600";
       default:
         return "text-gray-600";
@@ -92,51 +77,44 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
       const response = await TransactionServices.getTransactions({
         page: currentPage,
         size: pageSize,
-        startDate: dateRange?.from
-          ? format(dateRange.from, "yyyy-MM-dd")
-          : undefined,
-        endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : undefined,
-      } as TransactionPageSizeWithDates);
+      });
 
-      if (response?.data?.data && response?.data?.metaData) {
-        const transactionsData = Array.isArray(response.data?.data)
+      if (response?.data?.data) {
+        const transactionsData = Array.isArray(response.data.data)
           ? response.data.data
-          : response.data.data.content || [];
+          : [];
 
-        const sortedTransactions = transactionsData.sort(
-          (a: Transaction, b: Transaction) =>
-            new Date(b.crDate).getTime() - new Date(a.crDate).getTime()
-        );
+        // Apply sorting based on type
+        const sortedTransactions = transactionsData.sort((a: any, b: any) => {
+          return sortType === "asc"
+            ? a.type.localeCompare(b.type)
+            : b.type.localeCompare(a.type);
+        });
 
-        const limitedTransactions = limit
-          ? sortedTransactions.slice(0, limit)
-          : sortedTransactions;
+        setTransactions(sortedTransactions);
 
-        setTransactions(limitedTransactions);
-
-        const { total } = response.data.metaData;
-        const calculatedTotalPages = limit
-          ? Math.ceil(Math.min(total, limit) / pageSize)
-          : Math.ceil(total / pageSize);
-
-        setTotalPages(calculatedTotalPages);
+        const total = response.data.metaData.total;
+        setTotalPages(Math.ceil(total / pageSize));
       } else {
-        throw new Error("Không thể tải dữ liệu giao dịch");
+        throw new Error("Unable to fetch transactions.");
       }
     } catch (error) {
       console.error("Error fetching transactions:", error);
       setTransactions([]);
-      setTotalPages(1);
-      setError("Đã có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.");
+      setError("An error occurred while fetching data.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const toggleTypeSorting = () => {
+    setSortType((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>{title || "Transactions History"}</CardTitle>
+        <CardTitle>{title || "Transaction History"}</CardTitle>
       </CardHeader>
       <CardContent>
         {error && (
@@ -146,102 +124,56 @@ const TransactionTable = ({ limit, title }: TransactionTableProps) => {
           </Alert>
         )}
 
-        <div className="mb-4 flex items-center space-x-2">
-          <div className="w-[200px]">
-            <DateRangePicker
-              dateRange={dateRange}
-              onDateRangeChange={(newDateRange) => {
-                setDateRange(newDateRange);
-                if (newDateRange?.from && newDateRange?.to) {
-                  setCurrentPage(100);
-                  fetchTransactions();
-                }
-              }}
-            />
-          </div>
-        </div>
-
         {isLoading ? (
-          <div className="space-y-3">
-            {Array(Math.min(5, limit || 5))
-              .fill(0)
-              .map((_, index) => (
-                <div
-                  key={index}
-                  className="h-12 bg-gray-100 rounded animate-pulse"
-                />
-              ))}
-          </div>
+          <p>Loading...</p>
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="font-bold text-white whitespace-nowrap">
-                    No.
+                  <TableHead>No.</TableHead>
+                  <TableHead
+                    className="flex items-center justify-between cursor-pointer"
+                    onClick={toggleTypeSorting}
+                  >
+                    Type {sortType === "asc" ? <ArrowUp /> : <ArrowDown />}
                   </TableHead>
-                  <TableHead className="font-bold text-white whitespace-nowrap">
-                    Type
-                  </TableHead>
-                  <TableHead className="font-bold text-white whitespace-nowrap">
-                    Description
-                  </TableHead>
-                  <TableHead className="font-bold text-white whitespace-nowrap">
-                    Status
-                  </TableHead>
-                  <TableHead className="font-bold text-white whitespace-nowrap">
-                    CreateDate
-                  </TableHead>
-                  <TableHead className="font-bold text-white whitespace-nowrap">
-                    Amount
-                  </TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Create Date</TableHead>
+                  <TableHead>Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions && transactions.length > 0 ? (
-                  transactions.map((transaction, index) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{transaction.type}</TableCell>
-                      <TableCell>{transaction.description}</TableCell>
-                      <TableCell className={getStatusColor(transaction.status)}>
-                        {transaction.status}
-                      </TableCell>
-                      <TableCell>{formatDate(transaction.crDate)}</TableCell>
-                      <TableCell
-                        className={
-                          transaction.isIncrease
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }
-                      >
-                        {transaction.isIncrease ? "+" : "-"}
-                        {formatCurrency(
-                          transaction.amount,
-                          transaction.currency
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-4">
-                      Không có giao dịch nào
+                {transactions.map((transaction, index) => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{transaction.type}</TableCell>
+                    <TableCell>{transaction.description}</TableCell>
+                    <TableCell className={getStatusColor(transaction.status)}>
+                      {transaction.status}
+                    </TableCell>
+                    <TableCell>{formatDate(transaction.crDate)}</TableCell>
+                    <TableCell
+                      className={
+                        transaction.isIncrease
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }
+                    >
+                      {transaction.isIncrease ? "+" : "-"}
+                      {formatCurrency(transaction.amount, transaction.currency)}
                     </TableCell>
                   </TableRow>
-                )}
+                ))}
               </TableBody>
             </Table>
 
-            {transactions && transactions.length > 0 && !limit && (
-              <div className="mt-4 flex justify-center">
-                <EnhancedPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
-                />
-              </div>
-            )}
+            <EnhancedPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </>
         )}
       </CardContent>

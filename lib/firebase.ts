@@ -1,16 +1,20 @@
 // src/lib/firebase.ts
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
+import { config } from "dotenv";
 
+config();
 const firebaseConfig = {
-  apiKey: "AIzaSyCM9tvTPe6Lyc8KEBGNMB0cj0q_xlh4t6U",
-  authDomain: "vegacity-utility-card.firebaseapp.com",
-  projectId: "vegacity-utility-card",
-  storageBucket: "vegacity-utility-card.appspot.com",
-  messagingSenderId: "7350286169",
-  appId: "1:7350286169:web:72c2d502a4bc15427afe48",
-  measurementId: "G-LVH7NMV7KX",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+console.log("storageBucket", process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);

@@ -12,6 +12,8 @@ const handleImageFileChange = async ({
 }: UploadImageProps) => {
   const uploadImage = async (file: File) => {
     const storage = getStorage();
+    // const storage = firebase.app().storage("vegacity-utility-card.appspot.com");
+    // const storageRef = await storage.ref(storage, `images/${file.name}`);
     const storageRef = ref(storage, `images/${file.name}`);
 
     try {
@@ -21,6 +23,7 @@ const handleImageFileChange = async ({
       const imageUrl = await getDownloadURL(storageRef);
       setImageUploaded(imageUrl); //set image to display on UI
       //   return imageUrl; // Return the URL for use
+      console.log(imageUrl, "image upload");
     } catch (error) {
       console.error("Upload failed:", error);
       return null;
@@ -31,6 +34,8 @@ const handleImageFileChange = async ({
   if (fileChange) {
     const imageUrl = await uploadImage(fileChange); // Upload and get the URL
     // You can then use this URL to display the image
+    // const downloadImageUrl = await getDownloadURL(imageUrl || null);
+    // setImageUploaded(downloadImageUrl);
     console.log("Image uploaded:", imageUrl);
   }
 };
