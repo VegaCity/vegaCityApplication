@@ -92,6 +92,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
+import { ReassignPasswordPopover } from "@/components/users/ReassignPasswordPopover";
 
 interface UsersTableProps {
   limit?: number;
@@ -839,10 +840,13 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <p className="text-slate-500">{user.email}</p>
-                          {/* Approve user button and Re-assign email button */}
+                          {/* Approve user button and Re-assign email/password button */}
                           <div onClick={(e) => e.stopPropagation()}>
                             {user.status === 3 && (
                               <ReassignEmailPopover userId={user.id} />
+                            )}
+                            {user.status === 0 && (
+                              <ReassignPasswordPopover userId={user.id} />
                             )}
                           </div>
                         </TableCell>
