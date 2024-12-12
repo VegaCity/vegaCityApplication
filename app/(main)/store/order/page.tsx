@@ -265,7 +265,7 @@ const OrdersPage = () => {
                 <TableCell>
                   <span
                     className={`font-medium ${
-                      order.status === "COMPLETED"
+                      order.status === "RENTING"
                         ? "text-green-600"
                         : order.status === "PENDING"
                         ? "text-yellow-600"

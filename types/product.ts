@@ -14,8 +14,9 @@ export interface ProductCategory {
 export interface ProductPatch {
   name: string;
   price: number;
-  status: string;
+
   imageUrl: string | null;
+  quantity: number;
 }
 export interface ProductPost {
   name: string;

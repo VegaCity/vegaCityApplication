@@ -33,6 +33,7 @@ interface Product {
   id?: string;
   name: string;
   price: string;
+  quantity: number; // Thêm trường quantity
   categoryId: string;
   image: File | null;
   imagePreview: string | ArrayBuffer | null;
@@ -46,11 +47,7 @@ interface MenuData {
   id?: string;
   menuName: string;
   dateFilter: DateFilter;
-  creator: {
-    name: string;
-    email: string;
-    phone: string;
-  };
+
   products: Product[];
   itemCount?: number;
   lastUpdated?: string;
@@ -58,15 +55,11 @@ interface MenuData {
 const initialFormData: MenuData = {
   menuName: "",
   dateFilter: DateFilter.Morning,
-  creator: {
-    name: "Nguyễn Văn A",
-    email: "nguyenvana@example.com",
-    phone: "0123456789",
-  },
   products: [
     {
       name: "",
       price: "",
+      quantity: 1,
       categoryId: "",
       image: null,
       imagePreview: null,
@@ -176,7 +169,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         id: menuData.id,
         menuName: menuData.name,
         dateFilter: menuData.dateFilter,
-        creator: menuData.creator || initialFormData.creator,
+
         products: existingProducts,
         itemCount: existingProducts.length,
         lastUpdated: menuData.upsDate,
@@ -205,6 +198,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         {
           name: "",
           price: "",
+          quantity: 0,
           categoryId: "",
           image: null,
           imagePreview: null,
@@ -368,6 +362,73 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
     }
   };
 
+  const handleSaveMultipleProducts = async () => {
+    try {
+      const newProducts = formData.products.filter((product) => product.isNew);
+      if (newProducts.length === 0) return;
+
+      // Hiển thị loading state
+      setIsLoading(true);
+
+      // Xử lý upload ảnh và tạo dữ liệu cho tất cả sản phẩm mới
+      const productPromises = newProducts.map(async (product) => {
+        let imageUrl = "";
+        if (product.image) {
+          imageUrl = await uploadImageToFirebase(product.image);
+        }
+
+        return {
+          name: product.name,
+          productCategoryId: product.categoryId,
+          price: parseFloat(product.price),
+          imageUrl: imageUrl,
+          status: "Active",
+        };
+      });
+
+      const preparedProducts = await Promise.all(productPromises);
+
+      // Gọi API để thêm nhiều sản phẩm cùng lúc
+      await Promise.all(
+        preparedProducts.map((productData) =>
+          StoreMenuServices.addProductToMenu(params.id, productData)
+        )
+      );
+
+      // Cập nhật state sau khi thêm thành công
+      const updatedProducts = formData.products.map((product) => {
+        if (product.isNew) {
+          return {
+            ...product,
+            isNew: false,
+            isSaving: false,
+            status: "Active",
+          };
+        }
+        return product;
+      });
+
+      setFormData({
+        ...formData,
+        products: updatedProducts,
+      });
+
+      toast({
+        title: "Success",
+        description: "All products added successfully",
+      });
+    } catch (error) {
+      console.error("Error adding multiple products:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add some products",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -411,14 +472,25 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Products</h2>
-            <button
-              type="button"
-              onClick={addProduct}
-              className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Product
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleSaveMultipleProducts}
+                disabled={isLoading || !formData.products.some((p) => p.isNew)}
+                className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isLoading ? "Saving..." : "Save All New Products"}
+              </button>
+              <button
+                type="button"
+                onClick={addProduct}
+                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Product
+              </button>
+            </div>
           </div>
 
           {formData.products.map((product, index) => (
@@ -448,6 +520,19 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     }}
                     className="w-full p-2 border rounded"
                     required
+                  />
+                  <input
+                    type="number"
+                    placeholder="Quantity"
+                    value={product.quantity}
+                    onChange={(e) => {
+                      const newProducts = [...formData.products];
+                      newProducts[index].quantity = parseInt(e.target.value);
+                      setFormData({ ...formData, products: newProducts });
+                    }}
+                    className="w-full p-2 border rounded"
+                    required
+                    min="1"
                   />
                   <select
                     value={product.categoryId}
