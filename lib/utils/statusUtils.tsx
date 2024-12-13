@@ -84,11 +84,11 @@ export const handleBadgePackageTypeColorString = (status: string): string => {
 export const handleBadgeRoleColorString = (role: string): string => {
   switch (role) {
     case "Store":
-      return "bg-teal-400 hover:bg-teal-500"; // Green for Store
+      return "bg-green-400 hover:bg-green-500"; // Green for Store
     case "CashierWeb":
-      return "bg-yellow-400 hover:bg-yellow-500"; // Yellow for CashierWeb
+      return "bg-sky-500 hover:bg-sky-600"; // Yellow for CashierWeb
     case "CashierApp":
-      return "bg-orange-400 hover:bg-orange-500"; // Orange for CashierApp
+      return "bg-blue-400 hover:bg-blue-500"; // Orange for CashierApp
     case "Admin":
       return "bg-red-400 hover:bg-red-500"; // Red for Admin (highest authorization)
     default:
