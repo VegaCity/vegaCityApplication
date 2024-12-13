@@ -120,7 +120,8 @@ const LoginForm: any = () => {
       const newRefreshToken = res.data.data.tokens.refreshToken;
       const accessToken = res.data.data.tokens.accessToken;
       const userId = res.data.data.userId;
-
+      const storeType = res.data.data.storeType;
+      localStorage.setItem("storeType", storeType);
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("userId", userId);
       localStorage.setItem("userEmail", data.email);

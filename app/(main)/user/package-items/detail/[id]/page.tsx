@@ -670,7 +670,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   </h4>
                   <div className="space-y-2 mr-14">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center items-center ">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           FullName
                         </FormLabel>
@@ -758,7 +758,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormItem>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
+                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           Buyer:
                         </FormLabel>
@@ -778,7 +778,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     Duration Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Start Date:
                       </FormLabel>
@@ -793,7 +793,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         End Date:
                       </FormLabel>
@@ -808,7 +808,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Status
                       </FormLabel>
@@ -829,7 +829,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     Wallet Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-8/12">
+                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                         Balance
                       </FormLabel>
@@ -842,9 +842,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormControl>
                     </FormItem>
 
-                    <FormItem className="grid grid-cols-[150px_1fr] items-center gap-1 md:w-8/12 ">
+                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Balance History:
+                        History:
                       </FormLabel>
                       <FormControl>
                         <Input

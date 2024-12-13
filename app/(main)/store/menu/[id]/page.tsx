@@ -63,6 +63,7 @@ interface MenuItem extends Product {
   menuId: string;
   crDate: string;
   upsDate: string;
+  quantity: number;
 }
 const DATE_FILTERS = {
   MORNING: 1,
@@ -74,12 +75,6 @@ const DATE_FILTER_LABELS = {
   [DATE_FILTERS.MORNING]: "7h - 10h30",
   [DATE_FILTERS.AFTERNOON]: "14h - 22h",
   [DATE_FILTERS.LUNCH]: "10h30 - 14h",
-};
-
-const TIME_RANGES = {
-  [DATE_FILTERS.MORNING]: { start: "07:00", end: "10:30" },
-  [DATE_FILTERS.AFTERNOON]: { start: "14:00", end: "22:00" },
-  [DATE_FILTERS.LUNCH]: { start: "10:30", end: "14:00" },
 };
 
 const MenuUI = ({ params }: { params: { id: string } }) => {
@@ -106,8 +101,8 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
   const [updateFormData, setUpdateFormData] = useState<ProductPatch>({
     name: "",
     price: 0,
-    status: "",
     imageUrl: "",
+    quantity: 1,
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -118,6 +113,15 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProductUpdateDialogOpen, setIsProductUpdateDialogOpen] =
     useState(false);
+  const [storeType, setStoreType] = useState<string>("1");
+
+  useEffect(() => {
+    const storedType = localStorage.getItem("storeType");
+    if (storedType) {
+      setStoreType(storedType);
+    }
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
@@ -218,6 +222,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
               categoryId: product.productCategoryId,
               status: product.status,
               dateFilter: menuData.dateFilter,
+              quantity: product.quantity || 0,
             } as MenuItem;
           })
           .filter((product: Product) => product !== null);
@@ -476,14 +481,16 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
               >
                 <div className="aspect-square bg-gray-100 rounded-t-lg relative overflow-hidden">
-                  {isOwnerMode && item.status && (
-                    <Badge
-                      className={`absolute top-2 right-2 z-10 px-3 py-1 text-lg font-medium ${getStatusColor(
-                        item.status
-                      )}`}
-                    >
-                      {item.status}
-                    </Badge>
+                  {!isOwnerMode && item.quantity === 0 && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
+                      <div className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-xl transform -rotate-45">
+                        {storeType === "1"
+                          ? "SOLD OUT"
+                          : storeType === "2"
+                          ? "OUT OF RENT"
+                          : ""}
+                      </div>
+                    </div>
                   )}
                   {item.imageUrl && (
                     <img
@@ -495,9 +502,22 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                 </div>
                 <div className="p-4 flex flex-col justify-between h-[calc(100%-300px)]">
                   <div>
-                    <h3 className="font-bold text-xl mb-2 text-gray-800">
-                      {item.name}
-                    </h3>
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-xl mb-2 text-gray-800">
+                        {item.name}
+                      </h3>
+                      {isOwnerMode && (
+                        <Badge
+                          className={`${
+                            item.status === "InActive"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-green-100 text-green-800"
+                          }`}
+                        >
+                          {item.status}
+                        </Badge>
+                      )}
+                    </div>
 
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-lg font-semibold text-blue-600">
@@ -513,33 +533,45 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                         }
                       </span>
                     </div>
+                    <div className="text-sm text-gray-600 mt-2">
+                      Quantity: {item.quantity}
+                    </div>
                   </div>
 
                   <div className="mt-4 flex space-x-3">
                     {!isOwnerMode ? (
                       <>
-                        <button
-                          className="flex-1 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
-                  flex items-center justify-center gap-2 font-semibold"
-                          onClick={() => cartRef.current?.addToCart(item)}
-                        >
-                          <ShoppingCart size={18} />
-                          Buy
-                        </button>
-                        <button
-                          onClick={() => setSelectedProductId(item.id)}
-                          className="w-16 flex items-center justify-center py-3 text-blue-600 border border-blue-600 
-                  rounded-lg hover:bg-blue-50 transition-colors"
-                        >
-                          <Eye size={18} />
-                        </button>
+                        {item.quantity > 0 ? (
+                          <>
+                            <button
+                              className="flex-1 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
+            flex items-center justify-center gap-2 font-semibold"
+                              onClick={() =>
+                                cartRef.current?.addToCart({
+                                  ...item,
+                                  quantity: item.quantity,
+                                })
+                              }
+                            >
+                              <ShoppingCart size={18} />
+                              Buy
+                            </button>
+                            <button
+                              onClick={() => setSelectedProductId(item.id)}
+                              className="w-16 flex items-center justify-center py-3 text-blue-600 border border-blue-600 
+            rounded-lg hover:bg-blue-50 transition-colors"
+                            >
+                              <Eye size={18} />
+                            </button>
+                          </>
+                        ) : null}
                       </>
                     ) : (
                       <>
                         <button
                           onClick={() => handleUpdateClick(item)}
                           className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-green-600 
-                  rounded-lg hover:bg-green-700 transition-colors font-semibold"
+        rounded-lg hover:bg-green-700 transition-colors font-semibold"
                         >
                           <Pencil size={16} />
                           Update
@@ -547,7 +579,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                         <button
                           onClick={() => setItemToDelete(item.id)}
                           className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-red-600 
-                  rounded-lg hover:bg-red-700 transition-colors font-semibold"
+        rounded-lg hover:bg-red-700 transition-colors font-semibold"
                         >
                           <Trash2 size={16} />
                           Delete

@@ -1,4 +1,9 @@
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useEffect,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Trash } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -24,6 +29,7 @@ import { Toast } from "@/components/ui/toast";
 import toast from "react-hot-toast";
 interface CartItem extends Product {
   quantity: number;
+  stockQuantity: number;
 }
 
 export interface CartRef {
@@ -40,20 +46,50 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [paymentError, setPaymentError] = useState("");
-
+  const [startRent, setStartRent] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
+  const [endRent, setEndRent] = useState(new Date().toISOString().slice(0, 16));
+  const [storeType, setStoreType] = useState<string>("");
+  useEffect(() => {
+    const type = localStorage.getItem("storeType");
+    console.log("storeType loaded:", type);
+    setStoreType(type || "");
+  }, []);
   useImperativeHandle(ref, () => ({
     addToCart: (product: Product) => {
       setCartItems((prevItems) => {
         const existingItem = prevItems.find((item) => item.id === product.id);
+
+        // Kiểm tra số lượng tồn kho
         if (existingItem) {
+          // Nếu số lượng hiện tại + 1 vượt quá số lượng tồn kho
+          if (existingItem.quantity + 1 > product.quantity) {
+            toast.error(
+              `Sản phẩm "${product.name}" không đủ số lượng trong kho. Chỉ còn ${product.quantity} sản phẩm.`
+            );
+            return prevItems;
+          }
+
           return prevItems.map((item) =>
             item.id === product.id
               ? { ...item, quantity: item.quantity + 1 }
               : item
           );
         }
-        return [...prevItems, { ...product, quantity: 1 }];
+
+        // Kiểm tra nếu sản phẩm hết hàng
+        if (product.quantity === 0) {
+          toast.error(`Sản phẩm "${product.name}" hiện đã hết hàng.`);
+          return prevItems;
+        }
+
+        return [
+          ...prevItems,
+          { ...product, quantity: 1, stockQuantity: product.quantity },
+        ];
       });
+
       setIsOpen(true);
     },
   }));
@@ -66,11 +102,20 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
   const updateQuantity = (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
+
+    setCartItems((prevItems) => {
+      const item = prevItems.find((item) => item.id === productId);
+      if (item && newQuantity > item.stockQuantity) {
+        toast.error(
+          `Sản phẩm "${item.name}" không đủ số lượng trong kho. Chỉ còn ${item.stockQuantity} sản phẩm.`
+        );
+        return prevItems;
+      }
+
+      return prevItems.map((item) =>
         item.id === productId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+      );
+    });
   };
 
   const totalPrice = cartItems.reduce(
@@ -149,21 +194,33 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
   async function handleCreateOrder() {
     setPaymentStatus("processing");
-
     try {
-      const storeId = localStorage?.getItem("storeId") ?? "";
-      const isQrCodePayment = paymentMethod === "QRCode";
+      // Kiểm tra số lượng trước khi tạo đơn hàng
+      for (const cartItem of cartItems) {
+        // So sánh số lượng trong giỏ với số lượng tồn kho
+        if (cartItem.quantity > cartItem.stockQuantity) {
+          toast.error(
+            `Sản phẩm "${cartItem.name}" không đủ số lượng trong kho. Chỉ còn ${cartItem.stockQuantity} sản phẩm.`
+          );
+          setPaymentStatus("idle");
+          return;
+        }
+      }
 
-      const orderData = {
+      const storeId = localStorage?.getItem("storeId") ?? "";
+      const storeType = localStorage?.getItem("storeType");
+      const isDirectPayment =
+        paymentMethod === "QRCode" || paymentMethod === "Cash";
+
+      const baseOrderData = {
         saleType: "Product",
         storeId,
         totalAmount: totalPrice,
-        packageOrderId: isQrCodePayment ? vcardCode : null,
-
+        packageOrderId: paymentMethod === "QRCode" ? vcardCode : null,
         productData: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
-          productCategory: item.productCategory?.name || "Unknown",
+          productCategory: item.productCategory?.id || "Unknown",
           price: item.price,
           imgUrl: item?.imageUrl || "",
           quantity: item.quantity,
@@ -171,28 +228,37 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         paymentType: paymentMethod,
       };
 
+      // Thêm startRent và endRent nếu storeType là "2"
+      const orderData =
+        storeType === "2"
+          ? {
+              ...baseOrderData,
+              startRent: new Date().toISOString(),
+              endRent: new Date().toISOString(),
+            }
+          : baseOrderData;
+
       const orderResponse = await createOrderStore(orderData);
       const invoiceId = orderResponse.data.invoiceId;
       const transactionId = orderResponse.data.transactionId;
 
-      if (isQrCodePayment) {
+      if (isDirectPayment) {
         const confirmationResponse = await confirmOrder({
           invoiceId: invoiceId,
           transactionId: transactionId,
         });
-        console.log("confirmationResponse", confirmationResponse);
         if (confirmationResponse.statusCode === 200) {
           (toast.success as any)({
             title: "Success",
             description: "Payment completed successfully",
-            duration: 3000,
+            duration: 1000,
           });
+          window.location.reload();
           setPaymentStatus("success");
           setTimeout(resetPaymentState, 1000);
         }
       } else {
         const result = await initiatePayment(paymentMethod, invoiceId);
-
         if (result) {
           setPaymentStatus("success");
         }
@@ -319,6 +385,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="QRCode">QRCode</SelectItem>
+                    <SelectItem value="Cash">Cash</SelectItem>
                     <SelectItem value="Momo">Momo</SelectItem>
                     <SelectItem value="VnPay">VnPay</SelectItem>
                     <SelectItem value="PayOS">PayOS</SelectItem>
@@ -326,7 +393,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                   </SelectContent>
                 </Select>
               </div>
-              {isQrCodePayment && (
+              {paymentMethod === "QRCode" && (
                 <div className="space-y-2">
                   <label htmlFor="vcard-code" className="text-sm font-medium">
                     Enter Vcard Code
@@ -349,7 +416,26 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                   />
                 </div>
               )}
-
+              {storeType === "2" && (
+                <>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Start Rent</label>
+                    <Input
+                      type="datetime-local"
+                      value={startRent}
+                      onChange={(e) => setStartRent(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">End Rent</label>
+                    <Input
+                      type="datetime-local"
+                      value={endRent}
+                      onChange={(e) => setEndRent(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
               <div className="font-semibold">
                 Total Amount: {totalPrice.toLocaleString("vi-VN")} đ
               </div>
@@ -372,7 +458,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                 className="w-full"
                 onClick={handleCreateOrder}
                 disabled={
-                  (isQrCodePayment && !vcardCode) ||
+                  (paymentMethod === "QRCode" && !vcardCode) ||
                   paymentStatus === "processing" ||
                   paymentStatus === "success"
                 }

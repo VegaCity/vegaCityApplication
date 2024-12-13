@@ -72,6 +72,7 @@ export interface Product {
   upsDate: string;
   status: string;
   imageUrl: string | null;
+  quantity: number;
   menu: Menu | null;
   description: string;
   productCategory: ProductCategory;
