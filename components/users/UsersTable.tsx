@@ -285,9 +285,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     setSearchTerm(event.target.value); //handle email, cccdPassport, phone number change
     console.log(event.target.value);
   };
-  const handleSearch = (searchEmail: string) => {
-    console.log(searchEmail, "email searchhhh");
-  };
+
+  console.log(filteredUsers, "filteredUsers");
+
   console.log(handleUserStatusFromBe(2), "status");
 
   const triggerDeleteButton = (user: UserAccount) => {
@@ -355,12 +355,23 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           </div>
         </TableCell>
         <TableCell className="hidden md:table-cell">
-          <Badge className="bg-slate-400 hover:bg-slate-500">
+          <Badge
+            className={twMerge(handleBadgeRoleColorString(userFound.roleName))}
+          >
             {userFound.roleName}
           </Badge>
         </TableCell>
         <TableCell className="hidden md:table-cell">
-          {userFound.email}
+          <p className="text-slate-500">{userFound.email}</p>
+          {/* Approve user button and Re-assign email/password button */}
+          <div onClick={(e) => e.stopPropagation()}>
+            {userFound.status === 3 && (
+              <ReassignEmailPopover userId={userFound.id} />
+            )}
+            {userFound.status === 0 && (
+              <ReassignPasswordPopover userId={userFound.id} />
+            )}
+          </div>
         </TableCell>
         <TableCell className="hidden md:table-cell">
           {userFound.phoneNumber}
