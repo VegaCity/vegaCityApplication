@@ -66,8 +66,7 @@ function OrderStatusContent() {
             <>
               <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
               <p className="text-gray-600 mb-4">
-                Rất tiếc, đã xảy ra lỗi trong quá trình thanh toán. Vui lòng thử
-                lại.
+                Sorry! Some problem has occured! Please try again!
               </p>
             </>
           )}

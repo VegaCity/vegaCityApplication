@@ -30,9 +30,9 @@ export interface StoreAnalytics {
 }
 
 export interface GroupedStaticsAdminByMonth {
+  name: string;
   endDayCheckWalletCashierBalance: number;
   endDayCheckWalletCashierBalanceHistory: number;
-  name: string;
   totalAmountCashOrder: number;
   totalAmountCustomerMoneyTransfer: number;
   totalAmountCustomerMoneyWithdraw: number;
@@ -50,6 +50,13 @@ export interface AdminAnalyticsByMonth {
   adminBalance: number;
   adminBalanceHistory: number;
   vcardsCurrentActive: number;
+  usersCurrentActive: number;
+  groupedStaticsAdmin: GroupedStaticsAdminByMonth[];
+}
+
+export interface CashierAnalyticsByMonth {
+  cashierWebBalance: number;
+  cashierWebBalanceHistory: number;
   groupedStaticsAdmin: GroupedStaticsAdminByMonth[];
 }
 
@@ -77,7 +84,59 @@ export interface AdminAnalyticsByDate {
   adminBalance: number;
   adminBalanceHistory: number;
   vcardsCurrentActive: number;
+  usersCurrentActive: number;
   groupedStaticsAdmin: GroupedStaticsAdminByDate[];
+}
+
+export interface CashierAnalyticsByDate {
+  cashierWebBalance: number;
+  cashierWebBalanceHistory: number;
+  groupedStaticsAdmin: GroupedStaticsAdminByDate[];
+}
+
+export interface GroupedStaticsStoreByDate {
+  month: string;
+  year: number;
+  date: string;
+  formattedDate: string;
+  totalOrder: number;
+  totalAmountOrder: number;
+  totalOrderCash: number;
+  totalAmountCashOrder: number;
+  totalOrderOnlineMethods: number;
+  totalAmountOrderOnlineMethod: number;
+  totalOrderVcard: number;
+  totalAmountOrderVcard: number;
+  storeDepositsFromVcardPayment: number;
+  vegaDepositsAmountFromStore: number;
+}
+
+export interface StoreAnalyticsByDate {
+  storeBalance: number;
+  storeBalanceHistory: number;
+  totalVcards: number;
+  groupedStaticsAdmin: GroupedStaticsStoreByDate[];
+}
+
+export interface GroupedStaticsStoreByMonth {
+  name: string;
+  storeDepositsFromVcardPayment: number;
+  totalAmountCashOrder: number;
+  totalAmountOrder: number;
+  totalAmountOrderOnlineMethod: number;
+  totalAmountOrderVcard: number;
+  totalOrder: number;
+  totalOrderCash: number;
+  totalOrderOnlineMethods: number;
+  totalOrderVcard: number;
+  vegaDepositsAmountFromStore: number;
+}
+
+export interface StoreAnalyticsByMonth {
+  storeBalance: number;
+  storeBalanceHistory: number;
+  totalVcards: number;
+  groupedStaticsAdmin: GroupedStaticsStoreByMonth[];
 }
 
 export interface CashierAnalytics {

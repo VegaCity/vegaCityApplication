@@ -34,7 +34,8 @@ const calculateTotals = (data: GroupedStaticsAdminByMonth) => {
 
 interface TotalCountCardProps {
   params: {
-    dateRange: DateRange | undefined;
+    dateRange?: DateRange | undefined;
+    saleType: string;
   };
 }
 
@@ -55,7 +56,7 @@ const formatNumber = (num: number): string => {
   return String(num);
 };
 
-export default function TotalCountCard({ params }: TotalCountCardProps) {
+export default function AdminTotalCountCard({ params }: TotalCountCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const [adminTotals, setAdminTotals] = useState<GroupedStaticsAdminByMonth[]>(
@@ -63,6 +64,7 @@ export default function TotalCountCard({ params }: TotalCountCardProps) {
   );
   const groupedData = groupDataByMonth(adminTotals);
   const selectedDate: DateRange | undefined = params.dateRange;
+  const saleType = params.saleType;
 
   useEffect(() => {
     if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
@@ -72,7 +74,7 @@ export default function TotalCountCard({ params }: TotalCountCardProps) {
     const chartBodyDataByDateByMonth: AnalyticsPostProps = {
       startDate: format(selectedDate.from, "yyyy-MM-dd"),
       endDate: format(selectedDate.to, "yyyy-MM-dd"),
-      saleType: "All",
+      saleType: saleType ?? "All",
       groupBy: "Month",
     };
 
@@ -100,33 +102,31 @@ export default function TotalCountCard({ params }: TotalCountCardProps) {
       }
     };
     fetchTotalCountData();
-  }, [selectedDate]);
+  }, [selectedDate, saleType]);
 
   if (error) return <EmptyDataPage title={error} />;
 
   return (
     <>
-      <div className="flex flex-row md:flex-row gap-5 mb-5 w-full">
+      <div className="flex flex-row gap-5 mb-5 w-full">
         {Object.entries(groupedData).map(
           ([month, monthData]) =>
             month === "Nov" && (
-              <div key={month}>
+              <div className="w-full" key={month}>
                 <h2 className="text-xl font-bold mb-4">{month} Summary</h2>
-                <div className="flex flex-row space-x-4 mx-auto">
+                <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
                   {Object.entries(calculateTotals(monthData)).map(
                     ([key, value]) => (
-                      <div className="flex">
-                        <DashboardCard
-                          title={formatTitle(key)}
-                          count={formatNumber(value)}
-                          icon={
-                            <CreditCardIcon
-                              className="text-slate-500"
-                              size={50}
-                            />
-                          }
-                        />
-                      </div>
+                      <DashboardCard
+                        title={formatTitle(key)}
+                        count={formatNumber(value)}
+                        icon={
+                          <CreditCardIcon
+                            className="text-slate-500"
+                            size={50}
+                          />
+                        }
+                      />
                     )
                   )}
                 </div>

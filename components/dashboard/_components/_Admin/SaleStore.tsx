@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
@@ -24,7 +25,9 @@ export default function SaleStore({
           )}
           alt="Avatar"
         />
-        <AvatarFallback>{storeName}</AvatarFallback>
+        <AvatarFallback>
+          <Skeleton className="h-3 w-3" />
+        </AvatarFallback>
       </Avatar>
       <div className="ml-4 space-y-1">
         <p className="text-sm font-medium leading-none">{storeName}</p>

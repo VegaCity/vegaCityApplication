@@ -18,76 +18,49 @@ import {
 } from "@/components/ui/card";
 import {
   StoreAnalytics,
-  AdminAnalyticsByMonth,
+  AdminAnalyticsByDate,
+  StoreAnalyticsByDate,
   CashierAnalytics,
   AnalyticsPostProps,
 } from "@/types/analytics";
-import { AnalyticsServices } from "../services/Dashboard/analyticsServices";
-import SaleStore from "@/components/dashboard/_components/SaleStore";
 
-import {
-  TrendingUp,
-  DollarSign,
-  CreditCard,
-  Package,
-  Trophy,
-  ShoppingCart,
-  LucideIcon,
-} from "lucide-react";
-import { ChartByDate } from "@/components/dashboard/_components/ChartByDate";
-import { TopSale } from "@/components/dashboard/_components/TopSale";
+import { AnalyticsServices } from "../services/Dashboard/analyticsServices";
+import { AdminChartByDate } from "@/components/dashboard/_components/_Admin/AdminChartByDate";
+import { CashierChartByDate } from "@/components/dashboard/_components/_CashierWeb/CashierChartByDate";
+import { StoreChartByDate } from "@/components/dashboard/_components/_Store/StoreChartByDate";
+import { TopSale } from "@/components/dashboard/_components/_Admin/TopSale";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import {
+  ShoppingCart,
+  DollarSign,
+  Trophy,
+  CreditCard,
+  LucideIcon,
+} from "lucide-react";
+import { useAuthUser } from "@/components/hooks/useAuthUser";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { StoreChartByMonth } from "@/components/dashboard/_components/_Store/StoreChartByMonth";
+import { AdminChartByMonth } from "@/components/dashboard/_components/_Admin/AdminChartByMonth";
+import { CashierChartByMonth } from "@/components/dashboard/_components/_CashierWeb/CashierChartByMonth";
+import { AdminPieGraph } from "@/components/dashboard/_components/_Admin/AdminPieGraph";
+
+interface ChartLine {
+  dataKey: string;
+  stroke: string;
+  name: string;
+}
 
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: any[];
+  payload?: any;
   label?: string;
 }
-const formatLargeNumber = (value: number) => {
-  if (value >= 1000000000) {
-    return `${(value / 1000000000).toFixed(1)}B`;
-  }
-  if (value >= 1000000) {
-    return `${(value / 1000000).toFixed(1)}M`;
-  }
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(1)}K`;
-  }
-  return value.toString();
-};
 
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-    notation: "compact",
-    compactDisplay: "short",
-  }).format(value);
-};
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-        <p className="font-semibold text-gray-800">{label}</p>
-        {payload.map((entry, index) => {
-          const value =
-            entry.dataKey.includes("Amount") ||
-            entry.dataKey.includes("Revenue")
-              ? formatCurrency(entry.value)
-              : formatLargeNumber(entry.value);
-          return (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {`${entry.name}: ${value}`}
-            </p>
-          );
-        })}
-      </div>
-    );
-  }
-  return null;
-};
+interface ChartProps {
+  data: any[];
+  lines: ChartLine[];
+}
 
 interface ChartCardProps {
   title: string;
@@ -96,20 +69,57 @@ interface ChartCardProps {
   children: React.ReactNode;
 }
 
-const ChartCard = ({
+interface AnalyticsChartProps {
+  params: {
+    dateRange: DateRange | undefined;
+    saleType: string;
+  };
+}
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+    notation: "compact",
+    compactDisplay: "short",
+  }).format(value);
+};
+
+const CustomTooltip: React.FC<CustomTooltipProps> = ({
+  active,
+  payload,
+  label,
+}) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+        <p className="font-semibold text-gray-800">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm" style={{ color: entry.color }}>
+            {`${entry.name}: ${formatCurrency(entry.value)}`}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const ChartCard: React.FC<ChartCardProps> = ({
   title,
   description,
   icon: Icon,
   children,
-}: ChartCardProps) => (
+}) => (
   <Card className="flex-1 min-w-[450px] hover:shadow-lg transition-all duration-300">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <div>
-        <CardTitle className="text-xl font-bold flex items-center gap-2">
+        <CardTitle className="text-xl font-bold flex items-center gap-2 my-2">
           <Icon className="w-5 h-5" />
           {title}
         </CardTitle>
-        <CardDescription className="text-sm text-gray-500">
+        <CardDescription className="my-2 text-sm text-gray-500">
           {description}
         </CardDescription>
       </div>
@@ -118,282 +128,107 @@ const ChartCard = ({
   </Card>
 );
 
-interface ChartLineConfig {
-  dataKey: string;
-  stroke: string;
-  name: string;
-}
+// const Chart: React.FC<ChartProps> = ({ data, lines }) => {
+//   const [hoveredLine, setHoveredLine] = useState<string | null>(null);
 
-interface ChartProps {
-  data: any[];
-  lines: ChartLineConfig[];
-}
+//   return (
+//     <div className="h-[300px]">
+//       <ResponsiveContainer width="100%">
+//         <LineChart
+//           data={data}
+//           margin={{ top: 5, right: 20, left: 50, bottom: 5 }}
+//         >
+//           <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+//           <XAxis dataKey="name" tick={{ fill: "#666" }} />
+//           <YAxis tick={{ fill: "#666" }} />
+//           <Tooltip content={<CustomTooltip />} />
+//           <Legend
+//             onMouseEnter={(e) => setHoveredLine(e.dataKey)}
+//             onMouseLeave={() => setHoveredLine(null)}
+//           />
+//           {lines.map((line) => (
+//             <Line
+//               key={line.dataKey}
+//               type="monotone"
+//               {...line}
+//               strokeWidth={hoveredLine === line.dataKey ? 3 : 2}
+//               className={
+//                 hoveredLine && hoveredLine !== line.dataKey ? "opacity-30" : ""
+//               }
+//             />
+//           ))}
+//         </LineChart>
+//       </ResponsiveContainer>
+//     </div>
+//   );
+// };
 
-interface AnalyticsChartProps {
-  params: {
-    dateRange: DateRange | undefined;
-  };
-}
-
-const Chart = ({ data, lines }: ChartProps) => {
-  const [hoveredLine, setHoveredLine] = useState<string | null>(null);
-
-  return (
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%">
-        <LineChart
-          data={data}
-          margin={{ top: 5, right: 20, left: 50, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-          <XAxis
-            dataKey="name"
-            tick={{ fill: "#666" }}
-            tickLine={{ stroke: "#666" }}
-          />
-          <YAxis tick={{ fill: "#666" }} tickLine={{ stroke: "#666" }} />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend
-            onMouseEnter={(e) => setHoveredLine(e.dataKey as string)}
-            onMouseLeave={() => setHoveredLine(null)}
-          />
-          {lines.map((line) => (
-            <Line
-              key={line.dataKey}
-              type="monotone"
-              {...line}
-              strokeWidth={hoveredLine === line.dataKey ? 3 : 2}
-              dot={{ r: 4 }}
-              activeDot={{ r: 6, strokeWidth: 2 }}
-              className={
-                hoveredLine && hoveredLine !== line.dataKey ? "opacity-30" : ""
-              }
-            />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-const AnalyticsChart = ({ params }: AnalyticsChartProps) => {
-  const selectedDate: DateRange | undefined = params.dateRange;
-  const [analyticsData, setAnalyticsData] = useState<
-    StoreAnalytics[] | AdminAnalyticsByMonth[] | CashierAnalytics[]
-  >([]);
-  const [userRole, setUserRole] = useState<string>("");
+const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
+  const { dateRange, saleType } = params;
+  const user = useAuthUser();
+  const userRole = user.roleName;
+  console.log(userRole, "userRole");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  console.log(selectedDate, "AnalyticsChartProps");
 
-  useEffect(() => {
-    const fetchUserAndAnalytics = async () => {
-      setIsLoading(true);
-      try {
-        if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
-
-        const chartBodyData: AnalyticsPostProps = {
-          startDate: format(selectedDate.from, "yyyy-MM-dd"),
-          endDate: format(selectedDate.to, "yyyy-MM-dd"),
-          saleType: "All",
-          groupBy: "Date",
-        };
-
-        const userId = localStorage.getItem("userId");
-        const userResponse = await AnalyticsServices.getUserById(
-          userId as string
-        );
-        const role = userResponse.data.data.role.name;
-        setUserRole(role);
-
-        const analyticsResponse = await AnalyticsServices.getDashboardAnalytics(
-          chartBodyData
-        );
-        setAnalyticsData(analyticsResponse.data.data || []);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserAndAnalytics();
-  }, []);
-
-  const renderStoreCharts = () => (
-    <div className="flex flex-wrap w-full gap-6">
-      <ChartCard
-        title="Orders Overview"
-        description="Monthly Order Statistics"
-        icon={ShoppingCart}
-      >
-        <Chart
-          data={analyticsData as StoreAnalytics[]}
-          lines={[
-            { dataKey: "orderCount", stroke: "#8884d8", name: "Total Orders" },
-            {
-              dataKey: "orderCashCount",
-              stroke: "#82ca9d",
-              name: "Cash Orders",
-            },
-            {
-              dataKey: "otherOrderCount",
-              stroke: "#ffc658",
-              name: "Other Orders",
-            },
-          ]}
-        />
-      </ChartCard>
-
-      <ChartCard
-        title="Revenue & Products"
-        description="Monthly Financial Overview"
-        icon={DollarSign}
-      >
-        <Chart
-          data={analyticsData as StoreAnalytics[]}
-          lines={[
-            {
-              dataKey: "totalAmountFromTransaction",
-              stroke: "#8884d8",
-              name: "Revenue",
-            },
-            { dataKey: "totalProduct", stroke: "#82ca9d", name: "Products" },
-          ]}
-        />
-      </ChartCard>
-    </div>
-  );
-
-  const renderAdminCharts = () => (
-    <div className="flex flex-wrap w-full gap-6">
-      {/* <ChartCard
-        title="Orders & V-Cards"
-        description="Monthly Overview"
-        icon={Package}
-      >
-        <Chart
-          data={analyticsData as AdminAnalytics[]}
-          lines={[
-            {
-              dataKey: "orderCash",
-              stroke: "#8884d8",
-              name: "Orders with Cash",
-            },
-            { dataKey: "orderCount", stroke: "#82ca9d", name: "Orders" },
-            { dataKey: "etagCount", stroke: "#825555", name: "V-Cards " },
-          ]}
-        />
-      </ChartCard> */}
-
-      {/* <Chart /> */}
-      {/* <ChartCard
-        title="Chart By Date"
-        description="Date Monthly Overview"
-        icon={Package}
-      > */}
-      <div className="grid grid-cols-12 gap-3 w-full">
-        {/* Left column */}
-        <div className="col-span-8">
-          <ChartByDate params={{ dateRange: selectedDate }} />
+  const renderCharts = () => {
+    if (userRole === "Admin") {
+      return (
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-4 md:col-span-8">
+            <AdminChartByDate params={{ saleType, dateRange }} />
+          </div>
+          <div className="col-span-4 md:col-span-4">
+            <ChartCard
+              title="Top Sale Stores"
+              description="Top 5 Stores in Month"
+              icon={Trophy}
+            >
+              <TopSale params={{ dateRange }} />
+            </ChartCard>
+          </div>
+          <div className="col-span-4 md:col-span-8">
+            <AdminChartByMonth params={{ saleType, dateRange }} />
+          </div>
+          <div className="col-span-4 md:col-span-4">
+            <AdminPieGraph params={{ saleType, dateRange }} />
+          </div>
         </div>
-
-        {/* Right column */}
-        <div className="col-span-4">
-          <ChartCard
-            title="Top Sale Stores"
-            description="Top Stores in Month"
-            icon={Trophy}
-          >
-            <TopSale params={{ dateRange: selectedDate }} />
-          </ChartCard>
+      );
+    } else if (userRole === "Store") {
+      return (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="col-span-4">
+            <StoreChartByDate params={{ dateRange }} />
+          </div>
+          <div className="col-span-8">
+            <StoreChartByMonth params={{ dateRange }} />
+          </div>
         </div>
-      </div>
+      );
+    } else if (userRole === "CashierWeb") {
+      return (
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-3 md:col-span-4">
+            <CashierChartByDate params={{ saleType, dateRange }} />
+          </div>
 
-      {/* Chart by Month
-      <ChartCard
-        title="Total Transactions"
-        description="Monthly Overview"
-        icon={Package}
-      >
-        <Chart
-          data={analyticsData as AdminAnalyticsByMonth[]}
-          lines={[
-            {
-              dataKey: "orderCash",
-              stroke: "#8884d8",
-              name: "Orders with Cash",
-            },
-            {
-              dataKey: "totalTransactions",
-              stroke: "#82ca9d",
-              name: "Total Transactions",
-            },
-            { dataKey: "orderCount", stroke: "#825555", name: "Orders" },
-            {
-              dataKey: "totalTransactionsAmount",
-              stroke: "#822555",
-              name: "Total Revenue",
-            },
-          ]}
-        />
-      </ChartCard> */}
-    </div>
-  );
-
-  const renderCashierCharts = () => (
-    <div className="flex flex-wrap w-full gap-6">
-      <ChartCard
-        title="Orders & Transactions"
-        description="Monthly Overview"
-        icon={ShoppingCart}
-      >
-        <Chart
-          data={analyticsData as CashierAnalytics[]}
-          lines={[
-            {
-              dataKey: "totalTransactions",
-              stroke: "#8884d8",
-              name: "Total Transactions",
-            },
-            { dataKey: "orderCash", stroke: "#82ca9d", name: "Cash Orders" },
-            { dataKey: "otherOrder", stroke: "#ffc658", name: "Other Orders" },
-          ]}
-        />
-      </ChartCard>
-
-      <ChartCard
-        title="Revenue & V-Cards"
-        description="Monthly Financial Overview"
-        icon={CreditCard}
-      >
-        <Chart
-          data={analyticsData as CashierAnalytics[]}
-          lines={[
-            {
-              dataKey: "totalAmountFromTransaction",
-              stroke: "#8884d8",
-              name: "Revenue",
-            },
-            { dataKey: "etagCount", stroke: "#82ca9d", name: "V-Cards" },
-          ]}
-        />
-      </ChartCard>
-    </div>
-  );
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
+          <div className="col-span-3 md:col-span-8">
+            <CashierChartByMonth params={{ saleType, dateRange }} />
+          </div>
+        </div>
+      );
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {userRole === "Store" && renderStoreCharts()}
-      {userRole === "Admin" && renderAdminCharts()}
-      {userRole === "CashierWeb" && renderCashierCharts()}
+      {isLoading ? (
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        </div>
+      ) : (
+        renderCharts()
+      )}
     </div>
   );
 };

@@ -30,38 +30,27 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <SidebarProvider>
-      <>
-        {/* <Navbar /> */}
-        <div className="flex w-full justify-center">
-          {/* Sidebar on the left */}
-          <div className="hidden sm:block h-screen w-auto">
-            {/* <Sidebar /> */}
-            <AppSidebar />
-          </div>
-
-          {/* Main content area */}
-          <div className="p-5 w-full max-[1440px]">
-            {/* Move SidebarTrigger to AppSidebar */}
-            {/* <div className="fixed left-29 top-1">
-              <SidebarTrigger size={"lg"} />
-            </div> */}
-
-            {/* Breadcrumb */}
-            <div className="my-4">
-              {/* <Breadcrumb items={breadcrumbItems} /> */}
-              <Breadcrumb />
-            </div>
-
-            {/* Centered children content */}
-            <div className="flex p-5 items-center justify-center">
-              <div className="w-full max-full px-2">{children}</div>
-              {/* Adjust the max-width as per your preference */}
-            </div>
-          </div>
-
-          {/* <Toaster /> */}
+      {/* <Navbar /> */}
+      <div className="flex w-full items-start justify-center">
+        {/* Sidebar on the left */}
+        <div className="hidden sm:block h-screen w-auto">
+          <AppSidebar />
         </div>
-      </>
+
+        {/* Main content area */}
+        <div className="p-5 w-full">
+          {/* Breadcrumb */}
+          <div className="my-4">
+            <Breadcrumb />
+          </div>
+
+          {/* Centered children content */}
+          <div className="flex p-5 items-center justify-center">
+            <div className="w-full max-w-full">{children}</div>
+            {/* Adjust the max-width to your preference */}
+          </div>
+        </div>
+      </div>
     </SidebarProvider>
   );
 };
