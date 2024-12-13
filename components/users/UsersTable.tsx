@@ -365,14 +365,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
         <TableCell className="hidden md:table-cell">
           {userFound.phoneNumber}
         </TableCell>
-        <TableCell className="hidden md:table-cell">
-          {userFound.address}
-        </TableCell>
-        <TableCell className="hidden md:table-cell">
-          {userFound.cccdPassport}
-        </TableCell>
         <TableCell>
-          <Badge className={cn(handleBadgeStatusColor(userFound.status))}>
+          <Badge className={twMerge(handleBadgeStatusColor(userFound.status))}>
             {handleUserStatusFromBe(userFound.status)}
           </Badge>
         </TableCell>
@@ -831,8 +825,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           <Badge
-                            className={handleBadgeRoleColorString(
-                              user.roleName
+                            className={twMerge(
+                              handleBadgeRoleColorString(user.roleName)
                             )}
                           >
                             {user.roleName}
@@ -855,7 +849,9 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            className={handleBadgeStatusColor(user.status)}
+                            className={twMerge(
+                              handleBadgeStatusColor(user.status)
+                            )}
                           >
                             {handleUserStatusFromBe(user.status)}
                           </Badge>

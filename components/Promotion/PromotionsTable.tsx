@@ -182,7 +182,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 className="hidden md:table-cell text-white"
               >
                 Start Date
-                <span className="ml-1">
+                <span className="mx-auto">
                   {sortConfig && sortConfig.direction === "asc" ? (
                     <ArrowUp01 size={15} />
                   ) : (
@@ -195,7 +195,7 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                 className="hidden md:table-cell text-white"
               >
                 End Date
-                <span className="ml-1">
+                <span className="mx-auto">
                   {sortConfig && sortConfig.direction === "asc" ? (
                     <ArrowUp01 size={15} />
                   ) : (
