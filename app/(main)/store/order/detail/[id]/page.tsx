@@ -41,11 +41,17 @@ const OrderDetailPage = () => {
         if (response.data.orderExist) {
           setOrder(response.data.orderExist);
 
-          if (response.data.orderExist.productId) {
+          if (
+            response.data.orderExist.orderDetails &&
+            response.data.orderExist.orderDetails[0] &&
+            response.data.orderExist.orderDetails[0].productId
+          ) {
+            const productId =
+              response.data.orderExist.orderDetails[0].productId;
             const productResponse = await ProductServices.getProductById(
-              response.data.orderExist.orderDetails[0].productId
+              productId
             );
-            console.log(productResponse, "productResponse");
+            console.log("Product Response:", productResponse);
             setProductDetails(productResponse.data);
           }
         } else {
@@ -164,105 +170,106 @@ const OrderDetailPage = () => {
           </CardHeader>
 
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <Receipt className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Order Name
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">{order.name}</p>
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="flex items-start">
+                <Receipt className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Order Name
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">{order.name}</p>
                 </div>
-
-                <div className="flex items-start">
-                  <Calendar className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Create Date
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {formatDate(order.crDate)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <Package className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      VCard Id
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder?.vcardId}
-                    </p>
-                  </div>
-                </div>
-                {productDetails && (
-                  <div className="flex items-start">
-                    <Package className="h-5 w-5 text-gray-400 mt-1" />
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">
-                        Product Name
-                      </p>
-                      <p className="mt-1 text-base text-gray-900">
-                        {productDetails.name}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <PaymentIcon className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Payment Type
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.payments[0].name}
-                    </p>
-                  </div>
+              <div className="flex items-start">
+                <CreditCard className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Payment Type
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.payments?.[0]?.name || ""}
+                  </p>
                 </div>
+              </div>
 
-                <div className="flex items-start">
-                  <Package className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Sale Type
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.saleType}
-                    </p>
-                  </div>
+              <div className="flex items-start">
+                <Calendar className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Create Date
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {formatDate(order.crDate)}
+                  </p>
                 </div>
-                <div className="flex items-start">
-                  <Calendar className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Start Rent Date
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.startRent
-                        ? formatDate(order.startRent)
-                        : "Not specified"}
-                    </p>
-                  </div>
-                </div>
+              </div>
 
-                <div className="flex items-start">
-                  <Calendar className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      End Rent Date
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.endRent
-                        ? formatDate(order.endRent)
-                        : "Not specified"}
-                    </p>
-                  </div>
+              <div className="flex items-start">
+                <Package className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Sale Type</p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.saleType || ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <CreditCard className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">VCard Id</p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.packageOrder?.vcardId || ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <Calendar className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Start Rent Date
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.startRent ? formatDate(order.startRent) : ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <Package className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Product Name
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {productDetails?.data?.name || ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <Calendar className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    End Rent Date
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.endRent ? formatDate(order.endRent) : ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <Package className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Product Quantity
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {productDetails?.data?.quantity || ""}
+                  </p>
                 </div>
               </div>
             </div>
