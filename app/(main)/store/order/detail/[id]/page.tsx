@@ -21,6 +21,7 @@ import {
   detailOrder,
   GetOrdersById,
 } from "@/components/services/orderuserServices";
+import { ProductServices } from "@/components/services/productServices";
 
 const OrderDetailPage = () => {
   const params = useParams();
@@ -30,14 +31,23 @@ const OrderDetailPage = () => {
   >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [productDetails, setProductDetails] = useState<any>(null);
 
   useEffect(() => {
-    const fetchOrderDetail = async () => {
+    const fetchOrderAndProductDetails = async () => {
       try {
         setLoading(true);
         const response = await detailOrder(params.id as string);
         if (response.data.orderExist) {
           setOrder(response.data.orderExist);
+
+          if (response.data.orderExist.productId) {
+            const productResponse = await ProductServices.getProductById(
+              response.data.orderExist.orderDetails[0].productId
+            );
+            console.log(productResponse, "productResponse");
+            setProductDetails(productResponse.data);
+          }
         } else {
           setError("Could not find order details");
         }
@@ -50,7 +60,7 @@ const OrderDetailPage = () => {
     };
 
     if (params.id) {
-      fetchOrderDetail();
+      fetchOrderAndProductDetails();
     }
   }, [params.id]);
 
@@ -188,6 +198,19 @@ const OrderDetailPage = () => {
                     </p>
                   </div>
                 </div>
+                {productDetails && (
+                  <div className="flex items-start">
+                    <Package className="h-5 w-5 text-gray-400 mt-1" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-500">
+                        Product Name
+                      </p>
+                      <p className="mt-1 text-base text-gray-900">
+                        {productDetails.name}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-6">
@@ -211,6 +234,33 @@ const OrderDetailPage = () => {
                     </p>
                     <p className="mt-1 text-base text-gray-900">
                       {order.saleType}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <Calendar className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Start Rent Date
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.startRent
+                        ? formatDate(order.startRent)
+                        : "Not specified"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Calendar className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      End Rent Date
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.endRent
+                        ? formatDate(order.endRent)
+                        : "Not specified"}
                     </p>
                   </div>
                 </div>

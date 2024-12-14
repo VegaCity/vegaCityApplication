@@ -27,6 +27,7 @@ import { PackageItemServices } from "@/components/services/Package/packageItemSe
 import paymentService from "../services/paymentService";
 import { Toast } from "@/components/ui/toast";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 interface CartItem extends Product {
   quantity: number;
   stockQuantity: number;
@@ -46,16 +47,79 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [paymentError, setPaymentError] = useState("");
-  const [startRent, setStartRent] = useState(
-    new Date().toISOString().slice(0, 16)
-  );
-  const [endRent, setEndRent] = useState(new Date().toISOString().slice(0, 16));
+  const [rentTimeError, setRentTimeError] = useState("");
+  const formatDateForInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const [startRent, setStartRent] = useState(formatDateForInput(new Date()));
+  const [endRent, setEndRent] = useState(formatDateForInput(new Date()));
+  const formatDateForDisplay = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+  const validateRentTimes = () => {
+    const start = new Date(startRent);
+    const end = new Date(endRent);
+    const now = new Date();
+
+    // Check if start time is in the past
+    if (start < now) {
+      setRentTimeError("Start time cannot be in the past");
+      return false;
+    }
+
+    // Check if end time is before or equal to start time
+    if (end <= start) {
+      setRentTimeError("End time must be later than start time");
+      return false;
+    }
+
+    // Check minimum and maximum rental duration
+    const rentalDurationHours =
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    const MIN_RENTAL_HOURS = 1;
+    const MAX_RENTAL_DAYS = 30;
+
+    if (rentalDurationHours < MIN_RENTAL_HOURS) {
+      setRentTimeError(`Minimum rental duration is ${MIN_RENTAL_HOURS} hour`);
+      return false;
+    }
+
+    if (rentalDurationHours > MAX_RENTAL_DAYS * 24) {
+      setRentTimeError(`Maximum rental duration is ${MAX_RENTAL_DAYS} days`);
+      return false;
+    }
+
+    // Clear any previous error
+    setRentTimeError("");
+    return true;
+  };
   const [storeType, setStoreType] = useState<string>("");
   useEffect(() => {
     const type = localStorage.getItem("storeType");
     console.log("storeType loaded:", type);
     setStoreType(type || "");
   }, []);
+  // Update rent time validation when start or end times change
+  useEffect(() => {
+    if (storeType === "2") {
+      validateRentTimes();
+    }
+  }, [startRent, endRent, storeType]);
+
   useImperativeHandle(ref, () => ({
     addToCart: (product: Product) => {
       setCartItems((prevItems) => {
@@ -209,6 +273,13 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
       const storeId = localStorage?.getItem("storeId") ?? "";
       const storeType = localStorage?.getItem("storeType");
+      if (storeType === "2") {
+        const isRentTimeValid = validateRentTimes();
+        if (!isRentTimeValid) {
+          return;
+        }
+      }
+      setPaymentStatus("processing");
       const isDirectPayment =
         paymentMethod === "QRCode" || paymentMethod === "Cash";
 
@@ -229,12 +300,20 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       };
 
       // Thêm startRent và endRent nếu storeType là "2"
+      const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        // Tính toán timezone offset
+        const tzOffset = -date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() + tzOffset * 60000);
+        return localDate.toISOString();
+      };
+
       const orderData =
         storeType === "2"
           ? {
               ...baseOrderData,
-              startRent: new Date().toISOString(),
-              endRent: new Date().toISOString(),
+              startRent: formatDateTime(startRent),
+              endRent: formatDateTime(endRent),
             }
           : baseOrderData;
 
@@ -424,6 +503,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                       type="datetime-local"
                       value={startRent}
                       onChange={(e) => setStartRent(e.target.value)}
+                      className={rentTimeError ? "border-red-500" : ""}
                     />
                   </div>
                   <div className="space-y-2">
@@ -432,13 +512,39 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                       type="datetime-local"
                       value={endRent}
                       onChange={(e) => setEndRent(e.target.value)}
+                      className={rentTimeError ? "border-red-500" : ""}
                     />
                   </div>
+                  {rentTimeError && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertDescription>{rentTimeError}</AlertDescription>
+                    </Alert>
+                  )}
                 </>
               )}
               <div className="font-semibold">
                 Total Amount: {totalPrice.toLocaleString("vi-VN")} đ
               </div>
+
+              <Button
+                className="w-full"
+                onClick={handleCreateOrder}
+                disabled={
+                  (paymentMethod === "QRCode" && !vcardCode) ||
+                  paymentStatus === "processing" ||
+                  paymentStatus === "success" ||
+                  !!rentTimeError
+                }
+              >
+                {paymentStatus === "processing" ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Processing...
+                  </div>
+                ) : (
+                  "Confirm Order"
+                )}
+              </Button>
 
               {paymentStatus === "error" && (
                 <Alert variant="destructive">
@@ -453,20 +559,6 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                   </AlertDescription>
                 </Alert>
               )}
-
-              <Button
-                className="w-full"
-                onClick={handleCreateOrder}
-                disabled={
-                  (paymentMethod === "QRCode" && !vcardCode) ||
-                  paymentStatus === "processing" ||
-                  paymentStatus === "success"
-                }
-              >
-                {paymentStatus === "processing"
-                  ? "Processing..."
-                  : "Confirm Payment"}
-              </Button>
             </div>
           </DialogContent>
         </Dialog>

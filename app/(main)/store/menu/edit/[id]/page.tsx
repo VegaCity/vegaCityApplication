@@ -47,7 +47,6 @@ interface MenuData {
   id?: string;
   menuName: string;
   dateFilter: DateFilter;
-
   products: Product[];
   itemCount?: number;
   lastUpdated?: string;
@@ -162,6 +161,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
             status: product.status,
             dateFilter: menuData.dateFilter,
             isNew: false,
+            quantity: product.quantity || 1,
           };
         });
 
@@ -228,6 +228,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         productCategoryId: product.categoryId,
         price: parseFloat(product.price),
         imageUrl: imageUrl,
+        quantity: product.quantity,
         status: "Active", // Set initial status as Active
       };
 
@@ -382,6 +383,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
           productCategoryId: product.categoryId,
           price: parseFloat(product.price),
           imageUrl: imageUrl,
+          quantity: product.quantity,
           status: "Active",
         };
       });
@@ -428,6 +430,16 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       setIsLoading(false);
     }
   };
+
+  const getCurrentTime = () => {
+    return new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const [startRent, setStartRent] = useState(getCurrentTime());
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -508,6 +520,8 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     }}
                     className="w-full p-2 border rounded"
                     required
+                    readOnly={!product.isNew}
+                    disabled={!product.isNew}
                   />
                   <input
                     type="number"
@@ -520,6 +534,8 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     }}
                     className="w-full p-2 border rounded"
                     required
+                    readOnly={!product.isNew}
+                    disabled={!product.isNew}
                   />
                   <input
                     type="number"
@@ -533,6 +549,8 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     className="w-full p-2 border rounded"
                     required
                     min="1"
+                    readOnly={!product.isNew}
+                    disabled={!product.isNew}
                   />
                   <select
                     value={product.categoryId}
@@ -543,6 +561,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     }}
                     className="w-full p-2 border rounded"
                     required
+                    disabled={!product.isNew}
                   >
                     <option value="">Select Category</option>
                     {categories.map((category) => (
@@ -561,33 +580,37 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                         alt="Preview"
                         className="w-full h-32 object-cover rounded"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {product.isNew && (
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   ) : (
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleImageChange(e, index)}
-                        className="hidden"
-                        id={`image-upload-${index}`}
-                      />
-                      <label
-                        htmlFor={`image-upload-${index}`}
-                        className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:bg-gray-50"
-                      >
-                        <ImageIcon className="w-8 h-8 text-gray-400" />
-                        <span className="mt-2 text-sm text-gray-500">
-                          Upload Image
-                        </span>
-                      </label>
-                    </div>
+                    product.isNew && (
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageChange(e, index)}
+                          className="hidden"
+                          id={`image-upload-${index}`}
+                        />
+                        <label
+                          htmlFor={`image-upload-${index}`}
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:bg-gray-50"
+                        >
+                          <ImageIcon className="w-8 h-8 text-gray-400" />
+                          <span className="mt-2 text-sm text-gray-500">
+                            Upload Image
+                          </span>
+                        </label>
+                      </div>
+                    )
                   )}
                 </div>
               </div>
