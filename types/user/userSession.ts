@@ -11,6 +11,7 @@ export interface UserSession {
   totalWithrawCash: number;
   zoneId: string;
   status: string; //Active
+  roleName: string;
 }
 
 interface User {
