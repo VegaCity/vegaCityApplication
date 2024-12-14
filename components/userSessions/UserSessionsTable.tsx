@@ -43,6 +43,9 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { useAuthUser } from "@/components/hooks/useAuthUser";
+import { UserServices } from "@/components/services/User/userServices";
+import { AxiosError } from "axios";
 
 interface UserSessionTableProps {
   limit?: number;
@@ -50,6 +53,7 @@ interface UserSessionTableProps {
 }
 
 const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
+  const [userRole, setUserRole] = useState<string>("");
   const [sessionList, setSessionList] = useState<UserSession[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -64,13 +68,16 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
           page: 1,
           size: 10,
         });
+
         setSessionList(
           Array.isArray(response.data.data) ? response.data.data : []
         );
         console.log(response.data.data, "UserSession");
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
+          err instanceof AxiosError
+            ? err.response?.data.messageResponse || err.response?.data.Error
+            : "An unknown error occurred"
         );
       } finally {
         setIsLoading(false);
@@ -80,6 +87,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
     fetchSessions();
   }, [isLoading, deleteLoading]);
 
+  console.log(userRole, "role");
   const handleSessionDetails = (sessionId: string) => {
     router.push(`/admin/userSession/detail/${sessionId}`);
   };
@@ -225,7 +233,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>
-                              Are sure for delete this -{session.userId}-?
+                              Are sure for delete this -{session.email}-?
                             </AlertDialogTitle>
                             <AlertDialogDescription>
                               This action cannot be undone. This will deflag in
