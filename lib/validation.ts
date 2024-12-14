@@ -407,10 +407,10 @@ export const editPackageFormSchema = z.object({
   name: z
     .string()
     .min(2, { message: "Name must include at least 2 characters" })
-    .max(100, { message: "Name does not exceed 100 characters" })
-    .regex(/^(.*[()]).*$/u, {
-      message: "Name must have (...day)!",
-    }),
+    .max(100, { message: "Name does not exceed 100 characters" }),
+  // .regex(/^(.*[()]).*$/u, {
+  //   message: "Name must have (...day)!",
+  // }),
 
   price: z.coerce
     .number()

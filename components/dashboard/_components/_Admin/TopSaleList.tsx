@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/chart";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import SaleStore from "@/components/dashboard/_components/SaleStore";
+import SaleStore from "@/components/dashboard/_components/_Admin/SaleStore";
 import { Badge } from "@/components/ui/badge";
 import React, { useState, useEffect } from "react";
 import { Loader } from "@/components/loader/Loader";
@@ -31,12 +31,20 @@ interface TopSaleListProps {
   };
 }
 
+interface TopStore {
+  storeId: string;
+  storeName: string;
+  storeEmail: string;
+  totalTransactions: number;
+  totalAmount: number;
+}
+
 export const TopSaleList = React.memo(function TopSaleList({
   params,
 }: TopSaleListProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
-  const [topSaleList, setTopSaleList] = useState<TopSaleStores[] | null>([]);
+  const [topSaleList, setTopSaleList] = useState<TopSaleStores[]>([]);
   const tabsValue: string = params.tabsValue;
   const dateRange: DateRange | undefined = params.dateRange;
 
@@ -89,19 +97,30 @@ export const TopSaleList = React.memo(function TopSaleList({
   // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
+  const sortChartAdminAmountOrder = (topStores: TopStore[]) => {
+    // Sort by `totalAmount` and pick the top 5 stores
+    return topStores
+      .sort((a, b) => b.totalAmount - a.totalAmount) // Descending order
+      .slice(0, 5);
+  };
+
+  const sortedAndLimitedTopStores = topSaleList
+    .flatMap((topStoresGroup) =>
+      sortChartAdminAmountOrder(topStoresGroup.topStores)
+    )
+    .slice(0, 5);
+
   return (
-    <div className="mt-4 space-y-8">
-      {topSaleList && topSaleList.length > 0 ? (
-        topSaleList.map((topStores) =>
-          topStores.topStores.map((topStore) => (
-            <SaleStore
-              key={topStore.storeId}
-              maxValueSale={topStore.totalAmount}
-              storeEmail={topStore.storeEmail}
-              storeName={topStore.storeName}
-            />
-          ))
-        )
+    <div className="mt-6 space-y-10">
+      {sortedAndLimitedTopStores.length > 0 ? (
+        sortedAndLimitedTopStores.map((topStore, index) => (
+          <SaleStore
+            key={topStore.storeId || `${index}-${topStore.storeName}`} // Use a fallback key if `storeId` is missing
+            maxValueSale={topStore.totalAmount}
+            storeEmail={topStore.storeEmail}
+            storeName={topStore.storeName}
+          />
+        ))
       ) : (
         <div>
           <EmptyDataPage />

@@ -29,6 +29,7 @@ import { DateRange } from "react-day-picker";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 import { AxiosError } from "axios";
 import { format } from "date-fns";
+import { useAuthUser } from "@/components/hooks/useAuthUser";
 
 // const chartData = [
 //   { month: "January", desktop: 186, mobile: 80 },
@@ -40,43 +41,51 @@ import { format } from "date-fns";
 // ];
 
 const chartConfig = {
-  totalAmountCashOrder: {
-    label: "Total Amount Cash Order",
+  totalAmountOrder: {
+    label: "Total Order",
     color: "hsl(var(--chart-1))",
   },
-  totalAmountOrderOnlineMethod: {
-    label: "Total Amount Order Online Method",
+  endDayCheckWalletCashierBalance: {
+    label: "End Day Cashier Balance",
     color: "hsl(var(--chart-2))",
+  },
+  endDayCheckWalletCashierBalanceHistory: {
+    label: "End Day Cashier Balance History",
+    color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig;
 
 interface ChartByDateProps {
   params: {
     dateRange?: DateRange | undefined;
+    saleType: string;
   };
 }
 
-export function ChartByDate({ params }: ChartByDateProps) {
+export function AdminChartByDate({ params }: ChartByDateProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
-  const selectedDate: DateRange | undefined = params.dateRange;
   const [dashboardData, setDashboardData] =
     useState<AdminAnalyticsByDate | null>(null);
   const [chartAdminAmountOrder, setChartAdminAmountOrder] = useState<
     GroupedStaticsAdminByDate[]
   >([]);
-  const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
-    "totalAmountCashOrder"
-  );
+  const [activeChart, setActiveChart] =
+    useState<keyof typeof chartConfig>("totalAmountOrder");
+  const { dateRange: selectedDate, saleType } = params;
 
   const total = useMemo(
     () => ({
-      totalAmountCashOrder: chartAdminAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountCashOrder,
+      totalAmountOrder: chartAdminAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrder,
         0
       ),
-      totalAmountOrderOnlineMethod: chartAdminAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountOrderOnlineMethod,
+      endDayCheckWalletCashierBalance: chartAdminAmountOrder.reduce(
+        (acc, curr) => acc + curr.endDayCheckWalletCashierBalance,
+        0
+      ),
+      endDayCheckWalletCashierBalanceHistory: chartAdminAmountOrder.reduce(
+        (acc, curr) => acc + curr.endDayCheckWalletCashierBalanceHistory,
         0
       ),
     }),
@@ -92,11 +101,11 @@ export function ChartByDate({ params }: ChartByDateProps) {
       const chartBodyData: AnalyticsPostProps = {
         startDate: format(selectedDate.from, "yyyy-MM-dd"),
         endDate: format(selectedDate.to, "yyyy-MM-dd"),
-        saleType: "All",
+        saleType: saleType ?? "All",
         groupBy: "Date",
       };
 
-      console.log(chartBodyData, "chartBodyData");
+      console.log(saleType, "saleType");
 
       try {
         const dashboardData = await AnalyticsServices.getDashboardAnalytics(
@@ -123,13 +132,15 @@ export function ChartByDate({ params }: ChartByDateProps) {
     };
 
     fetchDashboardData();
-  }, [selectedDate]);
+  }, [selectedDate, saleType]);
 
   const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
     return data.map((dateMap) => ({
       date: dateMap.date?.split("T", 1)[0], // Extract the date portion only
-      totalAmountCashOrder: dateMap.totalAmountCashOrder,
-      totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
+      totalAmountOrder: dateMap.totalAmountOrder,
+      endDayCheckWalletCashierBalance: dateMap.endDayCheckWalletCashierBalance,
+      endDayCheckWalletCashierBalanceHistory:
+        dateMap.endDayCheckWalletCashierBalanceHistory,
     }));
   };
   console.log(
@@ -149,31 +160,32 @@ export function ChartByDate({ params }: ChartByDateProps) {
             Showing total amount for recent months!
           </CardDescription>
         </div>
-        {/* <div className="flex md:text-sm md:flex-col sm:flex-row"> */}
-        <div className="flex">
-          {["totalAmountCashOrder", "totalAmountOrderOnlineMethod"].map(
-            (key) => {
-              const chart = key as keyof typeof chartConfig;
-              return (
-                <button
-                  key={chart}
-                  data-active={activeChart === chart}
-                  className="relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
-                  onClick={() => setActiveChart(chart)}
-                >
-                  <span className="text-xs text-muted-foreground">
-                    {chartConfig[chart].label}
+        <div className="flex flex-col xl:flex-row">
+          {[
+            "totalAmountOrder",
+            "endDayCheckWalletCashierBalance",
+            "endDayCheckWalletCashierBalanceHistory",
+          ].map((key) => {
+            const chart = key as keyof typeof chartConfig;
+            return (
+              <button
+                key={chart}
+                data-active={activeChart === chart}
+                className="relative flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-left even:border-l data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6"
+                onClick={() => setActiveChart(chart)}
+              >
+                <span className="text-xs text-muted-foreground">
+                  {chartConfig[chart].label}
+                </span>
+                <span className="text-base font-bold leading-none sm:text-xl max-w-20">
+                  {total[key as keyof typeof total].toLocaleString()}{" "}
+                  <span className="text-sm text-slate-500 font-semibold">
+                    VND
                   </span>
-                  <span className="text-base font-bold leading-none sm:text-3xl max-w-20">
-                    {total[key as keyof typeof total].toLocaleString()}{" "}
-                    <span className="text-sm text-slate-500 font-semibold">
-                      VND
-                    </span>
-                  </span>
-                </button>
-              );
-            }
-          )}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </CardHeader>
       <CardContent>
@@ -203,7 +215,7 @@ export function ChartByDate({ params }: ChartByDateProps) {
                 content={
                   <ChartTooltipContent
                     className="w-full space-x-2"
-                    // nameKey="views"
+                    // nameKey="totalAmountOrder"
                     labelFormatter={(value: number) => {
                       return new Date(value).toLocaleDateString("en-US", {
                         month: "short",
@@ -220,11 +232,6 @@ export function ChartByDate({ params }: ChartByDateProps) {
                 fill={`var(--color-${activeChart})`}
                 radius={4}
               />
-              {/* <Bar
-              dataKey="totalAmountOrderOnlineMethod"
-              fill="var(--color-totalAmountOrderOnlineMethod)"
-              radius={4}
-            /> */}
             </BarChart>
           ) : (
             <div>

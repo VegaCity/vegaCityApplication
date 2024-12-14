@@ -29,7 +29,7 @@ const PromotionsPage = () => {
       {/* Body Container */}
       <div className="max-w-7xl px-10">
         <PromotionsTable />
-        <PromotionsPagination />
+        {/* <PromotionsPagination /> */}
       </div>
     </div>
   );

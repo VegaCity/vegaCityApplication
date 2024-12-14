@@ -23,6 +23,13 @@ import {
   handlePromotionStatusFromBe,
   Promotion,
 } from "@/types/promotion/Promotion";
+import {
+  Pagination,
+  // PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from "@/components/ui/pagination";
 import { AxiosError } from "axios";
 import { Minus, ArrowUp10, ArrowUp01 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -37,6 +44,16 @@ interface PromotionTableProps {
 interface GetPromotion extends Promotion {
   id: string;
 }
+
+interface PaginationItemProps {
+  active: boolean;
+  children: React.ReactNode;
+  key: number;
+}
+
+const PaginationItem = ({ active, children }: PaginationItemProps) => (
+  <li className={active ? "active" : ""}>{children}</li>
+);
 
 const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
   const router = useRouter();
@@ -68,15 +85,30 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
     });
   };
 
+  const statusOrder: { [key: string]: number } = {
+    Automation: 1,
+    Expired: 2,
+  };
+
+  // Updated sorting logic
   const sortedPromotions = [...promotionList].sort((a, b) => {
     if (!sortConfig) return 0;
 
     const { key, direction } = sortConfig;
 
-    const aValue =
-      key === "startDate" || key === "endDate" ? new Date(a[key]) : a[key];
-    const bValue =
-      key === "startDate" || key === "endDate" ? new Date(b[key]) : b[key];
+    let aValue: any;
+    let bValue: any;
+
+    if (key === "status") {
+      aValue = statusOrder[a.status] ?? Number.MAX_SAFE_INTEGER; // Default to a high value if status is not found
+      bValue = statusOrder[b.status] ?? Number.MAX_SAFE_INTEGER;
+    } else if (key === "startDate" || key === "endDate") {
+      aValue = new Date(a[key]);
+      bValue = new Date(b[key]);
+    } else {
+      aValue = a[key];
+      bValue = b[key];
+    }
 
     if (aValue === null) return direction === "asc" ? -1 : 1; // Null comes first for ascending.
     if (bValue === null) return direction === "asc" ? 1 : -1; // Null comes last for ascending.
@@ -84,6 +116,11 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
     if (aValue > bValue) return direction === "asc" ? 1 : -1;
     return 0;
   });
+
+  //Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
 
   console.log(sortedPromotions, "sortedPromotions");
 
@@ -113,30 +150,31 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
     }
   };
 
+  const fetchPromotions = async (page: number) => {
+    try {
+      const response = await PromotionServices.getPromotions({
+        page,
+        size: itemsPerPage,
+      });
+
+      const promotions = Array.isArray(response.data.data)
+        ? response.data.data
+        : [];
+      setPromotionList(promotions);
+      setTotalPages(response.data.metaData.totalPage || 0);
+      console.log(response.data, "response.data");
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchPromotions = async () => {
-      try {
-        const response = await PromotionServices.getPromotions({
-          page: 1,
-          size: 10,
-        });
-
-        const promotions = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
-        setPromotionList(promotions);
-        console.log(promotions, "promotions");
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPromotions();
-  }, [isLoading, deleteLoading]);
+    fetchPromotions(currentPage);
+  }, [currentPage, isLoading, deleteLoading]);
 
   if (isLoading)
     return (
@@ -152,94 +190,108 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
         {title || "Promotions"}
       </h3>
       {sortedPromotions.length > 0 ? (
-        <Table>
-          <TableCaption>A list of recent promotions</TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">Name</TableHead>
-              <TableHead className="text-white">Code</TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Description
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Max Discount
-              </TableHead>
-              {/* <TableHead className="hidden md:table-cell text-white">
+        <>
+          <Table>
+            <TableCaption>A list of recent promotions</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-white">#</TableHead>
+                <TableHead className="text-white">Name</TableHead>
+                <TableHead className="text-white">Code</TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Description
+                </TableHead>
+                <TableHead className="hidden md:table-cell text-white">
+                  Max Discount
+                </TableHead>
+                {/* <TableHead className="hidden md:table-cell text-white">
                 Quantity
               </TableHead>
               <TableHead className="hidden md:table-cell text-white">
                 Discount %
               </TableHead> */}
-              <TableHead className="hidden md:table-cell text-white">
-                Require Amount
-              </TableHead>
-              <TableHead className="hidden md:table-cell text-white">
-                Status
-              </TableHead>
-              <TableHead
-                onClick={() => handleSort("startDate")}
-                className="hidden md:table-cell text-white"
-              >
-                Start Date
-                <span className="ml-1">
-                  {sortConfig && sortConfig.direction === "asc" ? (
-                    <ArrowUp01 size={15} />
-                  ) : (
-                    <ArrowUp10 size={15} />
-                  )}
-                </span>
-              </TableHead>
-              <TableHead
-                onClick={() => handleSort("endDate")}
-                className="hidden md:table-cell text-white"
-              >
-                End Date
-                <span className="ml-1">
-                  {sortConfig && sortConfig.direction === "asc" ? (
-                    <ArrowUp01 size={15} />
-                  ) : (
-                    <ArrowUp10 size={15} />
-                  )}
-                </span>
-              </TableHead>
-              <TableHead className="text-white">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedPromotions.map((promo, i) => (
-              <TableRow
-                // onClick={() =>
-                //   router.push(`/admin/promotions/detail/${promo.id}`)
-                // }
-                key={promo.id}
-              >
-                <TableCell>{i + 1}</TableCell>
-                <TableCell>{promo.name}</TableCell>
-                <TableCell>
-                  <Badge className="bg-slate-500 text-white">
-                    {promo.promotionCode}
-                  </Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {promo.description ? (
-                    <p className="text-sm text-muted-foreground">
-                      {promo.description}
-                    </p>
-                  ) : (
-                    <Minus />
-                  )}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {promo.maxDiscount ? (
-                    <p className="font-bold">
-                      {formatVNDCurrencyValue(promo.maxDiscount)}
-                    </p>
-                  ) : (
-                    <Minus />
-                  )}
-                </TableCell>
-                {/* <TableCell className="hidden md:table-cell">
+                <TableHead className="hidden md:table-cell text-white">
+                  Require Amount
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("status")}
+                  className="hidden md:table-cell text-white"
+                >
+                  Status
+                  <span className="mx-auto">
+                    {sortConfig?.key === "status" &&
+                    sortConfig.direction === "asc" ? (
+                      <ArrowUp01 size={15} />
+                    ) : (
+                      <ArrowUp10 size={15} />
+                    )}
+                  </span>
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("startDate")}
+                  className="hidden md:table-cell text-white"
+                >
+                  Start Date
+                  <span className="mx-auto">
+                    {sortConfig && sortConfig.direction === "asc" ? (
+                      <ArrowUp01 size={15} />
+                    ) : (
+                      <ArrowUp10 size={15} />
+                    )}
+                  </span>
+                </TableHead>
+                <TableHead
+                  onClick={() => handleSort("endDate")}
+                  className="hidden md:table-cell text-white"
+                >
+                  End Date
+                  <span className="mx-auto">
+                    {sortConfig && sortConfig.direction === "asc" ? (
+                      <ArrowUp01 size={15} />
+                    ) : (
+                      <ArrowUp10 size={15} />
+                    )}
+                  </span>
+                </TableHead>
+                <TableHead className="text-white">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedPromotions.map((promo, i) => (
+                <TableRow
+                  // onClick={() =>
+                  //   router.push(`/admin/promotions/detail/${promo.id}`)
+                  // }
+                  key={promo.id}
+                >
+                  <TableCell>
+                    {i + 1 + (currentPage - 1) * itemsPerPage}
+                  </TableCell>
+                  <TableCell>{promo.name}</TableCell>
+                  <TableCell>
+                    <Badge className="bg-slate-500 text-white">
+                      {promo.promotionCode}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {promo.description ? (
+                      <p className="text-sm text-muted-foreground">
+                        {promo.description}
+                      </p>
+                    ) : (
+                      <Minus />
+                    )}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {promo.maxDiscount ? (
+                      <p className="font-bold">
+                        {formatVNDCurrencyValue(promo.maxDiscount)}
+                      </p>
+                    ) : (
+                      <Minus />
+                    )}
+                  </TableCell>
+                  {/* <TableCell className="hidden md:table-cell">
                   {promo.quantity !== null ? promo.quantity : <Minus />}
                 </TableCell>
                 <TableCell className="hidden md:table-cell">
@@ -251,55 +303,79 @@ const PromotionsTable = ({ limit, title }: PromotionTableProps) => {
                     <Minus />
                   )}
                 </TableCell> */}
-                <TableCell className="hidden md:table-cell">
-                  {promo.requireAmount !== null ? (
-                    <p className="font-bold">
-                      {formatVNDCurrencyValue(promo.requireAmount)}
-                    </p>
-                  ) : (
-                    <Minus />
-                  )}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Badge
-                    className={twMerge(
-                      handleBadgePromotionStatusColor(promo.status)
+                  <TableCell className="hidden md:table-cell">
+                    {promo.requireAmount !== null ? (
+                      <p className="font-bold">
+                        {formatVNDCurrencyValue(promo.requireAmount)}
+                      </p>
+                    ) : (
+                      <Minus />
                     )}
-                  >
-                    {handlePromotionStatusFromBe(promo.status)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <div className="flex flex-col items-center justify-center">
-                    {formatDateTime({
-                      type: "date",
-                      dateTime: promo.startDate,
-                    })}
-                    <Minus />
-                    {formatDateTime({
-                      type: "time",
-                      dateTime: promo.startDate,
-                    })}
-                  </div>
-                </TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <div className="flex flex-col items-center justify-center">
-                    {formatDateTime({ type: "date", dateTime: promo.endDate })}
-                    <Minus />
-                    {formatDateTime({ type: "time", dateTime: promo.endDate })}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <PopoverActionTable
-                    item={promo}
-                    editLink={`/admin/promotions/edit/${promo.id}`}
-                    handleDelete={handleDeletePromotion}
-                  />
-                </TableCell>
-              </TableRow>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <Badge
+                      className={twMerge(
+                        handleBadgePromotionStatusColor(promo.status)
+                      )}
+                    >
+                      {handlePromotionStatusFromBe(promo.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <div className="flex flex-col items-center justify-center">
+                      {formatDateTime({
+                        type: "date",
+                        dateTime: promo.startDate,
+                      })}
+                      <Minus />
+                      {formatDateTime({
+                        type: "time",
+                        dateTime: promo.startDate,
+                      })}
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <div className="flex flex-col items-center justify-center">
+                      {formatDateTime({
+                        type: "date",
+                        dateTime: promo.endDate,
+                      })}
+                      <Minus />
+                      {formatDateTime({
+                        type: "time",
+                        dateTime: promo.endDate,
+                      })}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <PopoverActionTable
+                      item={promo}
+                      editLink={`/admin/promotions/edit/${promo.id}`}
+                      handleDelete={handleDeletePromotion}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <Pagination>
+            <PaginationPrevious
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            />
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i} active={i + 1 === currentPage}>
+                <PaginationLink onClick={() => setCurrentPage(i + 1)}>
+                  {i + 1}
+                </PaginationLink>
+              </PaginationItem>
             ))}
-          </TableBody>
-        </Table>
+            <PaginationNext
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+            />
+          </Pagination>
+        </>
       ) : (
         <EmptyDataPage />
       )}

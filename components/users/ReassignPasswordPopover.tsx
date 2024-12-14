@@ -22,18 +22,19 @@ import {
   UserReAssignEmailValues,
   userReAssignEmailFormSchema,
 } from "@/lib/validation";
-import { useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import { Loader } from "@/components/loader/Loader";
 
 interface ReassignEmailPopoverProps {
   userId: string;
+  setReassignPasswordoading: React.Dispatch<SetStateAction<boolean>>;
 }
 
 export const ReassignPasswordPopover: React.FC<ReassignEmailPopoverProps> = ({
   userId,
+  setReassignPasswordoading,
 }) => {
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<UserReAssignEmailValues>({
     resolver: zodResolver(userReAssignEmailFormSchema),
     defaultValues: { email: "" },
@@ -44,7 +45,7 @@ export const ReassignPasswordPopover: React.FC<ReassignEmailPopoverProps> = ({
   const onSubmit = async (data: UserReAssignEmailValues) => {
     console.log(userId, "userId");
     console.log(data.email, "email");
-    setIsLoading(true);
+    setReassignPasswordoading(true);
     try {
       await UserServices.userReassignEmail(userId, data); // API call with userId and email
       toast({
@@ -57,11 +58,9 @@ export const ReassignPasswordPopover: React.FC<ReassignEmailPopoverProps> = ({
         description: "Please try again.",
       });
     } finally {
-      setIsLoading(false);
+      setReassignPasswordoading(false);
     }
   };
-
-  if (isLoading) return <Loader isLoading={isLoading} />;
 
   return (
     <Popover>

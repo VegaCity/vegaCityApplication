@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import SaleStore from "@/components/dashboard/_components/SaleStore";
+import SaleStore from "@/components/dashboard/_components/_Admin/SaleStore";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { TopSaleList } from "@/components/dashboard/_components/TopSaleList";
+import { TopSaleList } from "@/components/dashboard/_components/_Admin/TopSaleList";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { format, addDays } from "date-fns";
