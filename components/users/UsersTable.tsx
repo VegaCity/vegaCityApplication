@@ -106,6 +106,8 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [approveLoading, setApproveLoading] = useState(false);
+  const [reassignEmailLoading, setReassignEmailLoading] = useState(false);
+  const [reassignPasswordLoading, setReassignPasswordoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   //fitler user by status
@@ -205,7 +207,13 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
     };
 
     fetchUsersAndHouses();
-  }, [isLoading, deleteLoading, approveLoading]);
+  }, [
+    isLoading,
+    deleteLoading,
+    approveLoading,
+    reassignEmailLoading,
+    reassignPasswordLoading,
+  ]);
 
   const handleDeleteUser = (user: UserAccount) => {
     setDeleteLoading(true);
@@ -366,10 +374,16 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
           {/* Approve user button and Re-assign email/password button */}
           <div onClick={(e) => e.stopPropagation()}>
             {userFound.status === 3 && (
-              <ReassignEmailPopover userId={userFound.id} />
+              <ReassignEmailPopover
+                setReassignEmailLoading={setReassignEmailLoading}
+                userId={userFound.id}
+              />
             )}
             {userFound.status === 0 && (
-              <ReassignPasswordPopover userId={userFound.id} />
+              <ReassignPasswordPopover
+                setReassignPasswordoading={setReassignPasswordoading}
+                userId={userFound.id}
+              />
             )}
           </div>
         </TableCell>
@@ -848,10 +862,20 @@ const UsersTable = ({ limit, title }: UsersTableProps) => {
                           {/* Approve user button and Re-assign email/password button */}
                           <div onClick={(e) => e.stopPropagation()}>
                             {user.status === 3 && (
-                              <ReassignEmailPopover userId={user.id} />
+                              <ReassignEmailPopover
+                                setReassignEmailLoading={
+                                  setReassignEmailLoading
+                                }
+                                userId={user.id}
+                              />
                             )}
                             {user.status === 0 && (
-                              <ReassignPasswordPopover userId={user.id} />
+                              <ReassignPasswordPopover
+                                setReassignPasswordoading={
+                                  setReassignPasswordoading
+                                }
+                                userId={user.id}
+                              />
                             )}
                           </div>
                         </TableCell>

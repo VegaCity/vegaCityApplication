@@ -3,7 +3,7 @@ export const handleBadgeStatusColor = (status: number): string => {
     case 0: // Active
       return "border-green-400 bg-green-100 hover:bg-green-400 text-green-500 hover:text-muted-80";
     case 1: // disable
-      return "bg-slate-400 hover:bg-slate-500";
+      return "bg-slate-500 hover:bg-slate-600";
     case 2: // Ban
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     case 3: // PendingVerify
@@ -21,7 +21,7 @@ export const handleBadgeStoreStatusColor = (status: number): string => {
     case 1: // closed
       return "border-blue-400 bg-blue-100 hover:bg-blue-400 text-blue-500 hover:text-muted-80";
     case 2: // InActive
-      return "bg-slate-400 hover:bg-slate-500";
+      return "bg-slate-500 hover:bg-slate-600";
     case 3: // Blocked
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     default:
@@ -35,7 +35,7 @@ export const handleBadgePromotionStatusColor = (status: number): string => {
     case 0: // Active
       return "border-green-400 bg-green-100 hover:bg-green-400 text-green-500 hover:text-muted-80";
     case 1: // Inactive
-      return "bg-slate-400 hover:bg-slate-500";
+      return "bg-slate-500 hover:bg-slate-600";
     case 2: // Expired
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     case 3: // Automation
@@ -62,7 +62,7 @@ export const handleBadgeStatusColorString = (status: string): string => {
     case "Expired": //Expired
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     case "Canceled": // Canceled
-      return "bg-slate-400 hover:bg-slate-500";
+      return "bg-slate-500 hover:bg-slate-600";
     default:
       return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
   }
