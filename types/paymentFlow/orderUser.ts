@@ -109,6 +109,8 @@ export interface OrderExistData {
   transactions: any[]; // Define structure if known
   payments: PaymentResponse[]; // Define structure if known
   customer: CustomerInfo | null;
+  startRent: string;
+  endRent: string;
 }
 export interface PaymentResponse {
   name: string;
