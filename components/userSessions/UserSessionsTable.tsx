@@ -117,6 +117,7 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
 
   const filteredSessions = limit ? sessionList.slice(0, limit) : sessionList;
 
+  console.log(filteredSessions, "filteredSessions");
   return (
     <div className="mt-10">
       <h3 className="text-2xl mb-4 font-semibold border-l-2 pl-4">
@@ -211,35 +212,39 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                 <TableCell>
                   <div>
                     {/* <Label htmlFor="maxWidth">Delete</Label> */}
-                    <AlertDialog>
-                      <AlertDialogTrigger>
-                        <Button
-                          variant={"ghost"}
-                          className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
-                        >
-                          <Trash />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Are sure for delete this -{session.userId}-?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will deflag in
-                            list!
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteSession(session)}
+                    {session.email !== "lethaikhoa0109@gmail.com" ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger>
+                          <Button
+                            variant={"ghost"}
+                            className="text-red-500 hover:text-red-600 font-bold rounded text-xs"
                           >
-                            Confirm
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <Trash />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Are sure for delete this -{session.userId}-?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will deflag in
+                              list!
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteSession(session)}
+                            >
+                              Confirm
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
