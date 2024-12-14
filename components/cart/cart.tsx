@@ -46,10 +46,29 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [paymentError, setPaymentError] = useState("");
-  const [startRent, setStartRent] = useState(
-    new Date().toISOString().slice(0, 16)
-  );
-  const [endRent, setEndRent] = useState(new Date().toISOString().slice(0, 16));
+  const formatDateForInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const [startRent, setStartRent] = useState(formatDateForInput(new Date()));
+  const [endRent, setEndRent] = useState(formatDateForInput(new Date()));
+  const formatDateForDisplay = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   const [storeType, setStoreType] = useState<string>("");
   useEffect(() => {
     const type = localStorage.getItem("storeType");
@@ -229,12 +248,20 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       };
 
       // Thêm startRent và endRent nếu storeType là "2"
+      const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        // Tính toán timezone offset
+        const tzOffset = -date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() + tzOffset * 60000);
+        return localDate.toISOString();
+      };
+
       const orderData =
         storeType === "2"
           ? {
               ...baseOrderData,
-              startRent: new Date().toISOString(),
-              endRent: new Date().toISOString(),
+              startRent: formatDateTime(startRent),
+              endRent: formatDateTime(endRent),
             }
           : baseOrderData;
 

@@ -41,6 +41,7 @@ export const StoreMenuServices = {
       productCategoryId: string;
       price: number;
       imageUrl: string;
+      quantity: number;
     }
   ) {
     return API.post(`/store/menu/${menuId}/product`, productData);
