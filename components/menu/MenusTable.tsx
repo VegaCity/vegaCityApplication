@@ -18,6 +18,21 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "react-hot-toast";
 
+const validateMenuTimeAccess = (dateFilter: number): boolean => {
+  const currentHour = new Date().getHours();
+
+  switch (dateFilter) {
+    case 1: // Morning
+      return currentHour >= 1 && currentHour < 11;
+    case 2: // Afternoon
+      return currentHour >= 12 && currentHour < 24;
+    case 3: // Lunch
+      return currentHour >= 11 && currentHour < 24;
+    default:
+      return false;
+  }
+};
+
 const getDateFilterText = (dateFilter: number) => {
   const filters = {
     1: "Morning",
@@ -90,49 +105,76 @@ const MenuCard = ({
 }: {
   menu: StoreMenu;
   onDelete: (id: string) => void;
-}) => (
-  <div className="relative group">
-    <Link href={`/store/menu/${menu.id}`} className="block">
-      <Card className="hover:shadow-lg transition-all duration-300 border-gray-200 rounded-xl overflow-hidden cursor-pointer">
-        <CardContent className="p-6 bg-white">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-800 truncate max-w-[200px]">
-              {menu.name}
-            </h3>
-            <ChevronRight className="h-6 w-6 text-gray-400 group-hover:translate-x-1 transition-transform" />
-          </div>
-          <div className="flex justify-between items-center text-sm text-gray-500">
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              <span>
-                {new Date(menu.upsDate).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
+}) => {
+  const isAccessible = validateMenuTimeAccess(menu.dateFilter);
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isAccessible) {
+      e.preventDefault();
+      toast.error(`This menu is not available at this time.
+        Morning: 1:00 AM - 10:59 AM
+        Lunch: 11:00 AM - 11:59 PM
+        Afternoon: 12:00 PM - 12:00 AM`);
+      return;
+    }
+  };
+
+  return (
+    <div className="relative group">
+      <Link
+        href={`/store/menu/${menu.id}`}
+        className={`block ${
+          !isAccessible ? "cursor-not-allowed opacity-60" : ""
+        }`}
+        onClick={handleClick}
+      >
+        <Card
+          className={`hover:shadow-lg transition-all duration-300 border-gray-200 rounded-xl overflow-hidden
+          ${isAccessible ? "cursor-pointer" : "cursor-not-allowed"}`}
+        >
+          <CardContent className="p-6 bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-800 truncate max-w-[200px]">
+                {menu.name}
+              </h3>
+              <ChevronRight className="h-6 w-6 text-gray-400 group-hover:translate-x-1 transition-transform" />
             </div>
-            <Badge
-              className={`${getDateFilterColor(menu.dateFilter)} rounded-full`}
-            >
-              {getDateFilterText(menu.dateFilter)}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-    <button
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onDelete(menu.id);
-      }}
-      className="absolute top-3 right-3 bg-red-100 text-red-500 hover:bg-red-200 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
-    >
-      <Trash className="h-5 w-5" />
-    </button>
-  </div>
-);
+            <div className="flex justify-between items-center text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span>
+                  {new Date(menu.upsDate).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </span>
+              </div>
+              <Badge
+                className={`${getDateFilterColor(
+                  menu.dateFilter
+                )} rounded-full`}
+              >
+                {getDateFilterText(menu.dateFilter)}
+                {!isAccessible}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDelete(menu.id);
+        }}
+        className="absolute top-3 right-3 bg-red-100 text-red-500 hover:bg-red-200 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
+      >
+        <Trash className="h-5 w-5" />
+      </button>
+    </div>
+  );
+};
 
 const MenuList = () => {
   const [menus, setMenus] = useState<StoreMenu[]>([]);

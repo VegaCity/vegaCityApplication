@@ -10,6 +10,7 @@ import { storage } from "@/lib/firebase"; // Make sure to create this firebase c
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { ProductServices } from "@/components/services/productServices";
+import { AxiosError } from "axios";
 interface Category {
   id: string;
   name: string;
@@ -33,7 +34,7 @@ interface Product {
   id?: string;
   name: string;
   price: string;
-  quantity: number; // Thêm trường quantity
+  quantity: number;
   categoryId: string;
   image: File | null;
   imagePreview: string | ArrayBuffer | null;
@@ -69,6 +70,13 @@ const initialFormData: MenuData = {
 interface MenuCreationFormProps {
   params: { id: string };
 }
+
+const formatPrice = (price: string): string => {
+  // Remove any non-digit characters
+  const numericValue = price.replace(/\D/g, "");
+  // Format with thousand separators
+  return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
 
 const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
   const { toast } = useToast();
@@ -232,7 +240,14 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         status: "Active", // Set initial status as Active
       };
 
-      await StoreMenuServices.addProductToMenu(params.id, productData);
+      const response = await StoreMenuServices.addProductToMenu(
+        params.id,
+        productData
+      );
+
+      if (response.data.statusCode !== 200) {
+        throw new Error(response.data.Error);
+      }
 
       updatedProducts[index] = {
         ...product,
@@ -249,7 +264,11 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       });
     } catch (err) {
       console.error("Error adding product:", err);
-      setError(err instanceof Error ? err.message : "Failed to add product");
+      const errorMessage =
+        err instanceof AxiosError
+          ? err.response?.data.Error
+          : "Failed to add product";
+      setError(errorMessage);
 
       const updatedProducts = [...formData.products];
       updatedProducts[index] = { ...product, isSaving: false };
@@ -258,7 +277,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add product",
+        description: errorMessage,
       });
     }
   };
@@ -267,12 +286,10 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
     const product = formData.products[index];
 
     try {
-      // If the product has an ID and is not a new product, call the delete API
       if (product.id && !product.isNew) {
         await ProductServices.deleteProductById(product.id);
       }
 
-      // Remove the product from the local state
       const newProducts = formData.products.filter((_, i) => i !== index);
       setFormData({
         ...formData,
@@ -524,12 +541,12 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                     disabled={!product.isNew}
                   />
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Price"
                     value={product.price}
                     onChange={(e) => {
                       const newProducts = [...formData.products];
-                      newProducts[index].price = e.target.value;
+                      newProducts[index].price = formatPrice(e.target.value);
                       setFormData({ ...formData, products: newProducts });
                     }}
                     className="w-full p-2 border rounded"
