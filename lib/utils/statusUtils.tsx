@@ -3,13 +3,13 @@ export const handleBadgeStatusColor = (status: number): string => {
     case 0: // Active
       return "border-green-400 bg-green-100 hover:bg-green-400 text-green-500 hover:text-muted-80";
     case 1: // disable
-      return "bg-slate-500 hover:bg-slate-600";
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white";
     case 2: // Ban
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     case 3: // PendingVerify
       return "border-blue-400 bg-blue-100 hover:bg-blue-400 text-blue-500 hover:text-muted-80";
     default:
-      return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Optional: default color
   }
 };
 
@@ -21,11 +21,11 @@ export const handleBadgeStoreStatusColor = (status: number): string => {
     case 1: // closed
       return "border-blue-400 bg-blue-100 hover:bg-blue-400 text-blue-500 hover:text-muted-80";
     case 2: // InActive
-      return "bg-slate-500 hover:bg-slate-600";
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white";
     case 3: // Blocked
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     default:
-      return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Optional: default color
   }
 };
 
@@ -35,13 +35,13 @@ export const handleBadgePromotionStatusColor = (status: number): string => {
     case 0: // Active
       return "border-green-400 bg-green-100 hover:bg-green-400 text-green-500 hover:text-muted-80";
     case 1: // Inactive
-      return "bg-slate-500 hover:bg-slate-600";
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white";
     case 2: // Expired
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     case 3: // Automation
       return "border-blue-400 bg-blue-100 hover:bg-blue-400 text-blue-500 hover:text-muted-80";
     default:
-      return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Optional: default color
   }
 };
 
@@ -62,9 +62,9 @@ export const handleBadgeStatusColorString = (status: string): string => {
     case "Expired": //Expired
       return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-muted-80";
     case "Canceled": // Canceled
-      return "bg-slate-500 hover:bg-slate-600";
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white";
     default:
-      return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Optional: default color
   }
 };
 
@@ -76,7 +76,7 @@ export const handleBadgePackageTypeColorString = (status: string): string => {
     case "SpecificPackage": //Specific Package
       return "bg-badgePurple hover:bg-badgePurple-hover";
     default:
-      return "bg-gray-400 hover:bg-gray-500"; // Optional: default color
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Optional: default color
   }
 };
 
@@ -92,6 +92,6 @@ export const handleBadgeRoleColorString = (role: string): string => {
     case "Admin":
       return "bg-red-400 hover:bg-red-500"; // Red for Admin (highest authorization)
     default:
-      return "bg-gray-400 hover:bg-gray-500"; // Default color for undefined roles
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Default color for undefined roles
   }
 };
