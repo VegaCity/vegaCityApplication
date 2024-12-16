@@ -195,6 +195,7 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
               cursor={false}
               content={<ChartTooltipContent indicator="dot" />}
             />
+            <ChartLegend content={<ChartLegendContent />} />
             <Area
               dataKey="totalAmountCashOrder"
               type="natural"

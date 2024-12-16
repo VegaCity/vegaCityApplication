@@ -188,6 +188,7 @@ export function StoreChartByMonth({ params }: ChartByMonthProps) {
               cursor={false}
               content={<ChartTooltipContent indicator="dot" />}
             />
+            <ChartLegend content={<ChartLegendContent />} />
             <Area
               dataKey="totalAmountOrder"
               type="natural"

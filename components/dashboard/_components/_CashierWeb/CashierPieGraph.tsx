@@ -15,6 +15,8 @@ import {
 import {
   ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
@@ -188,6 +190,7 @@ export function CashierPieGraph({ params }: CashierPieGraphProps) {
               cursor={false}
               content={<ChartTooltipContent hideLabel />}
             />
+            <ChartLegend content={<ChartLegendContent />} />
             <Pie
               data={groupedDate}
               dataKey="name"
