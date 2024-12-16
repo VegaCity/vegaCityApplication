@@ -27,6 +27,7 @@ import SearchPackageItem from "@/components/search/searchPackageItem";
 import { FileText, CircleHelp } from "lucide-react";
 import ReportDialog from "@/lib/dialog/ReportDialog";
 import { PromotionAlert } from "@/components/Promotion/PromotionAlert";
+import TransactionWithdrawList from "@/components/transactions/TransactionWithdrawList";
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -386,6 +387,8 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
           </div>
         </form>
       </Form>
+
+      <TransactionWithdrawList packageItemId={params.id} />
     </>
   );
 };
