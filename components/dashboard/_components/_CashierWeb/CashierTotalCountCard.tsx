@@ -29,6 +29,7 @@ const calculateTotals = (data: GroupedStaticsAdminByMonth) => {
     totalOrderCash: data.totalOrderCash,
     totalOrderFeeCharge: data.totalOrderFeeCharge,
     totalOrderOnlineMethods: data.totalOrderOnlineMethods,
+    totalWithdrawRequest: data.totalWithdrawRequest
   };
 };
 

@@ -42,6 +42,10 @@ const chartConfig = {
     label: "Total Customer Money Withdraw",
     color: "hsl(var(--chart-2))",
   },
+  vegaDepositsAmountFromStore:{
+    label: "Vega Deposits Amount From Store",
+    color: "hsl(var(--chart-3))",
+  }
 } satisfies ChartConfig;
 
 interface ChartByMonthProps {
@@ -76,6 +80,7 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
           dateMap.totalAmountCustomerMoneyTransfer,
         totalAmountCustomerMoneyWithdraw:
           dateMap.totalAmountCustomerMoneyWithdraw,
+        vegaDepositsAmountFromStore: dateMap.vegaDepositsAmountFromStore,
       };
     });
   };
@@ -196,11 +201,11 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
               />
               <ChartLegend content={<ChartLegendContent />} />
               <Area
-                dataKey="totalAmountOrder"
+                dataKey="vegaDepositsAmountFromStore"
                 type="natural"
-                fill="var(--color-totalAmountOrder)"
+                fill="var(--color-vegaDepositsAmountFromStore)"
                 fillOpacity={0.4}
-                stroke="var(--color-totalAmountOrder)"
+                stroke="var(--color-vegaDepositsAmountFromStore)"
                 stackId="a"
               />
               <Area
