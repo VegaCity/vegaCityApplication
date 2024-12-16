@@ -177,4 +177,13 @@ export const PackageItemServices = {
   }) {
     return API.post("/package-item/mark-lost", data);
   },
+  getVcardWithDrawMoneyById({ id, rfId }: GetPackageItemByIdParams) {
+    if (id) {
+      return API.get(`/package-item/get-vcard-withdraw?id=${id}`);
+    } else if (rfId) {
+      return API.get(`/package-item/get-vcard-withdraw?rfId=${rfId}`);
+    } else {
+      throw new Error("Either 'id' or 'rfId' must be provided.");
+    }
+  },
 };

@@ -32,7 +32,7 @@ const OrderDetailPage = () => {
   >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [productDetails, setProductDetails] = useState<any>(null);
+  const [productDetails, setProductDetails] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchOrderAndProductDetails = async () => {
@@ -49,18 +49,24 @@ const OrderDetailPage = () => {
             ...orderDetailResponse.data,
           });
 
-          if (
-            response.data.orderExist.orderDetails &&
-            response.data.orderExist.orderDetails[0] &&
-            response.data.orderExist.orderDetails[0].productId
-          ) {
-            const productId =
-              response.data.orderExist.orderDetails[0].productId;
-            const productResponse = await ProductServices.getProductById(
-              productId
+          if (response.data.orderExist.orderDetails) {
+            const productPromises = response.data.orderExist.orderDetails.map(
+              async (detail: any) => {
+                if (detail.productId) {
+                  const productResponse = await ProductServices.getProductById(
+                    detail.productId
+                  );
+                  return {
+                    ...productResponse.data,
+                    quantity: detail.quantity,
+                  };
+                }
+                return null;
+              }
             );
-            console.log("Product Response:", productResponse);
-            setProductDetails(productResponse.data);
+
+            const products = await Promise.all(productPromises);
+            setProductDetails(products.filter((p) => p !== null));
           }
         } else {
           setError("Could not find order details");
@@ -244,19 +250,6 @@ const OrderDetailPage = () => {
                   </p>
                 </div>
               </div>
-
-              <div className="flex items-start">
-                <Package className="h-5 w-5 text-gray-400 mt-1" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    Product Name
-                  </p>
-                  <p className="mt-1 text-base text-gray-900">
-                    {productDetails?.data?.name || ""}
-                  </p>
-                </div>
-              </div>
-
               <div className="flex items-start">
                 <Calendar className="h-5 w-5 text-gray-400 mt-1" />
                 <div className="ml-4">
@@ -268,17 +261,33 @@ const OrderDetailPage = () => {
                   </p>
                 </div>
               </div>
-
-              <div className="flex items-start">
-                <Package className="h-5 w-5 text-gray-400 mt-1" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    Product Quantity
-                  </p>
-                  <p className="mt-1 text-base text-gray-900">
-                    {productDetails?.data?.quantity || ""}
-                  </p>
-                </div>
+              <div className="col-span-2 space-y-4 border-t border-gray-200 pt-4 mt-4">
+                <p className="text-sm font-medium text-gray-500">Products</p>
+                {productDetails.map((product, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-gray-50 p-4 rounded-lg"
+                  >
+                    <div className="flex items-start space-x-4">
+                      <Package className="h-5 w-5 text-gray-400 mt-1" />
+                      <div>
+                        <p className="text-base font-medium text-gray-900">
+                          {product?.data?.name || ""}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Quantity: {product?.quantity || ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-base font-medium text-gray-900">
+                        {formatAmount(
+                          order.orderDetails?.[index]?.finalAmount || 0
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </CardContent>
