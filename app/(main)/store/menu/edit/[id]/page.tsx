@@ -23,7 +23,13 @@ enum DateFilter {
   Afternoon = 2,
   Lunch = 3,
 }
-
+interface ProductErrors {
+  name?: string;
+  price?: string;
+  quantity?: string;
+  categoryId?: string;
+  image?: string;
+}
 const DATE_FILTER_LABELS = {
   [DateFilter.Morning]: "Morning",
   [DateFilter.Afternoon]: "Afternoon",
@@ -85,6 +91,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const router = useRouter();
+  const [productErrors, setProductErrors] = useState<ProductErrors[]>([]);
   const uploadImageToFirebase = async (file: File): Promise<string> => {
     try {
       const storageRef = ref(
@@ -219,6 +226,16 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
   const handleSaveProduct = async (index: number) => {
     const product = formData.products[index];
     if (!product.isNew) return;
+
+    // Validate before saving
+    if (!validateProduct(product, index)) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please check all required fields",
+      });
+      return;
+    }
 
     try {
       const updatedProducts = [...formData.products];
@@ -457,6 +474,71 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
   };
 
   const [startRent, setStartRent] = useState(getCurrentTime());
+
+  const validateProduct = (product: Product, index: number): boolean => {
+    const errors: ProductErrors = {};
+    let isValid = true;
+
+    // Name validation
+    if (!product.name.trim()) {
+      errors.name = "Product name is required";
+      isValid = false;
+    } else if (product.name.length < 2) {
+      errors.name = "Product name must be at least 2 characters";
+      isValid = false;
+    } else if (product.name.length > 50) {
+      errors.name = "Product name must not exceed 50 characters";
+      isValid = false;
+    }
+
+    // Price validation
+    if (!product.price) {
+      errors.price = "Price is required";
+      isValid = false;
+    } else {
+      const numericPrice = parseInt(product.price.replace(/\./g, ""));
+      if (isNaN(numericPrice) || numericPrice <= 0) {
+        errors.price = "Price must be greater than 0";
+        isValid = false;
+      } else if (numericPrice > 10000000) {
+        errors.price = "Price must not exceed 10,000,000";
+        isValid = false;
+      }
+    }
+
+    // Quantity validation
+    if (!product.quantity) {
+      errors.quantity = "Quantity is required";
+      isValid = false;
+    } else if (product.quantity < 1) {
+      errors.quantity = "Quantity must be at least 1";
+      isValid = false;
+    } else if (product.quantity > 1000) {
+      errors.quantity = "Quantity must not exceed 1000";
+      isValid = false;
+    }
+
+    // Category validation
+    if (!product.categoryId) {
+      errors.categoryId = "Category is required";
+      isValid = false;
+    }
+
+    // Image validation
+    if (!product.image && !product.imagePreview) {
+      errors.image = "Image is required";
+      isValid = false;
+    }
+
+    // Update errors state
+    setProductErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = errors;
+      return newErrors;
+    });
+
+    return isValid;
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
