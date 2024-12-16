@@ -59,7 +59,8 @@ const chartConfig = {
 
 interface ChartByDateProps {
   params: {
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
     saleType: string;
   };
 }
@@ -69,7 +70,7 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
   const roleName = user.roleName;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
-  const { dateRange: selectedDate, saleType } = params;
+  const { endDate, saleType, startDate } = params;
 
   const [dashboardData, setDashboardData] =
     useState<CashierAnalyticsByDate | null>(null);
@@ -102,11 +103,11 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
     setIsLoading(true);
     //get api
     const fetchDashboardData = async () => {
-      if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+      if (!startDate || !endDate) return;
 
       const chartBodyData: AnalyticsPostProps = {
-        startDate: format(selectedDate.from, "yyyy-MM-dd"),
-        endDate: format(selectedDate.to, "yyyy-MM-dd"),
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd"),
         saleType: saleType ?? "Package",
         groupBy: "Date",
       };
@@ -138,7 +139,7 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
     };
 
     fetchDashboardData();
-  }, [selectedDate, saleType]);
+  }, [endDate, saleType]);
 
   const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
     return data.map((dateMap) => ({
@@ -154,7 +155,7 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
     "chartAmountOrderData"
   );
 
-  if (isLoading) return <Loader isLoading={isLoading} />;
+  // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
   return (

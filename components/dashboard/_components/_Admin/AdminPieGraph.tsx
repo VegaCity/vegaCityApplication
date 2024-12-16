@@ -39,7 +39,8 @@ const chartConfig = {
 
 interface AdminPieGraphProps {
   params: {
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
     saleType: string;
   };
 }
@@ -49,7 +50,7 @@ export function AdminPieGraph({ params }: AdminPieGraphProps) {
   const [error, setError] = useState<string | null>("");
   const [chartAdminCountUser, setChartAdminCountUser] =
     useState<AdminAnalyticsByMonth | null>(null);
-  const { dateRange: selectedDate, saleType } = params;
+  const { endDate, startDate, saleType } = params;
 
   const chartData = [
     {
@@ -72,11 +73,11 @@ export function AdminPieGraph({ params }: AdminPieGraphProps) {
     setIsLoading(true);
     //get api
     const fetchDashboardData = async () => {
-      if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+      if (!startDate || !endDate) return;
 
       const chartBodyData: AnalyticsPostProps = {
-        startDate: format(selectedDate.from, "yyyy-MM-dd"),
-        endDate: format(selectedDate.to, "yyyy-MM-dd"),
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd"),
         saleType: saleType ?? "All",
         groupBy: "Month",
       };
@@ -107,9 +108,9 @@ export function AdminPieGraph({ params }: AdminPieGraphProps) {
     };
 
     fetchDashboardData();
-  }, [selectedDate, saleType]);
+  }, [endDate, saleType]);
 
-  if (isLoading) return <Loader isLoading={isLoading} />;
+  // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
   return (
@@ -117,19 +118,9 @@ export function AdminPieGraph({ params }: AdminPieGraphProps) {
       <CardHeader className="items-center pb-0">
         <CardTitle>Pie Chart - Donut Chart</CardTitle>
         <CardDescription>
-          {selectedDate &&
-            selectedDate?.from &&
-            selectedDate?.to &&
-            format(selectedDate?.from, "MMMM")}{" "}
-          -{" "}
-          {selectedDate &&
-            selectedDate?.from &&
-            selectedDate?.to &&
-            format(selectedDate?.to, "MMMM")}{" "}
-          {selectedDate &&
-            selectedDate?.from &&
-            selectedDate?.to &&
-            format(selectedDate?.to, "yyyy")}{" "}
+          {startDate && endDate && format(startDate, "MMMM")} -{" "}
+          {startDate && endDate && format(endDate, "MMMM")}{" "}
+          {startDate && endDate && format(endDate, "yyyy")}{" "}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">

@@ -20,12 +20,13 @@ import { format, addDays } from "date-fns";
 
 interface TopSaleProps {
   params: {
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
   };
 }
 
 export function TopSale({ params }: TopSaleProps) {
-  const selectedDate: DateRange | undefined = params.dateRange;
+  const { endDate, startDate } = params;
   const [valueTrigger, setValueTrigger] = useState<string>("");
 
   const handleTriggerValue = (value: string) => {
@@ -62,17 +63,17 @@ export function TopSale({ params }: TopSaleProps) {
         </TabsList>
         <TabsContent value="all">
           <TopSaleList
-            params={{ tabsValue: valueTrigger, dateRange: selectedDate }}
+            params={{ tabsValue: valueTrigger, startDate, endDate }}
           />
         </TabsContent>
         <TabsContent value="product">
           <TopSaleList
-            params={{ tabsValue: valueTrigger, dateRange: selectedDate }}
+            params={{ tabsValue: valueTrigger, startDate, endDate }}
           />
         </TabsContent>
         <TabsContent value="service">
           <TopSaleList
-            params={{ tabsValue: valueTrigger, dateRange: selectedDate }}
+            params={{ tabsValue: valueTrigger, startDate, endDate }}
           />
         </TabsContent>
       </Tabs>

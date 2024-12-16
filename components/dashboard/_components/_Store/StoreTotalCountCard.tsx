@@ -33,9 +33,7 @@ const calculateTotals = (data: GroupedStaticsStoreByMonth) => {
 };
 
 interface TotalCountCardProps {
-  params: {
-    dateRange?: DateRange | undefined;
-  };
+  params: { startDate: Date | null; endDate: Date | null };
 }
 
 //Format Title like totalCashOrder -> Total Cash Order
@@ -62,16 +60,16 @@ export default function StoreTotalCountCard({ params }: TotalCountCardProps) {
     []
   );
   const groupedData = groupDataByMonth(storeTotals);
-  const { dateRange: selectedDate } = params;
+  const { endDate, startDate } = params;
 
   useEffect(() => {
-    if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+    if (!startDate || !endDate) return;
     // setIsLoading(true);
     // fetch data from API
 
     const chartBodyDataByDateByMonth: AnalyticsPostProps = {
-      startDate: format(selectedDate.from, "yyyy-MM-dd"),
-      endDate: format(selectedDate.to, "yyyy-MM-dd"),
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
       saleType: "Product",
       groupBy: "Month",
     };
@@ -100,7 +98,7 @@ export default function StoreTotalCountCard({ params }: TotalCountCardProps) {
       }
     };
     fetchTotalCountData();
-  }, [selectedDate]);
+  }, [endDate]);
 
   if (error) return <EmptyDataPage title={error} />;
 

@@ -34,7 +34,8 @@ const calculateTotals = (data: GroupedStaticsAdminByMonth) => {
 
 interface TotalCountCardProps {
   params: {
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
     saleType: string;
   };
 }
@@ -63,16 +64,16 @@ export default function CashierTotalCountCard({ params }: TotalCountCardProps) {
     []
   );
   const groupedData = groupDataByMonth(adminTotals);
-  const { dateRange: selectedDate, saleType } = params;
+  const { endDate, saleType, startDate } = params;
 
   useEffect(() => {
-    if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+    if (!startDate || !endDate) return;
     // setIsLoading(true);
     // fetch data from API
 
     const chartBodyDataByDateByMonth: AnalyticsPostProps = {
-      startDate: format(selectedDate.from, "yyyy-MM-dd"),
-      endDate: format(selectedDate.to, "yyyy-MM-dd"),
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
       saleType: saleType ?? "Package",
       groupBy: "Month",
     };
@@ -101,7 +102,7 @@ export default function CashierTotalCountCard({ params }: TotalCountCardProps) {
       }
     };
     fetchTotalCountData();
-  }, [selectedDate, saleType]);
+  }, [endDate, saleType]);
 
   if (error) return <EmptyDataPage title={error} />;
 

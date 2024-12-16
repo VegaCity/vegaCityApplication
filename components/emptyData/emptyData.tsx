@@ -17,10 +17,10 @@ const EmptyDataPage: React.FC<EmptyDataPageProps> = ({
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] p-6 text-center">
       <div className="bg-slate-100 p-6 rounded-full mb-6">
-        <FolderSearch className="w-36 h-36 p-2 text-gray-300" />
+        <FolderSearch className="w-36 h-36 p-2 text-blue-300" />
       </div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">{title}</h2>
-      <p className="text-gray-600 mb-6">{description}</p>
+      <h2 className="text-3xl text-blue-300 font-bold mb-4">{title}</h2>
+      <p className="text-blue-300 font-bold mb-6">{description}</p>
       {onActionClick && (
         <button
           onClick={onActionClick}

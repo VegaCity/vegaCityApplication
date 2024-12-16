@@ -27,7 +27,8 @@ import { format } from "date-fns";
 interface TopSaleListProps {
   params: {
     tabsValue: string;
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
   };
 }
 
@@ -45,8 +46,7 @@ export const TopSaleList = React.memo(function TopSaleList({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const [topSaleList, setTopSaleList] = useState<TopSaleStores[]>([]);
-  const tabsValue: string = params.tabsValue;
-  const dateRange: DateRange | undefined = params.dateRange;
+  const { endDate, tabsValue, startDate } = params;
 
   //Body Params
   // let topSaleBodyData: TopSaleStoresPost = {
@@ -59,13 +59,13 @@ export const TopSaleList = React.memo(function TopSaleList({
   // format(dateRange.from, "yyyy-MM-dd"),
   // format(dateRange.from, "yyyy-MM-dd")
   useEffect(() => {
-    if (!dateRange || !dateRange.from || !dateRange.to) return;
+    if (!startDate || !endDate) return;
     // setIsLoading(true);
     // fetch data from API
 
     const topSaleBodyData: TopSaleStoresPost = {
-      startDate: format(dateRange.from, "yyyy-MM-dd"),
-      endDate: format(dateRange.to, "yyyy-MM-dd"),
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
       storeType: tabsValue || "All",
       groupBy: "Month",
     };
@@ -92,7 +92,7 @@ export const TopSaleList = React.memo(function TopSaleList({
       }
     };
     fetchTopSaleData();
-  }, [tabsValue, dateRange]);
+  }, [tabsValue, endDate]);
 
   // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;

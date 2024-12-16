@@ -30,6 +30,7 @@ import EmptyDataPage from "@/components/emptyData/emptyData";
 import { AxiosError } from "axios";
 import { format } from "date-fns";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
+import { FolderArchive } from "lucide-react";
 
 // const chartData = [
 //   { month: "January", desktop: 186, mobile: 80 },
@@ -57,7 +58,8 @@ const chartConfig = {
 
 interface ChartByDateProps {
   params: {
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
     saleType: string;
   };
 }
@@ -72,7 +74,7 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
   >([]);
   const [activeChart, setActiveChart] =
     useState<keyof typeof chartConfig>("totalAmountOrder");
-  const { dateRange: selectedDate, saleType } = params;
+  const { endDate, saleType, startDate } = params;
 
   const total = useMemo(
     () => ({
@@ -96,11 +98,11 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
     setIsLoading(true);
     //get api
     const fetchDashboardData = async () => {
-      if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+      if (!startDate || !endDate) return;
 
       const chartBodyData: AnalyticsPostProps = {
-        startDate: format(selectedDate.from, "yyyy-MM-dd"),
-        endDate: format(selectedDate.to, "yyyy-MM-dd"),
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd"),
         saleType: saleType ?? "All",
         groupBy: "Date",
       };
@@ -132,7 +134,7 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
     };
 
     fetchDashboardData();
-  }, [selectedDate, saleType]);
+  }, [endDate, saleType]);
 
   const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
     return data.map((dateMap) => ({
@@ -148,7 +150,7 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
     "chartAmountOrderData"
   );
 
-  if (isLoading) return <Loader isLoading={isLoading} />;
+  // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
   return (
@@ -234,8 +236,10 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
               />
             </BarChart>
           ) : (
-            <div>
-              <EmptyDataPage />
+            <div className="w-full h-full flex flex-row items-center justify-center bg-muted/50">
+              <p className="text-3xl text-blue-300 font-bold flex flex-row gap-4 items-center justify-center">
+                Empty Data <FolderArchive />{" "}
+              </p>
             </div>
           )}
         </ChartContainer>

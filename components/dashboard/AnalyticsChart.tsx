@@ -71,7 +71,8 @@ interface ChartCardProps {
 
 interface AnalyticsChartProps {
   params: {
-    dateRange: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
     saleType: string;
   };
 }
@@ -164,7 +165,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
 // };
 
 const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
-  const { dateRange, saleType } = params;
+  const { startDate, endDate, saleType } = params;
   const user = useAuthUser();
   const userRole = user.roleName;
   console.log(userRole, "userRole");
@@ -175,7 +176,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
       return (
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-4 md:col-span-8">
-            <AdminChartByDate params={{ saleType, dateRange }} />
+            <AdminChartByDate params={{ saleType, startDate, endDate }} />
           </div>
           <div className="col-span-4 md:col-span-4">
             <ChartCard
@@ -183,14 +184,14 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
               description="Top 5 Stores in Month"
               icon={Trophy}
             >
-              <TopSale params={{ dateRange }} />
+              <TopSale params={{ startDate, endDate }} />
             </ChartCard>
           </div>
           <div className="col-span-4 md:col-span-8">
-            <AdminChartByMonth params={{ saleType, dateRange }} />
+            <AdminChartByMonth params={{ saleType, startDate, endDate }} />
           </div>
           <div className="col-span-4 md:col-span-4">
-            <AdminPieGraph params={{ saleType, dateRange }} />
+            <AdminPieGraph params={{ saleType, startDate, endDate }} />
           </div>
         </div>
       );
@@ -198,10 +199,10 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
       return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
           <div className="col-span-4">
-            <StoreChartByDate params={{ dateRange }} />
+            <StoreChartByDate params={{ startDate, endDate }} />
           </div>
           <div className="col-span-8">
-            <StoreChartByMonth params={{ dateRange }} />
+            <StoreChartByMonth params={{ startDate, endDate }} />
           </div>
         </div>
       );
@@ -209,11 +210,11 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
       return (
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-3 md:col-span-4">
-            <CashierChartByDate params={{ saleType, dateRange }} />
+            <CashierChartByDate params={{ saleType, startDate, endDate }} />
           </div>
 
           <div className="col-span-3 md:col-span-8">
-            <CashierChartByMonth params={{ saleType, dateRange }} />
+            <CashierChartByMonth params={{ saleType, startDate, endDate }} />
           </div>
         </div>
       );

@@ -53,6 +53,7 @@ import CashierTotalCountCard from "@/components/dashboard/_components/_CashierWe
 import StoreTotalCountCard from "@/components/dashboard/_components/_Store/StoreTotalCountCard";
 import WalletCard from "@/components/wallet/WalletCard";
 import PageContainer from "@/components/page-container";
+import { DateSelector } from "@/components/dashboard/DateSelector";
 interface StoreTotals {
   totalOrders: number;
   totalAmount: number;
@@ -92,10 +93,24 @@ interface CashierTotals {
 }
 const Home = () => {
   // Select Calendar
-  const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
-    from: new Date(2024, 6, 1), // Note: Month is 0-based
-    to: addDays(new Date(2025, 2, 2), 1),
-  });
+  // const [selectedDate, setSelectedDate] = useState<DateRange | undefined>({
+  //   from: new Date(2024, 6, 1), // Note: Month is 0-based
+  //   to: addDays(new Date(2025, 2, 2), 1),
+  // });
+  const [startDate, setStartDate] = useState<Date | null>(new Date(2024, 6, 1));
+  const [endDate, setEndDate] = useState<Date | null>(
+    addDays(new Date(2025, 2, 2), 1)
+  );
+  const handleDateChange = (range: {
+    startDate: Date | null;
+    endDate: Date | null;
+  }) => {
+    console.log("Selected Date Range:", range);
+    setStartDate(range.startDate);
+    setEndDate(range.endDate);
+    // Update parent state or perform actions
+  };
+
   const [userRole, setUserRole] = useState<string>("");
 
   const typeFirstRender = () => {
@@ -105,7 +120,7 @@ const Home = () => {
   const defaultSaleType = typeFirstRender();
 
   const [selectedType, setSelectedType] = useState<string>(defaultSaleType);
-  if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+  // if (!startDate || !endDate) return;
 
   //--------------------- Admin Section ------------------------
   const [adminAnalyticsDataByMonth, setAdminAnalyticsDataByMonth] =
@@ -137,7 +152,11 @@ const Home = () => {
       <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
         <AdminTotalCountCard
           key={"admin"}
-          params={{ saleType: selectedType, dateRange: selectedDate }}
+          params={{
+            saleType: selectedType,
+            startDate,
+            endDate,
+          }}
         />
       </div>
     );
@@ -145,7 +164,7 @@ const Home = () => {
 
   const renderStoreDashboard = () => (
     <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
-      <StoreTotalCountCard key={"store"} params={{ dateRange: selectedDate }} />
+      <StoreTotalCountCard key={"store"} params={{ startDate, endDate }} />
     </div>
   );
 
@@ -153,7 +172,11 @@ const Home = () => {
     <div className="flex flex-col md:flex-row justify-between gap-5 mb-5">
       <CashierTotalCountCard
         key={"cashierWeb"}
-        params={{ saleType: selectedType, dateRange: selectedDate }}
+        params={{
+          saleType: selectedType,
+          startDate,
+          endDate,
+        }}
       />
     </div>
   );
@@ -171,11 +194,11 @@ const Home = () => {
         setUserRole(role);
         console.log(role, "role");
         if (role === "Admin") {
-          if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+          if (!startDate || !endDate) return;
 
           const chartBodyDataByDate: AnalyticsPostProps = {
-            startDate: format(selectedDate.from, "yyyy-MM-dd"),
-            endDate: format(selectedDate.to, "yyyy-MM-dd"),
+            startDate: format(startDate, "yyyy-MM-dd"),
+            endDate: format(endDate, "yyyy-MM-dd"),
             saleType: "All",
             groupBy: "Date",
           };
@@ -183,11 +206,11 @@ const Home = () => {
             await AnalyticsServices.getDashboardAnalytics(chartBodyDataByDate);
           setAdminAnalyticsDataByDate(adminAnalyticsRes.data.data);
         } else if (role === "Store") {
-          if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+          if (!startDate || !endDate) return;
 
           const chartBodyDataByDate: AnalyticsPostProps = {
-            startDate: format(selectedDate.from, "yyyy-MM-dd"),
-            endDate: format(selectedDate.to, "yyyy-MM-dd"),
+            startDate: format(startDate, "yyyy-MM-dd"),
+            endDate: format(endDate, "yyyy-MM-dd"),
             saleType: "Product",
             groupBy: "Date",
           };
@@ -195,10 +218,10 @@ const Home = () => {
             await AnalyticsServices.getDashboardAnalytics(chartBodyDataByDate);
           setStoreAnalyticsDataByDate(storeAnalyticsRes.data.data);
         } else if (role === "CashierWeb") {
-          if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+          if (!startDate || !endDate) return;
           const chartBodyDataByDate: AnalyticsPostProps = {
-            startDate: format(selectedDate.from, "yyyy-MM-dd"),
-            endDate: format(selectedDate.to, "yyyy-MM-dd"),
+            startDate: format(startDate, "yyyy-MM-dd"),
+            endDate: format(endDate, "yyyy-MM-dd"),
             saleType: "Package",
             groupBy: "Date",
           };
@@ -254,8 +277,7 @@ const Home = () => {
           {/* Calendar Section */}
           <div className="flex flex-row w-full items-center justify-end">
             <div className="mb-6">
-              {/* <h3 className="text-lg font-medium mb-4">Select a Date</h3> */}
-              <Popover>
+              {/* <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     id="date"
@@ -290,7 +312,7 @@ const Home = () => {
                     numberOfMonths={2}
                   />
                 </PopoverContent>
-              </Popover>
+              </Popover> */}
               {/* {selectedDate?.from && selectedDate.to ? (
                 <div className="mt-4 text-sm">
                   <p>
@@ -305,6 +327,7 @@ const Home = () => {
                   </p>
                 </div>
               ) : null} */}
+              <DateSelector onDateChange={handleDateChange} />
             </div>
           </div>
           {userRole !== "Store" && (
@@ -351,7 +374,8 @@ const Home = () => {
       <AnalyticsChart
         params={{
           saleType: selectedType,
-          dateRange: selectedDate,
+          startDate: startDate,
+          endDate: endDate,
         }}
       />
       <TransactionTable />

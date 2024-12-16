@@ -46,7 +46,8 @@ const chartConfig = {
 
 interface ChartByMonthProps {
   params: {
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
     saleType: string;
   };
 }
@@ -60,7 +61,7 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
   const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
     "totalAmountCustomerMoneyTransfer"
   );
-  const { dateRange: selectedDate, saleType } = params;
+  const { endDate, startDate, saleType } = params;
 
   const chartAmountOrderData = (data: GroupedStaticsAdminByMonth[]) => {
     return data.map((dateMap) => {
@@ -119,11 +120,11 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
     setIsLoading(true);
     //get api
     const fetchDashboardData = async () => {
-      if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+      if (!startDate || !endDate) return;
 
       const chartBodyData: AnalyticsPostProps = {
-        startDate: format(selectedDate.from, "yyyy-MM-dd"),
-        endDate: format(selectedDate.to, "yyyy-MM-dd"),
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd"),
         saleType: saleType ?? "All",
         groupBy: "Month",
       };
@@ -154,9 +155,9 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
     };
 
     fetchDashboardData();
-  }, [selectedDate, saleType]);
+  }, [endDate, saleType]);
 
-  if (isLoading) return <Loader isLoading={isLoading} />;
+  // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
   return (
@@ -260,19 +261,9 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
               ))}
             </div>
             <div className="flex items-center gap-2 leading-none text-muted-foreground">
-              {selectedDate &&
-                selectedDate?.from &&
-                selectedDate?.to &&
-                format(selectedDate?.from, "MMMM")}{" "}
-              -{" "}
-              {selectedDate &&
-                selectedDate?.from &&
-                selectedDate?.to &&
-                format(selectedDate?.to, "MMMM")}{" "}
-              {selectedDate &&
-                selectedDate?.from &&
-                selectedDate?.to &&
-                format(selectedDate?.to, "yyyy")}{" "}
+              {startDate && endDate && format(startDate, "MMMM")} -{" "}
+              {startDate && endDate && format(endDate, "MMMM")}{" "}
+              {startDate && endDate && format(endDate, "yyyy")}{" "}
             </div>
           </div>
         </div>

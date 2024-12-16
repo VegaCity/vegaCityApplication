@@ -34,7 +34,9 @@ const calculateTotals = (data: GroupedStaticsAdminByMonth) => {
 
 interface TotalCountCardProps {
   params: {
-    dateRange?: DateRange | undefined;
+    // dateRange?: DateRange | undefined;
+    startDate?: Date | null;
+    endDate?: Date | null;
     saleType: string;
   };
 }
@@ -57,23 +59,22 @@ const formatNumber = (num: number): string => {
 };
 
 export default function AdminTotalCountCard({ params }: TotalCountCardProps) {
+  const { endDate, saleType, startDate } = params;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const [adminTotals, setAdminTotals] = useState<GroupedStaticsAdminByMonth[]>(
     []
   );
   const groupedData = groupDataByMonth(adminTotals);
-  const selectedDate: DateRange | undefined = params.dateRange;
-  const saleType = params.saleType;
 
   useEffect(() => {
-    if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+    if (!startDate || !endDate) return;
     // setIsLoading(true);
     // fetch data from API
 
     const chartBodyDataByDateByMonth: AnalyticsPostProps = {
-      startDate: format(selectedDate.from, "yyyy-MM-dd"),
-      endDate: format(selectedDate.to, "yyyy-MM-dd"),
+      startDate: format(startDate, "yyyy-MM-dd"),
+      endDate: format(endDate, "yyyy-MM-dd"),
       saleType: saleType ?? "All",
       groupBy: "Month",
     };
@@ -102,7 +103,7 @@ export default function AdminTotalCountCard({ params }: TotalCountCardProps) {
       }
     };
     fetchTotalCountData();
-  }, [selectedDate, saleType]);
+  }, [endDate, saleType]);
 
   if (error) return <EmptyDataPage title={error} />;
 

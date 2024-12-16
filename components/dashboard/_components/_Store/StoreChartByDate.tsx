@@ -57,7 +57,8 @@ const chartConfig = {
 
 interface ChartByDateProps {
   params: {
-    dateRange?: DateRange | undefined;
+    startDate: Date | null;
+    endDate: Date | null;
   };
 }
 
@@ -72,7 +73,7 @@ export function StoreChartByDate({ params }: ChartByDateProps) {
   const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
     "storeDepositsFromVcardPayment"
   );
-  const { dateRange: selectedDate } = params;
+  const { endDate, startDate } = params;
 
   const total = useMemo(
     () => ({
@@ -96,11 +97,11 @@ export function StoreChartByDate({ params }: ChartByDateProps) {
     setIsLoading(true);
     //get api
     const fetchDashboardData = async () => {
-      if (!selectedDate || !selectedDate.from || !selectedDate.to) return;
+      if (!startDate || !endDate) return;
 
       const chartBodyData: AnalyticsPostProps = {
-        startDate: format(selectedDate.from, "yyyy-MM-dd"),
-        endDate: format(selectedDate.to, "yyyy-MM-dd"),
+        startDate: format(startDate, "yyyy-MM-dd"),
+        endDate: format(endDate, "yyyy-MM-dd"),
         saleType: "Product",
         groupBy: "Date",
       };
@@ -132,7 +133,7 @@ export function StoreChartByDate({ params }: ChartByDateProps) {
     };
 
     fetchDashboardData();
-  }, [selectedDate]);
+  }, [endDate]);
 
   const chartAmountOrderData = (data: GroupedStaticsStoreByDate[]) => {
     return data.map((dateMap) => ({
@@ -147,7 +148,7 @@ export function StoreChartByDate({ params }: ChartByDateProps) {
     "chartAmountOrderData"
   );
 
-  if (isLoading) return <Loader isLoading={isLoading} />;
+  // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
   return (

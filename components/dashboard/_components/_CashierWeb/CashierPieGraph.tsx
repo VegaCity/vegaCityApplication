@@ -155,7 +155,7 @@ export function CashierPieGraph({ params }: CashierPieGraphProps) {
     fetchDashboardData();
   }, [selectedDate, saleType]);
 
-  if (isLoading) return <Loader isLoading={isLoading} />;
+  // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
 
   return (
