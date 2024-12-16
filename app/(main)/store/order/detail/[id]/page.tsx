@@ -20,6 +20,7 @@ import {
 import {
   detailOrder,
   GetOrdersById,
+  GetOrderDetailById,
 } from "@/components/services/orderuserServices";
 import { ProductServices } from "@/components/services/productServices";
 
@@ -38,8 +39,15 @@ const OrderDetailPage = () => {
       try {
         setLoading(true);
         const response = await detailOrder(params.id as string);
+        const orderDetailResponse = await GetOrderDetailById(
+          params.id as string
+        );
+
         if (response.data.orderExist) {
-          setOrder(response.data.orderExist);
+          setOrder({
+            ...response.data.orderExist,
+            ...orderDetailResponse.data,
+          });
 
           if (
             response.data.orderExist.orderDetails &&
@@ -324,6 +332,80 @@ const OrderDetailPage = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl">Balance Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <CreditCard className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Price Transfer To Vega
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {formatAmount(order.priceTransferToVega || 0)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <CreditCard className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Price Store Handle
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {formatAmount(order.priceStoreHandle || 0)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <CreditCard className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Balance At Present
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {formatAmount(order.balanceAtPresent || 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <CreditCard className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Balance History Before
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {formatAmount(order.balanceHistoryBefore || 0)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <CreditCard className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Balance History After
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {formatAmount(order.balanceHistoryAfter || 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex justify-between items-center">

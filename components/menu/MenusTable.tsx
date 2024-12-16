@@ -25,7 +25,7 @@ const validateMenuTimeAccess = (dateFilter: number): boolean => {
     case 1: // Morning
       return currentHour >= 5 && currentHour < 11;
     case 2: // Afternoon
-      return currentHour >= 12 && currentHour < 24;
+      return currentHour >= 12 || (currentHour >= 0 && currentHour < 4);
     case 3: // Lunch
       return currentHour >= 11 && currentHour < 24;
     default:
@@ -113,8 +113,8 @@ const MenuCard = ({
       e.preventDefault();
       toast.error(`This menu is not available at this time.
         Morning: 5:00 AM - 10:59 AM
-        Lunch: 11:00 AM - 11:59 PM
-        Afternoon: 12:00 PM - 12:00 AM`);
+        Lunch: 11:00 AM - 11:59 AM
+        Afternoon: 12:00 PM - 4:00 AM`);
       return;
     }
   };

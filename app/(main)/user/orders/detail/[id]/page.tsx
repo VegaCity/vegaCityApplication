@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import {
   detailOrder,
+  GetOrderDetailById,
   GetOrdersById,
 } from "@/components/services/orderuserServices";
 
@@ -30,17 +31,21 @@ const OrderDetailPage = () => {
   >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [orderDetail, setOrderDetail] = useState<any>(null);
   useEffect(() => {
-    const fetchOrderDetail = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
+        // Fetch order details
         const response = await detailOrder(params.id as string);
         if (response.data.orderExist) {
           setOrder(response.data.orderExist);
         } else {
           setError("Could not find order details");
         }
+
+        // Fetch balance details
+        await fetchOrderDetail();
       } catch (err) {
         setError("Error loading order details");
         console.error(err);
@@ -50,10 +55,14 @@ const OrderDetailPage = () => {
     };
 
     if (params.id) {
-      fetchOrderDetail();
+      fetchData();
     }
   }, [params.id]);
+  const fetchOrderDetail = async () => {
+    const responseDetail = await GetOrderDetailById(params.id as string);
 
+    setOrderDetail(responseDetail);
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -210,45 +219,37 @@ const OrderDetailPage = () => {
             <CardTitle className="text-xl">Balance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <User className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                    Balance Before
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.customer?.fullName}
-                    </p>
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center text-gray-500">
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  <span>Balance Before</span>
                 </div>
-
-                <div className="flex items-start">
-                  <Mail className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                   Balance History At Present
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.customer?.email}
-                    </p>
-                  </div>
-                </div>
+                <p className="text-xl font-medium">
+                  {formatAmount(orderDetail?.data?.balanceBefore || 0)}
+                </p>
               </div>
 
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <Phone className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                    Balance After
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.customer?.phoneNumber}
-                    </p>
-                  </div>
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center text-gray-500">
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  <span>Balance After</span>
                 </div>
+                <p className="text-xl font-medium">
+                  {formatAmount(orderDetail?.data?.balanceAfter || 0)}
+                </p>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center text-gray-500">
+                  <CreditCard className="h-5 w-5 mr-2" />
+                  <span>Balance History At Present</span>
+                </div>
+                <p className="text-xl font-medium">
+                  {formatAmount(
+                    orderDetail?.data?.balanceHistoryAtPresent || 0
+                  )}
+                </p>
               </div>
             </div>
           </CardContent>

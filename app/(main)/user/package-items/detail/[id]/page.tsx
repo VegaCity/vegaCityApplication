@@ -648,7 +648,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         Generate Children VCard
                       </Button>
                     )}
-                  {packageItem?.status === "Active" && (
+                  {packageItem?.status === "InActive" && (
                     <Button
                       type="button"
                       onClick={() => setIsUpdateRFIDDialogOpen(true)}

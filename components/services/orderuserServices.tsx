@@ -47,6 +47,15 @@ export const GetOrdersById = async (id: string) => {
     throw new Error("Either 'id' or 'rfId' must be provided.");
   }
 };
+export const GetOrderDetailById = async (id: string) => {
+  try {
+    const response = await API.get(`/order/${id}/detail`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting order detail:", error);
+    throw error;
+  }
+};
 
 // getPackageItemById({ id, rfId }: GetPackageItemByIdParams) {
 //   if (id) {

@@ -111,6 +111,11 @@ export interface OrderExistData {
   customer: CustomerInfo | null;
   startRent: string;
   endRent: string;
+  priceTransferToVega?: number;
+  priceStoreHandle?: number;
+  balanceAtPresent?: number;
+  balanceHistoryBefore?: number;
+  balanceHistoryAfter?: number;
 }
 export interface PaymentResponse {
   name: string;
