@@ -205,7 +205,54 @@ const OrderDetailPage = () => {
             </div>
           </CardContent>
         </Card>
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl">Balance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <User className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                    Balance Before
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.customer?.fullName}
+                    </p>
+                  </div>
+                </div>
 
+                <div className="flex items-start">
+                  <Mail className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                   Balance History At Present
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.customer?.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <Phone className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                    Balance After
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.customer?.phoneNumber}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Customer Information</CardTitle>

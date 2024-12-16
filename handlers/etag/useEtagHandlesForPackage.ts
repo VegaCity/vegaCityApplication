@@ -87,7 +87,7 @@ export const useEtagHandlers = ({
       const orderData = {
         saleType: "Package",
         paymentType: data.paymentMethod,
-        totalAmount: data.price * data.quantity,
+        totalAmount: data.price,
         productData: [
           {
             id: packageData.id,
