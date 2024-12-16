@@ -103,3 +103,14 @@ export interface ApiResponse<T> {
   message?: string;
   status: number;
 }
+
+export interface UserDepositApproval {
+  transactionId: string;
+  userId: string;
+  userEmail: string;
+  userName:string;
+  balance: number;
+  balanceHistory: number;
+}
+
+

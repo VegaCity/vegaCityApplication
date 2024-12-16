@@ -27,6 +27,7 @@ import {
   UserCheck2,
   LogOut,
   Dot,
+CheckCheck,
 } from "lucide-react";
 
 import {
@@ -250,6 +251,12 @@ export function AppSidebar() {
       name: "Promotions",
       icon: Sparkle,
       href: navigatePage("promotions"),
+      roles: ["Admin"],
+    },
+    {
+      name: "User Deposit Approval",
+      icon: CheckCheck,
+      href: navigatePage("userDepositApproval"),
       roles: ["Admin"],
     },
   ];

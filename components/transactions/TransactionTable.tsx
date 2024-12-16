@@ -161,7 +161,7 @@ const TransactionTable = ({
                           : "text-red-600"
                       }
                     >
-                      {transaction.isIncrease ? "+" : "-"}
+                      {/* {transaction.isIncrease ? "+" : "-"} */}
                       {formatCurrency(transaction.amount, transaction.currency)}
                     </TableCell>
                   </TableRow>

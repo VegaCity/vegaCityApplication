@@ -113,7 +113,7 @@ const ChartCard: React.FC<ChartCardProps> = ({
   icon: Icon,
   children,
 }) => (
-  <Card className="flex-1 min-w-[450px] hover:shadow-lg transition-all duration-300">
+  <Card className="flex-1 min-w-full hover:shadow-lg transition-all duration-300">
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <div>
         <CardTitle className="text-xl font-bold flex items-center gap-2 my-2">
@@ -197,11 +197,11 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
       );
     } else if (userRole === "Store") {
       return (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <div className="col-span-4">
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-4 md:col-span-6">
             <StoreChartByDate params={{ startDate, endDate }} />
           </div>
-          <div className="col-span-8">
+          <div className="col-span-4 md:col-span-6">
             <StoreChartByMonth params={{ startDate, endDate }} />
           </div>
         </div>
@@ -209,11 +209,11 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
     } else if (userRole === "CashierWeb") {
       return (
         <div className="grid grid-cols-12 gap-3">
-          <div className="col-span-3 md:col-span-4">
+          <div className="col-span-4 md:col-span-6">
             <CashierChartByDate params={{ saleType, startDate, endDate }} />
           </div>
 
-          <div className="col-span-3 md:col-span-8">
+          <div className="col-span-4 md:col-span-6">
             <CashierChartByMonth params={{ saleType, startDate, endDate }} />
           </div>
         </div>
