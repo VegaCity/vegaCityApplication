@@ -78,10 +78,12 @@ interface MenuCreationFormProps {
 }
 
 const formatPrice = (price: string): string => {
-  // Remove any non-digit characters
-  const numericValue = price.replace(/\D/g, "");
-  // Format with thousand separators
-  return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  // Remove any non-digit characters except the last dot
+  const numericValue = price.replace(/[^\d]/g, "");
+  // Convert to number and format with thousand separators
+  return numericValue === ""
+    ? ""
+    : Number(numericValue).toLocaleString("vi-VN");
 };
 
 const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
@@ -227,22 +229,11 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
     const product = formData.products[index];
     if (!product.isNew) return;
 
-    // Validate before saving
-    if (!validateProduct(product, index)) {
-      toast({
-        variant: "destructive",
-        title: "Validation Error",
-        description: "Please check all required fields",
-      });
-      return;
-    }
-
     try {
       const updatedProducts = [...formData.products];
       updatedProducts[index] = { ...product, isSaving: true };
       setFormData({ ...formData, products: updatedProducts });
 
-      // Upload image to Firebase if exists
       let imageUrl = "";
       if (product.image) {
         imageUrl = await uploadImageToFirebase(product.image);
@@ -251,10 +242,10 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       const productData = {
         name: product.name,
         productCategoryId: product.categoryId,
-        price: parseFloat(product.price),
+        price: parseFloat(product.price.replace(/\./g, "")),
         imageUrl: imageUrl,
         quantity: product.quantity,
-        status: "Active", // Set initial status as Active
+        status: "Active",
       };
 
       const response = await StoreMenuServices.addProductToMenu(
@@ -262,30 +253,28 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         productData
       );
 
-      if (response.data.statusCode !== 200) {
-        throw new Error(response.data.Error);
+      if (response?.data?.messageResponse === "Create Product Successfully!") {
+        updatedProducts[index] = {
+          ...product,
+          isNew: false,
+          isSaving: false,
+          imagePreview: imageUrl,
+          status: "Active",
+        };
+        setFormData({ ...formData, products: updatedProducts });
+
+        toast({
+          title: "Success",
+          description: response.data.messageResponse,
+        });
+        return;
       }
 
-      updatedProducts[index] = {
-        ...product,
-        isNew: false,
-        isSaving: false,
-        imagePreview: imageUrl,
-        status: "Active",
-      };
-      setFormData({ ...formData, products: updatedProducts });
-
-      toast({
-        title: "Success",
-        description: "Product added successfully",
-      });
+      throw new Error(
+        response?.data?.messageResponse || "Failed to add product"
+      );
     } catch (err) {
-      console.error("Error adding product:", err);
-      const errorMessage =
-        err instanceof AxiosError
-          ? err.response?.data.Error
-          : "Failed to add product";
-      setError(errorMessage);
+      console.error("Error details:", err);
 
       const updatedProducts = [...formData.products];
       updatedProducts[index] = { ...product, isSaving: false };
@@ -294,7 +283,8 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: errorMessage,
+        description:
+          err instanceof Error ? err.message : "Failed to add product",
       });
     }
   };
