@@ -102,6 +102,10 @@ const config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      backgroundImage: {
+        "store-product": "var(--store-product-background-image)",
+        "store-service": "var(--store-service-background-image)",
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

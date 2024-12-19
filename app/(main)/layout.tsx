@@ -6,13 +6,27 @@ import Breadcrumb from "@/components/Breadcrumb";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { redirect, usePathname } from "next/navigation";
+import storeProductBackground from "@/img/storeProductBackground.jpg";
+import { AuthServices } from "@/components/services/authServices";
+import { AxiosError } from "axios";
+import { toast } from "@/components/ui/use-toast";
+import { useEffect, useState } from "react";
+import { Loader } from "@/components/loader/Loader";
+import { Button } from "@/components/ui/button";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const auth = useAuthUser;
+  const [isLoading, setIsLoading] = useState(false);
   if (!auth) {
     redirect("/auth");
   }
+  const storeType: string | null = localStorage.getItem("storeType"); //storeType is a string
+  const isSession = localStorage.getItem("isSession") === "true";
+
+  const disableUI = !isSession
+    ? "pointer-events-none opacity-50 filter grayscale blur-sm relative before:absolute before:inset-0 before:bg-black/10 before:content-['']"
+    : "";
 
   // const breadcrumbItems = pathname
   //   .split("/")
@@ -28,10 +42,21 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
 
   // console.log(breadcrumbItems, "breadcrumbItems");
 
+  if (isLoading) return <Loader isLoading={isLoading} />;
+
   return (
     <SidebarProvider>
       {/* <Navbar /> */}
-      <div className="flex w-full items-start justify-center">
+      <div
+        style={
+          Number(storeType) === 1
+            ? { backgroundImage: "var(--fixed-background-store-product)" }
+            : Number(storeType) === 2
+            ? { backgroundImage: "var(--fixed-background-store-service)" }
+            : { backgroundImage: "" }
+        }
+        className="flex w-full items-start justify-center bg-cover bg-center bg-no-repeat"
+      >
         {/* Sidebar on the left */}
         <div className="hidden sm:block h-screen w-auto">
           <AppSidebar />

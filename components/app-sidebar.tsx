@@ -75,6 +75,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from "@/components/ui/tooltip";
+import { toast } from "@/components/ui/use-toast";
 
 export function AppSidebar() {
   const [collapsedItem, setCollapsedItem] = useState<Record<string, boolean>>(
@@ -88,6 +89,8 @@ export function AppSidebar() {
   const storeType: string | null = localStorage.getItem("storeType");
   const authuser = useAuthUser();
   const { roleName } = authuser;
+  const isSession = localStorage.getItem("isSession") === "true";
+  console.log(isSession, "isSession");
 
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
@@ -127,7 +130,7 @@ export function AppSidebar() {
       roles: ["Admin", "CashierWeb", "Store"],
     },
     {
-      name: "ProductCategory",
+      name: `${Number(storeType) === 1 ? "Product" : "Service"} Category`,
       icon: LayoutDashboard,
       href: navigatePage("productCategory"),
       roles: ["Store"],
@@ -264,6 +267,13 @@ export function AppSidebar() {
     },
   ];
 
+  const disableUI = (name: string) =>
+    (!isSession && name === "Reports") || (!isSession && name === "Dashboard")
+      ? ""
+      : isSession
+      ? ""
+      : "pointer-events-none text-base text-gray-700 opacity-50";
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -290,12 +300,14 @@ export function AppSidebar() {
   };
 
   // // Check if accessToken is present, if not, log out the user
-  // useEffect(() => {
-  //   const accessToken = localStorage.getItem("accessToken");
-  //   if (!accessToken) {
-  //     handleLogout(); // Trigger logout if token is missing
-  //   }
-  // }, []);
+  const handleNoSessionToast = () => {
+    if (!isSession) {
+      toast({
+        title: "Session Expired! ⚠️⚠️⚠️",
+        description: "Can not access! Please contact the Admin or via Report!",
+      });
+    }
+  };
 
   return (
     <>
@@ -372,8 +384,15 @@ export function AppSidebar() {
                             asChild
                           >
                             <SidebarMenuButton className="transition-transform duration-200">
-                              <item.icon size={20} />
-                              <span className="text-base">{item.name}</span>
+                              <item.icon
+                                className={disableUI(item.name)}
+                                size={20}
+                              />
+                              <span
+                                className={`text-base${disableUI(item.name)}`}
+                              >
+                                {item.name}
+                              </span>
                               {collapsedItem[item.name] ? (
                                 <ChevronLeft
                                   className={
@@ -395,11 +414,23 @@ export function AppSidebar() {
                               item.child.map((itemChild, childIndex) => (
                                 <SidebarMenuSub>
                                   <SidebarMenuSubItem key={childIndex}>
-                                    <Link href={itemChild?.href || ""}>
+                                    <Link
+                                      onClick={handleNoSessionToast}
+                                      href={itemChild?.href || ""}
+                                    >
                                       <SidebarMenuButton>
                                         <div className="flex items-center gap-3">
-                                          <itemChild.icon size={20} />
-                                          <span className="text-md">
+                                          <itemChild.icon
+                                            className={disableUI(
+                                              itemChild.name
+                                            )}
+                                            size={20}
+                                          />
+                                          <span
+                                            className={`text-md${disableUI(
+                                              itemChild.name
+                                            )}`}
+                                          >
                                             {itemChild?.name}
                                           </span>
                                         </div>
@@ -414,9 +445,31 @@ export function AppSidebar() {
                     ) : (
                       <SidebarMenuItem key={i}>
                         <SidebarMenuButton asChild>
-                          <Link href={item.href ?? ""}>
-                            <item.icon size={20} />
-                            <span className="text-base">{item.name}</span>
+                          <Link
+                            onClick={
+                              (!isSession && item.name === "Reports") ||
+                              (!isSession && item.name === "Dashboard")
+                                ? () => {}
+                                : handleNoSessionToast
+                            }
+                            href={
+                              (!isSession && item.name === "Reports") ||
+                              (!isSession && item.name === "Dashboard")
+                                ? item?.href || ""
+                                : isSession
+                                ? item?.href || ""
+                                : ""
+                            }
+                          >
+                            <item.icon
+                              className={disableUI(item.name)}
+                              size={20}
+                            />
+                            <span
+                              className={`text-base${disableUI(item.name)}`}
+                            >
+                              {item.name}
+                            </span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>

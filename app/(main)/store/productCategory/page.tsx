@@ -26,6 +26,7 @@ import {
   ProductCategoryPatch,
 } from "@/types/productCategory";
 import { ProductCategoryServices } from "@/components/services/productCategoryService";
+import { Loader } from "@/components/loader/Loader";
 
 interface ApiResponse {
   statusCode: number;
@@ -54,6 +55,7 @@ export default function ProductCategoryPage() {
     useState<ProductCategory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [storeType, setStoreType] = useState<string>("1");
 
   const fetchProductCategories = async () => {
     try {
@@ -89,6 +91,10 @@ export default function ProductCategoryPage() {
   };
 
   useEffect(() => {
+    const storedType = localStorage.getItem("storeType");
+    if (storedType) {
+      setStoreType(storedType);
+    }
     fetchProductCategories();
   }, []);
 
@@ -187,7 +193,11 @@ export default function ProductCategoryPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return (
+      <div className="p-8 text-center">
+        <Loader isLoading={loading} />
+      </div>
+    );
   }
 
   if (error) {
@@ -197,7 +207,10 @@ export default function ProductCategoryPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Product Categories Management</h1>
+        <h1 className="text-3xl font-extrabold">
+          {Number(storeType) === 1 ? "Product" : "Service"} Categories
+          Management
+        </h1>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -211,7 +224,7 @@ export default function ProductCategoryPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>No</TableHead>
+              <TableHead>#</TableHead>
               <TableHead>Category Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Status</TableHead>

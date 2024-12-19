@@ -83,6 +83,9 @@ interface BreadcrumbProps {
 const Breadcrumb = () => {
   const pathname = usePathname();
 
+  const regex =
+    /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+
   const disableLabel = (label: string) => {
     if (label === "admin") return true;
     if (label === "detail") return true;
@@ -90,6 +93,7 @@ const Breadcrumb = () => {
     if (label === "user") return true;
     if (label === "generate") return true;
     if (label === "store") return true;
+    if (regex.test(label)) return true; // id
   };
 
   const breadcrumbItems = pathname
@@ -123,12 +127,16 @@ const Breadcrumb = () => {
       {breadcrumbItems.map((item, index) => (
         <div
           key={item.href}
-          className="flex items-center bg-black/15 p-2 rounded-lg"
+          className="flex items-center bg-slate-500 bg-opacity-30 dark:bg-black/15 p-2 rounded-lg"
         >
           {item.isLast ? (
-            <span className="text-muted-foreground">{item.label}</span>
+            regex.test(item.label) ? (
+              <span className={"hidden cursor-not-allowed"}>{item.label}</span>
+            ) : (
+              <span className="text-muted-foreground">{item.label}</span>
+            )
           ) : disableLabel(item.label) ? (
-            <span className={"text-gray-500 cursor-not-allowed"}>
+            <span className={"text-muted-foreground cursor-not-allowed"}>
               {item.label}
             </span>
           ) : (
@@ -142,7 +150,7 @@ const Breadcrumb = () => {
 
           {index < breadcrumbItems.length - 1 && (
             <span className="mx-0.5">
-              <ChevronRight size={15} />
+              <ChevronRight className="font-bold" size={15} />
             </span>
           )}
         </div>

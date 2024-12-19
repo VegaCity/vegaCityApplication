@@ -25,9 +25,9 @@ const validateMenuTimeAccess = (dateFilter: number): boolean => {
     case 1: // Morning
       return currentHour >= 5 && currentHour < 11;
     case 2: // Afternoon
-      return currentHour >= 12 || (currentHour >= 0 && currentHour < 4);
+      return currentHour >= 14 || (currentHour >= 0 && currentHour < 4);
     case 3: // Lunch
-      return currentHour >= 11 && currentHour < 24;
+      return currentHour >= 11 && currentHour < 14;
     default:
       return false;
   }
@@ -56,8 +56,8 @@ const getDateFilterColor = (dateFilter: number) => {
 const LoadingState = () => (
   <div className="min-h-[200px] flex items-center justify-center bg-transparent">
     <div className="text-center">
-      <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600 mb-2" />
-      <p className="text-gray-500">Loading menus...</p>
+      <Loader2 className="mx-auto h-8 w-8 animate-spin text-sky-600 mb-2" />
+      <p className="text-gray-300">Loading menus...</p>
     </div>
   </div>
 );
@@ -246,12 +246,10 @@ const MenuList = () => {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8">
+    <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
-            Menu Management
-          </h1>
+          <h1 className="text-3xl font-extrabold">Menu Management</h1>
           <p className="text-gray-500">
             Create, view, and manage your store menus
           </p>

@@ -180,14 +180,14 @@ export const ReportList = () => {
   return (
     <div className="container mx-auto p-4 space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-xl font-bold">Reports List</h1>
+        <h1 className="text-2xl font-bold">Reports List</h1>
       </div>
 
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>No</TableHead>
+              <TableHead>#</TableHead>
               <TableHead>Creator</TableHead>
               <TableHead>Description</TableHead>
               <TableHead>Created Date</TableHead>

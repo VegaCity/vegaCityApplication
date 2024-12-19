@@ -18,6 +18,8 @@ import { TransactionServices } from "@/components/services/transactionServices";
 import { Transaction } from "@/types/paymentFlow/transaction";
 import DateRangePicker from "../ui/date-picker";
 import EnhancedPagination from "@/lib/EnhancedPagination";
+import { Loader } from "@/components/loader/Loader";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 
 const TransactionTable = ({
   limit,
@@ -125,13 +127,13 @@ const TransactionTable = ({
         )}
 
         {isLoading ? (
-          <p>Loading...</p>
+          <Loader isLoading={isLoading} />
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>No.</TableHead>
+                  <TableHead>#</TableHead>
                   <TableHead
                     className="flex items-center justify-between cursor-pointer"
                     onClick={toggleTypeSorting}
@@ -168,12 +170,17 @@ const TransactionTable = ({
                 ))}
               </TableBody>
             </Table>
-
-            <EnhancedPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+            {transactions && transactions.length > 0 ? (
+              <EnhancedPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            ) : (
+              <div>
+                <EmptyDataPage />
+              </div>
+            )}
           </>
         )}
       </CardContent>
