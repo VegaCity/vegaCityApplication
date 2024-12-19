@@ -27,7 +27,7 @@ import {
   UserCheck2,
   LogOut,
   Dot,
-CheckCheck,
+  CheckCheck,
 } from "lucide-react";
 
 import {
@@ -85,6 +85,9 @@ export function AppSidebar() {
   const { user } = useAuthUser();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const storeType: string | null = localStorage.getItem("storeType");
+  const authuser = useAuthUser();
+  const { roleName } = authuser;
 
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
@@ -341,12 +344,22 @@ export function AppSidebar() {
                         ) : (
                           <Skeleton className="h-10 w-10 rounded-full" />
                         )}
-                        {user?.fullName}
+                        <div className="max-w-full">
+                          <p>{user?.fullName} &nbsp;</p>
+                          <p className="font-bold">as {roleName}</p>
+                        </div>
                       </SidebarMenuButton>
                     </div>
                     <ThemeToggler />
                   </div>
                 </SidebarMenuItem>
+                <div className="flex flex-row justify-start items-center mb-2">
+                  {Number(storeType) === 1 ? (
+                    <Badge>Store Product</Badge>
+                  ) : Number(storeType) === 2 ? (
+                    <Badge>Store Service</Badge>
+                  ) : null}
+                </div>
                 <SidebarSeparator />
                 {menuItems.map(
                   (item, i) =>
@@ -485,6 +498,7 @@ export function AppSidebar() {
             {/* <div className="absolute right-0 bottom-12 flex-col justify-end items-end mb-2">
             <ThemeToggler />
           </div> */}
+
             <SidebarSeparator />
             {/* <SidebarMenuItem> */}
             <button onClick={handleLogout} className="sign-out-button peer">

@@ -185,27 +185,12 @@ const GenerateNewCardDialog = ({
               Generate New Card
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-gray-500">
-              Generate a new card to replace the lost one
+              Generate a new card to replace the lost one.
+              <div className="mt-2 font-medium text-blue-600">
+                Default fee: 50,000 VND
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity</Label>
-              <Input
-                id="quantity"
-                type="number"
-                max="1"
-                value={quantity}
-                onChange={(e) =>
-                  setQuantity(Math.max(1, Number(e.target.value)))
-                }
-                className="h-9"
-                placeholder="Enter quantity"
-              />
-            </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
-          </div>
 
           <AlertDialogFooter>
             <AlertDialogCancel className="h-9">Cancel</AlertDialogCancel>

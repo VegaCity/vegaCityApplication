@@ -178,7 +178,7 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
           <div className="col-span-4 md:col-span-8">
             <AdminChartByDate params={{ saleType, startDate, endDate }} />
           </div>
-          <div className="col-span-4 md:col-span-4">
+          <div className="col-span-4 xl:col-span-4 hidden lg:table-cell">
             <ChartCard
               title="Top Sale Stores"
               description="Top 5 Stores in Month"

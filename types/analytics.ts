@@ -44,6 +44,8 @@ export interface GroupedStaticsAdminByMonth {
   totalOrderFeeCharge: number;
   totalOrderOnlineMethods: number;
   vegaDepositsAmountFromStore: number;
+  totalWithdrawRequest: number;
+  totalAmountWithdrawFromVega: number;
 }
 
 export interface AdminAnalyticsByMonth {

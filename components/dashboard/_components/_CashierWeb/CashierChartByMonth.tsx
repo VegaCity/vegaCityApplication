@@ -43,6 +43,10 @@ const chartConfig = {
     label: "Total Online Order",
     color: "hsl(var(--chart-2))",
   },
+  totalAmountWithdrawFromVega: {
+    label: "Total Withdraw From Vega",
+    color: "hsl(var(--chart-3))",
+  }
 } satisfies ChartConfig;
 
 interface ChartByMonthProps {
@@ -79,6 +83,7 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
         name: fullMonthName, // "November", "December"
         totalAmountCashOrder: dateMap.totalAmountCashOrder,
         totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
+        totalAmountWithdrawFromVega: dateMap.totalAmountWithdrawFromVega,
       };
     });
   };
@@ -212,6 +217,14 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
               stroke="var(--color-totalAmountOrderOnlineMethod)"
               stackId="a"
             />
+            <Area
+              dataKey="totalAmountWithdrawFromVega"
+              type="natural"
+              fill="var(--color-totalAmountWithdrawFromVega)"
+              fillOpacity={0.4}
+              stroke="var(--color-totalAmountWithdrawFromVega)"
+              stackId="a"
+              />
           </AreaChart>
         </ChartContainer>
       </CardContent>

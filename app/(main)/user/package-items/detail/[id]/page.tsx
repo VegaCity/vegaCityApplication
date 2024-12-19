@@ -648,16 +648,15 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         Generate Children VCard
                       </Button>
                     )}
-                  {packageItem?.status === "InActive" && (
-                    <Button
-                      type="button"
-                      onClick={() => setIsUpdateRFIDDialogOpen(true)}
-                      variant="outline"
-                      className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
-                    >
-                      Update RFID
-                    </Button>
-                  )}
+
+                  <Button
+                    type="button"
+                    onClick={() => setIsUpdateRFIDDialogOpen(true)}
+                    variant="outline"
+                    className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
+                  >
+                    Update RFID
+                  </Button>
                 </div>
               </div>
             </CardHeader>
