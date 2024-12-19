@@ -127,7 +127,7 @@ export function AppSidebar() {
       roles: ["Admin", "CashierWeb", "Store"],
     },
     {
-      name: "ProductCategory",
+      name: "Category",
       icon: LayoutDashboard,
       href: navigatePage("productCategory"),
       roles: ["Store"],

@@ -182,10 +182,22 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     });
   };
 
-  const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const calculateHoursBetween = (start: Date, end: Date) => {
+    const diffMilliseconds = end.getTime() - start.getTime();
+    const diffHours = diffMilliseconds / (1000 * 60 * 60);
+    // Round up to the nearest hour
+    return Math.ceil(diffHours);
+  };
+
+  const totalPrice = cartItems.reduce((sum, item) => {
+    if (storeType === "2") {
+      const startDate = new Date(startRent);
+      const endDate = new Date(endRent);
+      const hours = calculateHoursBetween(startDate, endDate);
+      return sum + item.price * item.quantity * hours;
+    }
+    return sum + item.price * item.quantity;
+  }, 0);
   const resetPaymentState = () => {
     setIsPaymentModalOpen(false);
     setPaymentStatus("idle");
@@ -398,6 +410,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                       <h4 className="font-medium">{item.name}</h4>
                       <p className="text-sm text-gray-500">
                         {item.price.toLocaleString("vi-VN")} đ
+                        {storeType === "2" && " / hour"}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Button
