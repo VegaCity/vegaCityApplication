@@ -25,9 +25,9 @@ const validateMenuTimeAccess = (dateFilter: number): boolean => {
     case 1: // Morning
       return currentHour >= 5 && currentHour < 11;
     case 2: // Afternoon
-      return currentHour >= 12 || (currentHour >= 0 && currentHour < 4);
+      return currentHour >= 14 || (currentHour >= 0 && currentHour < 4);
     case 3: // Lunch
-      return currentHour >= 11 && currentHour < 24;
+      return currentHour >= 11 && currentHour < 14;
     default:
       return false;
   }
