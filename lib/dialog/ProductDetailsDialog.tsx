@@ -48,9 +48,10 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
         fetchProductDetails();
         setPreviousProductId(productId);
       }
-    } else {
-      setProduct(null);
     }
+    // else {
+    //   setProduct(null);
+    // }
   }, [productId, previousProductId]);
 
   return (
@@ -58,7 +59,7 @@ const ProductDetailsDialog: React.FC<ProductDetailsDialogProps> = ({
       <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <p>Đang tải thông tin...</p>
+            <p>Loading product...</p>
           </div>
         ) : product ? (
           <>

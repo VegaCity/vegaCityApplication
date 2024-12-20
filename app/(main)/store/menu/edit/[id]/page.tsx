@@ -275,18 +275,22 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         response?.data?.messageResponse || "Failed to add product"
       );
     } catch (err) {
-      console.error("Error details:", err);
+      if (err instanceof AxiosError) {
+        console.error("Error details:", err.message);
 
-      const updatedProducts = [...formData.products];
-      updatedProducts[index] = { ...product, isSaving: false };
-      setFormData({ ...formData, products: updatedProducts });
+        const updatedProducts = [...formData.products];
+        updatedProducts[index] = { ...product, isSaving: false };
+        setFormData({ ...formData, products: updatedProducts });
 
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description:
-          err instanceof Error ? err.message : "Failed to add product",
-      });
+        toast({
+          variant: "destructive",
+          title: "Add Product failed!",
+          description:
+            err.response?.data.messageResponse ||
+            err.response?.data.Error ||
+            "Failed to add product",
+        });
+      }
     }
   };
 
@@ -406,7 +410,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         return {
           name: product.name,
           productCategoryId: product.categoryId,
-          price: parseFloat(product.price),
+          price: parseFloat(product.price.replace(/\./g, "")),
           imageUrl: imageUrl,
           quantity: product.quantity,
           status: "Active",

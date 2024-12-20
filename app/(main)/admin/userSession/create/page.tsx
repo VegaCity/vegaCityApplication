@@ -74,12 +74,15 @@ const UserSessionPage = () => {
   }, []);
 
   const handleSubmit = (data: UserSessionFormValues) => {
-    const { userId, ...userSessionData } = data;
+    const { userId, startDate, ...userSessionData } = data;
 
-    console.log("New User Session data:", data);
+    console.log("New User Session data:", startDate);
     if (data) {
       // Assuming UserSessionServices.uploadUserSession exists
-      UserSessionServices.createUserSessionById(userId, userSessionData)
+      UserSessionServices.createUserSessionById(userId, {
+        startDate,
+        ...userSessionData,
+      })
         .then((res) => {
           toast({
             variant: "success",
