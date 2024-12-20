@@ -18,6 +18,8 @@ import { TransactionServices } from "@/components/services/transactionServices";
 import { Transaction } from "@/types/paymentFlow/transaction";
 import DateRangePicker from "../ui/date-picker";
 import EnhancedPagination from "@/lib/EnhancedPagination";
+import { Loader } from "@/components/loader/Loader";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 
 const TransactionTable = ({
   limit,
@@ -32,21 +34,7 @@ const TransactionTable = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortType, setSortType] = useState<"asc" | "desc">("desc");
-  const pageSize = limit || 10;
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [currentPage, sortType]);
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: currency || "VND",
-    }).format(amount);
-  };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [currentPage, limit, sortType]);
+  const pageSize = 9;
 
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
@@ -111,6 +99,39 @@ const TransactionTable = ({
     setSortType((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
+  const groupTransactionsByTime = (transactions: Transaction[]) => {
+    return transactions.reduce(
+      (groups: Record<string, Transaction[]>, transaction) => {
+        const timestamp = formatDate(transaction.crDate); // Use the same formatting logic
+        console.log("timestamp", timestamp);
+        if (!groups[timestamp]) {
+          groups[timestamp] = [];
+        }
+        groups[timestamp].push(transaction);
+        console.log("groups", groups[timestamp]);
+        return groups;
+      },
+      {}
+    );
+  };
+
+  const transactionsGrouped = groupTransactionsByTime(transactions);
+  console.log("transactionsGrouped", transactionsGrouped);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [currentPage, sortType]);
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: currency || "VND",
+    }).format(amount);
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [currentPage, limit, sortType]);
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -125,18 +146,19 @@ const TransactionTable = ({
         )}
 
         {isLoading ? (
-          <p>Loading...</p>
+          <Loader isLoading={isLoading} />
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>No.</TableHead>
+                  <TableHead>#</TableHead>
                   <TableHead
                     className="flex items-center justify-between cursor-pointer"
-                    onClick={toggleTypeSorting}
+                    // onClick={toggleTypeSorting}
                   >
-                    Type {sortType === "asc" ? <ArrowUp /> : <ArrowDown />}
+                    Type
+                    {/* {sortType === "asc" ? <ArrowUp /> : <ArrowDown />} */}
                   </TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead>Status</TableHead>
@@ -145,35 +167,60 @@ const TransactionTable = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.map((transaction, index) => (
-                  <TableRow key={transaction.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>{transaction.type}</TableCell>
-                    <TableCell>{transaction.description}</TableCell>
-                    <TableCell className={getStatusColor(transaction.status)}>
-                      {transaction.status}
-                    </TableCell>
-                    <TableCell>{formatDate(transaction.crDate)}</TableCell>
-                    <TableCell
-                      className={
-                        transaction.isIncrease
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }
-                    >
-                      {/* {transaction.isIncrease ? "+" : "-"} */}
-                      {formatCurrency(transaction.amount, transaction.currency)}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {Object.entries(groupTransactionsByTime(transactions)).map(
+                  ([timestamp, groupedTransactions], groupIndex) => (
+                    <React.Fragment key={groupIndex}>
+                      <TableRow>
+                        <TableCell
+                          colSpan={6}
+                          className="bg-gray-100 font-bold"
+                        >
+                          Transactions at {timestamp}
+                        </TableCell>
+                      </TableRow>
+                      {groupedTransactions.map((transaction, index) => (
+                        <TableRow key={transaction.id}>
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{transaction.type}</TableCell>
+                          <TableCell>{transaction.description}</TableCell>
+                          <TableCell
+                            className={getStatusColor(transaction.status)}
+                          >
+                            {transaction.status}
+                          </TableCell>
+                          <TableCell>
+                            {formatDate(transaction.crDate)}
+                          </TableCell>
+                          <TableCell
+                            className={
+                              transaction.isIncrease
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }
+                          >
+                            {formatCurrency(
+                              transaction.amount,
+                              transaction.currency
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </React.Fragment>
+                  )
+                )}
               </TableBody>
             </Table>
-
-            <EnhancedPagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
+            {transactions && transactions.length > 0 ? (
+              <EnhancedPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            ) : (
+              <div>
+                <EmptyDataPage />
+              </div>
+            )}
           </>
         )}
       </CardContent>

@@ -198,24 +198,26 @@ const OrdersPage = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4 mb-4">
-        <ComboboxCustom
-          open={open}
-          setOpen={setOpen}
-          value={filterValue}
-          setValue={setFilterValue}
-          filterList={filterList}
-          placeholder="Filter by Status"
-        />
-
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-extrabold">Ordered List</h1>
+        <div className="flex flex-row gap-2 max-h-10">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          <ComboboxCustom
+            open={open}
+            setOpen={setOpen}
+            value={filterValue}
+            setValue={setFilterValue}
+            filterList={filterList}
+            placeholder="Filter by Status"
           />
         </div>
       </div>
@@ -231,7 +233,7 @@ const OrdersPage = () => {
           <TableHeader>
             <TableRow>
               <TableHead className="font-bold text-white whitespace-nowrap">
-                No
+                #
               </TableHead>
               <TableHead className="font-bold text-white whitespace-nowrap">
                 Name

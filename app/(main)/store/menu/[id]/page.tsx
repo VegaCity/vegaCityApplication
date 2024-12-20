@@ -35,6 +35,7 @@ import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Product } from "@/types/store/store";
 import ProductDetailsDialog from "@/lib/dialog/ProductDetailsDialog";
+import { Loader } from "@/components/loader/Loader";
 interface Menu {
   id: string;
   name: string;
@@ -361,17 +362,19 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
   // Category sidebar component
   const CategorySidebar = () => (
     <div className="w-64 flex-shrink-0">
-      <h2 className="font-semibold mb-4">Category</h2>
+      <h2 className="font-semibold mb-4">
+        {Number(storeType) === 1 ? "Product" : "Service"} Category
+      </h2>
       <div className="space-y-2">
         <button
           onClick={() => setSelectedCategory("all")}
           className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
             selectedCategory === "all"
               ? "bg-blue-600 text-white"
-              : "hover:bg-gray-100"
+              : "hover:bg-gray-200 hover:text-blue-600"
           }`}
         >
-          <span>All Products</span>
+          <span>All {Number(storeType) === 1 ? "Products" : "Services"}</span>
           <span className="text-sm bg-white bg-opacity-20 px-2 py-0.5 rounded-full">
             {menuItems.length}
           </span>
@@ -384,7 +387,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
             className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-colors ${
               selectedCategory === category.id
                 ? "bg-blue-600 text-white"
-                : "hover:bg-gray-100"
+                : "hover:bg-gray-200 hover:text-blue-600"
             }`}
           >
             <span>{category.name}</span>
@@ -397,7 +400,12 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
     </div>
   );
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div>
+        <Loader />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -406,7 +414,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">{menu?.name || "Menu "}</h1>
-          <div className="flex items-center text-gray-600">
+          <div className="flex items-center text-gray-500">
             <Clock size={20} className="mr-2" />
             {currentTime.toLocaleTimeString()}
             {currentDateFilter && (
@@ -420,9 +428,9 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
         {/* Modify the existing div with the mode selection and buttons */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Mode:</span>
+            <span className="text-sm">Mode:</span>
             <select
-              className="p-2 border rounded-lg"
+              className="p-2 border rounded-lg text-black dark:text-white"
               value={isOwnerMode ? "owner" : "staff"}
               onChange={(e) => setIsOwnerMode(e.target.value === "owner")}
             >

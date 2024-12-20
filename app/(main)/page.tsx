@@ -267,7 +267,7 @@ const Home = () => {
               cashierAnalyticsDataByDate?.cashierWebBalanceHistory ||
               0
             }
-            vCards={storeAnalyticsDataByDate?.totalVcards}
+            // vCards={storeAnalyticsDataByDate?.totalVcards}
           />
         </div>
         {/* <div className="col-span-12 md:col-span-6 lg:col-span-4"></div> */}
@@ -354,6 +354,7 @@ const Home = () => {
                     )}
                     {userRole === "CashierWeb" && (
                       <>
+                        <SelectItem value="All">All</SelectItem>
                         <SelectItem value="Package">Package</SelectItem>
                         <SelectItem value="PackageItem Charge">
                           PackageItem Charge

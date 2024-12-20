@@ -43,7 +43,7 @@ export const ComboboxCustom: React.FC<ComboboxProps> = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[200px] justify-between text-black h-10"
         >
           {value
             ? filterList.find((data) => data.value === value)?.label

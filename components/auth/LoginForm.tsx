@@ -33,6 +33,7 @@ import VegaImage from "@/img/banner-vega-city-nha-trang.jpg";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "@/components/loader/Loader";
+import { UserServices } from "@/components/services/User/userServices";
 
 interface UserRefreshToken {
   email: string;
@@ -121,10 +122,12 @@ const LoginForm: any = () => {
       const accessToken = res.data.data.tokens.accessToken;
       const userId = res.data.data.userId;
       const storeType = res.data.data.storeType;
+      const isSession = res.data.data.isSession;
       localStorage.setItem("storeType", storeType);
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("userId", userId);
       localStorage.setItem("userEmail", data.email);
+      localStorage.setItem("isSession", isSession);
       localStorage.setItem(
         "refreshTokenExp",
         calculateExpirationTime().toString()
@@ -367,7 +370,7 @@ const LoginForm: any = () => {
             variant: "destructive",
             title: "Login Failed!",
             description:
-              error.response?.data.messageResponse ||
+              error.response?.data.Message ||
               "Something went wrong in the server!",
           });
           setIsLogin(false);

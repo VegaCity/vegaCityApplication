@@ -120,9 +120,9 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
         );
         const resDashboardData = dashboardData.data.data;
         const resChartCashierAmountOrder = Array.isArray(
-          dashboardData.data.data.groupedStaticsCashier
+          dashboardData.data.data.groupedStaticsAdmin
         )
-          ? dashboardData.data.data.groupedStaticsCashier
+          ? dashboardData.data.data.groupedStaticsAdmin
           : [];
         console.log(resChartCashierAmountOrder, "resChartCashierAmountOrder");
         setChartCashierAmountOrder(resChartCashierAmountOrder);

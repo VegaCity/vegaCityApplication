@@ -35,9 +35,15 @@ const WalletCard: FC<WalletCardProps> = ({
           <div className="mb-4">
             <p className="text-sm font-normal">
               Balance: &nbsp;
-              <span className="text-md font-bold text-green-600">
-                {formatVNDCurrencyValue(balance)}
-              </span>
+              {balance < 0 ? (
+                <span className="text-md font-bold text-red-600">
+                  {formatVNDCurrencyValue(balance)}
+                </span>
+              ) : (
+                <span className="text-md font-bold text-green-600">
+                  {formatVNDCurrencyValue(balance)}
+                </span>
+              )}
             </p>
           </div>
 

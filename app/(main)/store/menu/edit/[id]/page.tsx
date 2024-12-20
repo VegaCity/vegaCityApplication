@@ -11,6 +11,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import { ProductServices } from "@/components/services/productServices";
 import { AxiosError } from "axios";
+import { ScrollArea } from "@/components/ui/scroll-area";
 interface Category {
   id: string;
   name: string;
@@ -274,18 +275,22 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         response?.data?.messageResponse || "Failed to add product"
       );
     } catch (err) {
-      console.error("Error details:", err);
+      if (err instanceof AxiosError) {
+        console.error("Error details:", err.message);
 
-      const updatedProducts = [...formData.products];
-      updatedProducts[index] = { ...product, isSaving: false };
-      setFormData({ ...formData, products: updatedProducts });
+        const updatedProducts = [...formData.products];
+        updatedProducts[index] = { ...product, isSaving: false };
+        setFormData({ ...formData, products: updatedProducts });
 
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description:
-          err instanceof Error ? err.message : "Failed to add product",
-      });
+        toast({
+          variant: "destructive",
+          title: "Add Product failed!",
+          description:
+            err.response?.data.messageResponse ||
+            err.response?.data.Error ||
+            "Failed to add product",
+        });
+      }
     }
   };
 
@@ -405,7 +410,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         return {
           name: product.name,
           productCategoryId: product.categoryId,
-          price: parseFloat(product.price),
+          price: parseFloat(product.price.replace(/\./g, "")),
           imageUrl: imageUrl,
           quantity: product.quantity,
           status: "Active",
@@ -531,216 +536,220 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Tên Menu - Read only */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Menu</h2>
-          <div className="mb-4">
-            <label className="block mb-2 font-medium">Menu Name</label>
-            <input
-              type="text"
-              value={formData.menuName}
-              className="w-full p-2 border rounded bg-gray-100"
-              disabled
-            />
-          </div>
-        </div>
-
-        {/* Ca làm việc - Single Select */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Shift</h2>
-          <select
-            value={formData.dateFilter}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                dateFilter: Number(e.target.value) as DateFilter,
-              })
-            }
-            disabled
-            className="w-full p-2 border rounded"
-          >
-            {Object.entries(DATE_FILTER_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Sản phẩm - Editable */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Products</h2>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={handleSaveMultipleProducts}
-                disabled={isLoading || !formData.products.some((p) => p.isNew)}
-                className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
-              >
-                <Save className="w-4 h-4 mr-2" />
-                {isLoading ? "Saving..." : "Save All New Products"}
-              </button>
-              <button
-                type="button"
-                onClick={addProduct}
-                className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Product
-              </button>
+    <ScrollArea>
+      <div className="max-w-4xl mx-auto p-6 text-black">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Tên Menu - Read only */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Menu</h2>
+            <div className="mb-4">
+              <label className="block mb-2 font-medium">Menu Name</label>
+              <input
+                type="text"
+                value={formData.menuName}
+                className="w-full p-2 border rounded bg-gray-100"
+                disabled
+              />
             </div>
           </div>
 
-          {formData.products.map((product, index) => (
-            <div key={index} className="mb-6 p-4 border rounded-lg">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                <div className="col-span-2 space-y-4">
-                  <input
-                    type="text"
-                    placeholder="Product Name"
-                    value={product.name}
-                    onChange={(e) => {
-                      const newProducts = [...formData.products];
-                      newProducts[index].name = e.target.value;
-                      setFormData({ ...formData, products: newProducts });
-                    }}
-                    className="w-full p-2 border rounded"
-                    required
-                    readOnly={!product.isNew}
-                    disabled={!product.isNew}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Price"
-                    value={product.price}
-                    onChange={(e) => {
-                      const newProducts = [...formData.products];
-                      newProducts[index].price = formatPrice(e.target.value);
-                      setFormData({ ...formData, products: newProducts });
-                    }}
-                    className="w-full p-2 border rounded"
-                    required
-                    readOnly={!product.isNew}
-                    disabled={!product.isNew}
-                  />
-                  <input
-                    type="number"
-                    placeholder="Quantity"
-                    value={product.quantity}
-                    onChange={(e) => {
-                      const newProducts = [...formData.products];
-                      newProducts[index].quantity = parseInt(e.target.value);
-                      setFormData({ ...formData, products: newProducts });
-                    }}
-                    className="w-full p-2 border rounded"
-                    required
-                    min="1"
-                    readOnly={!product.isNew}
-                    disabled={!product.isNew}
-                  />
-                  <select
-                    value={product.categoryId}
-                    onChange={(e) => {
-                      const newProducts = [...formData.products];
-                      newProducts[index].categoryId = e.target.value;
-                      setFormData({ ...formData, products: newProducts });
-                    }}
-                    className="w-full p-2 border rounded"
-                    required
-                    disabled={!product.isNew}
-                  >
-                    <option value="">Select Category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+          {/* Ca làm việc - Single Select */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">Shift</h2>
+            <select
+              value={formData.dateFilter}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  dateFilter: Number(e.target.value) as DateFilter,
+                })
+              }
+              disabled
+              className="w-full p-2 border rounded"
+            >
+              {Object.entries(DATE_FILTER_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                <div className="relative">
-                  {product.imagePreview ? (
-                    <div className="relative">
-                      <img
-                        src={product.imagePreview as string}
-                        alt="Preview"
-                        className="w-full h-32 object-cover rounded"
-                      />
-                      {product.isNew && (
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    product.isNew && (
-                      <div className="relative">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleImageChange(e, index)}
-                          className="hidden"
-                          id={`image-upload-${index}`}
-                        />
-                        <label
-                          htmlFor={`image-upload-${index}`}
-                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:bg-gray-50"
-                        >
-                          <ImageIcon className="w-8 h-8 text-gray-400" />
-                          <span className="mt-2 text-sm text-gray-500">
-                            Upload Image
-                          </span>
-                        </label>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-end gap-2">
-                {product.isNew && (
-                  <button
-                    type="button"
-                    onClick={() => handleSaveProduct(index)}
-                    disabled={product.isSaving}
-                    className="flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
-                  >
-                    <Save className="w-4 h-4 mr-1" />
-                    {product.isSaving ? "Saving..." : "Save Product"}
-                  </button>
-                )}
+          {/* Sản phẩm - Editable */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Products</h2>
+              <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => removeProduct(index)}
-                  className="flex items-center px-3 py-1 text-red-500 hover:text-red-700"
+                  onClick={handleSaveMultipleProducts}
+                  disabled={
+                    isLoading || !formData.products.some((p) => p.isNew)
+                  }
+                  className="flex items-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
                 >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Remove
+                  <Save className="w-4 h-4 mr-2" />
+                  {isLoading ? "Saving..." : "Save All New Products"}
+                </button>
+                <button
+                  type="button"
+                  onClick={addProduct}
+                  className="flex items-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Product
                 </button>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Nút submit */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
-          >
-            <Save className="w-5 h-5 mr-2" />
-            Save
-          </button>
-        </div>
-      </form>
-    </div>
+            {formData.products.map((product, index) => (
+              <div key={index} className="mb-6 p-4 border rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                  <div className="col-span-2 space-y-4">
+                    <input
+                      type="text"
+                      placeholder="Product Name"
+                      value={product.name}
+                      onChange={(e) => {
+                        const newProducts = [...formData.products];
+                        newProducts[index].name = e.target.value;
+                        setFormData({ ...formData, products: newProducts });
+                      }}
+                      className="w-full p-2 border rounded"
+                      required
+                      readOnly={!product.isNew}
+                      disabled={!product.isNew}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Price"
+                      value={product.price}
+                      onChange={(e) => {
+                        const newProducts = [...formData.products];
+                        newProducts[index].price = formatPrice(e.target.value);
+                        setFormData({ ...formData, products: newProducts });
+                      }}
+                      className="w-full p-2 border rounded"
+                      required
+                      readOnly={!product.isNew}
+                      disabled={!product.isNew}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Quantity"
+                      value={product.quantity}
+                      onChange={(e) => {
+                        const newProducts = [...formData.products];
+                        newProducts[index].quantity = parseInt(e.target.value);
+                        setFormData({ ...formData, products: newProducts });
+                      }}
+                      className="w-full p-2 border rounded"
+                      required
+                      min="1"
+                      readOnly={!product.isNew}
+                      disabled={!product.isNew}
+                    />
+                    <select
+                      value={product.categoryId}
+                      onChange={(e) => {
+                        const newProducts = [...formData.products];
+                        newProducts[index].categoryId = e.target.value;
+                        setFormData({ ...formData, products: newProducts });
+                      }}
+                      className="w-full p-2 border rounded"
+                      required
+                      disabled={!product.isNew}
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="relative">
+                    {product.imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={product.imagePreview as string}
+                          alt="Preview"
+                          className="w-full h-32 object-cover rounded"
+                        />
+                        {product.isNew && (
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      product.isNew && (
+                        <div className="relative">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageChange(e, index)}
+                            className="hidden"
+                            id={`image-upload-${index}`}
+                          />
+                          <label
+                            htmlFor={`image-upload-${index}`}
+                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:bg-gray-50"
+                          >
+                            <ImageIcon className="w-8 h-8 text-gray-400" />
+                            <span className="mt-2 text-sm text-gray-500">
+                              Upload Image
+                            </span>
+                          </label>
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-end gap-2">
+                  {product.isNew && (
+                    <button
+                      type="button"
+                      onClick={() => handleSaveProduct(index)}
+                      disabled={product.isSaving}
+                      className="flex items-center px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400"
+                    >
+                      <Save className="w-4 h-4 mr-1" />
+                      {product.isSaving ? "Saving..." : "Save Product"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeProduct(index)}
+                    className="flex items-center px-3 py-1 text-red-500 hover:text-red-700"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Nút submit */}
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="flex items-center px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+              <Save className="w-5 h-5 mr-2" />
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </ScrollArea>
   );
 };
 

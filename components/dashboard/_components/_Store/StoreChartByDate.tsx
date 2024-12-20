@@ -30,6 +30,7 @@ import EmptyDataPage from "@/components/emptyData/emptyData";
 import { AxiosError } from "axios";
 import { format } from "date-fns";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
+import { FolderArchive } from "lucide-react";
 
 // const chartData = [
 //   { month: "January", desktop: 186, mobile: 80 },
@@ -234,8 +235,10 @@ export function StoreChartByDate({ params }: ChartByDateProps) {
               />
             </BarChart>
           ) : (
-            <div>
-              <EmptyDataPage />
+            <div className="w-full h-full flex flex-row items-center justify-center bg-muted/50">
+              <p className="text-3xl text-blue-300 font-bold flex flex-row gap-4 items-center justify-center">
+                Empty Data <FolderArchive />{" "}
+              </p>
             </div>
           )}
         </ChartContainer>
