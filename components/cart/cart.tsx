@@ -31,6 +31,7 @@ import { Loader2 } from "lucide-react";
 interface CartItem extends Product {
   quantity: number;
   stockQuantity: number;
+  categoryId: string;
 }
 
 export interface CartRef {
@@ -150,7 +151,12 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
         return [
           ...prevItems,
-          { ...product, quantity: 1, stockQuantity: product.quantity },
+          {
+            ...product,
+            quantity: 1,
+            stockQuantity: product.quantity,
+            categoryId: product.productCategoryId || "Unknown",
+          } as CartItem,
         ];
       });
 
@@ -310,9 +316,9 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         productData: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
-          productCategory: item.productCategory?.id || "Unknown",
+          productCategory: item.categoryId || "Unknown",
           price: item.price,
-          imgUrl: item?.imageUrl || "",
+          imgUrl: item.imageUrl || "",
           quantity: item.quantity,
         })),
         paymentType: paymentMethod,

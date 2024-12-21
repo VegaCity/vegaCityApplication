@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,10 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ImageIcon, Trash2 } from "lucide-react";
+import { ImageIcon, Upload, X } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { Product as StoreProduct } from "@/types/store/store";
-import { Product as ProductType, ProductPatch } from "@/types/product";
+import { ProductPatch } from "@/types/product";
 
 interface ProductUpdateDialogProps {
   open: boolean;
@@ -35,11 +34,11 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
   product,
   onUpdate,
 }) => {
-  // Initialize formData with empty values
   const [formData, setFormData] = useState<ProductPatch>({
     name: "",
     price: 0,
-
+    duration: 0,
+    unit: "",
     imageUrl: "",
     quantity: 1,
   });
@@ -47,14 +46,20 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [storeType, setStoreType] = useState<string>("");
 
-  // Update formData when product prop changes
+  useEffect(() => {
+    const type = localStorage.getItem("storeType");
+    setStoreType(type || "");
+  }, []);
+
   useEffect(() => {
     if (product) {
       setFormData({
         name: product.name,
         price: product.price,
-
+        duration: product.duration,
+        unit: product.unit,
         imageUrl: product.imageUrl || "",
         quantity: product.quantity || 0,
       });
@@ -65,32 +70,18 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         toast.error("Please select an image file");
         return;
       }
-
-      // Validate file size (e.g., max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error("Image size must be less than 5MB");
         return;
       }
-
       setSelectedImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    setImagePreview("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
     }
   };
 
@@ -101,16 +92,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
         imageUrl: imagePreview,
       });
       onClose();
-      // Reset form after successful update
-      setFormData({
-        name: "",
-        price: 0,
-
-        imageUrl: "",
-        quantity: 0,
-      });
-      setSelectedImage(null);
-      setImagePreview("");
+      toast.success("Product updated successfully");
     } catch (error) {
       toast.error("Failed to update product");
     }
@@ -120,110 +102,181 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Product</DialogTitle>
-          <DialogDescription>
-            Edit the details of the product.
-          </DialogDescription>
+          <DialogTitle className="text-2xl font-bold">
+            Update Product Details
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-6 py-4">
           {/* Image Upload Section */}
-          <div className="flex flex-col items-center space-y-4">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              className="hidden"
-            />
-            <div className="relative w-48 h-48 bg-gray-100 rounded-lg overflow-hidden">
-              {imagePreview ? (
-                <>
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Product Image</Label>
+            <div className="flex justify-center">
+              <div className="relative w-64 h-64 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-gray-400 transition-colors">
+                {imagePreview ? (
+                  <div className="relative group">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="mr-2"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Change
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedImage(null);
+                          setImagePreview("");
+                        }}
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
                   <button
-                    onClick={handleRemoveImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full h-full flex flex-col items-center justify-center text-gray-500 hover:text-gray-700"
                   >
-                    <Trash2 size={16} />
+                    <ImageIcon className="w-12 h-12 mb-2" />
+                    <p className="text-sm font-medium">Click to upload image</p>
+                    <p className="text-xs text-gray-500">Max size: 5MB</p>
                   </button>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                  <ImageIcon size={48} />
-                  <p className="mt-2">No image selected</p>
+                )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Product Details Section */}
+          <div className="space-y-4">
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="name" className="text-base font-semibold">
+                  Product Name
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="mt-1"
+                  placeholder="Enter product name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="price" className="text-base font-semibold">
+                  Price (VND)
+                </Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: Number(e.target.value) })
+                  }
+                  className="mt-1"
+                  placeholder="Enter price"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="quantity" className="text-base font-semibold">
+                  Quantity
+                </Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="0"
+                  value={formData.quantity}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      quantity: Number(e.target.value),
+                    })
+                  }
+                  className="mt-1"
+                  placeholder="Enter quantity"
+                />
+              </div>
+
+              {storeType === "2" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label
+                      htmlFor="duration"
+                      className="text-base font-semibold"
+                    >
+                      Duration
+                    </Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      min="0"
+                      value={formData.duration ?? 0}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          duration: Number(e.target.value),
+                        })
+                      }
+                      className="mt-1"
+                      placeholder="Enter duration"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="unit" className="text-base font-semibold">
+                      Time Unit
+                    </Label>
+                    <Select
+                      value={formData.unit || ""}
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, unit: value })
+                      }
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Hour">Hour</SelectItem>
+                        <SelectItem value="Minute">Minute</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               )}
             </div>
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Upload Image
-            </Button>
           </div>
-
-          {/* Product Name */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-left">
-              Product Name
-            </Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="col-span-3"
-            />
-          </div>
-
-          {/* Price */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="price" className="text-left">
-              Price
-            </Label>
-            <Input
-              id="price"
-              type="number"
-              value={formData.price}
-              onChange={(e) =>
-                setFormData({ ...formData, price: Number(e.target.value) })
-              }
-              className="col-span-3"
-            />
-          </div>
-
-          {/* Status */}
         </div>
 
-        {/* Quantity */}
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="quantity" className="text-left">
-            Số lượng
-          </Label>
-          <Input
-            id="quantity"
-            type="number"
-            min="0"
-            value={formData.quantity}
-            onChange={(e) =>
-              setFormData({ ...formData, quantity: Number(e.target.value) })
-            }
-            className="col-span-3"
-          />
-        </div>
-
-        <DialogFooter>
+        <DialogFooter className="gap-2">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Save</Button>
+          <Button onClick={handleSubmit} className="px-8">
+            Save Changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

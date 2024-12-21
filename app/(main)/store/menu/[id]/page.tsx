@@ -626,6 +626,13 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
 
       {/* Shopping Cart */}
       {!isOwnerMode && <ShoppingCartComponent ref={cartRef} />}
+
+      <ProductUpdateDialog
+        open={isProductUpdateDialogOpen}
+        onClose={() => setIsProductUpdateDialogOpen(false)}
+        product={itemToUpdate}
+        onUpdate={handleProductUpdate}
+      />
     </div>
   );
 };

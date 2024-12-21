@@ -65,18 +65,15 @@ export interface Menu {
 export interface Product {
   id: string;
   name: string;
-  productCategoryId: string;
-  menuId: string;
   price: number;
-  crDate: string;
-  upsDate: string;
-  status: string;
   imageUrl: string | null;
   quantity: number;
-  menu: Menu | null;
+  duration: number | null;
+  unit: string | null;
+  menu: any;
   description: string;
-  productCategory: ProductCategory;
   orderDetails: any[];
+  productCategoryId: string;
 }
 export interface ProductCategory {
   id: string;
