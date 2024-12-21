@@ -36,6 +36,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { AxiosError } from "axios";
 type PackageItemDetail = {
   id: string;
   packageId: string;
@@ -438,8 +439,8 @@ const WithdrawMoney = () => {
         console.error("Fetch Package Item Error:", err);
 
         const messageResponse =
-          err instanceof Error
-            ? (err as any).response?.data?.messageResponse || err.message
+          err instanceof AxiosError
+            ? err.response?.data.messageError || err.response?.data.Error
             : "Đã có lỗi xảy ra. Vui lòng kiểm tra lại.";
 
         console.log("MessageResponse:", messageResponse);
