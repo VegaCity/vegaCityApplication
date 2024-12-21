@@ -30,6 +30,8 @@ interface ProductErrors {
   quantity?: string;
   categoryId?: string;
   image?: string;
+  duration?: string;
+  unit?: string;
 }
 const DATE_FILTER_LABELS = {
   [DateFilter.Morning]: "Morning",
@@ -49,6 +51,8 @@ interface Product {
   isSaving?: boolean;
   status?: string;
   dateFilter?: number;
+  duration?: number | null;
+  unit?: "Hour" | "Minute" | null;
 }
 
 interface MenuData {
@@ -70,6 +74,8 @@ const initialFormData: MenuData = {
       categoryId: "",
       image: null,
       imagePreview: null,
+      duration: localStorage.getItem("storeType") === "2" ? null : undefined,
+      unit: localStorage.getItem("storeType") === "2" ? null : undefined,
     },
   ],
 };
@@ -169,6 +175,7 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         .filter((mapping: any) => mapping.product.status === "Active")
         .map((mapping: any) => {
           const product = mapping.product;
+          const showDurationFields = localStorage.getItem("storeType") === "2";
           return {
             id: product.id,
             name: product.name,
@@ -180,6 +187,8 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
             dateFilter: menuData.dateFilter,
             isNew: false,
             quantity: product.quantity || 1,
+            duration: showDurationFields ? product.duration : null,
+            unit: showDurationFields ? product.unit : null,
           };
         });
 
@@ -212,16 +221,19 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
     setFormData({
       ...formData,
       products: [
-        ...formData.products,
         {
           name: "",
           price: "",
-          quantity: 0,
+          quantity: 1,
           categoryId: "",
           image: null,
           imagePreview: null,
           isNew: true,
+          duration:
+            localStorage.getItem("storeType") === "2" ? null : undefined,
+          unit: localStorage.getItem("storeType") === "2" ? null : undefined,
         },
+        ...formData.products,
       ],
     });
   };
@@ -229,6 +241,16 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
   const handleSaveProduct = async (index: number) => {
     const product = formData.products[index];
     if (!product.isNew) return;
+
+    // Validate before saving
+    if (!validateProduct(product, index)) {
+      toast({
+        variant: "destructive",
+        title: "Validation Error",
+        description: "Please fill in all required fields correctly",
+      });
+      return;
+    }
 
     try {
       const updatedProducts = [...formData.products];
@@ -247,6 +269,9 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
         imageUrl: imageUrl,
         quantity: product.quantity,
         status: "Active",
+        duration:
+          localStorage.getItem("storeType") === "2" ? product.duration : null,
+        unit: localStorage.getItem("storeType") === "2" ? product.unit : null,
       };
 
       const response = await StoreMenuServices.addProductToMenu(
@@ -397,6 +422,23 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       const newProducts = formData.products.filter((product) => product.isNew);
       if (newProducts.length === 0) return;
 
+      // Validate all new products
+      const isValid = newProducts.every((product, idx) =>
+        validateProduct(
+          product,
+          formData.products.findIndex((p) => p === product)
+        )
+      );
+
+      if (!isValid) {
+        toast({
+          variant: "destructive",
+          title: "Validation Error",
+          description: "Please fill in all required fields correctly",
+        });
+        return;
+      }
+
       // Hiển thị loading state
       setIsLoading(true);
 
@@ -414,6 +456,9 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
           imageUrl: imageUrl,
           quantity: product.quantity,
           status: "Active",
+          duration:
+            localStorage.getItem("storeType") === "2" ? product.duration : null,
+          unit: localStorage.getItem("storeType") === "2" ? product.unit : null,
         };
       });
 
@@ -470,12 +515,16 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
 
   const [startRent, setStartRent] = useState(getCurrentTime());
 
+  const getDurationLabel = (duration: number, unit: string) => {
+    return `${duration} ${unit}${duration > 1 ? "s" : ""}`;
+  };
+
   const validateProduct = (product: Product, index: number): boolean => {
     const errors: ProductErrors = {};
     let isValid = true;
 
     // Name validation
-    if (!product.name.trim()) {
+    if (!product.name?.trim()) {
       errors.name = "Product name is required";
       isValid = false;
     } else if (product.name.length < 2) {
@@ -525,6 +574,31 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
       isValid = false;
     }
 
+    // Duration and Unit validation for storeType 2
+    if (localStorage.getItem("storeType") === "2") {
+      if (!product.duration) {
+        errors.duration = "Duration is required";
+        isValid = false;
+      } else {
+        if (product.unit === "Hour") {
+          if (product.duration > MAX_HOURS) {
+            errors.duration = "Duration must not exceed 24 hours";
+            isValid = false;
+          }
+        } else if (product.unit === "Minute") {
+          if (product.duration > MAX_MINUTES) {
+            errors.duration = "Duration must not exceed 1440 minutes";
+            isValid = false;
+          }
+        }
+      }
+
+      if (!product.unit) {
+        errors.unit = "Unit is required";
+        isValid = false;
+      }
+    }
+
     // Update errors state
     setProductErrors((prev) => {
       const newErrors = [...prev];
@@ -534,6 +608,30 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
 
     return isValid;
   };
+
+  // Add helper function to determine appropriate unit
+  const determineUnit = (duration: number): "Hour" | "Minute" => {
+    // If duration is less than 60, use minutes
+    // If duration is 60 or greater, convert to hours
+    return duration < 60 ? "Minute" : "Hour";
+  };
+
+  // Add helper function to convert duration to hours and minutes
+  const convertToHoursAndMinutes = (totalMinutes: number | null) => {
+    if (!totalMinutes) return { hours: 0, minutes: 0 };
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return { hours, minutes };
+  };
+
+  // Add helper function to convert hours and minutes to total minutes
+  const convertToTotalMinutes = (hours: number, minutes: number) => {
+    return hours * 60 + minutes;
+  };
+
+  // Add max duration constants
+  const MAX_HOURS = 24;
+  const MAX_MINUTES = 1440;
 
   return (
     <ScrollArea>
@@ -606,70 +704,217 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
               <div key={index} className="mb-6 p-4 border rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                   <div className="col-span-2 space-y-4">
-                    <input
-                      type="text"
-                      placeholder="Product Name"
-                      value={product.name}
-                      onChange={(e) => {
-                        const newProducts = [...formData.products];
-                        newProducts[index].name = e.target.value;
-                        setFormData({ ...formData, products: newProducts });
-                      }}
-                      className="w-full p-2 border rounded"
-                      required
-                      readOnly={!product.isNew}
-                      disabled={!product.isNew}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Price"
-                      value={product.price}
-                      onChange={(e) => {
-                        const newProducts = [...formData.products];
-                        newProducts[index].price = formatPrice(e.target.value);
-                        setFormData({ ...formData, products: newProducts });
-                      }}
-                      className="w-full p-2 border rounded"
-                      required
-                      readOnly={!product.isNew}
-                      disabled={!product.isNew}
-                    />
-                    <input
-                      type="number"
-                      placeholder="Quantity"
-                      value={product.quantity}
-                      onChange={(e) => {
-                        const newProducts = [...formData.products];
-                        newProducts[index].quantity = parseInt(e.target.value);
-                        setFormData({ ...formData, products: newProducts });
-                      }}
-                      className="w-full p-2 border rounded"
-                      required
-                      min="1"
-                      readOnly={!product.isNew}
-                      disabled={!product.isNew}
-                    />
-                    <select
-                      value={product.categoryId}
-                      onChange={(e) => {
-                        const newProducts = [...formData.products];
-                        newProducts[index].categoryId = e.target.value;
-                        setFormData({ ...formData, products: newProducts });
-                      }}
-                      className="w-full p-2 border rounded"
-                      required
-                      disabled={!product.isNew}
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Product Name"
+                        value={product.name}
+                        onChange={(e) => {
+                          const newProducts = [...formData.products];
+                          newProducts[index].name = e.target.value;
+                          setFormData({ ...formData, products: newProducts });
+                          validateProduct(newProducts[index], index);
+                        }}
+                        className={`w-full p-2 border rounded ${
+                          productErrors[index]?.name ? "border-red-500" : ""
+                        }`}
+                        required
+                        readOnly={!product.isNew}
+                      />
+                      {productErrors[index]?.name && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {productErrors[index].name}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Price"
+                        value={product.price}
+                        onChange={(e) => {
+                          const newProducts = [...formData.products];
+                          newProducts[index].price = formatPrice(
+                            e.target.value
+                          );
+                          setFormData({ ...formData, products: newProducts });
+                          validateProduct(newProducts[index], index);
+                        }}
+                        className={`w-full p-2 border rounded ${
+                          productErrors[index]?.price ? "border-red-500" : ""
+                        }`}
+                        required
+                        readOnly={!product.isNew}
+                      />
+                      {productErrors[index]?.price && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {productErrors[index].price}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <input
+                        type="number"
+                        placeholder="Quantity"
+                        value={product.quantity}
+                        onChange={(e) => {
+                          const newProducts = [...formData.products];
+                          newProducts[index].quantity = parseInt(
+                            e.target.value
+                          );
+                          setFormData({ ...formData, products: newProducts });
+                          validateProduct(newProducts[index], index);
+                        }}
+                        className={`w-full p-2 border rounded ${
+                          productErrors[index]?.quantity ? "border-red-500" : ""
+                        }`}
+                        required
+                        min="1"
+                        readOnly={!product.isNew}
+                      />
+                      {productErrors[index]?.quantity && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {productErrors[index].quantity}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <select
+                        value={product.categoryId}
+                        onChange={(e) => {
+                          const newProducts = [...formData.products];
+                          newProducts[index].categoryId = e.target.value;
+                          setFormData({ ...formData, products: newProducts });
+                          validateProduct(newProducts[index], index);
+                        }}
+                        className={`w-full p-2 border rounded ${
+                          productErrors[index]?.categoryId
+                            ? "border-red-500"
+                            : ""
+                        }`}
+                        required
+                        disabled={!product.isNew}
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      {productErrors[index]?.categoryId && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {productErrors[index].categoryId}
+                        </p>
+                      )}
+                    </div>
+
+                    {localStorage.getItem("storeType") === "2" && (
+                      <div className="space-y-2">
+                        <label className="block mb-2 text-sm font-medium">
+                          Duration
+                        </label>
+                        <div className="flex gap-4">
+                          <div className="flex-1">
+                            <input
+                              type="number"
+                              placeholder="Enter duration"
+                              value={product.duration || ""}
+                              onChange={(e) => {
+                                const duration =
+                                  parseInt(e.target.value) || null;
+                                const newProducts = [...formData.products];
+                                newProducts[index] = {
+                                  ...newProducts[index],
+                                  duration: duration,
+                                };
+                                setFormData({
+                                  ...formData,
+                                  products: newProducts,
+                                });
+                                validateProduct(newProducts[index], index);
+                              }}
+                              className={`w-full p-2 border rounded ${
+                                productErrors[index]?.duration
+                                  ? "border-red-500"
+                                  : ""
+                              }`}
+                              min="1"
+                              max={
+                                product.unit === "Hour"
+                                  ? MAX_HOURS
+                                  : MAX_MINUTES
+                              }
+                              disabled={!product.isNew}
+                            />
+                            {productErrors[index]?.duration && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {productErrors[index].duration}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <select
+                              value={product.unit || ""}
+                              onChange={(e) => {
+                                const newUnit = e.target.value as
+                                  | "Hour"
+                                  | "Minute"
+                                  | null;
+                                const newProducts = [...formData.products];
+
+                                // Adjust duration if it exceeds the new unit's maximum
+                                let newDuration = product.duration;
+                                if (
+                                  newUnit === "Hour" &&
+                                  newDuration &&
+                                  newDuration > MAX_HOURS
+                                ) {
+                                  newDuration = MAX_HOURS;
+                                }
+
+                                newProducts[index] = {
+                                  ...newProducts[index],
+                                  unit: newUnit,
+                                  duration: newDuration,
+                                };
+                                setFormData({
+                                  ...formData,
+                                  products: newProducts,
+                                });
+                                validateProduct(newProducts[index], index);
+                              }}
+                              className={`w-full p-2 border rounded ${
+                                productErrors[index]?.unit
+                                  ? "border-red-500"
+                                  : ""
+                              }`}
+                              disabled={!product.isNew}
+                            >
+                              <option value="">Select Unit</option>
+                              <option value="Hour">Giờ</option>
+                              <option value="Minute">Phút</option>
+                            </select>
+                            {productErrors[index]?.unit && (
+                              <p className="text-red-500 text-sm mt-1">
+                                {productErrors[index].unit}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="relative">
+                    {productErrors[index]?.image && (
+                      <p className="text-red-500 text-sm mb-1">
+                        {productErrors[index].image}
+                      </p>
+                    )}
                     {product.imagePreview ? (
                       <div className="relative">
                         <img

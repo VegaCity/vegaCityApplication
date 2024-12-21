@@ -22,10 +22,12 @@ export const TransactionServices = {
   getTransactionDrawMoneyById({
     packageOrderId,
     rfId,
-  }: GetPackageItemByIdParams) {
+    page = 1,
+    size = 100,
+  }: GetPackageItemByIdParams & TrasactionPageSize) {
     if (packageOrderId) {
       return API.get(
-        `/package-item/get-transaction-withdraw?packageOrderId=${packageOrderId}`
+        `/transaction/package-order/${packageOrderId}/transactions?page=${page}&size=${size}`
       );
     } else if (rfId) {
       return API.get(`/package-item/get-transaction-withdraw?rfId=${rfId}`);

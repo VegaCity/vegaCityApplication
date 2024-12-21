@@ -33,6 +33,7 @@ const OrderDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [productDetails, setProductDetails] = useState<any[]>([]);
+  const [storeType, setStoreType] = useState<number>(0);
 
   useEffect(() => {
     const fetchOrderAndProductDetails = async () => {
@@ -83,6 +84,11 @@ const OrderDetailPage = () => {
       fetchOrderAndProductDetails();
     }
   }, [params.id]);
+
+  useEffect(() => {
+    const storedType = localStorage.getItem("storeType");
+    setStoreType(storedType ? parseInt(storedType) : 0);
+  }, []);
 
   if (loading) {
     return (
@@ -239,28 +245,6 @@ const OrderDetailPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-start">
-                <Calendar className="h-5 w-5 text-gray-400 mt-1" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    Start Rent Date
-                  </p>
-                  <p className="mt-1 text-base text-gray-900">
-                    {order.startRent ? formatDate(order.startRent) : ""}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <Calendar className="h-5 w-5 text-gray-400 mt-1" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">
-                    End Rent Date
-                  </p>
-                  <p className="mt-1 text-base text-gray-900">
-                    {order.endRent ? formatDate(order.endRent) : ""}
-                  </p>
-                </div>
-              </div>
               <div className="col-span-2 space-y-4 border-t border-gray-200 pt-4 mt-4">
                 <p className="text-sm font-medium text-gray-500">Products</p>
                 {productDetails.map((product, index) => (
@@ -274,16 +258,41 @@ const OrderDetailPage = () => {
                         <p className="text-base font-medium text-gray-900">
                           {product?.data?.name || ""}
                         </p>
-                        <p className="text-sm text-gray-500">
-                          Quantity: {product?.quantity || ""}
-                        </p>
+                        {storeType === 2 &&
+                          order.orderDetails?.[index]?.startRent && (
+                            <div className="mt-2">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <Calendar className="h-4 w-4 mr-2 text-gray-400" />
+                                <span className="font-medium">Start</span>
+                                <span className="mx-2 text-gray-400">
+                                  (
+                                  {formatDate(
+                                    order.orderDetails[index].startRent
+                                  )}
+                                  )
+                                </span>
+                                <span className="mx-4 text-gray-400">to</span>
+                                <span className="font-medium">End</span>
+                                <span className="mx-2 text-gray-400">
+                                  (
+                                  {formatDate(
+                                    order.orderDetails[index].endRent
+                                  )}
+                                  )
+                                </span>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end">
                       <p className="text-base font-medium text-gray-900">
                         {formatAmount(
                           order.orderDetails?.[index]?.finalAmount || 0
                         )}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        × {product?.quantity || 0}
                       </p>
                     </div>
                   </div>

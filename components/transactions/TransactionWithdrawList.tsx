@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 const formatDateTimeForDisplay = (dateString: string | null) => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -42,6 +43,9 @@ const TransactionWithdrawList = ({
   const [transactions, setTransactions] = useState<TransactionWithdraw[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -49,8 +53,12 @@ const TransactionWithdrawList = ({
         setIsLoading(true);
         const response = await TransactionServices.getTransactionDrawMoneyById({
           packageOrderId: packageItemId,
+          page: currentPage,
+          size: ITEMS_PER_PAGE,
         });
         setTransactions(response.data.data);
+        const { total } = response.data.metaData;
+        setTotalPages(Math.ceil(total / ITEMS_PER_PAGE));
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to load transactions"
@@ -63,7 +71,7 @@ const TransactionWithdrawList = ({
     if (packageItemId) {
       fetchTransactions();
     }
-  }, [packageItemId]);
+  }, [packageItemId, currentPage]);
 
   if (isLoading) return <div>Loading transactions...</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
@@ -71,7 +79,7 @@ const TransactionWithdrawList = ({
   return (
     <Card className="w-full max-w-5xl mx-auto mt-6">
       <CardHeader>
-        <CardTitle>Withdrawal Transactions</CardTitle>
+        <CardTitle>Transactions</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -93,7 +101,7 @@ const TransactionWithdrawList = ({
             ) : (
               transactions.map((transaction) => (
                 <TableRow key={transaction.id}>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {formatDateTimeForDisplay(transaction.crDate)}
                   </TableCell>
                   <TableCell className="font-medium">
@@ -121,6 +129,30 @@ const TransactionWithdrawList = ({
             )}
           </TableBody>
         </Table>
+
+        {transactions.length > 0 && (
+          <div className="flex justify-center gap-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="py-2 px-4">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

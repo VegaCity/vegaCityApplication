@@ -82,6 +82,8 @@ export interface OrderDetailData {
   quantity: number;
   order: Order | null;
   product: ProductData | null;
+  startRent: string;
+  endRent: string;
 }
 
 export interface OrderExistData {
