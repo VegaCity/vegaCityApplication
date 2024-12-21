@@ -267,7 +267,13 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         return null;
     }
   };
-
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    // Tính toán timezone offset
+    const tzOffset = -date.getTimezoneOffset();
+    const localDate = new Date(date.getTime() + tzOffset * 60000);
+    return localDate.toISOString();
+  };
   async function handleCreateOrder() {
     setPaymentStatus("processing");
     try {
@@ -296,10 +302,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         paymentMethod === "QRCode" || paymentMethod === "Cash";
 
       const baseOrderData = {
-        saleType: "Product",
+        saleType: storeType === "2" ? "Service" : "Product",
         storeId,
         totalAmount: totalPrice,
         packageOrderId: paymentMethod === "QRCode" ? vcardCode : null,
+        startRent: storeType === "2" ? formatDateTime(startRent) : null,
         productData: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
@@ -312,13 +319,6 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       };
 
       // Thêm startRent và endRent nếu storeType là "2"
-      const formatDateTime = (dateString: string) => {
-        const date = new Date(dateString);
-        // Tính toán timezone offset
-        const tzOffset = -date.getTimezoneOffset();
-        const localDate = new Date(date.getTime() + tzOffset * 60000);
-        return localDate.toISOString();
-      };
 
       const orderData =
         storeType === "2"

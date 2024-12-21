@@ -65,6 +65,8 @@ interface MenuItem extends Product {
   crDate: string;
   upsDate: string;
   quantity: number;
+  duration: number | null;
+  unit: string | null;
 }
 const DATE_FILTERS = {
   MORNING: 1,
@@ -104,6 +106,8 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
     price: 0,
     imageUrl: "",
     quantity: 1,
+    duration: 0,
+    unit: "",
   });
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
@@ -224,6 +228,8 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
               status: product.status,
               dateFilter: menuData.dateFilter,
               quantity: product.quantity || 0,
+              duration: product.duration,
+              unit: product.unit,
             } as MenuItem;
           })
           .filter((product: Product) => product !== null);
@@ -486,7 +492,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
             {filteredMenu.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300"
               >
                 <div className="aspect-square bg-gray-100 rounded-t-lg relative overflow-hidden">
                   {!isOwnerMode && item.quantity === 0 && (
@@ -500,6 +506,14 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                       </div>
                     </div>
                   )}
+                  <div className="absolute top-2 right-2 z-10">
+                    <span className="text-sm font-bold bg-white/90 text-gray-700 px-3 py-1 rounded-full shadow-sm ">
+                      {
+                        categories.find((cat) => cat.id === item.categoryId)
+                          ?.name
+                      }
+                    </span>
+                  </div>
                   {item.imageUrl && (
                     <img
                       src={item.imageUrl}
@@ -508,52 +522,60 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                     />
                   )}
                 </div>
-                <div className="p-4 flex flex-col justify-between h-[calc(100%-300px)]">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-xl mb-2 text-gray-800">
-                        {item.name}
-                      </h3>
-                      {isOwnerMode && (
-                        <Badge
-                          className={`${
-                            item.status === "InActive"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-green-100 text-green-800"
-                          }`}
-                        >
-                          {item.status}
-                        </Badge>
-                      )}
-                    </div>
 
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-semibold text-blue-600">
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(item.price)}
-                      </span>
-                      <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                        {
-                          categories.find((cat) => cat.id === item.categoryId)
-                            ?.name
+                <div className="p-4">
+                  {/* Title and Status Badge */}
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-xl text-gray-800">
+                      {item.name}
+                    </h3>
+                    {isOwnerMode && (
+                      <Badge
+                        className={
+                          item.status === "InActive"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
                         }
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-2">
-                      Quantity: {item.quantity}
-                    </div>
+                      >
+                        {item.status}
+                      </Badge>
+                    )}
                   </div>
 
-                  <div className="mt-4 flex space-x-3">
+                  {/* Price and Duration */}
+                  {storeType === "2" ? (
+                    <div className="text-blue-600 font-semibold text-lg mb-2">
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      })
+                        .format(item.price)
+                        .replace("₫", "")}
+                      đ / {item.duration} {item.unit}
+                    </div>
+                  ) : (
+                    <div className="text-blue-600 font-semibold text-lg mb-2">
+                      {new Intl.NumberFormat("vi-VN", {
+                        style: "currency",
+                        currency: "VND",
+                      }).format(item.price)}
+                    </div>
+                  )}
+
+                  {/* Details */}
+                  <div className="text-sm text-gray-600 space-y-1 mb-4">
+                    <div>Quantity: {item.quantity}</div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
                     {!isOwnerMode ? (
                       <>
-                        {item.quantity > 0 ? (
+                        {item.quantity > 0 && (
                           <>
                             <button
-                              className="flex-1 py-3 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
-            flex items-center justify-center gap-2 font-semibold"
+                              className="flex-1 py-2.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
+                              flex items-center justify-center gap-2 font-semibold"
                               onClick={() =>
                                 cartRef.current?.addToCart({
                                   ...item,
@@ -566,28 +588,28 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                             </button>
                             <button
                               onClick={() => setSelectedProductId(item.id)}
-                              className="w-16 flex items-center justify-center py-3 text-blue-600 border border-blue-600 
-            rounded-lg hover:bg-blue-50 transition-colors"
+                              className="w-12 flex items-center justify-center py-2.5 text-blue-600 border border-blue-600 
+                              rounded-lg hover:bg-blue-50 transition-colors"
                             >
                               <Eye size={18} />
                             </button>
                           </>
-                        ) : null}
+                        )}
                       </>
                     ) : (
                       <>
                         <button
                           onClick={() => handleUpdateClick(item)}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-green-600 
-        rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white bg-green-600 
+                          rounded-lg hover:bg-green-700 transition-colors font-semibold"
                         >
                           <Pencil size={16} />
                           Update
                         </button>
                         <button
                           onClick={() => setItemToDelete(item.id)}
-                          className="flex-1 flex items-center justify-center gap-2 py-3 text-white bg-red-600 
-        rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                          className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white bg-red-600 
+                          rounded-lg hover:bg-red-700 transition-colors font-semibold"
                         >
                           <Trash2 size={16} />
                           Delete
@@ -596,18 +618,6 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                     )}
                   </div>
                 </div>
-
-                <DeleteConfirmationDialog itemId={item.id} />
-                <ProductDetailsDialog
-                  productId={selectedProductId}
-                  onClose={() => setSelectedProductId(null)}
-                />
-                <ProductUpdateDialog
-                  open={isProductUpdateDialogOpen}
-                  onClose={() => setIsProductUpdateDialogOpen(false)}
-                  product={itemToUpdate}
-                  onUpdate={handleProductUpdate}
-                />
               </div>
             ))}
           </div>
