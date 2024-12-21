@@ -633,6 +633,11 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
         product={itemToUpdate}
         onUpdate={handleProductUpdate}
       />
+
+      <ProductDetailsDialog
+        productId={selectedProductId}
+        onClose={() => setSelectedProductId(null)}
+      />
     </div>
   );
 };

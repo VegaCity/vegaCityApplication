@@ -25,10 +25,10 @@ export const ProductCategoryServices = {
   },
 
   getProductCategoryById(id: string) {
-    return API.get(`/product-category/${id}`);
+    return API.get(`/store/product-category/${id}`);
   },
   createProductCategory(productCategoryData: ProductCategoryPost) {
-    return API.post("store/product-category", productCategoryData);
+    return API.post("/store/product-category", productCategoryData);
   },
   editProductCategory(
     productCategoryId: string,
