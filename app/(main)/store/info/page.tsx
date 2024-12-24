@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
 import { CommissionRatesDialog } from "@/lib/dialog/TermDialog";
+import { StoreRulesDialog } from "@/lib/dialog/RuleDialog";
 const UserProfileComponent: React.FC = () => {
   const [user, setUser] = useState<Users | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -430,6 +431,7 @@ const UserProfileComponent: React.FC = () => {
                 </SelectContent>
               </Select>
               <CommissionRatesDialog />
+              <StoreRulesDialog/>
             </div>
           </div>
           <div className="col-span-2 space-y-2">

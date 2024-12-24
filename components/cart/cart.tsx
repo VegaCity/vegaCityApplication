@@ -48,78 +48,13 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     "idle" | "processing" | "success" | "error"
   >("idle");
   const [paymentError, setPaymentError] = useState("");
-  const [rentTimeError, setRentTimeError] = useState("");
-  const formatDateForInput = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
-
-  const [startRent, setStartRent] = useState(formatDateForInput(new Date()));
-  const [endRent, setEndRent] = useState(formatDateForInput(new Date()));
-  const formatDateForDisplay = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-  const validateRentTimes = () => {
-    const start = new Date(startRent);
-    const end = new Date(endRent);
-    const now = new Date();
-
-    // Check if start time is in the past
-    if (start < now) {
-      setRentTimeError("Start time cannot be in the past");
-      return false;
-    }
-
-    // Check if end time is before or equal to start time
-    if (end <= start) {
-      setRentTimeError("End time must be later than start time");
-      return false;
-    }
-
-    // Check minimum and maximum rental duration
-    const rentalDurationHours =
-      (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    const MIN_RENTAL_HOURS = 1;
-    const MAX_RENTAL_DAYS = 30;
-
-    if (rentalDurationHours < MIN_RENTAL_HOURS) {
-      setRentTimeError(`Minimum rental duration is ${MIN_RENTAL_HOURS} hour`);
-      return false;
-    }
-
-    if (rentalDurationHours > MAX_RENTAL_DAYS * 24) {
-      setRentTimeError(`Maximum rental duration is ${MAX_RENTAL_DAYS} days`);
-      return false;
-    }
-
-    // Clear any previous error
-    setRentTimeError("");
-    return true;
-  };
   const [storeType, setStoreType] = useState<string>("");
   useEffect(() => {
     const type = localStorage.getItem("storeType");
     console.log("storeType loaded:", type);
     setStoreType(type || "");
   }, []);
-  // Update rent time validation when start or end times change
-  useEffect(() => {
-    if (storeType === "2") {
-      validateRentTimes();
-    }
-  }, [startRent, endRent, storeType]);
+
 
   useImperativeHandle(ref, () => ({
     addToCart: (product: Product) => {
@@ -188,20 +123,9 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     });
   };
 
-  const calculateHoursBetween = (start: Date, end: Date) => {
-    const diffMilliseconds = end.getTime() - start.getTime();
-    const diffHours = diffMilliseconds / (1000 * 60 * 60);
-    // Round up to the nearest hour
-    return Math.ceil(diffHours);
-  };
+
 
   const totalPrice = cartItems.reduce((sum, item) => {
-    if (storeType === "2") {
-      const startDate = new Date(startRent);
-      const endDate = new Date(endRent);
-      const hours = calculateHoursBetween(startDate, endDate);
-      return sum + item.price * item.quantity * hours;
-    }
     return sum + item.price * item.quantity;
   }, 0);
   const resetPaymentState = () => {
@@ -273,13 +197,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         return null;
     }
   };
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    // Tính toán timezone offset
-    const tzOffset = -date.getTimezoneOffset();
-    const localDate = new Date(date.getTime() + tzOffset * 60000);
-    return localDate.toISOString();
-  };
+  
   async function handleCreateOrder() {
     setPaymentStatus("processing");
     try {
@@ -297,22 +215,17 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
       const storeId = localStorage?.getItem("storeId") ?? "";
       const storeType = localStorage?.getItem("storeType");
-      if (storeType === "2") {
-        const isRentTimeValid = validateRentTimes();
-        if (!isRentTimeValid) {
-          return;
-        }
-      }
+     
       setPaymentStatus("processing");
       const isDirectPayment =
         paymentMethod === "QRCode" || paymentMethod === "Cash";
 
-      const baseOrderData = {
+      const orderData = {
         saleType: storeType === "2" ? "Service" : "Product",
         storeId,
         totalAmount: totalPrice,
         packageOrderId: paymentMethod === "QRCode" ? vcardCode : null,
-        startRent: storeType === "2" ? formatDateTime(startRent) : null,
+        
         productData: cartItems.map((item) => ({
           id: item.id,
           name: item.name,
@@ -323,18 +236,6 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         })),
         paymentType: paymentMethod,
       };
-
-      // Thêm startRent và endRent nếu storeType là "2"
-
-      const orderData =
-        storeType === "2"
-          ? {
-              ...baseOrderData,
-              startRent: formatDateTime(startRent),
-              endRent: formatDateTime(endRent),
-            }
-          : baseOrderData;
-
       const orderResponse = await createOrderStore(orderData);
       const invoiceId = orderResponse.data.invoiceId;
       const transactionId = orderResponse.data.transactionId;
@@ -375,7 +276,6 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     setIsPaymentModalOpen(true);
   };
 
-  const isQrCodePayment = paymentMethod === "QRCode";
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -416,7 +316,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                       <h4 className="font-medium">{item.name}</h4>
                       <p className="text-sm text-gray-500">
                         {item.price.toLocaleString("vi-VN")} đ
-                        {storeType === "2" && " / hour"}
+                        {storeType === "2"}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Button
@@ -514,33 +414,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                   />
                 </div>
               )}
-              {storeType === "2" && (
-                <>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Start Rent</label>
-                    <Input
-                      type="datetime-local"
-                      value={startRent}
-                      onChange={(e) => setStartRent(e.target.value)}
-                      className={rentTimeError ? "border-red-500" : ""}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">End Rent</label>
-                    <Input
-                      type="datetime-local"
-                      value={endRent}
-                      onChange={(e) => setEndRent(e.target.value)}
-                      className={rentTimeError ? "border-red-500" : ""}
-                    />
-                  </div>
-                  {rentTimeError && (
-                    <Alert variant="destructive" className="mt-2">
-                      <AlertDescription>{rentTimeError}</AlertDescription>
-                    </Alert>
-                  )}
-                </>
-              )}
+              
               <div className="font-semibold">
                 Total Amount: {totalPrice.toLocaleString("vi-VN")} đ
               </div>
@@ -551,9 +425,8 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                 disabled={
                   (paymentMethod === "QRCode" && !vcardCode) ||
                   paymentStatus === "processing" ||
-                  paymentStatus === "success" ||
-                  !!rentTimeError
-                }
+                  paymentStatus === "success" 
+      }
               >
                 {paymentStatus === "processing" ? (
                   <div className="flex items-center gap-2">
