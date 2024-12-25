@@ -566,8 +566,9 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                             </h4>
                             <div className="flex justify-between items-center mt-1">
                               <span className="text-sky-600 font-medium text-sm">
-                                {item.price.toLocaleString("vi-VN")} đ /{" "}
-                                {item.duration} {item.unit}
+                                {item.price.toLocaleString("vi-VN")} đ
+                                {storeType === "2" &&
+                                  ` / ${item.duration} ${item.unit}`}
                               </span>
                               <span className="text-gray-600 text-sm">
                                 x {item.quantity}
