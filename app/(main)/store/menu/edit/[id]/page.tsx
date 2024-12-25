@@ -895,8 +895,8 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
                               disabled={!product.isNew}
                             >
                               <option value="">Select Unit</option>
-                              <option value="Hour">Giờ</option>
-                              <option value="Minute">Phút</option>
+                              <option value="Hour">Hour</option>
+                              <option value="Minute">Minute</option>
                             </select>
                             {productErrors[index]?.unit && (
                               <p className="text-red-500 text-sm mt-1">

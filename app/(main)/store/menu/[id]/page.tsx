@@ -542,29 +542,24 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                     )}
                   </div>
 
-                  {/* Price and Duration */}
-                  {storeType === "2" ? (
-                    <div className="text-blue-600 font-semibold text-lg mb-2">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      })
-                        .format(item.price)
-                        .replace("₫", "")}
-                      đ / {item.duration} {item.unit}
-                    </div>
-                  ) : (
-                    <div className="text-blue-600 font-semibold text-lg mb-2">
-                      {new Intl.NumberFormat("vi-VN", {
-                        style: "currency",
-                        currency: "VND",
-                      }).format(item.price)}
-                    </div>
-                  )}
+                  {/* Price section - now separate */}
+                  <div className="text-blue-600 font-semibold text-lg mb-2">
+                    {new Intl.NumberFormat("vi-VN", {
+                      style: "currency",
+                      currency: "VND",
+                    }).format(item.price)}
+                  </div>
 
                   {/* Details */}
                   <div className="text-sm text-gray-600 space-y-1 mb-4">
-                    <div>Quantity: {item.quantity}</div>
+                    <div className="flex items-center justify-between">
+                      <div>Quantity: {item.quantity}</div>
+                      {storeType === "2" && (
+                        <div>
+                          Duration: {item.duration} {item.unit}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Action Buttons */}
