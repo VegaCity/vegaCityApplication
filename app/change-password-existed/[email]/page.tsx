@@ -161,6 +161,7 @@ const ChangePasswordExistedForm = ({ params }: ChnagePasswordExistedProps) => {
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 className="h-14 pt-4 pb-1 px-4 w-full rounded-md border border-slate-200 bg-white peer placeholder-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                readOnly
               />
               <label
                 htmlFor="email"

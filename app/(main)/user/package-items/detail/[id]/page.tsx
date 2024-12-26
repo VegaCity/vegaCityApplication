@@ -68,6 +68,7 @@ import { QRCodeDialog } from "@/lib/dialog/QRCodeDialog";
 import { UpdateRFIDAlertDialog } from "@/lib/dialog/UpdateRFIDDialog";
 import { useRouter } from "next/navigation";
 import CustomerStatusField from "@/components/field/customerField";
+import { Loader } from "@/components/loader/Loader";
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -550,7 +551,12 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     fetchEtag();
   }, [params?.id, form, formCharge, toast]);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading)
+    return (
+      <div>
+        <Loader isLoading={isLoading} />
+      </div>
+    );
   if (error) return <div>Error: {error}</div>;
   const handleActivateEtag = async () => {
     if (!packageItem) return;
@@ -667,10 +673,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   <h4 className="text-lg font-semibold mb-2 mt-10">
                     Customer Information
                   </h4>
-                  <div className="space-y-2 mr-14">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 justify-center items-center ">
-                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                  <div className="space-y-4 mr-14">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center items-start">
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                           FullName
                         </FormLabel>
                         <FormControl>
@@ -686,9 +692,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         </FormControl>
                       </FormItem>
 
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Email:
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Email
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -704,10 +710,29 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormItem>
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-4 justify-center items-start">
+                      <FormItem className="flex flex-col gap-1 md:w-11/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Buyer
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
+                            {...form.register("cusName")}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
+                          />
+                        </FormControl>
+                      </FormItem>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Phone Number:
+                          Phone Number
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -723,7 +748,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormItem>
                       <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          CCCD/Passport:
+                          CCCD/Passport
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -745,26 +770,12 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       />
                       <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          VCard ID:
+                          VCard ID
                         </FormLabel>
                         <FormControl>
                           <Input
                             className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
                             {...form.register("vcardId")}
-                            readOnly
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                          Buyer:
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                            {...form.register("customer.fullName")}
                             readOnly
                           />
                         </FormControl>
@@ -777,9 +788,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     Duration Information
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        Start Date:
+                        Start Date
                       </FormLabel>
 
                       <FormControl>
@@ -794,7 +805,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     </FormItem>
                     <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        End Date:
+                        End Date
                       </FormLabel>
 
                       <FormControl>
@@ -807,7 +818,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
+                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Status
                       </FormLabel>
@@ -843,7 +854,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                     <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
-                        History:
+                        History
                       </FormLabel>
                       <FormControl>
                         <Input

@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import {
   AlertCircle,
-  ArrowDownToLine,
+  ArrowDownFromLine,
   Loader2,
   Store,
   User,
@@ -117,106 +117,94 @@ const WithdrawMoney = () => {
         storePhone
       );
 
-      if (response.data?.statusCode === 200) {
-        const storeData = response.data.data.storeTrack;
-        const amountData = response.data.data; // Lấy trực tiếp từ data
+      const storeData = response.data.data.storeTrack;
+      const amountData = response.data.data; // Lấy trực tiếp từ data
 
-        if (!storeData) {
-          throw new Error("Can not find store.");
-        }
+      if (!storeData) {
+        throw new Error("Can not find store.");
+      }
 
-        // Check if store has wallets
-        if (!storeData.wallets || storeData.wallets.length === 0) {
-          throw new Error("Store has no wallets.");
-        }
+      // Check if store has wallets
+      if (!storeData.wallets || storeData.wallets.length === 0) {
+        throw new Error("Store has no wallets.");
+      }
 
-        const wallet = storeData.wallets[0];
+      const wallet = storeData.wallets[0];
 
-        // Set wallet information
-        setWalletInfo({
-          id: wallet.id,
-          balance: wallet.balance,
-          balanceHistory: wallet.balanceHistory,
-          balanceStart: wallet.balanceStart,
-          walletTypeId: wallet.walletTypeId,
-        });
+      // Set wallet information
+      setWalletInfo({
+        id: wallet.id,
+        balance: wallet.balance,
+        balanceHistory: wallet.balanceHistory,
+        balanceStart: wallet.balanceStart,
+        walletTypeId: wallet.walletTypeId,
+      });
 
-        // Set store details with amount fields from amountData
-        setStoreDetails({
-          id: storeData.id,
-          name: storeData.name,
-          address: storeData.address,
-          shortName: storeData.shortName,
-          email: storeData.email,
-          phoneNumber: storeData.phoneNumber,
-          status: storeData.status,
-          storeType: storeData.storeType,
-          amountCanWithdraw: amountData.amountCanWithdraw || 0,
-          amountTransferred: amountData.amountTransfered || 0, // Note the spelling 'Transfered' from API
-          amoutWithdrawed: amountData.amoutWithdrawed || 0,
-          wallets: storeData.wallets,
-        });
+      // Set store details with amount fields from amountData
+      setStoreDetails({
+        id: storeData.id,
+        name: storeData.name,
+        address: storeData.address,
+        shortName: storeData.shortName,
+        email: storeData.email,
+        phoneNumber: storeData.phoneNumber,
+        status: storeData.status,
+        storeType: storeData.storeType,
+        amountCanWithdraw: amountData.amountCanWithdraw || 0,
+        amountTransferred: amountData.amountTransfered || 0, // Note the spelling 'Transfered' from API
+        amoutWithdrawed: amountData.amoutWithdrawed || 0,
+        wallets: storeData.wallets,
+      });
 
-        // If store status is 3, automatically trigger final settlement
-        if (storeData.status === 3) {
-          try {
-            setIsSettling(true);
-            const settlementResponse = await StoreServices.finalSettlement(
-              storeData.id
+      // If store status is 3, automatically trigger final settlement
+      if (storeData.status === 3) {
+        try {
+          setIsSettling(true);
+          const settlementResponse = await StoreServices.finalSettlement(
+            storeData.id
+          );
+
+          if (settlementResponse.data?.statusCode === 200) {
+            const settlementAmount =
+              settlementResponse.data.data?.amountCanWithdraw || 0;
+
+            // Update store details with new settlement amount
+            setStoreDetails((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    amountCanWithdraw: settlementAmount,
+                  }
+                : null
             );
-
-            if (settlementResponse.data?.statusCode === 200) {
-              const settlementAmount =
-                settlementResponse.data.data?.amountCanWithdraw || 0;
-
-              // Update store details with new settlement amount
-              setStoreDetails((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      amountCanWithdraw: settlementAmount,
-                    }
-                  : null
-              );
-            }
-          } catch (settlementErr) {
-            console.error(
-              "Error in automatic final settlement:",
-              settlementErr
-            );
-            toast({
-              variant: "destructive",
-              title: "Warning",
-              description:
-                "Store is blocked but final settlement calculation failed. Please try calculating manually.",
-            });
-          } finally {
-            setIsSettling(false);
           }
+        } catch (settlementErr) {
+          console.error("Error in automatic final settlement:", settlementErr);
+          toast({
+            variant: "destructive",
+            title: "Warning",
+            description:
+              "Store is blocked but final settlement calculation failed. Please try calculating manually.",
+          });
+        } finally {
+          setIsSettling(false);
         }
-      } else {
-        throw new Error(
-          response.data?.messageResponse || "Can not get wallet for store"
-        );
       }
     } catch (err: any) {
-      console.error("Error finding store wallet:", err);
+      if (err instanceof AxiosError) {
+        console.error("Error finding store wallet:", err.message);
 
-      // Check if the error response has a structured format
-      if (err.response && err.response.data) {
-        const errorData = err.response.data;
-        const errorMessage =
-          errorData.Error || "Đã có lỗi xảy ra. Vui lòng thử lại.";
+        // Check if the error response has a structured format
+        if (err.response && err.response.data) {
+          const errorData = err.response.data;
+          const errorMessage = errorData.Error || "Not found!"; // Fallback to generic message
 
-        // Set error with only the error message
-        setError(errorMessage);
-      } else {
-        // Fallback to previous error handling
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Đã có lỗi xảy ra. Vui lòng thử lại."
-        );
+          // Set error with only the error message
+          setError(errorMessage);
+        } else {
+          // Fallback to previous error handling
+          setError(err ? err.response?.data.Error : "Not found!");
+        }
       }
 
       setWalletInfo(null);
@@ -436,17 +424,17 @@ const WithdrawMoney = () => {
 
         setVcardData(response.data.data);
       } catch (err) {
-        console.error("Fetch Package Item Error:", err);
+        if (err instanceof AxiosError) {
+          console.error("Fetch Package Item Error:", err.message);
 
-        const messageResponse =
-          err instanceof AxiosError
-            ? err.response?.data.messageError || err.response?.data.Error
-            : "Đã có lỗi xảy ra. Vui lòng kiểm tra lại.";
+          const messageResponse =
+            err.response?.data.messageError || err.response?.data.Error;
 
-        console.log("MessageResponse:", messageResponse);
-        setError(messageResponse);
-        setWalletInfo(null);
-        setPackageItemDetails(null);
+          console.log("MessageResponse:", messageResponse);
+          setError(messageResponse);
+          setWalletInfo(null);
+          setPackageItemDetails(null);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -550,10 +538,10 @@ const WithdrawMoney = () => {
           errorResponse?.Error ||
             errorResponse?.messageResponse ||
             err.message ||
-            "Đã có lỗi xảy ra"
+            "Not found!"
         );
       } else {
-        setError(err instanceof Error ? err.message : "Đã có lỗi xảy ra");
+        setError(err instanceof Error ? err.message : "Not found!");
       }
     } finally {
       setIsWithdrawing(false);
@@ -633,7 +621,7 @@ const WithdrawMoney = () => {
           type="text"
           value={packageItemCode}
           onChange={handlePackageItemChange}
-          placeholder="Nhập ID (GUID) hoặc RFID (10 số)"
+          placeholder="Nhập ID (GUID) hoặc RFID (10 numbers)"
           className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           disabled={isLoading}
         />
@@ -684,48 +672,48 @@ const WithdrawMoney = () => {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-blue-100 space-y-4">
-              <div>
-                <p className="text-base font-medium text-gray-700">
+            <div className="pt-2 border-t border-blue-100 space-y-4 w-full">
+              <div className="flex items-end justify-between w-full">
+                <p className="text-sm font-normal text-gray-700">
                   Available Balance
                 </p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-3xl font-bold text-gray-900">
+                <div className="flex items-baseline space-x-2">
+                  <p className="text-xl font-bold text-gray-900">
                     {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
                   </p>
-                  <span className="text-xl font-semibold text-gray-600">
+                  <span className="text-xs font-semibold text-gray-600">
                     VND
                   </span>
                 </div>
               </div>
 
-              <div>
-                <p className="text-base font-medium text-gray-700">
+              <div className="flex items-end justify-between w-full">
+                <p className="text-sm font-normal text-gray-700">
                   Balance Can Withdraw
                 </p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-3xl font-bold text-emerald-600">
+                <div className="flex items-baseline space-x-2">
+                  <p className="text-xl font-bold text-emerald-600">
                     {vcardData?.balanceCanWithdraw.toLocaleString(
                       FORMAT_LOCALE
                     )}
                   </p>
-                  <span className="text-xl font-semibold text-gray-600">
+                  <span className="text-xs font-semibold text-gray-600">
                     VND
                   </span>
                 </div>
               </div>
 
-              <div>
-                <p className="text-base font-medium text-gray-700">
+              <div className="flex items-end justify-between w-full max-w-full">
+                <p className="text-sm font-normal text-gray-700">
                   Balance Need To Use Before Withdraw
                 </p>
-                <div className="flex items-center space-x-2">
-                  <p className="text-3xl font-bold text-orange-600">
+                <div className="flex items-baseline space-x-2">
+                  <p className="text-xl font-bold text-orange-600">
                     {vcardData?.balanceNeedToUseBeforeWithdraw.toLocaleString(
                       FORMAT_LOCALE
                     )}
                   </p>
-                  <span className="text-xl font-semibold text-gray-600">
+                  <span className="text-xs font-semibold text-gray-600">
                     VND
                   </span>
                 </div>
@@ -759,7 +747,7 @@ const WithdrawMoney = () => {
               <Loader2 className="h-5 w-5 animate-spin mr-2" />
             ) : (
               <>
-                <ArrowDownToLine className="w-5 h-5" />
+                <ArrowDownFromLine className="w-5 h-5" />
                 <span>Withdraw Funds</span>
               </>
             )}
@@ -772,7 +760,7 @@ const WithdrawMoney = () => {
   const renderStoreTab = () => {
     return (
       <div className="space-y-6">
-        <div className="space-y-3">
+        {/* <div className="space-y-3">
           <label
             htmlFor="store-name"
             className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
@@ -789,7 +777,7 @@ const WithdrawMoney = () => {
             className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             disabled={isLoading}
           />
-        </div>
+        </div> */}
 
         <div className="space-y-3">
           <label
@@ -881,65 +869,66 @@ const WithdrawMoney = () => {
                           </AlertDescription>
                         </Alert>
 
-                        <div className="space-y-4">
-                          <div>
-                            <p className="text-base font-medium text-gray-700">
+                        <div className="space-y-4 w-full">
+                          <div className="flex items-end justify-between w-full">
+                            <p className="text-sm font-normal text-gray-700">
                               Final Settlement Amount
                             </p>
-                            <div className="flex items-center space-x-2">
-                              <p className="text-3xl font-bold text-emerald-600">
+                            <div className="flex items-baseline space-x-2">
+                              <p className="text-xl font-bold text-emerald-600">
                                 {storeDetails.amountCanWithdraw.toLocaleString(
                                   FORMAT_LOCALE
                                 )}
                               </p>
-                              <span className="text-xl font-semibold text-gray-600">
+                              <span className="text-xs font-semibold text-gray-600">
                                 VND
                               </span>
                             </div>
                           </div>
 
-                          <div>
-                            <p className="text-base font-medium text-gray-700">
+                          <div className="flex items-end justify-between w-full">
+                            <p className="text-sm font-normal text-gray-700">
                               Total Amount Transferred
                             </p>
-                            <div className="flex items-center space-x-2">
-                              <p className="text-3xl font-bold text-blue-600">
+                            <div className="flex items-baseline space-x-2">
+                              <p className="text-xl font-bold text-blue-600">
                                 {storeDetails.amountTransferred.toLocaleString(
                                   FORMAT_LOCALE
                                 )}
                               </p>
-                              <span className="text-xl font-semibold text-gray-600">
-                                VND
-                              </span>
-                            </div>
-                          </div>
-                          <div>
-                            <p className="text-base font-medium text-gray-700">
-                              Amount Withdrawn
-                            </p>
-                            <div className="flex items-center space-x-2">
-                              <p className="text-3xl font-bold text-blue-600">
-                                {storeDetails.amoutWithdrawed.toLocaleString(
-                                  FORMAT_LOCALE
-                                )}
-                              </p>
-                              <span className="text-xl font-semibold text-gray-600">
+                              <span className="text-xs font-semibold text-gray-600">
                                 VND
                               </span>
                             </div>
                           </div>
 
-                          <div>
-                            <p className="text-base font-medium text-gray-700">
+                          <div className="flex items-end justify-between w-full max-w-full">
+                            <p className="text-sm font-normal text-gray-700">
+                              Amount Withdrawn
+                            </p>
+                            <div className="flex items-baseline space-x-2">
+                              <p className="text-xl font-bold text-blue-600">
+                                {storeDetails.amoutWithdrawed.toLocaleString(
+                                  FORMAT_LOCALE
+                                )}
+                              </p>
+                              <span className="text-xs font-semibold text-gray-600">
+                                VND
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-end justify-between w-full max-w-full">
+                            <p className="text-sm font-normal text-gray-700">
                               Amount Can Withdraw
                             </p>
-                            <div className="flex items-center space-x-2">
-                              <p className="text-3xl font-bold text-orange-600">
+                            <div className="flex items-baseline space-x-2">
+                              <p className="text-xl font-bold text-orange-600">
                                 {storeDetails.amountCanWithdraw.toLocaleString(
                                   FORMAT_LOCALE
                                 )}
                               </p>
-                              <span className="text-xl font-semibold text-gray-600">
+                              <span className="text-xs font-semibold text-gray-600">
                                 VND
                               </span>
                             </div>
@@ -947,62 +936,64 @@ const WithdrawMoney = () => {
                         </div>
                       </>
                     ) : (
-                      <div className="space-y-4">
-                        <div>
-                          <p className="text-base font-medium text-gray-700">
+                      <div className="pt-2 space-y-4 w-full">
+                        <div className="flex items-end justify-between w-full">
+                          <p className="text-sm font-normal text-gray-700">
                             Available Balance
                           </p>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-3xl font-bold text-gray-900">
+                          <div className="flex items-baseline space-x-2">
+                            <p className="text-xl font-bold text-gray-900">
                               {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
                             </p>
-                            <span className="text-xl font-semibold text-gray-600">
+                            <span className="text-xs font-semibold text-gray-600">
                               VND
                             </span>
                           </div>
                         </div>
 
-                        <div>
-                          <p className="text-base font-medium text-gray-700">
+                        <div className="flex items-end justify-between w-full">
+                          <p className="text-sm font-normal text-gray-700">
                             Total Amount Transferred
                           </p>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-3xl font-bold text-blue-600">
+                          <div className="flex items-baseline space-x-2">
+                            <p className="text-xl font-bold text-blue-600">
                               {storeDetails.amountTransferred.toLocaleString(
                                 FORMAT_LOCALE
                               )}
                             </p>
-                            <span className="text-xl font-semibold text-gray-600">
+                            <span className="text-xs font-semibold text-gray-600">
                               VND
                             </span>
                           </div>
                         </div>
-                        <div>
-                          <p className="text-base font-medium text-gray-700">
+
+                        <div className="flex items-end justify-between w-full max-w-full">
+                          <p className="text-sm font-normal text-gray-700">
                             Amount Withdrawn
                           </p>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-3xl font-bold text-blue-600">
+                          <div className="flex items-baseline space-x-2">
+                            <p className="text-xl font-bold text-blue-600">
                               {storeDetails.amoutWithdrawed.toLocaleString(
                                 FORMAT_LOCALE
                               )}
                             </p>
-                            <span className="text-xl font-semibold text-gray-600">
+                            <span className="text-xs font-semibold text-gray-600">
                               VND
                             </span>
                           </div>
                         </div>
-                        <div>
-                          <p className="text-base font-medium text-gray-700">
+
+                        <div className="flex items-end justify-between w-full max-w-full">
+                          <p className="text-sm font-normal text-gray-700">
                             Amount Can Withdraw
                           </p>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-3xl font-bold text-orange-600">
+                          <div className="flex items-baseline space-x-2">
+                            <p className="text-xl font-bold text-orange-600">
                               {storeDetails.amountCanWithdraw.toLocaleString(
                                 FORMAT_LOCALE
                               )}
                             </p>
-                            <span className="text-xl font-semibold text-gray-600">
+                            <span className="text-xs font-semibold text-gray-600">
                               VND
                             </span>
                           </div>
@@ -1056,7 +1047,7 @@ const WithdrawMoney = () => {
                           <Loader2 className="h-5 w-5 animate-spin mr-2" />
                         ) : (
                           <>
-                            <ArrowDownToLine className="w-5 h-5" />
+                            <ArrowDownFromLine className="w-5 h-5" />
                             <span>Withdraw Funds</span>
                           </>
                         )}
