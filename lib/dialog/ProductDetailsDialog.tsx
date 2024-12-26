@@ -91,9 +91,15 @@ const ProductDetailsDialog = ({
                 {/* Right - Content */}
                 <div className="space-y-4">
                   <div>
+                    <div className="flex text-sm text-gray-600 items-center gap-2">
+                      Name:
+                    </div>
                     <h2 className="text-2xl font-bold">{product.name}</h2>
+                    <div className="flex text-sm text-gray-600 items-center gap-5 mt-5">
+                      Category
+                    </div>
                     {categoryName && (
-                      <p className="text-sm text-gray-500">{categoryName}</p>
+                      <p className="text-base font-semibold">{categoryName}</p>
                     )}
                   </div>
 
@@ -108,13 +114,11 @@ const ProductDetailsDialog = ({
 
                   <div>
                     <p className="text-sm text-gray-600">Price</p>
-                    <p className="text-lg font-bold text-blue-600">
+                    <p className="text-lg font-semibold">
                       {new Intl.NumberFormat("vi-VN", {
                         style: "currency",
                         currency: "VND",
                       }).format(product.price)}
-                      {storeType === "2" &&
-                        ` / ${product.duration} ${product.unit}`}
                     </p>
                   </div>
 

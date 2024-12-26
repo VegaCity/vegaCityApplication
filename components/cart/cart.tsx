@@ -28,6 +28,17 @@ import paymentService from "../services/paymentService";
 import { Toast } from "@/components/ui/toast";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { deleteOrder } from "../services/orderuserServices";
 interface CartItem extends Product {
   quantity: number;
   stockQuantity: number;
@@ -78,6 +89,9 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
   >("idle");
   const [paymentError, setPaymentError] = useState("");
   const [storeType, setStoreType] = useState<string>("");
+  const [showCashConfirmation, setShowCashConfirmation] = useState(false);
+  const [showQRConfirmation, setShowQRConfirmation] = useState(false);
+
   useEffect(() => {
     const type = localStorage.getItem("storeType");
     console.log("storeType loaded:", type);
@@ -158,7 +172,10 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     setIsPaymentModalOpen(false);
     setPaymentStatus("idle");
     setVcardCode("");
+    setShowCashConfirmation(false);
     setCartItems([]);
+    setIsOpen(false);
+    window.location.reload();
   };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
@@ -225,6 +242,16 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
   };
 
   async function handleCreateOrder() {
+    if (paymentMethod === "Cash") {
+      setShowCashConfirmation(true);
+      return;
+    }
+
+    if (paymentMethod === "QRCode" && vcardCode) {
+      setShowQRConfirmation(true);
+      return;
+    }
+
     setPaymentStatus("processing");
     try {
       // Kiểm tra số lượng trước khi tạo đơn hàng
@@ -328,8 +355,260 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       setPaymentStatus("error");
     }
   }
+  const handleCancelOrder = async () => {
+    try {
+      const storeId = localStorage?.getItem("storeId") ?? "";
+      const storeType = localStorage?.getItem("storeType");
+
+      let rentalTimes: RentalTimes | null = null;
+      if (storeType === "2") {
+        const startRent = new Date();
+        const rentalItems = cartItems.map((item) => ({
+          endRent: calculateEndRent(
+            startRent,
+            item.duration || 0,
+            item.unit || "hour"
+          ),
+          itemId: item.id,
+        }));
+
+        rentalTimes = {
+          startRent,
+          endRent: new Date(
+            Math.max(...rentalItems.map((item) => item.endRent.getTime()))
+          ),
+        };
+      }
+
+      const orderData = {
+        saleType: storeType === "2" ? "Service" : "Product",
+        storeId,
+        totalAmount: totalPrice,
+        packageOrderId: paymentMethod === "QRCode" ? vcardCode : null,
+        ...(storeType === "2" && {
+          startRent: rentalTimes?.startRent.toISOString(),
+          endRent: rentalTimes?.endRent.toISOString(),
+        }),
+        productData: cartItems.map((item) => ({
+          id: item.id,
+          name: item.name,
+          productCategory: item.categoryId || "Unknown",
+          price: item.price,
+          imgUrl: item.imageUrl || "",
+          quantity: item.quantity,
+          ...(storeType === "2" && {
+            startRent: rentalTimes?.startRent.toISOString(),
+            endRent: calculateEndRent(
+              rentalTimes?.startRent || new Date(),
+              item.duration || 0,
+              item.unit || "hour"
+            ).toISOString(),
+          }),
+        })),
+        paymentType: paymentMethod,
+      };
+
+      // Tạo order trước
+      const orderResponse = await createOrderStore(orderData);
+      const orderId = orderResponse.data.id;
+
+      // Sau đó xóa order
+      if (orderId) {
+        await deleteOrder(orderId);
+        toast.success("Order cancelled successfully");
+      }
+
+      // Reset state
+      setIsPaymentModalOpen(false);
+      setPaymentStatus("idle");
+      setVcardCode("");
+      setCartItems([]);
+      setIsOpen(false);
+    } catch (error: any) {
+      console.error("Error cancelling order:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Error cancelling order. Please try again."
+      );
+    }
+  };
   const handleCreateOrderClick = () => {
     setIsPaymentModalOpen(true);
+  };
+
+  const handleCashConfirm = async () => {
+    setShowCashConfirmation(false);
+    setPaymentStatus("processing");
+    try {
+      // Kiểm tra số lượng trước khi tạo đơn hàng
+      for (const cartItem of cartItems) {
+        if (cartItem.quantity > cartItem.stockQuantity) {
+          toast.error(
+            `Sản phẩm "${cartItem.name}" không đủ số lượng trong kho. Chỉ còn ${cartItem.stockQuantity} sản phẩm.`
+          );
+          setPaymentStatus("idle");
+          return;
+        }
+      }
+
+      const storeId = localStorage?.getItem("storeId") ?? "";
+      const storeType = localStorage?.getItem("storeType");
+
+      let rentalTimes: RentalTimes | null = null;
+      if (storeType === "2") {
+        const startRent = new Date();
+        const rentalItems = cartItems.map((item) => ({
+          endRent: calculateEndRent(
+            startRent,
+            item.duration || 0,
+            item.unit || "hour"
+          ),
+          itemId: item.id,
+        }));
+
+        rentalTimes = {
+          startRent,
+          endRent: new Date(
+            Math.max(...rentalItems.map((item) => item.endRent.getTime()))
+          ),
+        };
+      }
+
+      const orderData = {
+        saleType: storeType === "2" ? "Service" : "Product",
+        storeId,
+        totalAmount: totalPrice,
+        packageOrderId: null,
+        ...(storeType === "2" && {
+          startRent: rentalTimes?.startRent.toISOString(),
+          endRent: rentalTimes?.endRent.toISOString(),
+        }),
+        productData: cartItems.map((item) => ({
+          id: item.id,
+          name: item.name,
+          productCategory: item.categoryId || "Unknown",
+          price: item.price,
+          imgUrl: item.imageUrl || "",
+          quantity: item.quantity,
+          ...(storeType === "2" && {
+            startRent: rentalTimes?.startRent.toISOString(),
+            endRent: calculateEndRent(
+              rentalTimes?.startRent || new Date(),
+              item.duration || 0,
+              item.unit || "hour"
+            ).toISOString(),
+          }),
+        })),
+        paymentType: "Cash",
+      };
+
+      const orderResponse = await createOrderStore(orderData);
+      const invoiceId = orderResponse.data.invoiceId;
+      const transactionId = orderResponse.data.transactionId;
+
+      const confirmationResponse = await confirmOrder({
+        invoiceId: invoiceId,
+        transactionId: transactionId,
+      });
+
+      if (confirmationResponse.statusCode === 200) {
+        toast.success("Payment completed successfully");
+        window.location.reload();
+        setPaymentStatus("success");
+        setTimeout(resetPaymentState, 1000);
+      }
+    } catch (error: any) {
+      console.error("Payment Error:", error);
+      setPaymentError(
+        error.response?.data?.Error ||
+          (error instanceof Error
+            ? error.message
+            : "Payment failed. Please try again.")
+      );
+      setPaymentStatus("error");
+    }
+  };
+
+  const handleQRConfirm = async () => {
+    setShowQRConfirmation(false);
+    setPaymentStatus("processing");
+    try {
+      const storeId = localStorage?.getItem("storeId") ?? "";
+      const storeType = localStorage?.getItem("storeType");
+
+      let rentalTimes: RentalTimes | null = null;
+      if (storeType === "2") {
+        const startRent = new Date();
+        const rentalItems = cartItems.map((item) => ({
+          endRent: calculateEndRent(
+            startRent,
+            item.duration || 0,
+            item.unit || "hour"
+          ),
+          itemId: item.id,
+        }));
+
+        rentalTimes = {
+          startRent,
+          endRent: new Date(
+            Math.max(...rentalItems.map((item) => item.endRent.getTime()))
+          ),
+        };
+      }
+
+      const orderData = {
+        saleType: storeType === "2" ? "Service" : "Product",
+        storeId,
+        totalAmount: totalPrice,
+        packageOrderId: vcardCode,
+        ...(storeType === "2" && {
+          startRent: rentalTimes?.startRent.toISOString(),
+          endRent: rentalTimes?.endRent.toISOString(),
+        }),
+        productData: cartItems.map((item) => ({
+          id: item.id,
+          name: item.name,
+          productCategory: item.categoryId || "Unknown",
+          price: item.price,
+          imgUrl: item.imageUrl || "",
+          quantity: item.quantity,
+          ...(storeType === "2" && {
+            startRent: rentalTimes?.startRent.toISOString(),
+            endRent: calculateEndRent(
+              rentalTimes?.startRent || new Date(),
+              item.duration || 0,
+              item.unit || "hour"
+            ).toISOString(),
+          }),
+        })),
+        paymentType: "QRCode",
+      };
+
+      const orderResponse = await createOrderStore(orderData);
+      const invoiceId = orderResponse.data.invoiceId;
+      const transactionId = orderResponse.data.transactionId;
+
+      const confirmationResponse = await confirmOrder({
+        invoiceId: invoiceId,
+        transactionId: transactionId,
+      });
+
+      if (confirmationResponse.statusCode === 200) {
+        toast.success("Payment completed successfully");
+        window.location.reload();
+        setPaymentStatus("success");
+        setTimeout(resetPaymentState, 1000);
+      }
+    } catch (error: any) {
+      console.error("Payment Error:", error);
+      setPaymentError(
+        error.response?.data?.Error ||
+          (error instanceof Error
+            ? error.message
+            : "Payment failed. Please try again.")
+      );
+      setPaymentStatus("error");
+    }
   };
 
   return (
@@ -418,6 +697,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
               <Button
                 className="w-full mt-4 bg-sky-600"
                 onClick={handleCreateOrderClick}
+                disabled={cartItems.length === 0}
               >
                 Create Order
               </Button>
@@ -425,8 +705,23 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
           </div>
         )}
 
-        <Dialog open={isPaymentModalOpen} onOpenChange={setIsPaymentModalOpen}>
-          <DialogContent className="sm:max-w-[1200px] p-8 rounded-xl shadow-lg bg-white">
+        <Dialog
+          open={isPaymentModalOpen}
+          onOpenChange={(open) => {
+            // Only allow closing through the Cancel button
+            if (!open && paymentStatus === "processing") {
+              return;
+            }
+            setIsPaymentModalOpen(open);
+          }}
+        >
+          <DialogContent
+            className="sm:max-w-[1200px] p-8 rounded-xl shadow-lg bg-white"
+            onPointerDownOutside={(e) => {
+              // Prevent closing when clicking outside
+              e.preventDefault();
+            }}
+          >
             <div className="flex h-full gap-8">
               {/* Left Section */}
               <div className="w-1/2 pr-8 border-r">
@@ -491,31 +786,43 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     </div>
                   )}
 
-                  {/* Total Amount - adjusted spacing */}
+                  {/* Total Amount and Buttons Section */}
                   <div className="pt-4 border-t mt-auto">
                     <div className="text-lg font-semibold text-sky-600 mb-6">
                       Total Amount: {totalPrice.toLocaleString("vi-VN")} đ
                     </div>
 
-                    {/* Confirm Button - adjusted spacing */}
-                    <Button
-                      className="w-full h-12 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition duration-200 shadow-md"
-                      onClick={handleCreateOrder}
-                      disabled={
-                        (paymentMethod === "QRCode" && !vcardCode) ||
-                        paymentStatus === "processing" ||
-                        paymentStatus === "success"
-                      }
-                    >
-                      {paymentStatus === "processing" ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Processing...
-                        </div>
-                      ) : (
-                        "Confirm Order"
-                      )}
-                    </Button>
+                    {/* Button Group */}
+                    <div className="flex gap-4">
+                      <Button
+                        className="w-1/2 h-12 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-200 shadow-md"
+                        onClick={() => {
+                          setIsPaymentModalOpen(false);
+                          setPaymentStatus("idle");
+                          setVcardCode("");
+                        }}
+                      >
+                        Cancel Order
+                      </Button>
+                      <Button
+                        className="w-1/2 h-12 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition duration-200 shadow-md"
+                        onClick={handleCreateOrder}
+                        disabled={
+                          (paymentMethod === "QRCode" && !vcardCode) ||
+                          paymentStatus === "processing" ||
+                          paymentStatus === "success"
+                        }
+                      >
+                        {paymentStatus === "processing" ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Processing...
+                          </div>
+                        ) : (
+                          "Confirm Order"
+                        )}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Status Messages */}
@@ -548,93 +855,89 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
                     No products in cart
                   </p>
                 ) : (
-                  <div className="space-y-2 max-h-[450px] overflow-auto pr-2">
+                  <div className="space-y-4 max-h-[450px] overflow-auto pr-2">
                     {cartItems.map((item) => (
                       <div
                         key={item.id}
-                        className="bg-white border rounded-lg p-3 shadow-sm"
+                        className="bg-white border rounded-lg p-4 shadow-sm"
                       >
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={item.imageUrl || ""}
-                            alt={item.name}
-                            className="w-14 h-14 object-cover rounded-lg"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-base truncate">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-500">Product Name:</span>
+                            <span className="font-medium text-right">
                               {item.name}
-                            </h4>
-                            <div className="flex justify-between items-center mt-1">
-                              <span className="text-sky-600 font-medium text-sm">
-                                {item.price.toLocaleString("vi-VN")} đ
-                                {storeType === "2" &&
-                                  ` / ${item.duration} ${item.unit}`}
-                              </span>
-                              <span className="text-gray-600 text-sm">
-                                x {item.quantity}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-500">Quantity:</span>
+                            <span className="font-medium">{item.quantity}</span>
+                          </div>
+
+                          {storeType === "2" && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-500">Duration:</span>
+                              <span className="font-medium text-sky-600">
+                                {item.duration} {item.unit}
                               </span>
                             </div>
-                            {storeType === "2" && (
-                              <div className="mt-2 bg-gray-50 rounded-md p-2">
-                                <div className="grid grid-cols-3 items-center text-xs">
-                                  <div className="space-y-1">
-                                    <span className="text-gray-500">Start</span>
-                                    <div className="font-medium text-gray-700">
-                                      {new Date().toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        second: "2-digit",
-                                      })}
-                                      <div className="text-gray-500">
-                                        {new Date().toLocaleDateString()}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex justify-center">
-                                    <div className="w-full flex items-center justify-center">
-                                      <div className="h-[2px] flex-1 bg-gray-200"></div>
-                                      <span className="mx-2 text-gray-400">
-                                        to
-                                      </span>
-                                      <div className="h-[2px] flex-1 bg-gray-200"></div>
-                                    </div>
-                                  </div>
-                                  <div className="space-y-1 text-right">
-                                    <span className="text-gray-500">End</span>
-                                    <div className="font-medium text-gray-700">
-                                      {calculateEndRent(
-                                        new Date(),
-                                        item.duration || 0,
-                                        item.unit || "hour"
-                                      ).toLocaleTimeString([], {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        second: "2-digit",
-                                      })}
-                                      <div className="text-gray-500">
-                                        {calculateEndRent(
-                                          new Date(),
-                                          item.duration || 0,
-                                          item.unit || "hour"
-                                        ).toLocaleDateString()}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                          )}
+
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-500">Subtotal:</span>
+                            <span className="font-medium text-sky-600">
+                              {(item.price * item.quantity).toLocaleString(
+                                "vi-VN"
+                              )}{" "}
+                              đ
+                            </span>
                           </div>
+
+                          {storeType === "2" && (
+                            <>
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-500">Start:</span>
+                                <span className="font-medium">
+                                  {new Date().toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}{" "}
+                                  - {new Date().toLocaleDateString()}
+                                </span>
+                              </div>
+
+                              <div className="flex justify-between items-center">
+                                <span className="text-gray-500">End:</span>
+                                <span className="font-medium">
+                                  {calculateEndRent(
+                                    new Date(),
+                                    item.duration || 0,
+                                    item.unit || "hour"
+                                  ).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}{" "}
+                                  -{" "}
+                                  {calculateEndRent(
+                                    new Date(),
+                                    item.duration || 0,
+                                    item.unit || "hour"
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Order Total - consistent spacing */}
-                <div className="pt-4 border-t mt-auto">
-                  <div className="flex justify-between items-center text-lg font-semibold">
-                    <span>Total Amount:</span>
-                    <span className="text-sky-600">
+                {/* Order Total */}
+                <div className="pt-4 border-t mt-4">
+                  <div className="flex justify-between items-center text-lg">
+                    <span className="font-semibold">Total Amount:</span>
+                    <span className="text-sky-600 font-semibold">
                       {totalPrice.toLocaleString("vi-VN")} đ
                     </span>
                   </div>
@@ -643,6 +946,86 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
             </div>
           </DialogContent>
         </Dialog>
+
+        <AlertDialog
+          open={showCashConfirmation}
+          onOpenChange={(open) => {
+            if (!open && showCashConfirmation) {
+              return;
+            }
+            setShowCashConfirmation(open);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Cash Payment</AlertDialogTitle>
+              <AlertDialogDescription>
+                Please confirm that you have received{" "}
+                {totalPrice.toLocaleString("vi-VN")} đ in cash from the
+                customer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => {
+                  setShowCashConfirmation(false);
+                }}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-sky-600 hover:bg-sky-700"
+                onClick={handleCashConfirm}
+              >
+                Confirm Payment Received
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={showQRConfirmation}
+          onOpenChange={(open) => {
+            if (!open && showQRConfirmation) {
+              return;
+            }
+            setShowQRConfirmation(open);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm QR Code Payment</AlertDialogTitle>
+              <AlertDialogDescription className="space-y-2">
+                <p>Please confirm the payment details:</p>
+                <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                  <div className="flex justify-between">
+                    <span className="font-medium">Amount:</span>
+                    <span>{totalPrice.toLocaleString("vi-VN")} đ</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium">Vcard Code:</span>
+                    <span className="text-blue-600">{vcardCode}</span>
+                  </div>
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel
+                onClick={() => {
+                  setShowQRConfirmation(false);
+                }}
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-sky-600 hover:bg-sky-700"
+                onClick={handleQRConfirm}
+              >
+                Confirm Payment
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

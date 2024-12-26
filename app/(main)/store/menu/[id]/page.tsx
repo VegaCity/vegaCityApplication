@@ -542,7 +542,27 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                     )}
                   </div>
 
-                  {/* Price section - now separate */}
+                  {/* Add description for service duration */}
+                  {storeType === "2" && item.duration && item.unit && (
+                    <div className="text-gray-600 text-sm mb-2">
+                      <div className="flex items-center gap-1">
+                        <span>
+                          <span className="font-medium">
+                            Duration per service:
+                          </span>{" "}
+                          <span className="text-blue-600 font-semibold">
+                            {item.duration} {item.unit}
+                          </span>
+                        </span>
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500 italic">
+                        (Each booking will reserve the service for{" "}
+                        {item.duration} {item.unit.toLowerCase()})
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Price section */}
                   <div className="text-blue-600 font-semibold text-lg mb-2">
                     {new Intl.NumberFormat("vi-VN", {
                       style: "currency",
@@ -553,12 +573,10 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                   {/* Details */}
                   <div className="text-sm text-gray-600 space-y-1 mb-4">
                     <div className="flex items-center justify-between">
-                      <div>Quantity: {item.quantity}</div>
-                      {storeType === "2" && (
-                        <div>
-                          Duration: {item.duration} {item.unit}
-                        </div>
-                      )}
+                      <div>
+                        {storeType === "1" ? "Quantity" : "Available"}:{" "}
+                        {item.quantity}
+                      </div>
                     </div>
                   </div>
 
