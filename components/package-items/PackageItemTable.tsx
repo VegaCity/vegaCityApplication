@@ -38,6 +38,7 @@ import { ComboboxCustom } from "../ComboboxCustomize/ComboboxCustom";
 import LostPackageItemDialog from "@/lib/dialog/lostDialog";
 import GenerateNewCardDialog from "@/lib/dialog/generateLost";
 import PackageItemAction from "../popover/PackageAction";
+import { encryptId, decryptId } from "@/utils/encryption";
 interface PackageItem {
   id: string;
   packageId: string;
@@ -137,7 +138,9 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
         });
 
         if (responseById.data) {
-          router.push(`/user/package-items/detail/${value.trim()}`);
+          // Mã hóa ID trước khi chuyển hướng
+          const encryptedId = encryptId(value.trim());
+          router.push(`/user/package-items/detail/${encryptedId}`);
           return;
         }
       }
@@ -148,9 +151,9 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
       });
 
       if (responseByRfId.data) {
-        router.push(
-          `/user/package-items/detail/${responseByRfId.data.data.id}`
-        );
+        // Mã hóa ID trước khi chuyển hướng
+        const encryptedId = encryptId(responseByRfId.data.data.id);
+        router.push(`/user/package-items/detail/${encryptedId}`);
         return;
       }
 

@@ -66,8 +66,10 @@ import { ChargeMoneyDialog } from "@/lib/dialog/ChargeMoneyDialog";
 import { ProcessingDialog } from "@/lib/dialog/ProcessingDialog";
 import { QRCodeDialog } from "@/lib/dialog/QRCodeDialog";
 import { UpdateRFIDAlertDialog } from "@/lib/dialog/UpdateRFIDDialog";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import CustomerStatusField from "@/components/field/customerField";
+import { encryptId } from "@/utils/encryption";
+
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -85,6 +87,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const [promotionError, setPromotionError] = useState<string | null>(null);
   const [isUpdateRFIDDialogOpen, setIsUpdateRFIDDialogOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const [isChildrenVCardDialogOpen, setIsChildrenVCardDialogOpen] =
     useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -480,66 +483,78 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         setIsLoading(false);
         return;
       }
+
       try {
         setIsLoading(true);
+        // Gọi API với ID gốc
         const response = await PackageItemServices.getPackageItemById({
           id: params.id,
         });
-        const packageitemData = response.data?.data;
-        console.log(packageitemData, "packageitemData");
-        const qrCodeData = response.data?.qrCode;
-        console.log(response.data.qrCode, "QRcode");
-        setPackageItem(packageitemData);
-        setQrCode(qrCodeData);
-        /// packageOrderId
-        localStorage.setItem("packageItemId", packageitemData.id);
-        localStorage.setItem("packageIdCurrent", packageitemData.packageId);
-        localStorage.setItem("startDateCustomer", packageitemData.startDate);
-        localStorage.setItem("endDateCustomer", packageitemData.endDate);
-        localStorage.setItem("packageId", packageitemData.packageId);
-        if (!packageitemData) {
-          throw new Error("No etag data received");
-        }
-        form.reset({
-          cusName: packageitemData.cusName || "",
-          phoneNumber: packageitemData.phoneNumber || "",
-          cusCccdpassport: packageitemData.cusCccdpassport || "",
-          birthday: formatDateForInput(packageitemData.birthday) || "",
-          startDate: formatDateTimeForInput(packageitemData.startDate) || "",
-          endDate: formatDateTimeForInput(packageitemData.endDate) || "",
-          vcardId: packageitemData.vcardId || "",
-          status: packageitemData.status || 0,
-          imageUrl: packageitemData.imageUrl || "",
-          cusEmail: packageitemData.cusEmail || "",
-          isAdult: packageitemData.isAdult,
-          customer: {
-            fullName: packageitemData.customer?.fullName || "",
-          },
-          wallets: [
-            {
-              balance: packageitemData.wallets[0]?.balance || 0,
-              balanceHistory: packageitemData.wallets[0]?.balanceHistory || 0,
+
+        if (response.data?.data) {
+          // Sau khi có dữ liệu, mã hóa ID và cập nhật URL
+          const encryptedId = encryptId(params.id);
+          // Thay thế URL hiện tại bằng URL với ID đã mã hóa mà không reload trang
+          const newPath = pathname.replace(params.id, encryptedId);
+          window.history.replaceState(null, "", newPath);
+
+          const packageitemData = response.data?.data;
+          const qrCodeData = response.data?.qrCode;
+
+          setPackageItem(packageitemData);
+          setQrCode(qrCodeData);
+
+          // Lưu các thông tin cần thiết vào localStorage
+          localStorage.setItem("packageItemId", packageitemData.id);
+          localStorage.setItem("packageIdCurrent", packageitemData.packageId);
+          localStorage.setItem("startDateCustomer", packageitemData.startDate);
+          localStorage.setItem("endDateCustomer", packageitemData.endDate);
+          localStorage.setItem("packageId", packageitemData.packageId);
+
+          // Reset form với dữ liệu mới
+          form.reset({
+            cusName: packageitemData.cusName || "",
+            phoneNumber: packageitemData.phoneNumber || "",
+            cusCccdpassport: packageitemData.cusCccdpassport || "",
+            birthday: formatDateForInput(packageitemData.birthday) || "",
+            startDate: formatDateTimeForInput(packageitemData.startDate) || "",
+            endDate: formatDateTimeForInput(packageitemData.endDate) || "",
+            vcardId: packageitemData.vcardId || "",
+            status: packageitemData.status || 0,
+            imageUrl: packageitemData.imageUrl || "",
+            cusEmail: packageitemData.cusEmail || "",
+            isAdult: packageitemData.isAdult,
+            customer: {
+              fullName: packageitemData.customer?.fullName || "",
             },
-          ],
-        });
-        localStorage.setItem(
-          "walletBalance",
-          packageitemData.wallet?.balance || 0
-        );
-        // Reset charge form
-        formCharge.reset({
-          chargeAmount: 0,
-          cccdPassport: packageitemData.cusCccdpassport || "",
-          paymentType: "Cash",
-          packageOrderId: params.id,
-        });
+            wallets: [
+              {
+                balance: packageitemData.wallets[0]?.balance || 0,
+                balanceHistory: packageitemData.wallets[0]?.balanceHistory || 0,
+              },
+            ],
+          });
+
+          localStorage.setItem(
+            "walletBalance",
+            packageitemData.wallet?.balance || 0
+          );
+
+          // Reset charge form
+          formCharge.reset({
+            chargeAmount: 0,
+            cccdPassport: packageitemData.cusCccdpassport || "",
+            paymentType: "Cash",
+            packageOrderId: params.id,
+          });
+        }
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
         );
         toast({
           title: "Error",
-          description: "Failed to load ETag details",
+          description: "Failed to load package item details",
           variant: "destructive",
         });
       } finally {
@@ -548,7 +563,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     };
 
     fetchEtag();
-  }, [params?.id, form, formCharge, toast]);
+  }, [params?.id, form, formCharge, pathname, toast]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
