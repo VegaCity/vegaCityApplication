@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { useRouter } from "next/navigation";
+import { encryptEmail } from "@/utils/encryption";
 
 const UserProfileComponent: React.FC = () => {
   const router = useRouter();
@@ -358,8 +359,9 @@ const UserProfileComponent: React.FC = () => {
             <Button
               onClick={() => {
                 if (user?.email) {
-                  const encodedEmail = encodeURIComponent(user?.email);
-                  router.push(`/change-password-existed/${encodedEmail}`);
+                  // const encodedEmail = encodeURIComponent(user?.email);
+                  const enryptedEmail = encryptEmail(user?.email);
+                  router.push(`/change-password-existed/${enryptedEmail}`);
                 } else {
                   router.push(`/change-password-existed/${user?.email}`);
                 }

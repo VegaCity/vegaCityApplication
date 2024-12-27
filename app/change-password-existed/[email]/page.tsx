@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import VegaLogo from "@/img/logo.png";
 import { useRouter } from "next/navigation";
+import { decryptEmail } from "@/utils/encryption";
 
 interface ChnagePasswordExistedProps {
   params: { email: string };
@@ -24,7 +25,7 @@ const ChangePasswordExistedForm = ({ params }: ChnagePasswordExistedProps) => {
   const router = useRouter();
   //get email params and decode to form email
   const userEmail = params.email;
-  const decodedEmail = decodeURIComponent(userEmail);
+  const decryptedEmail = decryptEmail(userEmail);
   const [email, setEmail] = useState("");
 
   const [oldPassword, setOldPassword] = useState("");
@@ -129,7 +130,7 @@ const ChangePasswordExistedForm = ({ params }: ChnagePasswordExistedProps) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        setEmail(decodedEmail);
+        setEmail(decryptedEmail);
       } catch {
         console.log("Error fetching user");
       }
@@ -138,19 +139,19 @@ const ChangePasswordExistedForm = ({ params }: ChnagePasswordExistedProps) => {
   }, [userEmail]);
 
   return (
-    <Card className="max-w-lg mx-auto p-6 bg-transparent dark:bg-black/30 backdrop-blur-sm">
+    <Card className="max-w-lg mx-auto p-6 bg-black/55 dark:bg-black/80 backdrop-blur-sm">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-black text-center uppercase dark:text-white">
+        <CardTitle className="text-2xl font-bold text-white text-center uppercase dark:text-white">
           <img width={70} height={70} src={VegaLogo.src} alt="VegaLogo" />
           Change Password
         </CardTitle>
-        <CardDescription className="text-center text-black text-sm">
+        <CardDescription className="text-center text-white text-sm">
           Please enter your email and password
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <div className="relative">
               <Input
                 id="email"
@@ -175,7 +176,7 @@ const ChangePasswordExistedForm = ({ params }: ChnagePasswordExistedProps) => {
                 Email
               </label>
             </div>
-          </div>
+          </div> */}
 
           <div className="space-y-2">
             <div className="relative">

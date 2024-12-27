@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 export const encryptId = (id: string): string => {
   // Chuyển UUID thành buffer
   const idBuffer = Buffer.from(id.replace(/-/g, ""), "hex");
@@ -37,3 +39,35 @@ export const decryptId = (encryptedId: string): string => {
     return encryptedId; // Trả về ID gốc nếu giải mã thất bại
   }
 };
+
+// Encrypt and Decript Email
+const ENCRYPTION_KEY = (
+  process.env.ENCRYPTION_KEY || "abcdefghijklmnopqrstuvwx"
+)
+  .padEnd(32, "0")
+  .slice(0, 32); // Ensure 32 bytes
+const IV = (process.env.IV || "1234567890123456").padEnd(16, "0").slice(0, 16); // Ensure 16 bytes
+
+// Encrypt function
+export function encryptEmail(text: string) {
+  const cipher = crypto.createCipheriv(
+    "aes-256-cbc",
+    Buffer.from(ENCRYPTION_KEY),
+    IV
+  );
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return encrypted.toString("hex");
+}
+
+// Decrypt function
+export function decryptEmail(text: string) {
+  const decipher = crypto.createDecipheriv(
+    "aes-256-cbc",
+    Buffer.from(ENCRYPTION_KEY),
+    IV
+  );
+  let decrypted = decipher.update(Buffer.from(text, "hex"));
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+}
