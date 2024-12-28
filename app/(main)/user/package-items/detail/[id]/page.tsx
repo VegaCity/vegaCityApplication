@@ -69,7 +69,7 @@ import { UpdateRFIDAlertDialog } from "@/lib/dialog/UpdateRFIDDialog";
 import { useRouter, usePathname } from "next/navigation";
 import CustomerStatusField from "@/components/field/customerField";
 import { Loader } from "@/components/loader/Loader";
-import { encryptId } from "@/utils/encryption";
+import { decryptId, encryptId } from "@/utils/encryption";
 
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
@@ -102,7 +102,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const handleUpdateRFID = async (rfid: string) => {
     try {
       // Call API to update RFID
-      await PackageItemServices.updateRFID(packageItem!.id, rfid);
+      const decryptedId = decryptId(params.id);
+      await PackageItemServices.updateRFID(decryptedId, rfid);
       toast({
         title: "RFID Updated",
         description: "RFID has been updated successfully",
@@ -112,7 +113,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       }, 3000);
       setIsUpdateRFIDDialogOpen(false);
       await PackageItemServices.getPackageItemById({
-        id: params.id,
+        id: decryptedId,
       });
     } catch (error: any) {
       console.error("Error updating RFID:", error);
@@ -177,9 +178,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         });
         return;
       }
+      const decryptedId = decryptId(params.id);
       const cusCccdpassport = form.getValues("cusCccdpassport");
       const response = await PackageItemServices.chargeMoney({
-        packageOrderId: params.id,
+        packageOrderId: decryptedId,
         chargeAmount: data.chargeAmount,
         cccdPassport: cusCccdpassport,
         paymentType: data.paymentType,
@@ -487,17 +489,32 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
       try {
         setIsLoading(true);
-        // Gọi API với ID gốc
+        let idToUse = params.id;
+
+        // Try to decrypt if it's an encrypted ID
+        try {
+          const decryptedId = decryptId(params.id);
+          if (decryptedId && decryptedId.match(/^[0-9a-f-]{36}$/)) {
+            idToUse = decryptedId;
+          }
+        } catch (decryptError) {
+          console.warn("Using original ID as decryption failed:", decryptError);
+        }
+
+        // Gọi API với ID đã xử lý
         const response = await PackageItemServices.getPackageItemById({
-          id: params.id,
+          id: idToUse,
         });
 
         if (response.data?.data) {
-          // Sau khi có dữ liệu, mã hóa ID và cập nhật URL
-          const encryptedId = encryptId(params.id);
-          // Thay thế URL hiện tại bằng URL với ID đã mã hóa mà không reload trang
-          const newPath = pathname.replace(params.id, encryptedId);
-          window.history.replaceState(null, "", newPath);
+          // Mã hóa ID và cập nhật URL
+          const encryptedId = encryptId(idToUse);
+          // Kiểm tra nếu URL hiện tại chưa được mã hóa
+          if (params.id !== encryptedId) {
+            // Thay thế URL hiện tại bằng URL với ID đã mã hóa mà không reload trang
+            const newPath = pathname.replace(params.id, encryptedId);
+            window.history.replaceState(null, "", newPath);
+          }
 
           const packageitemData = response.data?.data;
           const qrCodeData = response.data?.qrCode;
@@ -565,6 +582,14 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
     fetchEtag();
   }, [params?.id, form, formCharge, pathname, toast]);
+  const getEncryptedId = (originalId: string) => {
+    try {
+      return encryptId(originalId);
+    } catch (error) {
+      console.error("Error encrypting ID:", error);
+      return originalId;
+    }
+  };
 
   if (isLoading)
     return (
@@ -642,6 +667,15 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       ? "bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
       : "bg-white border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white";
   };
+
+  const shouldShowRFIDUpdate = () => {
+    return (
+      !packageItem ||
+      !packageItem.vcard ||
+      !packageItem.vcard.id ||
+      packageItem.vcard.id.trim() === ""
+    );
+  };
   return (
     <>
       <BackButton text="Back To VCard" link="/user/package-items" />
@@ -652,7 +686,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
           <Card className="w-full max-w-5xl mx-auto">
             <CardHeader className="pb-2">
-              <div className="flex justify-between items-center p-4 bg-white ">
+              <div className="flex justify-between items-center p-4 bg-white">
                 <CardTitle className="text-xl font-semibold text-gray-800">
                   VCard Detail
                 </CardTitle>
@@ -669,27 +703,28 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         Generate Children VCard
                       </Button>
                     )}
-
-                  <Button
-                    type="button"
-                    onClick={() => setIsUpdateRFIDDialogOpen(true)}
-                    variant="outline"
-                    className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
-                  >
-                    Update RFID
-                  </Button>
+                  {shouldShowRFIDUpdate() && (
+                    <Button
+                      type="button"
+                      onClick={() => setIsUpdateRFIDDialogOpen(true)}
+                      variant="outline"
+                      className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
+                    >
+                      Update RFID
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
             <CardContent>
               <div className="max-w-4xl mx-auto pl-20 space-y-12">
                 {/* Personal Details */}
-                <div className="space-y-4 ">
+                <div className="space-y-4">
                   <h4 className="text-lg font-semibold mb-2 mt-10">
                     Customer Information
                   </h4>
                   <div className="space-y-4 mr-14">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 justify-center items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormItem className="flex flex-col gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                           FullName
@@ -725,28 +760,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormItem>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-1 gap-4 justify-center items-start">
-                      <FormItem className="flex flex-col gap-1 md:w-11/12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          Buyer
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={getInputClassName(
-                              packageItem?.status === "Active"
-                            )}
-                            {...form.register("cusName")}
-                            readOnly={
-                              !isEditing || packageItem?.status === "Active"
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
                           Phone Number
                         </FormLabel>
                         <FormControl>
@@ -761,8 +777,9 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                           />
                         </FormControl>
                       </FormItem>
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                           CCCD/Passport
                         </FormLabel>
                         <FormControl>
@@ -779,35 +796,59 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormItem>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <CustomerStatusField
-                        isAdult={form.getValues("isAdult")}
-                      />
-                      <FormItem className="grid grid-cols-[100px_1fr] items-center gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
+                        <CustomerStatusField
+                          isAdult={form.getValues("isAdult")}
+                        />
+                      </FormItem>
+
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                           VCard ID
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            className={getInputClassName(
+                              !!form.getValues("vcardId")
+                            )}
                             {...form.register("vcardId")}
                             readOnly
                           />
                         </FormControl>
                       </FormItem>
                     </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Buyer
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className={getInputClassName(
+                              packageItem?.status === "Active"
+                            )}
+                            {...form.register("cusName")}
+                            readOnly={
+                              !isEditing || packageItem?.status === "Active"
+                            }
+                          />
+                        </FormControl>
+                      </FormItem>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <h4 className="text-lg font-semibold mb-2">
+
+                {/* Duration Information */}
+                <div className="space-y-4 mr-14">
+                  <h4 className="text-lg font-semibold mb-2 mt-10">
                     Duration Information
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormItem className="flex flex-col gap-1 md:w-10/12">
+                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Start Date
                       </FormLabel>
-
                       <FormControl>
                         <Input
                           className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
@@ -818,11 +859,11 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+
+                    <FormItem className="flex flex-col gap-1 md:w-10/12">
+                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         End Date
                       </FormLabel>
-
                       <FormControl>
                         <Input
                           className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
@@ -833,7 +874,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                         />
                       </FormControl>
                     </FormItem>
-                    <FormItem className="grid grid-cols-[120px_1fr] items-center gap-1 md:w-9/12">
+
+                    <FormItem className="flex flex-col gap-1 md:w-10/12">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Status
                       </FormLabel>
@@ -848,14 +890,15 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                     </FormItem>
                   </div>
                 </div>
+
                 {/* Wallet Information */}
-                <div>
+                <div className="space-y-4 mr-14">
                   <h4 className="text-lg font-semibold mb-2">
                     Wallet Information
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    <FormItem className="grid grid-cols-[130px_1fr] items-center gap-1 md:w-9/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormItem className="flex flex-col gap-1 md:w-10/12">
+                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         Balance
                       </FormLabel>
                       <FormControl>
@@ -867,8 +910,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       </FormControl>
                     </FormItem>
 
-                    <FormItem className="grid grid-cols-[80px_1fr] items-center gap-1 md:w-8/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white whitespace-nowrap">
+                    <FormItem className="flex flex-col gap-1 md:w-10/12">
+                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                         History
                       </FormLabel>
                       <FormControl>
@@ -884,6 +927,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
               </div>
             </CardContent>
           </Card>
+
           <UpdateRFIDAlertDialog
             isOpen={isUpdateRFIDDialogOpen}
             onOpenChange={setIsUpdateRFIDDialogOpen}
@@ -929,6 +973,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           />
         </form>
       </Form>
+
       <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
         {packageItem && packageItem.status === "InActive" && (
           <>

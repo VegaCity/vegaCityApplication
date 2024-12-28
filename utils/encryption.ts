@@ -40,7 +40,7 @@ export const decryptId = (encryptedId: string): string => {
   }
 };
 
-// Encrypt and Decript Email
+// Encrypt and Decrypt Email
 const ENCRYPTION_KEY = (
   process.env.ENCRYPTION_KEY || "abcdefghijklmnopqrstuvwx"
 )
@@ -48,7 +48,6 @@ const ENCRYPTION_KEY = (
   .slice(0, 32); // Ensure 32 bytes
 const IV = (process.env.IV || "1234567890123456").padEnd(16, "0").slice(0, 16); // Ensure 16 bytes
 
-// Encrypt function
 export function encryptEmail(text: string) {
   const cipher = crypto.createCipheriv(
     "aes-256-cbc",
@@ -60,7 +59,6 @@ export function encryptEmail(text: string) {
   return encrypted.toString("hex");
 }
 
-// Decrypt function
 export function decryptEmail(text: string) {
   const decipher = crypto.createDecipheriv(
     "aes-256-cbc",
