@@ -13,7 +13,7 @@ import Link from "next/link";
 import ShoppingCartComponent, { CartRef } from "@/components/cart/cart";
 import { useRouter } from "next/navigation";
 import { StoreMenuServices } from "@/components/services/storeMenuService";
-
+import { toast } from "@/components/ui/use-toast";
 import ProductUpdateDialog from "@/lib/dialog/ProductUpdateDialog";
 import {
   AlertDialog,
@@ -29,13 +29,13 @@ import {
 import { ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ProductServices } from "@/components/services/productServices";
-import { toast } from "react-hot-toast";
 import { ProductPatch } from "@/types/product";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { Product } from "@/types/store/store";
 import ProductDetailsDialog from "@/lib/dialog/ProductDetailsDialog";
 import { Loader } from "@/components/loader/Loader";
+import { Toast } from "@radix-ui/react-toast";
 interface Menu {
   id: string;
   name: string;
@@ -120,46 +120,13 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
     useState(false);
   const [storeType, setStoreType] = useState<string>("1");
 
+  const [isDeleting, setIsDeleting] = useState(false);
   useEffect(() => {
     const storedType = localStorage.getItem("storeType");
     if (storedType) {
       setStoreType(storedType);
     }
   }, []);
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "bg-green-100 text-green-800";
-      case "inactive":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        toast.error("Vui lòng chọn file hình ảnh");
-        return;
-      }
-
-      // Validate file size (e.g., max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error("Kích thước file không được vượt quá 5MB");
-        return;
-      }
-
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const uploadImageToFirebase = async (file: File): Promise<string> => {
     try {
@@ -277,18 +244,30 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
   });
   const handleDelete = async (itemId: string) => {
     try {
-      setLoading(true);
+      setIsDeleting(true);
       await ProductServices.deleteProductById(itemId);
+
+      // Cập nhật lại state menuItems sau khi xóa thành công
       setMenuItems((prev) => prev.filter((item) => item.id !== itemId));
-      toast.success("Deleted product successfully.");
+
+      toast({
+        title: "Success",
+        description: "Product deleted successfully.",
+        variant: "default",
+      });
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast.error("Failed to delete product.");
+      toast({
+        title: "Error",
+        description: "Failed to delete product.",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
-      setItemToDelete(null); // Reset the itemToDelete after deletion
+      setIsDeleting(false);
+      setItemToDelete(null); // Đóng dialog
     }
   };
+
   const DeleteConfirmationDialog = ({ itemId }: { itemId: string }) => (
     <AlertDialog
       open={itemToDelete === itemId}
@@ -338,7 +317,17 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
       };
 
       // Update product via service
-      await ProductServices.editProduct(itemToUpdate.id, updatePayload);
+      const response = await ProductServices.editProduct(
+        itemToUpdate.id,
+        updatePayload
+      );
+
+      // Show success notification
+      toast({
+        title: "Success",
+        description: response.data.messageResponse,
+        variant: "success",
+      });
 
       // Update local state
       setMenuItems((prev) =>
@@ -352,16 +341,17 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
         )
       );
 
-      toast.success("Product updated successfully.");
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
       setItemToUpdate(null);
       setSelectedImage(null);
       setIsProductUpdateDialogOpen(false);
     } catch (error) {
       console.error("Error updating product:", error);
-      toast.error("Failed to update product.");
+      // Show error notification
+      toast({
+        title: "Error",
+        description: "Failed to update product.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -622,7 +612,8 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                         <button
                           onClick={() => setItemToDelete(item.id)}
                           className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white bg-red-600 
-                          rounded-lg hover:bg-red-700 transition-colors font-semibold"
+    rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                          disabled={isDeleting}
                         >
                           <Trash2 size={16} />
                           Delete
@@ -639,7 +630,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
 
       {/* Shopping Cart */}
       {!isOwnerMode && <ShoppingCartComponent ref={cartRef} />}
-
+      {itemToDelete && <DeleteConfirmationDialog itemId={itemToDelete} />}
       <ProductUpdateDialog
         open={isProductUpdateDialogOpen}
         onClose={() => setIsProductUpdateDialogOpen(false)}
