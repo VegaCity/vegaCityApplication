@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, FC } from "react";
 import { API } from "@/components/services/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -53,6 +53,12 @@ interface WalletInfo {
   balanceStart: number;
   walletTypeId: string;
 }
+
+interface RenderCustomerInformation {
+  packageItemDetails: PackageItemDetail | null;
+  walletInfo: WalletInfo | null;
+}
+
 interface StoreDetail_FixToDeploy {
   id: string;
   name: string;
@@ -66,6 +72,11 @@ interface StoreDetail_FixToDeploy {
   amountCanWithdraw: number;
   amountTransferred: number;
   amoutWithdrawed: number;
+}
+
+interface RenderStoreInformation {
+  storeDetails: StoreDetail_FixToDeploy | null;
+  walletInfo: WalletInfo | null;
 }
 
 const MIN_WITHDRAWAL = 50000;
@@ -92,6 +103,16 @@ const WithdrawMoney = () => {
   const [vcardData, setVcardData] = useState<any>(null);
   const handleStoreTabChange = () => {
     setActiveTab("store");
+    setPackageItemCode("");
+    setStoreName("");
+    setStorePhone("");
+    setWalletInfo(null);
+    setPackageItemDetails(null);
+    setWithdrawAmount("");
+    setError("");
+  };
+  const handleCustomerTabChange = () => {
+    setActiveTab("customer");
     setPackageItemCode("");
     setStoreName("");
     setStorePhone("");
@@ -213,6 +234,7 @@ const WithdrawMoney = () => {
       setIsLoading(false);
     }
   }, [storeName, storePhone, toast]);
+
   // Optionally, log the updated state (using useEffect or other methods)
   useEffect(() => {
     if (walletInfo) {
@@ -221,7 +243,8 @@ const WithdrawMoney = () => {
     if (storeDetails) {
       console.log(storeDetails, "storeDetails updated");
     }
-  }, [walletInfo, storeDetails]);
+  }, [walletInfo, storeDetails, activeTab]);
+
   const handleFinalSettlement = async () => {
     if (!storeDetails) return;
 
@@ -606,6 +629,83 @@ const WithdrawMoney = () => {
     handleFindStoreWallet,
   ]);
 
+  const RenderCustomerInfo: React.FC<RenderCustomerInformation> = ({
+    packageItemDetails,
+    walletInfo,
+  }) => {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
+          <div className="space-y-2">
+            <p className="font-medium text-gray-700 text-center text-lg">
+              Customer Information
+            </p>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600">
+                Name:{" "}
+                <span className="font-semibold text-gray-900">
+                  {packageItemDetails?.cusName}
+                </span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Phone:{" "}
+                <span className="font-semibold text-gray-900">
+                  {packageItemDetails?.phoneNumber}
+                </span>
+              </p>
+              <p className="text-sm text-gray-600">
+                ID/Passport:{" "}
+                <span className="font-semibold text-gray-900">
+                  {packageItemDetails?.cusCccdpassport}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-blue-100 space-y-4 w-full">
+            <div className="flex items-end justify-between w-full">
+              <p className="text-sm font-normal text-gray-700">
+                Available Balance
+              </p>
+              <div className="flex items-baseline space-x-2">
+                <p className="text-xl font-bold text-gray-900">
+                  {walletInfo?.balance.toLocaleString(FORMAT_LOCALE)}
+                </p>
+                <span className="text-xs font-semibold text-gray-600">VND</span>
+              </div>
+            </div>
+
+            <div className="flex items-end justify-between w-full">
+              <p className="text-sm font-normal text-gray-700">
+                Balance Can Withdraw
+              </p>
+              <div className="flex items-baseline space-x-2">
+                <p className="text-xl font-bold text-emerald-600">
+                  {vcardData?.balanceCanWithdraw.toLocaleString(FORMAT_LOCALE)}
+                </p>
+                <span className="text-xs font-semibold text-gray-600">VND</span>
+              </div>
+            </div>
+
+            <div className="flex items-end justify-between w-full max-w-full">
+              <p className="text-sm font-normal text-gray-700">
+                Balance Need To Use Before Withdraw
+              </p>
+              <div className="flex items-baseline space-x-2">
+                <p className="text-xl font-bold text-orange-600">
+                  {vcardData?.balanceNeedToUseBeforeWithdraw.toLocaleString(
+                    FORMAT_LOCALE
+                  )}
+                </p>
+                <span className="text-xs font-semibold text-gray-600">VND</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderWithdrawForm = () => (
     <div className="space-y-6">
       <div className="space-y-3">
@@ -645,82 +745,11 @@ const WithdrawMoney = () => {
         </div>
       ) : walletInfo && packageItemDetails ? (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
-            <div className="space-y-2">
-              <p className="font-medium text-gray-700 text-center text-lg">
-                Customer Information
-              </p>
-              <div className="space-y-1">
-                <p className="text-sm text-gray-600">
-                  Name:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {packageItemDetails.cusName}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  Phone:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {packageItemDetails.phoneNumber}
-                  </span>
-                </p>
-                <p className="text-sm text-gray-600">
-                  ID/Passport:{" "}
-                  <span className="font-semibold text-gray-900">
-                    {packageItemDetails.cusCccdpassport}
-                  </span>
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-blue-100 space-y-4 w-full">
-              <div className="flex items-end justify-between w-full">
-                <p className="text-sm font-normal text-gray-700">
-                  Available Balance
-                </p>
-                <div className="flex items-baseline space-x-2">
-                  <p className="text-xl font-bold text-gray-900">
-                    {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
-                  </p>
-                  <span className="text-xs font-semibold text-gray-600">
-                    VND
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-end justify-between w-full">
-                <p className="text-sm font-normal text-gray-700">
-                  Balance Can Withdraw
-                </p>
-                <div className="flex items-baseline space-x-2">
-                  <p className="text-xl font-bold text-emerald-600">
-                    {vcardData?.balanceCanWithdraw.toLocaleString(
-                      FORMAT_LOCALE
-                    )}
-                  </p>
-                  <span className="text-xs font-semibold text-gray-600">
-                    VND
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-end justify-between w-full max-w-full">
-                <p className="text-sm font-normal text-gray-700">
-                  Balance Need To Use Before Withdraw
-                </p>
-                <div className="flex items-baseline space-x-2">
-                  <p className="text-xl font-bold text-orange-600">
-                    {vcardData?.balanceNeedToUseBeforeWithdraw.toLocaleString(
-                      FORMAT_LOCALE
-                    )}
-                  </p>
-                  <span className="text-xs font-semibold text-gray-600">
-                    VND
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
+          {/* Render Customer Info
+          <RenderCustomerInfo
+            packageItemDetails={packageItemDetails}
+            walletInfo={walletInfo}
+          /> */}
           <div className="space-y-3">
             <label
               htmlFor="amount-input"
@@ -756,6 +785,189 @@ const WithdrawMoney = () => {
       ) : null}
     </div>
   );
+
+  const RenderStoreInformation: React.FC<RenderStoreInformation> = ({
+    storeDetails,
+    walletInfo,
+  }) => {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
+          <div className="space-y-2">
+            <p className="font-medium text-gray-700 text-center text-lg">
+              Store Information
+            </p>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600">
+                Name:{" "}
+                <span className="font-semibold text-gray-900">
+                  {storeDetails?.name}
+                </span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Phone:{" "}
+                <span className="font-semibold text-gray-900">
+                  {storeDetails?.phoneNumber}
+                </span>
+              </p>
+              <p className="text-sm text-gray-600">
+                Address:{" "}
+                <span className="font-semibold text-gray-900">
+                  {storeDetails?.address}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-blue-100">
+            <div className="space-y-4">
+              {storeDetails?.status === 3 ? (
+                <>
+                  <Alert className="bg-yellow-50 border-yellow-200">
+                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                    <AlertDescription className="text-yellow-800">
+                      This store has been blocked. Only the final settlement
+                      amount can be withdrawn.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-4 w-full">
+                    <div className="flex items-end justify-between w-full">
+                      <p className="text-sm font-normal text-gray-700">
+                        Final Settlement Amount
+                      </p>
+                      <div className="flex items-baseline space-x-2">
+                        <p className="text-xl font-bold text-emerald-600">
+                          {storeDetails?.amountCanWithdraw.toLocaleString(
+                            FORMAT_LOCALE
+                          )}
+                        </p>
+                        <span className="text-xs font-semibold text-gray-600">
+                          VND
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-end justify-between w-full">
+                      <p className="text-sm font-normal text-gray-700">
+                        Total Amount Transferred
+                      </p>
+                      <div className="flex items-baseline space-x-2">
+                        <p className="text-xl font-bold text-blue-600">
+                          {storeDetails?.amountTransferred.toLocaleString(
+                            FORMAT_LOCALE
+                          )}
+                        </p>
+                        <span className="text-xs font-semibold text-gray-600">
+                          VND
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-end justify-between w-full max-w-full">
+                      <p className="text-sm font-normal text-gray-700">
+                        Amount Withdrawn
+                      </p>
+                      <div className="flex items-baseline space-x-2">
+                        <p className="text-xl font-bold text-blue-600">
+                          {storeDetails?.amoutWithdrawed.toLocaleString(
+                            FORMAT_LOCALE
+                          )}
+                        </p>
+                        <span className="text-xs font-semibold text-gray-600">
+                          VND
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-end justify-between w-full max-w-full">
+                      <p className="text-sm font-normal text-gray-700">
+                        Amount Can Withdraw
+                      </p>
+                      <div className="flex items-baseline space-x-2">
+                        <p className="text-xl font-bold text-orange-600">
+                          {storeDetails?.amountCanWithdraw.toLocaleString(
+                            FORMAT_LOCALE
+                          )}
+                        </p>
+                        <span className="text-xs font-semibold text-gray-600">
+                          VND
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="pt-2 space-y-4 w-full">
+                  <div className="flex items-end justify-between w-full">
+                    <p className="text-sm font-normal text-gray-700">
+                      Available Balance
+                    </p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-xl font-bold text-gray-900">
+                        {walletInfo?.balance.toLocaleString(FORMAT_LOCALE)}
+                      </p>
+                      <span className="text-xs font-semibold text-gray-600">
+                        VND
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between w-full">
+                    <p className="text-sm font-normal text-gray-700">
+                      Total Amount Transferred
+                    </p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-xl font-bold text-blue-600">
+                        {storeDetails?.amountTransferred.toLocaleString(
+                          FORMAT_LOCALE
+                        )}
+                      </p>
+                      <span className="text-xs font-semibold text-gray-600">
+                        VND
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between w-full max-w-full">
+                    <p className="text-sm font-normal text-gray-700">
+                      Amount Withdrawn
+                    </p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-xl font-bold text-blue-600">
+                        {storeDetails?.amoutWithdrawed.toLocaleString(
+                          FORMAT_LOCALE
+                        )}
+                      </p>
+                      <span className="text-xs font-semibold text-gray-600">
+                        VND
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between w-full max-w-full">
+                    <p className="text-sm font-normal text-gray-700">
+                      Amount Can Withdraw
+                    </p>
+                    <div className="flex items-baseline space-x-2">
+                      <p className="text-xl font-bold text-orange-600">
+                        {storeDetails?.amountCanWithdraw.toLocaleString(
+                          FORMAT_LOCALE
+                        )}
+                      </p>
+                      <span className="text-xs font-semibold text-gray-600">
+                        VND
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderStoreTab = () => {
     return (
@@ -829,181 +1041,182 @@ const WithdrawMoney = () => {
         ) : (
           walletInfo &&
           storeDetails && (
+            // <div className="space-y-6">
+            //   <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
+            //     <div className="space-y-2">
+            //       <p className="font-medium text-gray-700 text-center text-lg">
+            //         Store Information
+            //       </p>
+            //       <div className="space-y-1">
+            //         <p className="text-sm text-gray-600">
+            //           Name:{" "}
+            //           <span className="font-semibold text-gray-900">
+            //             {storeDetails.name}
+            //           </span>
+            //         </p>
+            //         <p className="text-sm text-gray-600">
+            //           Phone:{" "}
+            //           <span className="font-semibold text-gray-900">
+            //             {storeDetails.phoneNumber}
+            //           </span>
+            //         </p>
+            //         <p className="text-sm text-gray-600">
+            //           Address:{" "}
+            //           <span className="font-semibold text-gray-900">
+            //             {storeDetails.address}
+            //           </span>
+            //         </p>
+            //       </div>
+            //     </div>
+
+            //     <div className="pt-2 border-t border-blue-100">
+            //       <div className="space-y-4">
+            //         {storeDetails.status === 3 ? (
+            //           <>
+            //             <Alert className="bg-yellow-50 border-yellow-200">
+            //               <AlertTriangle className="w-4 h-4 text-yellow-600" />
+            //               <AlertDescription className="text-yellow-800">
+            //                 This store has been blocked. Only the final
+            //                 settlement amount can be withdrawn.
+            //               </AlertDescription>
+            //             </Alert>
+
+            //             <div className="space-y-4 w-full">
+            //               <div className="flex items-end justify-between w-full">
+            //                 <p className="text-sm font-normal text-gray-700">
+            //                   Final Settlement Amount
+            //                 </p>
+            //                 <div className="flex items-baseline space-x-2">
+            //                   <p className="text-xl font-bold text-emerald-600">
+            //                     {storeDetails.amountCanWithdraw.toLocaleString(
+            //                       FORMAT_LOCALE
+            //                     )}
+            //                   </p>
+            //                   <span className="text-xs font-semibold text-gray-600">
+            //                     VND
+            //                   </span>
+            //                 </div>
+            //               </div>
+
+            //               <div className="flex items-end justify-between w-full">
+            //                 <p className="text-sm font-normal text-gray-700">
+            //                   Total Amount Transferred
+            //                 </p>
+            //                 <div className="flex items-baseline space-x-2">
+            //                   <p className="text-xl font-bold text-blue-600">
+            //                     {storeDetails.amountTransferred.toLocaleString(
+            //                       FORMAT_LOCALE
+            //                     )}
+            //                   </p>
+            //                   <span className="text-xs font-semibold text-gray-600">
+            //                     VND
+            //                   </span>
+            //                 </div>
+            //               </div>
+
+            //               <div className="flex items-end justify-between w-full max-w-full">
+            //                 <p className="text-sm font-normal text-gray-700">
+            //                   Amount Withdrawn
+            //                 </p>
+            //                 <div className="flex items-baseline space-x-2">
+            //                   <p className="text-xl font-bold text-blue-600">
+            //                     {storeDetails.amoutWithdrawed.toLocaleString(
+            //                       FORMAT_LOCALE
+            //                     )}
+            //                   </p>
+            //                   <span className="text-xs font-semibold text-gray-600">
+            //                     VND
+            //                   </span>
+            //                 </div>
+            //               </div>
+
+            //               <div className="flex items-end justify-between w-full max-w-full">
+            //                 <p className="text-sm font-normal text-gray-700">
+            //                   Amount Can Withdraw
+            //                 </p>
+            //                 <div className="flex items-baseline space-x-2">
+            //                   <p className="text-xl font-bold text-orange-600">
+            //                     {storeDetails.amountCanWithdraw.toLocaleString(
+            //                       FORMAT_LOCALE
+            //                     )}
+            //                   </p>
+            //                   <span className="text-xs font-semibold text-gray-600">
+            //                     VND
+            //                   </span>
+            //                 </div>
+            //               </div>
+            //             </div>
+            //           </>
+            //         ) : (
+            //           <div className="pt-2 space-y-4 w-full">
+            //             <div className="flex items-end justify-between w-full">
+            //               <p className="text-sm font-normal text-gray-700">
+            //                 Available Balance
+            //               </p>
+            //               <div className="flex items-baseline space-x-2">
+            //                 <p className="text-xl font-bold text-gray-900">
+            //                   {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
+            //                 </p>
+            //                 <span className="text-xs font-semibold text-gray-600">
+            //                   VND
+            //                 </span>
+            //               </div>
+            //             </div>
+
+            //             <div className="flex items-end justify-between w-full">
+            //               <p className="text-sm font-normal text-gray-700">
+            //                 Total Amount Transferred
+            //               </p>
+            //               <div className="flex items-baseline space-x-2">
+            //                 <p className="text-xl font-bold text-blue-600">
+            //                   {storeDetails.amountTransferred.toLocaleString(
+            //                     FORMAT_LOCALE
+            //                   )}
+            //                 </p>
+            //                 <span className="text-xs font-semibold text-gray-600">
+            //                   VND
+            //                 </span>
+            //               </div>
+            //             </div>
+
+            //             <div className="flex items-end justify-between w-full max-w-full">
+            //               <p className="text-sm font-normal text-gray-700">
+            //                 Amount Withdrawn
+            //               </p>
+            //               <div className="flex items-baseline space-x-2">
+            //                 <p className="text-xl font-bold text-blue-600">
+            //                   {storeDetails.amoutWithdrawed.toLocaleString(
+            //                     FORMAT_LOCALE
+            //                   )}
+            //                 </p>
+            //                 <span className="text-xs font-semibold text-gray-600">
+            //                   VND
+            //                 </span>
+            //               </div>
+            //             </div>
+
+            //             <div className="flex items-end justify-between w-full max-w-full">
+            //               <p className="text-sm font-normal text-gray-700">
+            //                 Amount Can Withdraw
+            //               </p>
+            //               <div className="flex items-baseline space-x-2">
+            //                 <p className="text-xl font-bold text-orange-600">
+            //                   {storeDetails.amountCanWithdraw.toLocaleString(
+            //                     FORMAT_LOCALE
+            //                   )}
+            //                 </p>
+            //                 <span className="text-xs font-semibold text-gray-600">
+            //                   VND
+            //                 </span>
+            //               </div>
+            //             </div>
+            //           </div>
+            //         )}
+            //       </div>
+            //     </div>
+            //   </div>
+
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl space-y-4">
-                <div className="space-y-2">
-                  <p className="font-medium text-gray-700 text-center text-lg">
-                    Store Information
-                  </p>
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-600">
-                      Name:{" "}
-                      <span className="font-semibold text-gray-900">
-                        {storeDetails.name}
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Phone:{" "}
-                      <span className="font-semibold text-gray-900">
-                        {storeDetails.phoneNumber}
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Address:{" "}
-                      <span className="font-semibold text-gray-900">
-                        {storeDetails.address}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-blue-100">
-                  <div className="space-y-4">
-                    {storeDetails.status === 3 ? (
-                      <>
-                        <Alert className="bg-yellow-50 border-yellow-200">
-                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                          <AlertDescription className="text-yellow-800">
-                            This store has been blocked. Only the final
-                            settlement amount can be withdrawn.
-                          </AlertDescription>
-                        </Alert>
-
-                        <div className="space-y-4 w-full">
-                          <div className="flex items-end justify-between w-full">
-                            <p className="text-sm font-normal text-gray-700">
-                              Final Settlement Amount
-                            </p>
-                            <div className="flex items-baseline space-x-2">
-                              <p className="text-xl font-bold text-emerald-600">
-                                {storeDetails.amountCanWithdraw.toLocaleString(
-                                  FORMAT_LOCALE
-                                )}
-                              </p>
-                              <span className="text-xs font-semibold text-gray-600">
-                                VND
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-end justify-between w-full">
-                            <p className="text-sm font-normal text-gray-700">
-                              Total Amount Transferred
-                            </p>
-                            <div className="flex items-baseline space-x-2">
-                              <p className="text-xl font-bold text-blue-600">
-                                {storeDetails.amountTransferred.toLocaleString(
-                                  FORMAT_LOCALE
-                                )}
-                              </p>
-                              <span className="text-xs font-semibold text-gray-600">
-                                VND
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-end justify-between w-full max-w-full">
-                            <p className="text-sm font-normal text-gray-700">
-                              Amount Withdrawn
-                            </p>
-                            <div className="flex items-baseline space-x-2">
-                              <p className="text-xl font-bold text-blue-600">
-                                {storeDetails.amoutWithdrawed.toLocaleString(
-                                  FORMAT_LOCALE
-                                )}
-                              </p>
-                              <span className="text-xs font-semibold text-gray-600">
-                                VND
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="flex items-end justify-between w-full max-w-full">
-                            <p className="text-sm font-normal text-gray-700">
-                              Amount Can Withdraw
-                            </p>
-                            <div className="flex items-baseline space-x-2">
-                              <p className="text-xl font-bold text-orange-600">
-                                {storeDetails.amountCanWithdraw.toLocaleString(
-                                  FORMAT_LOCALE
-                                )}
-                              </p>
-                              <span className="text-xs font-semibold text-gray-600">
-                                VND
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="pt-2 space-y-4 w-full">
-                        <div className="flex items-end justify-between w-full">
-                          <p className="text-sm font-normal text-gray-700">
-                            Available Balance
-                          </p>
-                          <div className="flex items-baseline space-x-2">
-                            <p className="text-xl font-bold text-gray-900">
-                              {walletInfo.balance.toLocaleString(FORMAT_LOCALE)}
-                            </p>
-                            <span className="text-xs font-semibold text-gray-600">
-                              VND
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-end justify-between w-full">
-                          <p className="text-sm font-normal text-gray-700">
-                            Total Amount Transferred
-                          </p>
-                          <div className="flex items-baseline space-x-2">
-                            <p className="text-xl font-bold text-blue-600">
-                              {storeDetails.amountTransferred.toLocaleString(
-                                FORMAT_LOCALE
-                              )}
-                            </p>
-                            <span className="text-xs font-semibold text-gray-600">
-                              VND
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-end justify-between w-full max-w-full">
-                          <p className="text-sm font-normal text-gray-700">
-                            Amount Withdrawn
-                          </p>
-                          <div className="flex items-baseline space-x-2">
-                            <p className="text-xl font-bold text-blue-600">
-                              {storeDetails.amoutWithdrawed.toLocaleString(
-                                FORMAT_LOCALE
-                              )}
-                            </p>
-                            <span className="text-xs font-semibold text-gray-600">
-                              VND
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-end justify-between w-full max-w-full">
-                          <p className="text-sm font-normal text-gray-700">
-                            Amount Can Withdraw
-                          </p>
-                          <div className="flex items-baseline space-x-2">
-                            <p className="text-xl font-bold text-orange-600">
-                              {storeDetails.amountCanWithdraw.toLocaleString(
-                                FORMAT_LOCALE
-                              )}
-                            </p>
-                            <span className="text-xs font-semibold text-gray-600">
-                              VND
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
               {/* Show withdrawal form only if store is not blocked or has settlement amount */}
               {(storeDetails.status !== 3 ||
                 storeDetails.amountCanWithdraw > 0) && (
@@ -1063,7 +1276,7 @@ const WithdrawMoney = () => {
     );
   };
   return (
-    <div className="min-h-screen p-6 flex justify-center">
+    <div className="min-h-min p-6 flex justify-center space-x-4">
       <div className="w-full max-w-xl rounded-2xl shadow-lg p-8 space-y-8">
         <div className="space-y-3">
           <div className="flex items-center justify-center space-x-3">
@@ -1081,6 +1294,8 @@ const WithdrawMoney = () => {
           onValueChange={(value) => {
             if (value === "store") {
               handleStoreTabChange();
+            } else if (value === "customer") {
+              handleCustomerTabChange();
             } else {
               setActiveTab(value);
             }
@@ -1190,6 +1405,26 @@ const WithdrawMoney = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Render Customer Info */}
+      {walletInfo && packageItemDetails && (
+        <div className="w-full max-w-lg">
+          <RenderCustomerInfo
+            packageItemDetails={packageItemDetails}
+            walletInfo={walletInfo}
+          />
+        </div>
+      )}
+
+      {/* Render Store Info */}
+      {walletInfo && storeDetails && packageItemDetails === null && (
+        <div className="w-full max-w-lg">
+          <RenderStoreInformation
+            storeDetails={storeDetails}
+            walletInfo={walletInfo}
+          />
+        </div>
+      )}
     </div>
   );
 };
