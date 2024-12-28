@@ -102,8 +102,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const handleUpdateRFID = async (rfid: string) => {
     try {
       // Call API to update RFID
-      const decryptedId = decryptId(params.id);
-      await PackageItemServices.updateRFID(decryptedId, rfid);
+      const packageItemId = localStorage.getItem("packageItemId");
+      await PackageItemServices.updateRFID(packageItemId as string, rfid);
       toast({
         title: "RFID Updated",
         description: "RFID has been updated successfully",
@@ -113,7 +113,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       }, 3000);
       setIsUpdateRFIDDialogOpen(false);
       await PackageItemServices.getPackageItemById({
-        id: decryptedId,
+        id: packageItemId as string,
       });
     } catch (error: any) {
       console.error("Error updating RFID:", error);
@@ -181,7 +181,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       const decryptedId = decryptId(params.id);
       const cusCccdpassport = form.getValues("cusCccdpassport");
       const response = await PackageItemServices.chargeMoney({
-        packageOrderId: decryptedId,
+        packageOrderId: packageItem?.id || "",
         chargeAmount: data.chargeAmount,
         cccdPassport: cusCccdpassport,
         paymentType: data.paymentType,
