@@ -79,11 +79,11 @@ export const UserServices = {
     return API.get("/user/get-deposit-approval", {
       params: {
         page,
-        size, 
+        size,
       },
     });
   },
   updateStatusDepositApproval(transactionId: string, status: string) {
-    return API.patch(`/user/${transactionId}`, { status });
+    return API.patch(`/user/deposit-approval/${transactionId}`, { status });
   },
 };
