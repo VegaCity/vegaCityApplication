@@ -48,6 +48,15 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [storeType, setStoreType] = useState<string>("");
 
+  const formatPrice = (price: string): string => {
+    // Remove any non-digit characters except the last dot
+    const numericValue = price.replace(/[^\d]/g, "");
+    // Convert to number and format with thousand separators
+    return numericValue === ""
+      ? ""
+      : Number(numericValue).toLocaleString("vi-VN");
+  };
+
   useEffect(() => {
     const type = localStorage.getItem("storeType");
     setStoreType(type || "");
@@ -190,11 +199,15 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                 </Label>
                 <Input
                   id="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: Number(e.target.value) })
-                  }
+                  type="text"
+                  value={formData.price?.toLocaleString("vi-VN") ?? 0}
+                  onChange={(e) => {
+                    //convert string to number
+                    const input = e.target.value;
+                    const numericValue = parseFloat(input.replace(/[.]/g, ""));
+                    console.log(numericValue, "numericValue");
+                    setFormData({ ...formData, price: numericValue });
+                  }}
                   className="mt-1"
                   placeholder="Enter price"
                 />
