@@ -25,8 +25,7 @@ import { Product } from "@/types/store/store";
 import { confirmOrder, createOrderStore } from "../services/orderuserServices";
 import { PackageItemServices } from "@/components/services/Package/packageItemService";
 import paymentService from "../services/paymentService";
-import { Toast } from "@/components/ui/toast";
-import toast from "react-hot-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
@@ -91,7 +90,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
   const [storeType, setStoreType] = useState<string>("");
   const [showCashConfirmation, setShowCashConfirmation] = useState(false);
   const [showQRConfirmation, setShowQRConfirmation] = useState(false);
-
+  const { toast } = useToast();
   useEffect(() => {
     const type = localStorage.getItem("storeType");
     console.log("storeType loaded:", type);
@@ -107,9 +106,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
         if (existingItem) {
           // Nếu số lượng hiện tại + 1 vượt quá số lượng tồn kho
           if (existingItem.quantity + 1 > product.quantity) {
-            toast.error(
-              `Sản phẩm "${product.name}" không đủ số lượng trong kho. Chỉ còn ${product.quantity} sản phẩm.`
-            );
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: `Product "${product.name}" is out of stock. Only ${product.quantity} items remaining.`,
+            });
             return prevItems;
           }
 
@@ -122,7 +123,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
 
         // Kiểm tra nếu sản phẩm hết hàng
         if (product.quantity === 0) {
-          toast.error(`Sản phẩm "${product.name}" hiện đã hết hàng.`);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: `Product "${product.name}" is out of stock.`,
+          });
           return prevItems;
         }
 
@@ -153,9 +158,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     setCartItems((prevItems) => {
       const item = prevItems.find((item) => item.id === productId);
       if (item && newQuantity > item.stockQuantity) {
-        toast.error(
-          `Sản phẩm "${item.name}" không đủ số lượng trong kho. Chỉ còn ${item.stockQuantity} sản phẩm.`
-        );
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: `Product "${item.name}" is out of stock. Only ${item.stockQuantity} items remaining.`,
+        });
         return prevItems;
       }
 
@@ -258,9 +265,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       for (const cartItem of cartItems) {
         // So sánh số lượng trong giỏ với số lượng tồn kho
         if (cartItem.quantity > cartItem.stockQuantity) {
-          toast.error(
-            `Sản phẩm "${cartItem.name}" không đủ số lượng trong kho. Chỉ còn ${cartItem.stockQuantity} sản phẩm.`
-          );
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: `Product "${cartItem.name}" is out of stock. Only ${cartItem.stockQuantity} items remaining.`,
+          });
           setPaymentStatus("idle");
           return;
         }
@@ -329,10 +338,10 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
           transactionId: transactionId,
         });
         if (confirmationResponse.statusCode === 200) {
-          (toast.success as any)({
+          toast({
             title: "Success",
-            description: "Payment completed successfully",
-            duration: 1000,
+            description: "Payment successful",
+            variant: "success",
           });
           window.location.reload();
           setPaymentStatus("success");
@@ -415,7 +424,10 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       // Sau đó xóa order
       if (orderId) {
         await deleteOrder(orderId);
-        toast.success("Order cancelled successfully");
+        toast({
+          title: "Order Deleted",
+          description: "The existing order has been successfully deleted.",
+        });
       }
 
       // Reset state
@@ -426,10 +438,13 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       setIsOpen(false);
     } catch (error: any) {
       console.error("Error cancelling order:", error);
-      toast.error(
-        error.response?.data?.message ||
-          "Error cancelling order. Please try again."
-      );
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message ||
+          "Error cancelling order. Please try again.",
+        variant: "destructive",
+      });
     }
   };
   const handleCreateOrderClick = () => {
@@ -443,9 +458,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       // Kiểm tra số lượng trước khi tạo đơn hàng
       for (const cartItem of cartItems) {
         if (cartItem.quantity > cartItem.stockQuantity) {
-          toast.error(
-            `Sản phẩm "${cartItem.name}" không đủ số lượng trong kho. Chỉ còn ${cartItem.stockQuantity} sản phẩm.`
-          );
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: `Product "${cartItem.name}" is out of stock. Only ${cartItem.stockQuantity} items remaining.`,
+          });
           setPaymentStatus("idle");
           return;
         }
@@ -512,7 +529,11 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       });
 
       if (confirmationResponse.statusCode === 200) {
-        toast.success("Payment completed successfully");
+        toast({
+          title: "Success",
+          description: "Payment completed successfully",
+          variant: "default",
+        });
         window.location.reload();
         setPaymentStatus("success");
         setTimeout(resetPaymentState, 1000);
@@ -594,10 +615,14 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       });
 
       if (confirmationResponse.statusCode === 200) {
-        toast.success("Payment completed successfully");
+        toast({
+          title: "Success",
+          description: "Payment completed successfully",
+          variant: "default",
+        });
         window.location.reload();
         setPaymentStatus("success");
-        setTimeout(resetPaymentState, 1000);
+        setTimeout(resetPaymentState, 3000);
       }
     } catch (error: any) {
       console.error("Payment Error:", error);
@@ -612,22 +637,27 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className="relative">
+    <div className="fixed bottom-6 sm:bottom-8 md:bottom-16 right-6 sm:right-8 md:right-16 z-50">
+      <div className="relative group">
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="rounded-full w-16 h-16 flex items-center justify-center bg-sky-600"
+          className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg 
+                 flex items-center justify-center group transition-all duration-300 hover:scale-110 relative"
         >
           <ShoppingCart className="h-6 w-6" />
           {cartItems.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+            <span
+              className="absolute right-20 sm:right-24 bg-gray-800 text-white px-2 py-1 rounded 
+            text-sm sm:text-base opacity-0 group-hover:opacity-100 transition-opacity 
+            duration-300 whitespace-nowrap"
+            >
               {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
             </span>
           )}
         </Button>
 
         {isOpen && (
-          <div className="absolute bottom-20 right-0 w-96 bg-white rounded-lg shadow-xl p-4">
+          <div className="absolute bottom-20 right-0 w-96 bg-white rounded-lg shadow-2xl p-4 transform transition-all duration-300 animate-fadeIn">
             <h3 className="text-lg font-semibold mb-4">Shopping Cart</h3>
 
             {cartItems.length === 0 ? (

@@ -41,37 +41,51 @@ declare global {
 
 // Helper function to detect if running in mobile app webview
 const isMobileApp = (): boolean => {
-  if (typeof window === 'undefined') return false;
-  
+  if (typeof window === "undefined") return false;
+
   const userAgent = window.navigator.userAgent.toLowerCase();
-  return userAgent.includes('wv') || // Android WebView
-         userAgent.includes('mobileapp') || // Custom app identifier
-         window.ReactNativeWebView !== undefined; // React Native WebView
+  return (
+    userAgent.includes("wv") || // Android WebView
+    userAgent.includes("mobileapp") || // Custom app identifier
+    window.ReactNativeWebView !== undefined
+  ); // React Native WebView
 };
 
 // Define type for payment status data
 interface PaymentStatusData {
   orderId?: string | null;
   invoiceId?: string | null;
-  orderDetails?: any; // Replace 'any' with your orderDetails type if available
+  orderDetails?: any;
+  deepLink?: string;
 }
+
+// Helper function to generate deep link URL
+const generateDeepLink = (status: string, data: PaymentStatusData): string => {
+  const params = new URLSearchParams({
+    status,
+    orderId: data.orderId || "",
+    invoiceId: data.invoiceId || "",
+  });
+
+  return `https://www.VegaCity.com?${params.toString()}`;
+};
 
 // Helper function to communicate with mobile app
 const sendToMobileApp = (status: string, data: PaymentStatusData): void => {
+  const deepLink = generateDeepLink(status, data);
+  const messageData = {
+    ...data,
+    deepLink,
+    type: "PAYMENT_STATUS",
+    status,
+  };
+
   if (window.ReactNativeWebView) {
-    window.ReactNativeWebView.postMessage(JSON.stringify({
-      type: 'PAYMENT_STATUS',
-      status,
-      data
-    }));
+    window.ReactNativeWebView.postMessage(JSON.stringify(messageData));
   } else if (window.webkit?.messageHandlers?.paymentCallback) {
-    window.webkit.messageHandlers.paymentCallback.postMessage({
-      type: 'PAYMENT_STATUS',
-      status,
-      data
-    });
+    window.webkit.messageHandlers.paymentCallback.postMessage(messageData);
   } else if (window.Android) {
-    window.Android.onPaymentStatus(status, JSON.stringify(data));
+    window.Android.onPaymentStatus(status, JSON.stringify(messageData));
   }
 };
 
@@ -92,29 +106,33 @@ function OrderStatusContent() {
       const data: PaymentStatusData = {
         orderId: localStorage.getItem("orderId"),
         invoiceId: localStorage.getItem("invoiceId"),
-        orderDetails
+        orderDetails,
       };
-      
-      sendToMobileApp(isSuccess ? 'SUCCESS' : 'FAILURE', data);
+
+      sendToMobileApp(isSuccess ? "SUCCESS" : "FAILURE", data);
     }
   }, [isSuccess, orderDetails]);
 
   const handleContinue = (): void => {
     if (isMobileApp()) {
-      sendToMobileApp('COMPLETED', {});
+      const data: PaymentStatusData = {
+        orderId: localStorage.getItem("orderId"),
+        invoiceId: localStorage.getItem("invoiceId"),
+      };
+      sendToMobileApp("COMPLETED", data);
     } else {
       const etagId = localStorage.getItem("packageOrderId");
-      if (etagId) {
-        router.push('/');
-      } else {
-        router.push("/");
-      }
+      router.push("/");
     }
   };
 
   const handleFailure = (): void => {
     if (isMobileApp()) {
-      sendToMobileApp('CLOSE', {});
+      const data: PaymentStatusData = {
+        orderId: localStorage.getItem("orderId"),
+        invoiceId: localStorage.getItem("invoiceId"),
+      };
+      sendToMobileApp("CLOSE", data);
     } else {
       router.push("/");
     }
@@ -133,7 +151,8 @@ function OrderStatusContent() {
             <>
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <p className="text-gray-600 mb-4">
-                Order {localStorage.getItem("invoiceId")} payment was successful.
+                Order {localStorage.getItem("invoiceId")} payment was
+                successful.
               </p>
             </>
           ) : (
