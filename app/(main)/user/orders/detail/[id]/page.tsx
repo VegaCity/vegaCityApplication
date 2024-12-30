@@ -99,7 +99,138 @@ const OrderDetailPage = () => {
   }
 
   if (!order) return null;
+  const renderCustomerInformation = () => {
+    const isSaleTypePackage = order.saleType === "Package";
 
+    if (isSaleTypePackage) {
+      return (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl">Customer Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <User className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Customer Name
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.customer?.fullName}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <Mail className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Customer Email
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.customer?.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-start">
+                  <Phone className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      Customer Phone
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.customer?.phoneNumber}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <FileText className="h-5 w-5 text-gray-400 mt-1" />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">
+                      CCCD/Passport
+                    </p>
+                    <p className="mt-1 text-base text-gray-900">
+                      {order.customer?.cccdpassport}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // For non-cash payments, render customer information from a different source
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-xl">Customer Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="flex items-start">
+                <User className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Customer Name
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.packageOrder?.cusName || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <Mail className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Customer Email
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.packageOrder?.cusEmail || "N/A"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-start">
+                <Phone className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Customer Phone
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.packageOrder?.phoneNumber || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <FileText className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    CCCD/Passport
+                  </p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.packageOrder?.cusCccdpassport || "N/A"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-US", {
       year: "numeric",
@@ -254,7 +385,7 @@ const OrderDetailPage = () => {
             </div>
           </CardContent>
         </Card>
-        <Card className="mb-6">
+        {/* <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Customer Information</CardTitle>
           </CardHeader>
@@ -268,7 +399,7 @@ const OrderDetailPage = () => {
                       Customer Name
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.customer?.fullName}
+                      {order.packageOrder?.cusName}
                     </p>
                   </div>
                 </div>
@@ -280,7 +411,7 @@ const OrderDetailPage = () => {
                       Customer Email
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.customer?.email}
+                      {order.packageOrder?.cusEmail}
                     </p>
                   </div>
                 </div>
@@ -294,7 +425,7 @@ const OrderDetailPage = () => {
                       Customer Phone
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.customer?.phoneNumber}
+                      {order.packageOrder?.phoneNumber}
                     </p>
                   </div>
                 </div>
@@ -306,14 +437,15 @@ const OrderDetailPage = () => {
                       CCCD/Passport
                     </p>
                     <p className="mt-1 text-base text-gray-900">
-                      {order.customer?.cccdpassport}
+                      {order.packageOrder?.cusCccdpassport}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
+        {renderCustomerInformation()}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Seller Information</CardTitle>

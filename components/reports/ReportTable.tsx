@@ -12,7 +12,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ReportServices } from "@/components/services/reportServices";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "../ui/dialog";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -33,7 +40,28 @@ import {
 import { PencilIcon } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+const statusConfig: { [key: number]: { label: string; className: string } } = {
+  0: {
+    label: "Pending",
+    className:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  },
+  1: {
+    label: "Processing",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  },
+  2: {
+    label: "Done",
+    className:
+      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  },
+  3: {
+    label: "Cancel",
+    className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  },
+};
 interface ReportTableProps {
   limit?: number;
   title?: string;
@@ -66,6 +94,7 @@ interface ApiError {
   Error: string;
   TimeStamp: string;
 }
+
 const EditReportSchema = z.object({
   solution: z
     .string({ required_error: "Solution is required" })
@@ -74,6 +103,38 @@ const EditReportSchema = z.object({
   solveBy: z.string(),
   status: z.string(),
 });
+const ConfirmationDialog = ({
+  open,
+  onOpenChange,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) => {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Confirm Support</DialogTitle>
+          <DialogDescription>
+            Do you want to help with this report? By confirming, you will be
+            assigned to handle this issue.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button onClick={onConfirm}>Confirm</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const EditReportDialog = ({
   report,
   onSuccess,
@@ -99,7 +160,7 @@ const EditReportDialog = ({
     try {
       await ReportServices.editReport(report.id, {
         solution: values.solution,
-        status: parseInt(values.status),
+        status: 2,
         solveBy: values.solveBy,
       });
 
@@ -159,30 +220,6 @@ const EditReportDialog = ({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Status</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="1">Processing</SelectItem>
-                      <SelectItem value="2">Done</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <div className="flex justify-end space-x-2">
               <Button type="submit">Save Changes</Button>
             </div>
@@ -202,6 +239,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<ReportData | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const { toast } = useToast();
@@ -283,7 +321,46 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   useEffect(() => {
     fetchReports(currentPage);
   }, [currentPage]);
+  const handleEditClick = (report: ReportData) => {
+    setSelectedReport(report);
+    if (report.status === 0) {
+      setIsConfirmDialogOpen(true);
+    } else {
+      setIsEditDialogOpen(true);
+    }
+  };
 
+  const handleConfirmSupport = async () => {
+    if (!selectedReport) return;
+
+    try {
+      await ReportServices.editReport(selectedReport.id, {
+        status: 1, // Set to Processing
+        solveBy: "Cashier Web",
+        solution: selectedReport.solution || "",
+      });
+
+      await fetchReports(currentPage);
+      setIsConfirmDialogOpen(false);
+      setIsEditDialogOpen(true);
+    } catch (error: any) {
+      let errorMessage = "Failed to update report status";
+      if (error.response?.data) {
+        const apiError = error.response.data as ApiError;
+        errorMessage = apiError.Error;
+      }
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+    }
+  };
+
+  const handleCancelSupport = () => {
+    setIsConfirmDialogOpen(false);
+    setSelectedReport(null);
+  };
   const handleEdit = (report: ReportData) => {
     setSelectedReport(report);
     setIsEditDialogOpen(true);
@@ -323,101 +400,111 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   const filteredReports = limit ? reportList.slice(0, limit) : reportList;
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-2xl font-semibold">{title || "Reports"}</h3>
-      <Table>
-        <TableCaption>
-          {metadata &&
-            `Showing ${(currentPage - 1) * pageSize + 1}-${Math.min(
-              currentPage * pageSize,
-              metadata.total
-            )} of ${metadata.total} reports • Page ${metadata.page} of ${
-              metadata.totalPage
-            }`}
-        </TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-16">NO</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Creator</TableHead>
-            <TableHead className="hidden md:table-cell w-24">Status</TableHead>
-            <TableHead className="w-24">Solution</TableHead>
-            <TableHead className="w-24">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredReports.map((report, i) => {
-            const statusInfo = getStatusInfo(report.status);
-            return (
-              <TableRow key={report.id}>
-                <TableCell>{(currentPage - 1) * pageSize + i + 1}</TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {report.description}
-                </TableCell>
-                <TableCell>{report.creator}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  <Badge className={statusInfo.className}>
-                    {statusInfo.label}
-                  </Badge>
-                </TableCell>
-                <TableCell>{report.solution}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleEdit(report)}
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                  </Button>
-                </TableCell>
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-16">NO</TableHead>
+                <TableHead className="w-1/3">Description</TableHead>
+                <TableHead>Creator</TableHead>
+                <TableHead className="w-24">Status</TableHead>
+                <TableHead className="w-1/4">Solution</TableHead>
+                <TableHead className="w-16 text-right">Actions</TableHead>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-      {metadata && (
-        <div className="flex items-center justify-center space-x-2 mt-4">
-          {metadata.page > 1 && (
+            </TableHeader>
+            <TableBody>
+              {filteredReports.map((report, i) => (
+                <TableRow key={report.id}>
+                  <TableCell>{(currentPage - 1) * 10 + i + 1}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {report.description}
+                  </TableCell>
+                  <TableCell>{report.creator}</TableCell>
+                  <TableCell>
+                    <Badge className={statusConfig[report.status]?.className}>
+                      {statusConfig[report.status]?.label}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {report.solution}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditClick(report)}
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {metadata && metadata.totalPage > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-4">
             <Button
               variant="outline"
-              onClick={() => handlePageChange(metadata.page - 1)}
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
             >
               Previous
             </Button>
-          )}
-          {Array.from(
-            { length: Math.min(metadata.totalPage, 5) },
-            (_, i) => metadata.page - 2 + i
-          )
-            .filter((p) => p > 0 && p <= metadata.totalPage)
-            .map((pageNum) => (
+            {Array.from(
+              { length: Math.min(5, metadata.totalPage) },
+              (_, i) =>
+                i +
+                Math.max(1, Math.min(currentPage - 2, metadata.totalPage - 4))
+            ).map((pageNum) => (
               <Button
                 key={pageNum}
-                variant={pageNum === metadata.page ? "default" : "outline"}
-                onClick={() => handlePageChange(pageNum)}
+                variant={pageNum === currentPage ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCurrentPage(pageNum)}
               >
                 {pageNum}
               </Button>
             ))}
-          {metadata.page < metadata.totalPage && (
             <Button
               variant="outline"
-              onClick={() => handlePageChange(metadata.page + 1)}
+              size="sm"
+              onClick={() =>
+                setCurrentPage((p) => Math.min(metadata.totalPage, p + 1))
+              }
+              disabled={currentPage === metadata.totalPage}
             >
               Next
             </Button>
-          )}
-        </div>
-      )}
-      {selectedReport && (
-        <EditReportDialog
-          report={selectedReport}
-          onSuccess={() => fetchReports(currentPage)}
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-        />
-      )}
-    </div>
+          </div>
+        )}
+        {selectedReport && (
+          <ConfirmationDialog
+            open={isConfirmDialogOpen}
+            onOpenChange={setIsConfirmDialogOpen}
+            onConfirm={handleConfirmSupport}
+            onCancel={handleCancelSupport}
+          />
+        )}
+
+        {selectedReport && (
+          <EditReportDialog
+            report={selectedReport}
+            onSuccess={() => fetchReports(currentPage)}
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+          />
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
