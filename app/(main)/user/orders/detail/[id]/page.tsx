@@ -370,7 +370,6 @@ const OrderDetailPage = () => {
                   {formatAmount(orderDetail?.data?.balanceAfter || 0)}
                 </p>
               </div>
-
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center text-gray-500">
                   <CreditCard className="h-5 w-5 mr-2" />
@@ -382,69 +381,21 @@ const OrderDetailPage = () => {
                   )}
                 </p>
               </div>
+              {order.saleType === "FeeChargeCreate" ? (
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center text-gray-500">
+                    <CreditCard className="h-5 w-5 mr-2" />
+                    <span>Balance History After</span>
+                  </div>
+                  <p className="text-xl font-medium">
+                    {formatAmount(orderDetail?.data?.balanceHistoryAfter || 0)}
+                  </p>
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </Card>
-        {/* <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl">Customer Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <User className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Customer Name
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder?.cusName}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-start">
-                  <Mail className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Customer Email
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder?.cusEmail}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <Phone className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      Customer Phone
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder?.phoneNumber}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start">
-                  <FileText className="h-5 w-5 text-gray-400 mt-1" />
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">
-                      CCCD/Passport
-                    </p>
-                    <p className="mt-1 text-base text-gray-900">
-                      {order.packageOrder?.cusCccdpassport}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
         {renderCustomerInformation()}
         <Card className="mb-6">
           <CardHeader>
