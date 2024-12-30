@@ -224,24 +224,33 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
   }, [params.id, isOwnerMode]); // Added isOwnerMode to dependency array
 
   // Filter menu items remains the same
-  const filteredMenu = menuItems.filter((item) => {
-    const matchesDateFilter =
-      selectedDateFilter === "all" || item.dateFilter === selectedDateFilter;
-    const matchesCategory =
-      selectedCategory === "all" || item.categoryId === selectedCategory;
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+  const filteredMenu = menuItems
+    .filter((item) => {
+      const matchesDateFilter =
+        selectedDateFilter === "all" || item.dateFilter === selectedDateFilter;
+      const matchesCategory =
+        selectedCategory === "all" || item.categoryId === selectedCategory;
+      const matchesSearch = item.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
-    // Different status filtering based on mode
-    const isStatusValid = isOwnerMode
-      ? true // Show all items in owner mode
-      : item.status === "Active"; // Only show active items in staff mode
+      // Different status filtering based on mode
+      const isStatusValid = isOwnerMode
+        ? true // Show all items in owner mode
+        : item.status === "Active"; // Only show active items in staff mode
 
-    return (
-      matchesSearch && matchesDateFilter && matchesCategory && isStatusValid
-    );
-  });
+      return (
+        matchesSearch && matchesDateFilter && matchesCategory && isStatusValid
+      );
+    })
+    .sort((a, b) => {
+      // In manager mode, sort by status (Active first)
+      if (isOwnerMode) {
+        if (a.status === b.status) return 0;
+        return a.status === "Active" ? -1 : 1;
+      }
+      return 0; // No sorting in staff mode
+    });
   const handleDelete = async (itemId: string) => {
     try {
       setIsDeleting(true);
