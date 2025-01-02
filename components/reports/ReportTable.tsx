@@ -402,7 +402,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle className="text-2xl">{title || "Reports Table"}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
