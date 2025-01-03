@@ -99,6 +99,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
   const [isOwnerMode, setIsOwnerMode] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const cartRef = useRef<CartRef>(null);
+  const cartComponentRef = useRef<HTMLDivElement | null>(null); // Reference for the div to scroll to
   const [itemToUpdate, setItemToUpdate] = useState<Product | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateFormData, setUpdateFormData] = useState<ProductPatch>({
@@ -405,6 +406,14 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
     </div>
   );
 
+  const handleAddToCart = (item: MenuItem) => {
+    cartRef.current?.addToCart({
+      ...item,
+      quantity: item.quantity,
+    });
+    cartComponentRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   if (loading)
     return (
       <div>
@@ -588,12 +597,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                             <button
                               className="flex-1 py-2.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors 
                               flex items-center justify-center gap-2 font-semibold"
-                              onClick={() =>
-                                cartRef.current?.addToCart({
-                                  ...item,
-                                  quantity: item.quantity,
-                                })
-                              }
+                              onClick={() => handleAddToCart(item)}
                             >
                               <ShoppingCart size={18} />
                               Buy
@@ -638,7 +642,7 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
       </div>
 
       {/* Shopping Cart */}
-      <div className="fixed bottom-4 right-4 z-50">
+      <div ref={cartComponentRef} className="fixed bottom-4 right-4 z-50">
         {!isOwnerMode && <ShoppingCartComponent ref={cartRef} />}
       </div>
       {itemToDelete && <DeleteConfirmationDialog itemId={itemToDelete} />}
