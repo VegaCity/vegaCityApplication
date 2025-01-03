@@ -18,11 +18,28 @@ import { Loader } from "@/components/loader/Loader";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 
-
 // Services for User Deposit Approval (You'll need to create this)
 import { AxiosError } from "axios";
 import { UserServices } from "../services/User/userServices";
 import { UserDepositApproval } from "@/types/user/user";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 interface UserDepositTableProps {
   limit?: number;
@@ -65,9 +82,10 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
   const handleApproveDeposit = (deposit: UserDepositApproval) => {
     setApprovalLoading(true);
     if (deposit.transactionId) {
-      UserServices
-      .updateStatusDepositApproval
-      (deposit.transactionId, "APPROVED")
+      UserServices.updateStatusDepositApproval(
+        deposit.transactionId,
+        "APPROVED"
+      )
         .then((res) => {
           toast({
             variant: "success",
@@ -78,7 +96,8 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
         .catch((err) => {
           toast({
             variant: "destructive",
-            title: err?.response?.data.messageResponse || err?.response?.data.Error,
+            title:
+              err?.response?.data.messageResponse || err?.response?.data.Error,
             description: "Some errors have occurred!",
           });
         })
@@ -91,23 +110,24 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
   const handleRejectDeposit = (deposit: UserDepositApproval) => {
     setApprovalLoading(true);
     if (deposit.transactionId) {
-      UserServices
-      .updateStatusDepositApproval
-      (deposit.transactionId, "REJECTED")
+      UserServices.updateStatusDepositApproval(
+        deposit.transactionId,
+        "REJECTED"
+      )
         .then((res) => {
           toast({
             variant: "destructive",
-            title: res?.data.messageResponse ||  "User rejected!",
-            description: `Deposit for ${deposit.userName
-            } rejected`,
+            title: res?.data.messageResponse || "User rejected!",
+            description: `Deposit for ${deposit.userName} rejected`,
           });
         })
         .catch((err) => {
-          if(err instanceof AxiosError){
-
+          if (err instanceof AxiosError) {
             toast({
               variant: "destructive",
-              title: err?.response?.data.messageResponse || err?.response?.data.Error,
+              title:
+                err?.response?.data.messageResponse ||
+                err?.response?.data.Error,
               description: "Some errors have occurred!",
             });
           }
@@ -139,7 +159,6 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
           <TableHeader>
             <TableRow>
               <TableHead className="text-white">#</TableHead>
-              <TableHead className="text-white">Transaction ID</TableHead>
               <TableHead className="text-white">User Name</TableHead>
               <TableHead className="text-white">User Email</TableHead>
               <TableHead className="text-white">Current Balance</TableHead>
@@ -152,10 +171,18 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
               <TableRow key={deposit.transactionId}>
                 <TableCell>{i + 1}</TableCell>
                 <TableCell>
-                  <p className="font-bold">{deposit.transactionId}</p>
-                </TableCell>
-                <TableCell>
-                  <p className="font-semibold">{deposit.userName}</p>
+                  <div className="flex items-center space-x-2">
+                    <p className="font-semibold">{deposit.userName}</p>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info color="blue" className="w-3 h-3" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        TransactionId:{" "}
+                        <p className="font-bold">{deposit.transactionId}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <p className="text-muted-foreground">{deposit.userEmail}</p>
@@ -170,21 +197,85 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
                     {formatVNDCurrencyValue(deposit.balanceHistory)}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <div className="flex space-x-2">
-                    <Badge 
+                    <Badge
                       onClick={() => handleApproveDeposit(deposit)}
-                      className="cursor-pointer hover:bg-green-600"
+                      className="cursor-pointer bg-green-500 hover:bg-green-600"
                     >
                       Approve
                     </Badge>
-                    <Badge 
-                      variant="destructive" 
+                    <Badge
+                      variant="destructive"
                       onClick={() => handleRejectDeposit(deposit)}
-                      className="cursor-pointer hover:bg-red-700"
+                      className="cursor-pointer bg-red-600 hover:bg-red-700"
                     >
                       Reject
                     </Badge>
+                  </div>
+                </TableCell> */}
+                <TableCell>
+                  <div className="flex space-x-2">
+                    {/* Approve Button */}
+                    <AlertDialog>
+                      <AlertDialogTrigger>
+                        <Badge className="cursor-pointer bg-green-500 hover:bg-green-600">
+                          Approve
+                        </Badge>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are sure for delete this user -{deposit.userEmail}-?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will deflag in
+                            list!
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleApproveDeposit(deposit)}
+                            className="cursor-pointer bg-blue-500 hover:bg-blue-600"
+                          >
+                            Confirm
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    {/* Reject Button */}
+                    <AlertDialog>
+                      <AlertDialogTrigger>
+                        <Badge
+                          variant="destructive"
+                          className="cursor-pointer bg-red-600 hover:bg-red-700"
+                        >
+                          Reject
+                        </Badge>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are sure for delete this user -{deposit.userEmail}-?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will deflag in
+                            list!
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleRejectDeposit(deposit)}
+                            className="cursor-pointer bg-red-600 hover:bg-red-700"
+                          >
+                            Confirm
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </TableRow>

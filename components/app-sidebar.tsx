@@ -28,6 +28,8 @@ import {
   LogOut,
   Dot,
   CheckCheck,
+  MailWarning,
+  WalletCards,
 } from "lucide-react";
 
 import {
@@ -190,7 +192,7 @@ export function AppSidebar() {
     },
     {
       name: "VCards",
-      icon: Tag,
+      icon: WalletCards,
       href: navigatePage("package-items"),
       roles: ["CashierWeb"],
     },
@@ -215,7 +217,7 @@ export function AppSidebar() {
     // },
     {
       name: "Reports",
-      icon: Wallet,
+      icon: MailWarning,
       href: navigatePage("reports"),
       roles: ["CashierWeb"],
     },
@@ -248,7 +250,7 @@ export function AppSidebar() {
       ],
     },
     {
-      name: "WithDraw",
+      name: "Withdraw",
       icon: ArrowRightLeft,
       href: navigatePage("withdraws"),
       roles: ["CashierWeb"],

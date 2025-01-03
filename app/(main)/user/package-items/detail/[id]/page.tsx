@@ -76,8 +76,13 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  //Loading Statew
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isDone, setIsDone] = useState(false);
+  const [isDoneUpsRFID, setIsDoneUpsRFID] = useState(false);
+  const [isConfirmPayment, setIsConfirmPayment] = useState(false);
+
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isProcessingPopupOpen, setIsProcessingPopupOpen] = useState(false);
   const [shouldShowAlertDialog, setShouldShowAlertDialog] = useState(false);
@@ -108,9 +113,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         title: "RFID Updated",
         description: "RFID has been updated successfully",
       });
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
+      setIsDoneUpsRFID(true);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 3000);
       setIsUpdateRFIDDialogOpen(false);
       await PackageItemServices.getPackageItemById({
         id: packageItemId as string,
@@ -398,9 +404,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         setShouldShowAlertDialog(false);
         setIsProcessingPopupOpen(false);
         setPendingInvoiceId(null);
-        setTimeout(() => {
-          window.location.reload();
-        }, 4000);
+        setIsConfirmPayment(true);
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 4000);
       } else {
         throw new Error(result.messageResponse || "Failed to confirm payment");
       }
@@ -581,7 +588,15 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     };
 
     fetchEtag();
-  }, [params?.id, form, formCharge, pathname, toast]);
+  }, [
+    params?.id,
+    form,
+    formCharge,
+    pathname,
+    toast,
+    isDoneUpsRFID,
+    isConfirmPayment,
+  ]);
   const getEncryptedId = (originalId: string) => {
     try {
       return encryptId(originalId);
@@ -632,8 +647,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
         title: "VCard Activated",
         description: "The VCard has been successfully activated.",
       });
-
-      window.location.reload();
+      setIsDone(true);
+      // window.location.reload();
     } catch (err: any) {
       // Kiểm tra nếu response có cấu trúc mong muốn
       if (err.response?.data) {
@@ -983,30 +998,38 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                 onClick={handleActivateEtag}
                 disabled={isLoading}
               >
-                {isLoading
-                  ? "Processing..."
-                  : isEditing
-                  ? "Confirm"
-                  : "Activate"}
+                {isLoading ? (
+                  <Loader isLoading={isLoading} />
+                ) : isEditing ? (
+                  "Confirm"
+                ) : (
+                  "Activate"
+                )}
               </Button>
             ) : (
-              <>
-                <Button
-                  className="mt-12 px-6 py-2"
-                  onClick={handleConfirmActivation}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Activating..." : "Confirm Activation"}
-                </Button>
-                <Button
-                  className="mt-12 px-6 py-2"
-                  onClick={handleCancelActivation}
-                  disabled={isLoading}
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-              </>
+              !isDone && (
+                <>
+                  <Button
+                    className="mt-12 px-6 py-2"
+                    onClick={handleConfirmActivation}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader isLoading={isLoading} />
+                    ) : (
+                      "Confirm Activation"
+                    )}
+                  </Button>
+                  <Button
+                    className="mt-12 px-6 py-2"
+                    onClick={handleCancelActivation}
+                    disabled={isLoading}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )
             )}
           </>
         )}

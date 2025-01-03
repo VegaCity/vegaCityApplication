@@ -84,7 +84,8 @@ const Breadcrumb = () => {
   const pathname = usePathname();
 
   const regex =
-    /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+    /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/; // UUID Regex
+  const idPackageItemRgx = /^[a-zA-Z0-9]{22}$/; // Package Item ID Regex
 
   const disableLabel = (label: string) => {
     if (label === "admin") return true;
@@ -130,7 +131,7 @@ const Breadcrumb = () => {
           className="flex items-center bg-slate-500 bg-opacity-30 dark:bg-black/15 p-2 rounded-lg"
         >
           {item.isLast ? (
-            regex.test(item.label) ? (
+            regex.test(item.label) || idPackageItemRgx.test(item.label) ? (
               <span className={"hidden cursor-not-allowed"}>{item.label}</span>
             ) : (
               <span className="text-muted-foreground">{item.label}</span>

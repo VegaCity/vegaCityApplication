@@ -169,13 +169,16 @@ const UserSessionTable = ({ limit, title }: UserSessionTableProps) => {
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-row gap-2">
+                    <strong>{session.userName}</strong>
                     <Tooltip>
                       <TooltipTrigger>
-                        <Info color="blue" size={12} />
+                        <Info color="blue" className="w-3 h-3" />
                       </TooltipTrigger>
-                      <TooltipContent>UserId: {session.userId}</TooltipContent>
+                      <TooltipContent>
+                        UserId:
+                        <p className="font-bold">{session.userId}</p>
+                      </TooltipContent>
                     </Tooltip>
-                    <strong>{session.userName}</strong>
                   </div>
                 </TableCell>
                 <TableCell>

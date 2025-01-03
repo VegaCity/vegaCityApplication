@@ -101,7 +101,7 @@ export const PopoverActionTable = <T extends BaseType>({
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-blue-500 hover:bg-blue-600"
+                    className="bg-red-600 hover:bg-blue-700"
                     onClick={() => handleDelete(item)}
                   >
                     Confirm
