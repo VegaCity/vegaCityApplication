@@ -182,7 +182,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
     setShowCashConfirmation(false);
     setCartItems([]);
     setIsOpen(false);
-    window.location.reload();
+    // window.location.reload();
   };
   const initiatePayment = async (paymentMethod: string, invoiceId: string) => {
     try {
@@ -343,7 +343,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
             description: "Payment successful",
             variant: "success",
           });
-          window.location.reload();
+          // window.location.reload();
           setPaymentStatus("success");
           setTimeout(resetPaymentState, 1000);
         }
@@ -534,7 +534,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
           description: "Payment completed successfully",
           variant: "default",
         });
-        window.location.reload();
+        // window.location.reload();
         setPaymentStatus("success");
         setTimeout(resetPaymentState, 1000);
       }
@@ -620,7 +620,7 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
           description: "Payment completed successfully",
           variant: "default",
         });
-        window.location.reload();
+        // window.location.reload();
         setPaymentStatus("success");
         setTimeout(resetPaymentState, 3000);
       }
@@ -641,14 +641,14 @@ const ShoppingCartComponent = forwardRef<CartRef>((props, ref) => {
       <div className="relative group">
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg 
+          className="w-18 h-18 sm:w-16 sm:h-16 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg 
                  flex items-center justify-center group transition-all duration-300 hover:scale-110 relative"
         >
-          <ShoppingCart className="h-6 w-6" />
+          <ShoppingCart size={10} className="h-10 w-10" />
           {cartItems.length > 0 && (
             <span
-              className="absolute right-20 sm:right-24 bg-gray-800 text-white px-2 py-1 rounded 
-            text-sm sm:text-base opacity-0 group-hover:opacity-100 transition-opacity 
+              className="absolute right-20 sm:right-7 sm:top-8 bg-black/30 text-white rounded-full sm:rounded-full
+            text-sm sm:text-sm sm:size-6 opacity-0 group-hover:opacity-100 transition-opacity 
             duration-300 whitespace-nowrap"
             >
               {cartItems.reduce((sum, item) => sum + item.quantity, 0)}

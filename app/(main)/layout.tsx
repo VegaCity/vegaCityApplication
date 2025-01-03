@@ -10,9 +10,10 @@ import storeProductBackground from "@/img/storeProductBackground.jpg";
 import { AuthServices } from "@/components/services/authServices";
 import { AxiosError } from "axios";
 import { toast } from "@/components/ui/use-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader } from "@/components/loader/Loader";
 import { Button } from "@/components/ui/button";
+import ShoppingCartComponent, { CartRef } from "@/components/cart/cart";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -23,6 +24,7 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
   }
   const storeType: string | null = localStorage.getItem("storeType"); //storeType is a string
   const isSession = localStorage.getItem("isSession") === "true";
+  const cartRef = useRef<CartRef>(null);
 
   const disableUI = !isSession
     ? "pointer-events-none opacity-50 filter grayscale blur-sm relative before:absolute before:inset-0 before:bg-black/10 before:content-['']"
@@ -72,6 +74,9 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => {
           {/* Centered children content */}
           <div className="flex p-5 items-center justify-center">
             <div className="w-full max-w-full">{children}</div>
+            {/* <div>
+              <ShoppingCartComponent ref={cartRef} />
+            </div> */}
             {/* Adjust the max-width to your preference */}
           </div>
         </div>

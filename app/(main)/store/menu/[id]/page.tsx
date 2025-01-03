@@ -638,7 +638,9 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
       </div>
 
       {/* Shopping Cart */}
-      {!isOwnerMode && <ShoppingCartComponent ref={cartRef} />}
+      <div className="fixed bottom-4 right-4 z-50">
+        {!isOwnerMode && <ShoppingCartComponent ref={cartRef} />}
+      </div>
       {itemToDelete && <DeleteConfirmationDialog itemId={itemToDelete} />}
       <ProductUpdateDialog
         open={isProductUpdateDialogOpen}

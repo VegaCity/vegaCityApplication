@@ -49,6 +49,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [packageData, setPackageData] = useState<Package | null>(null);
   const [imageUploaded, setImageUploaded] = useState<string | null>("");
+  const [prevImage, setPrevImage] = useState<string | null>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // const pkg = packageList.find((pkg) => pkg.id === params.id);
@@ -98,12 +99,13 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
 
   const handleSubmit = async (data: EditPackageFormValues) => {
     setIsSubmitting(true);
+    console.log(imageUploaded, "imageUploaded");
     try {
       // Assuming you have an update method in PackageServices
       console.log(data, "dataaaaaa");
       await PackageServices.editPackage(params.id, {
         ...data,
-        imageUrl: imageUploaded,
+        imageUrl: imageUploaded ? imageUploaded : data.imageUrl,
       });
       toast({
         variant: "success",
@@ -128,6 +130,7 @@ const PackageEditPage = ({ params }: PackageEditPageProps) => {
         console.log(response.data.data, "Get package details");
         const pkgData: Package = response.data.data;
         setPackageData(pkgData);
+        setPrevImage(pkgData.imageUrl || null);
         if (pkgData) {
           form.reset({
             name: pkgData.name,
