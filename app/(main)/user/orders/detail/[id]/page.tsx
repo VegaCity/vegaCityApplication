@@ -342,6 +342,15 @@ const OrderDetailPage = () => {
                   </div>
                 </div>
               </div>
+              <div className="flex items-start">
+                <Receipt className="h-5 w-5 text-gray-400 mt-1" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">Discount</p>
+                  <p className="mt-1 text-base text-gray-900">
+                    {order.promotionOrders[0]?.discountAmount}
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

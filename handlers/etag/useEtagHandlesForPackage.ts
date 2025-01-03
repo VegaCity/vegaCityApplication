@@ -140,13 +140,19 @@ export const useEtagHandlers = ({
 
       if (response.status === 201) {
         const vcardData = response.data;
-        toast({
-          title: "Success",
-          description: "VCard generated successfully.",
-        });
-        setTimeout(() => {
+        const paymentMethod = customerForm.getValues("paymentMethod");
+
+        if (paymentMethod.toLowerCase() === "cash") {
+          toast({
+            title: "Success",
+            description: "VCard generated successfully.",
+          });
+          setTimeout(() => {
+            router.push("/user/package-items");
+          }, 2000);
+        } else {
           router.push("/user/package-items");
-        }, 2000);
+        }
       } else {
         throw new Error(
           `Failed to generate VCard for adult. Status code: ${response.status}`
@@ -175,13 +181,19 @@ export const useEtagHandlers = ({
 
       if (response.status === 201) {
         const vcardData = response.data;
-        toast({
-          title: "Success",
-          description: "VCard generated successfully.",
-        });
-        setTimeout(() => {
+        const paymentMethod = customerForm.getValues("paymentMethod");
+
+        if (paymentMethod.toLowerCase() === "cash") {
+          toast({
+            title: "Success",
+            description: "VCard generated successfully.",
+          });
+          setTimeout(() => {
+            router.push("/user/package-items");
+          });
+        } else {
           router.push("/user/package-items");
-        });
+        }
       } else {
         throw new Error(
           `Failed to generate VCard for minor. Status code: ${response.status}`
