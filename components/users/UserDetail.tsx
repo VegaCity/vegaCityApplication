@@ -150,7 +150,11 @@ const UserDetail = ({ params }: UserDetailProps) => {
                   <strong>Gender:</strong>
                 </TableCell>
                 <TableCell>
-                  {userDetail.gender === 1 ? "Male" : "Female"}
+                  {userDetail.gender === 0
+                    ? "Male"
+                    : userDetail.gender === 1
+                    ? "Female"
+                    : "Other"}
                 </TableCell>
               </TableRow>
               <TableRow>
