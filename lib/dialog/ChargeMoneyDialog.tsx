@@ -235,6 +235,7 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
                 })}
                 placeholder="Enter CCCD or Passport number"
                 className="h-12 rounded-lg border-gray-300 focus:ring-blue-500 transition duration-200 ease-in-out"
+                readOnly
               />
             </div>
 
