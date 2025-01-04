@@ -25,6 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import handleImageFileChange from "@/components/uploadImageToFirebaseStorage/UploadImage";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { handlePlusOneDayFromBe } from "@/lib/utils/convertDatePlusOne";
 import { userAccountFormSchema, UserAccountFormValues } from "@/lib/validation";
 import { useFirebase } from "@/providers/FirebaseProvider";
@@ -89,6 +90,35 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
     },
   });
 
+  const handleSubmit = async (data: UserAccountFormValues) => {
+    const { birthday, ...rest } = data;
+    // console.log(birthday, "birthdayyyyyy");
+    // console.log(gender, "gender");
+    // const renderGenderToNumber: number = handleGenderToBe(gender as string);
+
+    setIsSubmitting(true);
+    try {
+      const userUpdated = await UserServices.updateUserById(params.id, {
+        ...rest,
+        imageUrl: imageUploaded ? imageUploaded : data.imageUrl,
+      });
+      toast({
+        variant: "success",
+        title: "User has been updated successfully",
+        description: `User ${data.fullName} was updated.`,
+      });
+      if (userUpdated) {
+        router.back();
+      }
+    } catch (err) {
+      if (err instanceof AxiosError) {
+        setError(err ? err.response?.data.Error : "An unknown error occurred");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
@@ -139,35 +169,6 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
     };
     fetchUserData();
   }, [params.id, toast]);
-
-  const handleSubmit = async (data: UserAccountFormValues) => {
-    const { birthday, ...rest } = data;
-    // console.log(birthday, "birthdayyyyyy");
-    // console.log(gender, "gender");
-    // const renderGenderToNumber: number = handleGenderToBe(gender as string);
-
-    setIsSubmitting(true);
-    try {
-      const userUpdated = await UserServices.updateUserById(params.id, {
-        ...rest,
-        imageUrl: imageUploaded,
-      });
-      toast({
-        variant: "success",
-        title: "User has been updated successfully",
-        description: `User ${data.fullName} was updated.`,
-      });
-      if (userUpdated) {
-        router.back();
-      }
-    } catch (err) {
-      if (err instanceof AxiosError) {
-        setError(err ? err.response?.data.Error : "An unknown error occurred");
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   if (isLoading)
     return (
@@ -426,9 +427,13 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                           <div className="relative">
                             <Image
                               className="relative"
-                              src={imageUploaded || field.value || ""}
+                              src={
+                                imageUploaded ||
+                                validImageUrl(field.value) ||
+                                ""
+                              }
                               alt={field.value || "image"}
-                              width={350}
+                              width={300}
                               height={250}
                               // onLoadingComplete={() => setIsLoadingImageUpload(false)} // Set loading to false when loading completes
                             />

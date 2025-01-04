@@ -222,7 +222,7 @@ export const userAccountFormSchema = z.object({
     .string()
     .min(5, { message: "Address at least 5 characters" })
     .max(200, { message: "Address at least 5 characters" }),
-  description: z.string().min(1).nullable(),
+  description: z.string().nullable(),
   phoneNumber: z
     .string()
     .regex(
