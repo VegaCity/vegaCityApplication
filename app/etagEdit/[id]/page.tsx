@@ -116,10 +116,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
             },
           ],
         });
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "An unknown error occurred"
-        );
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.data?.Error || "Failed to search vcard , try again";
+        setError(errorMessage);
         toast({
           title: "Error",
           description: "Failed to load ETag details",
