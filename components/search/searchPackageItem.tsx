@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
-// import { useHistory } from "react-router-dom"; // Use useHistory for programmatic navigation
+import { useRouter } from "next/navigation"; // Changed from next/router
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,13 +11,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PackageItemServices } from "../services/Package/packageItemService";
 
 const SearchPackageItem = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [lastSearched, setLastSearched] = useState("");
   const { toast } = useToast();
-  //   const history = useHistory(); // Access programmatic navigation
 
+  const [searchQuery, setSearchQuery] = useState("");
   useEffect(() => {
     const savedId = localStorage.getItem("packageItemId");
     if (savedId) {
@@ -33,28 +35,40 @@ const SearchPackageItem = () => {
     try {
       setIsLoading(true);
       setError("");
-      console.log("Initiating search with ID:", id);
+      console.log("Initiating search with ID or RFID:", id);
 
-      const response = await PackageItemServices.getPackageItemById({
-        id: id.trim(),
-      });
+      const searchParams =
+        id.trim().length === 10 ? { rfId: id.trim() } : { id: id.trim() };
+
+      let response = await PackageItemServices.getPackageItemById(searchParams);
 
       if (response.data?.data) {
-        localStorage.setItem("packageItemId", id.trim());
-        setLastSearched(id.trim());
+        const packageId = response.data.data.id;
 
-        toast({
-          title: "Success",
-          description: "Package item found",
-          variant: "default",
-        });
+        if (searchParams.rfId && packageId) {
+          response = await PackageItemServices.getPackageItemById({
+            id: packageId,
+          });
+        }
 
-        // history.push({
-        //   pathname: "/etagEdit",
-        //   state: { packageItemId: id.trim() },
-        // });
+        if (response.data?.data) {
+          localStorage.setItem("packageItemId", packageId);
+          setLastSearched(packageId);
+
+          toast({
+            title: "Success",
+            description: "Package item found",
+            variant: "default",
+          });
+
+          router.push(`/etagEdit/${packageId}`);
+        } else {
+          setError("No package item found with the provided ID or RFID");
+          localStorage.removeItem("packageItemId");
+          setLastSearched("");
+        }
       } else {
-        setError("No package item found with the provided ID");
+        setError("No package item found with the provided ID or RFID");
         localStorage.removeItem("packageItemId");
         setLastSearched("");
       }
