@@ -37,29 +37,36 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { PencilIcon } from "lucide-react";
+import { Info, PencilIcon } from "lucide-react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const statusConfig: { [key: number]: { label: string; className: string } } = {
   0: {
     label: "Pending",
     className:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      "border-yellow-400 bg-yellow-100 hover:bg-yellow-400 text-yellow-500 hover:text-white",
   },
   1: {
     label: "Processing",
-    className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+    className:
+      "border-blue-400 bg-blue-100 hover:bg-blue-400 text-blue-500 hover:text-white",
   },
   2: {
     label: "Done",
     className:
-      "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      "border-green-400 bg-green-100 hover:bg-green-400 text-green-500 hover:text-white",
   },
   3: {
     label: "Cancel",
-    className: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+    className:
+      "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-white",
   },
 };
 interface ReportTableProps {
@@ -414,15 +421,22 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
                 <TableHead>Creator</TableHead>
                 <TableHead className="w-24">Status</TableHead>
                 <TableHead className="w-1/4">Solution</TableHead>
-                <TableHead className="w-16 text-right">Actions</TableHead>
+                {/* <TableHead className="w-16 text-right">Actions</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredReports.map((report, i) => (
                 <TableRow key={report.id}>
                   <TableCell>{(currentPage - 1) * 10 + i + 1}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {report.description}
+                  <TableCell>
+                    <Tooltip>
+                      <div className="max-w-xs">
+                        <TooltipTrigger className="max-w-xs truncate">
+                          {report.description}
+                        </TooltipTrigger>
+                        <TooltipContent>{report.description}</TooltipContent>
+                      </div>
+                    </Tooltip>
                   </TableCell>
                   <TableCell>{report.creator}</TableCell>
                   <TableCell>
@@ -430,10 +444,17 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
                       {statusConfig[report.status]?.label}
                     </Badge>
                   </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {report.solution}
+                  <TableCell>
+                    <Tooltip>
+                      <div className="max-w-xs">
+                        <TooltipTrigger className="max-w-xs truncate">
+                          {report.solution}
+                        </TooltipTrigger>
+                        <TooltipContent>{report.solution}</TooltipContent>
+                      </div>
+                    </Tooltip>
                   </TableCell>
-                  <TableCell className="text-right">
+                  {/* <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -442,7 +463,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
                       <PencilIcon className="h-4 w-4" />
                       <span className="sr-only">Edit</span>
                     </Button>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>

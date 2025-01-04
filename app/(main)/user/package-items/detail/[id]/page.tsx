@@ -70,6 +70,7 @@ import { useRouter, usePathname } from "next/navigation";
 import CustomerStatusField from "@/components/field/customerField";
 import { Loader } from "@/components/loader/Loader";
 import { decryptId, encryptId } from "@/utils/encryption";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
@@ -920,7 +921,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       <FormControl>
                         <Input
                           className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          {...form.register("wallets.0.balance")}
+                          // {...form.register("wallets.0.balance")}
+                          value={formatVNDCurrencyValue(
+                            form.getValues("wallets.0.balance")
+                          )}
                           readOnly
                         />
                       </FormControl>
@@ -933,7 +937,10 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                       <FormControl>
                         <Input
                           className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          {...form.register("wallets.0.balanceHistory")}
+                          // {...form.register("wallets.0.balanceHistory")}
+                          value={formatVNDCurrencyValue(
+                            form.getValues("wallets.0.balanceHistory")
+                          )}
                           readOnly
                         />
                       </FormControl>
