@@ -98,15 +98,41 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
       setAmountError("Amount must be a multiple of 10,000 VND");
       return false;
     }
+    if (numericAmount > 5000000) {
+      setAmountError("Maximum deposit is 5,000,000 VND");
+      return false;
+    }
     setAmountError(null);
     return true;
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onAmountChange(e);
-    validateAmount(e.target.value);
-  };
+    let value = e.target.value.replace(/[^\d]/g, "");
 
+    // Giới hạn số tiền tối đa là 5,000,000
+    const numericAmount = parseInt(value, 10);
+    if (numericAmount > 5000000) {
+      value = "5000000";
+    }
+
+    // Tạo một event mới với giá trị đã được xử lý
+    const newEvent = {
+      ...e,
+      target: {
+        ...e.target,
+        value: value,
+      },
+    };
+
+    onAmountChange(newEvent);
+    validateAmount(value);
+  };
+  const formatDisplayAmount = (value: string): string => {
+    const numericValue = parseInt(value.replace(/[^\d]/g, ""), 10);
+    if (isNaN(numericValue)) return "";
+    if (numericValue > 5000000) return "5,000,000";
+    return new Intl.NumberFormat("vi-VN").format(numericValue);
+  };
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateAmount(amount)) {
@@ -189,7 +215,8 @@ export const ChargeMoneyDialog: React.FC<ChargeMoneyDialogProps> = ({
                 </div>
               )}
               <div className="text-sm text-gray-500 mt-2">
-                * Minimum deposit: 50,000 VND <br />* Must be a multiple of
+                * Minimum deposit: 50,000 VND <br />
+                * Maximum deposit: 5,000,000 VND <br />* Must be a multiple of
                 10,000 VND
               </div>
             </div>
