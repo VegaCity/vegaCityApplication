@@ -423,7 +423,7 @@ const UserEditPage = ({ params }: UserEditPageProps) => {
                             } // Convert empty string back to null if needed
                           />
                         </FormControl>
-                        {imageUploaded ? (
+                        {imageUploaded || field.value ? (
                           <div className="relative">
                             <Image
                               className="relative"
