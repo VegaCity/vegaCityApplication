@@ -596,6 +596,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
     toast,
     isDoneUpsRFID,
     isConfirmPayment,
+    isDone,
   ]);
   const getEncryptedId = (originalId: string) => {
     try {
