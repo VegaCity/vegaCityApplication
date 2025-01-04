@@ -144,7 +144,7 @@ const OrdersPage = () => {
   const [filterValue, setFilterValue] = useState("ALL");
 
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
+  const [sortPaymentType, setSortPaymentType] = useState<"asc" | "desc">("asc");
   const filterList = [
     { value: "ALL", label: "All" },
     { value: "COMPLETED", label: "Completed" },
@@ -163,12 +163,15 @@ const OrdersPage = () => {
       });
 
       if (response?.statusCode === 200) {
-        const sortedOrders = [...(response.data || [])].sort((a, b) => {
-          if (sortOrder === "asc") {
-            return a.paymentType.localeCompare(b.paymentType);
-          } else {
-            return b.paymentType.localeCompare(a.paymentType);
-          }
+        const sortedByDate = [...(response.data || [])].sort((a, b) => {
+          const dateA = new Date(a.crDate).getTime();
+          const dateB = new Date(b.crDate).getTime();
+          return dateB - dateA;
+        });
+        const sortedOrders = sortedByDate.sort((a, b) => {
+          return sortPaymentType === "asc"
+            ? a.paymentType.localeCompare(b.paymentType)
+            : b.paymentType.localeCompare(a.paymentType);
         });
 
         setOrders(sortedOrders);
