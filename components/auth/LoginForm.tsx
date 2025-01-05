@@ -347,21 +347,26 @@ const LoginForm: any = () => {
               }
             }
             return;
-          } catch {
-            console.log("wait2"); //does not handle anything
-            // Show success toast
-            toast({
-              variant: "destructive",
-              title: "Login Again!",
-              description: "Server is busy now, try again!",
-            });
+          } catch (error) {
+            if (error instanceof AxiosError) {
+              console.log("wait2"); //does not handle anything
+              // Show success toast
+              toast({
+                variant: "destructive",
+                title: "Login Again!",
+                description:
+                  error.response?.data?.Error ||
+                  "Server is busy now, try again!",
+              });
+            }
           }
         } else if (error.response && error.response.status === 400) {
           // Request was made but no response was received
           toast({
             variant: "destructive",
             title: "Login Failed!",
-            description: "Invalid email or password!",
+            description:
+              error.response?.data?.Error || "Invalid email or password!",
           });
           setIsLogin(false);
         } else {
@@ -370,7 +375,8 @@ const LoginForm: any = () => {
             variant: "destructive",
             title: "Login Failed!",
             description:
-              error.response?.data.Message ||
+              error.response?.data?.Message ||
+              error.response?.data?.Error ||
               "Something went wrong in the server!",
           });
           setIsLogin(false);
@@ -439,7 +445,7 @@ const LoginForm: any = () => {
           toast({
             variant: "destructive",
             title: "Login Failed",
-            description: "Wrong password!",
+            description: error.response?.data?.Error || "Wrong password!",
           });
         }
         if (error.response?.status === 401) {
