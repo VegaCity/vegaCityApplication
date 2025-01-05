@@ -453,14 +453,27 @@ const GenerateEtagById = ({ params }: GenerateEtagProps) => {
             </div>
             <div className="flex justify-end space-x-4">
               {!isCustomerInfoConfirmed && (
-                <Button type="submit">Confirm Information</Button>
+                <Button
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  type="submit"
+                >
+                  Confirm Information
+                </Button>
               )}
               {isCustomerInfoConfirmed && !isOrderConfirmed && (
                 <>
-                  <Button type="button" onClick={handleCancelOrder}>
+                  <Button
+                    variant={"outline"}
+                    type="button"
+                    onClick={handleCancelOrder}
+                  >
                     Cancel Order
                   </Button>
-                  <Button type="button" onClick={handleConfirmOrder}>
+                  <Button
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                    type="button"
+                    onClick={handleConfirmOrder}
+                  >
                     Confirm Order
                   </Button>
                 </>

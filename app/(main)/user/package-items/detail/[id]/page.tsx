@@ -71,6 +71,8 @@ import CustomerStatusField from "@/components/field/customerField";
 import { Loader } from "@/components/loader/Loader";
 import { decryptId, encryptId } from "@/utils/encryption";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
+import { cn } from "@/lib/utils";
+import { ArrowRightLeft } from "lucide-react";
 
 const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
   const { toast } = useToast();
@@ -700,275 +702,279 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       <Form {...form}>
         <form className="space-y-4">
           <div className="flex flex-col items-center space-y-4 w-full"></div>
-
-          <Card className="w-full max-w-5xl mx-auto">
-            <CardHeader className="pb-2">
-              <div className="flex justify-between items-center p-4 bg-white">
-                <CardTitle className="text-xl font-semibold text-gray-800">
-                  VCard Detail
-                </CardTitle>
-                <div className="flex items-center space-x-3">
-                  <QRCodeDialog qrCode={qrCode ?? undefined} />
-                  {packageItem?.status === "Active" &&
-                    packageItem.isAdult === true && (
+          <div className="mx-auto w-full max-w-5xl">
+            <Card className="w-full max-w-5xl mx-auto">
+              <CardHeader className="pb-2">
+                <div className="flex justify-between items-center p-4 bg-white">
+                  <CardTitle className="text-xl font-semibold text-gray-800">
+                    VCard Detail
+                  </CardTitle>
+                  <div className="flex items-center space-x-3">
+                    <QRCodeDialog qrCode={qrCode ?? undefined} />
+                    {packageItem?.status === "Active" &&
+                      packageItem.isAdult === true && (
+                        <Button
+                          type="button"
+                          onClick={handleGenerateChildrenVCard}
+                          variant="outline"
+                          className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
+                        >
+                          Generate Children VCard
+                        </Button>
+                      )}
+                    {shouldShowRFIDUpdate() && (
                       <Button
                         type="button"
-                        onClick={handleGenerateChildrenVCard}
+                        onClick={() => setIsUpdateRFIDDialogOpen(true)}
                         variant="outline"
                         className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
                       >
-                        Generate Children VCard
+                        Update RFID
                       </Button>
                     )}
-                  {shouldShowRFIDUpdate() && (
-                    <Button
-                      type="button"
-                      onClick={() => setIsUpdateRFIDDialogOpen(true)}
-                      variant="outline"
-                      className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
-                    >
-                      Update RFID
-                    </Button>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="max-w-4xl mx-auto pl-20 space-y-12">
-                {/* Personal Details */}
-                <div className="space-y-4">
-                  <h4 className="text-lg font-semibold mb-2 mt-10">
-                    Customer Information
-                  </h4>
+              </CardHeader>
+              <CardContent>
+                <div className="max-w-4xl mx-auto pl-20 space-y-12">
+                  {/* Personal Details */}
+                  <div className="space-y-4">
+                    <h4 className="text-lg font-semibold mb-2 mt-10">
+                      Customer Information
+                    </h4>
+                    <div className="space-y-4 mr-14">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormItem className="flex flex-col gap-1 md:w-10/12">
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            FullName
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              className={getInputClassName(
+                                packageItem?.status === "Active"
+                              )}
+                              {...form.register("cusName")}
+                              readOnly={
+                                !isEditing || packageItem?.status === "Active"
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+
+                        <FormItem className="flex flex-col gap-1 md:w-10/12">
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            Email
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              className={getInputClassName(
+                                packageItem?.status === "Active"
+                              )}
+                              {...form.register("cusEmail")}
+                              readOnly={
+                                !isEditing || packageItem?.status === "Active"
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormItem className="flex flex-col gap-1 md:w-10/12">
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            Phone Number
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              className={getInputClassName(
+                                packageItem?.status === "Active"
+                              )}
+                              {...form.register("phoneNumber")}
+                              readOnly={
+                                !isEditing || packageItem?.status === "Active"
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+
+                        <FormItem className="flex flex-col gap-1 md:w-10/12">
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            CCCD/Passport
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              className={getInputClassName(
+                                packageItem?.status === "Active"
+                              )}
+                              {...form.register("cusCccdpassport")}
+                              readOnly={
+                                !isEditing || packageItem?.status === "Active"
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormItem className="flex flex-col gap-1 md:w-10/12">
+                          <CustomerStatusField
+                            isAdult={form.getValues("isAdult")}
+                          />
+                        </FormItem>
+
+                        <FormItem className="flex flex-col gap-1 md:w-10/12">
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            VCard ID
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              className={getInputClassName(
+                                !!form.getValues("vcardId")
+                              )}
+                              {...form.register("vcardId")}
+                              readOnly
+                            />
+                          </FormControl>
+                        </FormItem>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormItem className="flex flex-col gap-1 md:w-10/12">
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            Buyer
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              className={getInputClassName(
+                                packageItem?.status === "Active"
+                              )}
+                              {...form.register("cusName")}
+                              readOnly={
+                                !isEditing || packageItem?.status === "Active"
+                              }
+                            />
+                          </FormControl>
+                        </FormItem>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Duration Information */}
                   <div className="space-y-4 mr-14">
+                    <h4 className="text-lg font-semibold mb-2 mt-10">
+                      Duration Information
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormItem className="flex flex-col gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          FullName
+                          Start Date
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className={getInputClassName(
-                              packageItem?.status === "Active"
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            value={formatDateTimeForDisplay(
+                              form.getValues("startDate")
                             )}
-                            {...form.register("cusName")}
-                            readOnly={
-                              !isEditing || packageItem?.status === "Active"
-                            }
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
 
                       <FormItem className="flex flex-col gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          Email
+                          End Date
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className={getInputClassName(
-                              packageItem?.status === "Active"
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            value={formatDateTimeForDisplay(
+                              form.getValues("endDate")
                             )}
-                            {...form.register("cusEmail")}
-                            readOnly={
-                              !isEditing || packageItem?.status === "Active"
-                            }
+                            readOnly
                           />
                         </FormControl>
+                      </FormItem>
+
+                      <FormItem className="flex flex-col gap-1 md:w-10/12">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          Status
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            {...form.register("status")}
+                            readOnly
+                          />
+                        </FormControl>
+                        <FormMessage />
                       </FormItem>
                     </div>
+                  </div>
 
+                  {/* Wallet Information */}
+                  <div className="space-y-4 mr-14">
+                    <h4 className="text-lg font-semibold mb-2">
+                      Wallet Information
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormItem className="flex flex-col gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          Phone Number
+                          Balance
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className={getInputClassName(
-                              packageItem?.status === "Active"
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            // {...form.register("wallets.0.balance")}
+                            value={formatVNDCurrencyValue(
+                              form.getValues("wallets.0.balance")
                             )}
-                            {...form.register("phoneNumber")}
-                            readOnly={
-                              !isEditing || packageItem?.status === "Active"
-                            }
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
 
                       <FormItem className="flex flex-col gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          CCCD/Passport
+                          History
                         </FormLabel>
                         <FormControl>
                           <Input
-                            className={getInputClassName(
-                              packageItem?.status === "Active"
+                            className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
+                            // {...form.register("wallets.0.balanceHistory")}
+                            value={formatVNDCurrencyValue(
+                              form.getValues("wallets.0.balanceHistory")
                             )}
-                            {...form.register("cusCccdpassport")}
-                            readOnly={
-                              !isEditing || packageItem?.status === "Active"
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormItem className="flex flex-col gap-1 md:w-10/12">
-                        <CustomerStatusField
-                          isAdult={form.getValues("isAdult")}
-                        />
-                      </FormItem>
-
-                      <FormItem className="flex flex-col gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          VCard ID
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={getInputClassName(
-                              !!form.getValues("vcardId")
-                            )}
-                            {...form.register("vcardId")}
                             readOnly
                           />
                         </FormControl>
                       </FormItem>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormItem className="flex flex-col gap-1 md:w-10/12">
-                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          Buyer
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={getInputClassName(
-                              packageItem?.status === "Active"
-                            )}
-                            {...form.register("cusName")}
-                            readOnly={
-                              !isEditing || packageItem?.status === "Active"
-                            }
-                          />
-                        </FormControl>
-                      </FormItem>
-                    </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
 
-                {/* Duration Information */}
-                <div className="space-y-4 mr-14">
-                  <h4 className="text-lg font-semibold mb-2 mt-10">
-                    Duration Information
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormItem className="flex flex-col gap-1 md:w-10/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Start Date
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          value={formatDateTimeForDisplay(
-                            form.getValues("startDate")
-                          )}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
+            <UpdateRFIDAlertDialog
+              isOpen={isUpdateRFIDDialogOpen}
+              onOpenChange={setIsUpdateRFIDDialogOpen}
+              onConfirm={handleUpdateRFID}
+              isLoading={isLoading}
+              packageItem={packageItem}
+            />
 
-                    <FormItem className="flex flex-col gap-1 md:w-10/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        End Date
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          value={formatDateTimeForDisplay(
-                            form.getValues("endDate")
-                          )}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-
-                    <FormItem className="flex flex-col gap-1 md:w-10/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Status
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          {...form.register("status")}
-                          readOnly
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  </div>
-                </div>
-
-                {/* Wallet Information */}
-                <div className="space-y-4 mr-14">
-                  <h4 className="text-lg font-semibold mb-2">
-                    Wallet Information
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormItem className="flex flex-col gap-1 md:w-10/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Balance
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          // {...form.register("wallets.0.balance")}
-                          value={formatVNDCurrencyValue(
-                            form.getValues("wallets.0.balance")
-                          )}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-
-                    <FormItem className="flex flex-col gap-1 md:w-10/12">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        History
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          className="bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          // {...form.register("wallets.0.balanceHistory")}
-                          value={formatVNDCurrencyValue(
-                            form.getValues("wallets.0.balanceHistory")
-                          )}
-                          readOnly
-                        />
-                      </FormControl>
-                    </FormItem>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <UpdateRFIDAlertDialog
-            isOpen={isUpdateRFIDDialogOpen}
-            onOpenChange={setIsUpdateRFIDDialogOpen}
-            onConfirm={handleUpdateRFID}
-            isLoading={isLoading}
-            packageItem={packageItem}
-          />
-
-          <div className="flex justify-end mt-4">
-            {packageItem &&
-              packageItem.status === "Active" &&
-              packageItem.wallets[0].walletType.name === "ServiceWallet" && (
-                <Button type="button" onClick={() => setIsPopupOpen(true)}>
-                  Charge Money
-                </Button>
-              )}
+            <div className="flex justify-end mt-4">
+              {packageItem &&
+                packageItem.status === "Active" &&
+                packageItem.wallets[0].walletType.name === "ServiceWallet" && (
+                  <Button
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
+                    type="button"
+                    onClick={() => setIsPopupOpen(true)}
+                  >
+                    Charge Money {<ArrowRightLeft className="w-3 h-3" />}
+                  </Button>
+                )}
+            </div>
           </div>
-
           <ChargeMoneyDialog
             isOpen={isPopupOpen}
             onOpenChange={setIsPopupOpen}
@@ -1002,7 +1008,12 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           <>
             {!isConfirming ? (
               <Button
-                className="mt-12 px-6 py-2"
+                className={cn(
+                  "mt-12 px-6 py-2",
+                  isEditing
+                    ? "bg-blue-500 hover:bg-blue-600 text-white"
+                    : "bg-green-500 hover:bg-green-600 text-white"
+                )}
                 onClick={handleActivateEtag}
                 disabled={isLoading}
               >

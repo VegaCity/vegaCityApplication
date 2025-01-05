@@ -30,6 +30,7 @@ import {
   CheckCheck,
   MailWarning,
   WalletCards,
+  MessageCircleWarning,
 } from "lucide-react";
 
 import {
@@ -223,7 +224,7 @@ export function AppSidebar() {
     },
     {
       name: "Issue Report",
-      icon: Wallet,
+      icon: MessageCircleWarning,
       href: navigatePage("isssue-types"),
       roles: ["CashierWeb"],
     },
