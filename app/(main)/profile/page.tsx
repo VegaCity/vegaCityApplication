@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-import { Loader2, Camera, X } from "lucide-react";
+import { Loader2, Camera, X, Wallet } from "lucide-react";
 import { Users, ApiResponse } from "@/types/user/user";
 import { UserAccountDetail, UserAccountPatch } from "@/types/user/userAccount";
 import { Textarea } from "@/components/ui/textarea";
@@ -485,9 +485,9 @@ const UserProfileComponent: React.FC = () => {
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">Not Specified</SelectItem>
-                    <SelectItem value="1">Male</SelectItem>
-                    <SelectItem value="2">Female</SelectItem>
+                    <SelectItem value="0">Male</SelectItem>
+                    <SelectItem value="1">Female</SelectItem>
+                    <SelectItem value="2">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -526,52 +526,68 @@ const UserProfileComponent: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <h2 className="text-2xl">Wallet</h2>
-            <p>
-              Wallet name:
-              <strong>{user?.wallets[0].name || "No name"}</strong>
-            </p>
-            <p>
-              Balance:{" "}
-              <strong>
-                {formatVNDCurrencyValue(Number(user?.wallets[0].balance))}
-              </strong>
-            </p>
-            <p>
-              History:{" "}
-              <strong>
-                {formatVNDCurrencyValue(
-                  Number(user?.wallets[0].balanceHistory)
-                )}
-              </strong>
-            </p>
-            <p>
-              Initial Balance:{" "}
-              <strong>
-                {formatVNDCurrencyValue(Number(user?.wallets[0].balanceStart))}
-              </strong>
-            </p>
-          </div>
+          <div className="bg-white shadow-md rounded-lg p-6 space-y-6">
+            <header className="border-b pb-4 mb-4">
+              <h3 className="text-2xl font-semibold text-gray-800">
+                <div className="flex gap-2 items-center">
+                  {<Wallet />} Wallet Details
+                </div>
+              </h3>
+            </header>
 
-          {/* Nút hành động */}
-          {editMode && (
-            <div className="flex justify-end space-x-4 pt-4">
-              <Button type="button" variant="outline" onClick={resetForm}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updating}>
-                {updating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </Button>
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                <span className="font-medium">Wallet name:</span>{" "}
+                <strong className="text-gray-900">
+                  {user?.wallets[0].name || "No name"}
+                </strong>
+              </p>
+              <p className="text-gray-700">
+                <span className="font-medium">Balance:</span>{" "}
+                <strong className="text-green-600">
+                  {formatVNDCurrencyValue(Number(user?.wallets[0].balance))}
+                </strong>
+              </p>
+              <p className="text-gray-700">
+                <span className="font-medium">History:</span>{" "}
+                <strong className="text-blue-600">
+                  {formatVNDCurrencyValue(
+                    Number(user?.wallets[0].balanceHistory)
+                  )}
+                </strong>
+              </p>
+              <p className="text-gray-700">
+                <span className="font-medium">Initial Balance:</span>{" "}
+                <strong className="text-orange-600">
+                  {formatVNDCurrencyValue(
+                    Number(user?.wallets[0].balanceStart)
+                  )}
+                </strong>
+              </p>
             </div>
-          )}
+
+            {editMode && (
+              <div className="flex justify-end space-x-4 pt-6 border-t mt-4">
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                  type="submit"
+                  disabled={updating}
+                >
+                  {updating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
         </form>
       </CardContent>
     </Card>
