@@ -2,9 +2,10 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Plus, List } from "lucide-react";
+import { Plus, List, DollarSign } from "lucide-react";
 import ReportPage from "./createReport";
 import ReportList from "./listReport";
+import RequestWithdrawPage from "@/app/(main)/store/report/withdrawRequest";
 
 const Reports = () => {
   return (
@@ -24,6 +25,10 @@ const Reports = () => {
             <TabsTrigger value="create" className="space-x-2">
               <Plus className="h-4 w-4" />
               <span>Create Report</span>
+            </TabsTrigger>
+            <TabsTrigger value="withdraw" className="space-x-2">
+              <DollarSign className="h-4 w-4" />
+              <span>Request Withdraw</span>
             </TabsTrigger>
           </TabsList>
 
@@ -46,6 +51,10 @@ const Reports = () => {
 
         <TabsContent value="create" className="m-0">
           <ReportPage />
+        </TabsContent>
+
+        <TabsContent value="withdraw" className="m-0">
+          <RequestWithdrawPage />
         </TabsContent>
       </Tabs>
     </div>

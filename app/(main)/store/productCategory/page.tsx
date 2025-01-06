@@ -194,18 +194,18 @@ export default function ProductCategoryPage() {
 
   if (loading) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-12 text-center">
         <Loader isLoading={loading} />
       </div>
     );
   }
 
   if (error) {
-    return <div className="p-8 text-center text-red-500">{error}</div>;
+    return <div className="p-12 text-center text-red-500">{error}</div>;
   }
 
   return (
-    <div className="p-8">
+    <div className="p-12">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-extrabold">
           {Number(storeType) === 1 ? "Product" : "Service"} Categories
@@ -279,9 +279,9 @@ export default function ProductCategoryPage() {
         </Table>
       </div>
 
-      {isModalOpen && (
+      {/* {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white p-12 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">
               {selectedCategory ? "Edit Category" : "Add New Category"}
             </h2>
@@ -326,8 +326,70 @@ export default function ProductCategoryPage() {
             </form>
           </div>
         </div>
-      )}
+      )} */}
 
+      {/* Edit and Add Modal */}
+      <AlertDialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {selectedCategory ? "Edit Category" : "Add New Category"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-4">
+                  <label className="block mb-2">Category Name</label>
+                  <input
+                    name="name"
+                    defaultValue={selectedCategory?.name}
+                    className="w-full border p-2 rounded text-black"
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block mb-2">Description</label>
+                  <textarea
+                    name="description"
+                    defaultValue={selectedCategory?.description}
+                    className="w-full border p-2 rounded text-black"
+                    required
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setSelectedCategory(null);
+                    }}
+                    className="px-4 py-2 text-black/50 hover:bg-gray-100 rounded"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    {selectedCategory ? "Update" : "Add"}
+                  </button>
+                </div>
+              </form>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {/* <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSubmit}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              {selectedCategory ? "Update" : "Add"}
+            </AlertDialogAction>
+          </AlertDialogFooter> */}
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Modal */}
       <AlertDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}

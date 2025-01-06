@@ -1,3 +1,4 @@
+import { requestWithdrawMoney } from "./../components/services/withdrawServices";
 import * as z from "zod";
 
 export const customerFormSchema = z.object({
@@ -591,6 +592,12 @@ export const userSessionFormSchema = z
       path: ["endDate"],
     }
   );
+export const requestWithdrawMoneyFormSchema = z.object({
+  amount: z
+    .number()
+    .min(10000, { message: "Amount must at least 50.000 VND" })
+    .max(5000000, { message: "Amount does not exceed 5 millions VND" }),
+});
 
 export type UserSessionFormValues = z.infer<typeof userSessionFormSchema>;
 export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
@@ -617,6 +624,9 @@ export type EtagTypeFormValues = z.infer<typeof etagTypeFormSchema>;
 export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;
 export type UserReAssignEmailValues = z.infer<
   typeof userReAssignEmailFormSchema
+>;
+export type RequestWithdrawMoneyValues = z.infer<
+  typeof requestWithdrawMoneyFormSchema
 >;
 
 export interface PackageItemDetailPageProps {
