@@ -144,7 +144,6 @@ const OrdersPage = () => {
   const [filterValue, setFilterValue] = useState("ALL");
 
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [sortPaymentType, setSortPaymentType] = useState<"asc" | "desc">("asc");
   const filterList = [
     { value: "ALL", label: "All" },
     { value: "COMPLETED", label: "Completed" },
@@ -163,18 +162,7 @@ const OrdersPage = () => {
       });
 
       if (response?.statusCode === 200) {
-        const sortedByDate = [...(response.data || [])].sort((a, b) => {
-          const dateA = new Date(a.crDate).getTime();
-          const dateB = new Date(b.crDate).getTime();
-          return dateB - dateA;
-        });
-        const sortedOrders = sortedByDate.sort((a, b) => {
-          return sortPaymentType === "asc"
-            ? a.paymentType.localeCompare(b.paymentType)
-            : b.paymentType.localeCompare(a.paymentType);
-        });
-
-        setOrders(sortedOrders);
+        setOrders(response.data || []);
         setMetadata(response.metaData);
       } else {
         setOrders([]);
@@ -203,10 +191,9 @@ const OrdersPage = () => {
     setMetadata((prev) => ({ ...prev, page: 1 }));
   }, [filterValue, searchTerm]);
 
-  // Effect riêng để fetch data
   useEffect(() => {
     fetchOrders();
-  }, [metadata.page, filterValue, searchTerm, sortOrder]);
+  }, [metadata.page, filterValue, searchTerm]);
 
   const handlePageChange = (newPage: number) => {
     setMetadata((prev) => ({ ...prev, page: newPage }));
@@ -218,6 +205,13 @@ const OrdersPage = () => {
 
   const toggleSortOrder = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    setOrders((prevOrders) =>
+      [...prevOrders].sort((a, b) =>
+        sortOrder === "asc"
+          ? a.paymentType.localeCompare(b.paymentType)
+          : b.paymentType.localeCompare(a.paymentType)
+      )
+    );
   };
 
   return (
