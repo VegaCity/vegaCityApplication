@@ -542,13 +542,10 @@ const MenuCreationForm = ({ params }: MenuCreationFormProps) => {
     } else {
       const numericPrice = parseInt(product.price.replace(/\./g, ""));
       if (isNaN(numericPrice) || numericPrice <= 0) {
-        errors.price = "Price must be greater than 0";
-        isValid = false;
-      } else if (numericPrice < 100000) {
-        errors.price = "Price must not be less than 100,000 VND";
+        errors.price = "Price must be greater than 0 VND";
         isValid = false;
       } else if (numericPrice > 10000000) {
-        errors.price = "Price must not exceed 10,000,000";
+        errors.price = "Price must not exceed 10.000.000 VND";
         isValid = false;
       }
     }
