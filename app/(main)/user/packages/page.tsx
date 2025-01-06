@@ -6,6 +6,8 @@ import { useUserRole } from "@/components/hooks/useUserRole";
 import { PackageServices } from "@/components/services/Package/packageServices";
 import { Package } from "@/types/packageType/package";
 import PackageCard from "@/components/card/packagecard";
+import { Loader } from "@/components/loader/Loader";
+import EmptyDataPage from "@/components/emptyData/emptyData";
 
 interface ApiResponse {
   statusCode: number;
@@ -54,11 +56,11 @@ const PackagesPage = () => {
   }, []);
 
   if (userRoleLoading || loading) {
-    return <div>Loading packages...</div>;
+    return <Loader />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <EmptyDataPage title={error} />;
   }
 
   if (userRole && userRole.name !== "CashierWeb") {

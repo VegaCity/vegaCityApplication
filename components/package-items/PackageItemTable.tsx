@@ -39,6 +39,7 @@ import LostPackageItemDialog from "@/lib/dialog/lostDialog";
 import GenerateNewCardDialog from "@/lib/dialog/generateLost";
 import PackageItemAction from "../popover/PackageAction";
 import { encryptId, decryptId } from "@/utils/encryption";
+import { Badge } from "@/components/ui/badge";
 interface PackageItem {
   id: string;
   packageId: string;
@@ -238,15 +239,15 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
-        return "bg-green-500";
+        return "border-green-400 bg-green-100 hover:bg-green-400 text-green-500 hover:text-white";
       case "InActive":
-        return "bg-yellow-500";
+        return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white";
       case "Expired":
-        return "bg-red-500";
+        return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-white";
       case "Blocked":
-        return "bg-gray-500";
+        return "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-white";
       default:
-        return "bg-gray-500";
+        return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white";
     }
   };
 
@@ -432,13 +433,9 @@ const PackageItemTable = ({ limit, title }: PackageItemTableProps) => {
               <TableCell>{formatDate(item.crDate)}</TableCell>
               <TableCell>{item.walletTypeName}</TableCell>
               <TableCell>
-                <span
-                  className={`inline-block text-white px-2 py-1 rounded ${getStatusColor(
-                    item.status
-                  )}`}
-                >
+                <Badge className={`${getStatusColor(item.status)}`}>
                   {item.status}
-                </span>
+                </Badge>
               </TableCell>
               <TableCell>
                 <PackageItemAction
