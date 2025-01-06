@@ -31,6 +31,8 @@ import {
   MailWarning,
   WalletCards,
   MessageCircleWarning,
+  Type,
+  Menu,
 } from "lucide-react";
 
 import {
@@ -134,19 +136,19 @@ export function AppSidebar() {
     },
     {
       name: `${Number(storeType) === 1 ? "Product" : "Service"} Category`,
-      icon: LayoutDashboard,
+      icon: Type,
       href: navigatePage("productCategory"),
       roles: ["Store"],
     },
     {
       name: "Menu",
-      icon: LayoutDashboard,
+      icon: Menu,
       href: navigatePage("menu"),
       roles: ["Store"],
     },
     {
       name: "Reports",
-      icon: LayoutDashboard,
+      icon: MailWarning,
       href: navigatePage("report"),
       roles: ["Store"],
     },

@@ -630,6 +630,7 @@ const LoginForm: any = () => {
                   </Link>
                 </p>
                 <Button
+                  disabled={isLogin}
                   type="submit"
                   className="w-full p-2 rounded hover-gradient"
                 >
