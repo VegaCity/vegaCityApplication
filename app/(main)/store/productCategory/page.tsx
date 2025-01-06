@@ -194,18 +194,18 @@ export default function ProductCategoryPage() {
 
   if (loading) {
     return (
-      <div className="p-12 text-center">
+      <div className="p-8 text-center">
         <Loader isLoading={loading} />
       </div>
     );
   }
 
   if (error) {
-    return <div className="p-12 text-center text-red-500">{error}</div>;
+    return <div className="p-8 text-center text-red-500">{error}</div>;
   }
 
   return (
-    <div className="p-12">
+    <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-extrabold">
           {Number(storeType) === 1 ? "Product" : "Service"} Categories
