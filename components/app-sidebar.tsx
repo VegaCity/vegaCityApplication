@@ -228,6 +228,12 @@ export function AppSidebar() {
       roles: ["CashierWeb"],
     },
     {
+      name: "Balance Check",
+      icon: Wallet,
+      href: navigatePage("balance-check"),
+      roles: ["CashierWeb", "Admin"],
+    },
+    {
       name: "Manage Users",
       icon: User,
       roles: ["Admin"],
