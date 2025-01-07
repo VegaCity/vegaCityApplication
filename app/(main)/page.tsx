@@ -193,6 +193,7 @@ const Home = () => {
         const role = userResponse.data.data.role.name;
         setUserRole(role);
         console.log(role, "role");
+        const roleName = localStorage.setItem("roleName", role);
         if (role === "Admin") {
           if (!startDate || !endDate) return;
 

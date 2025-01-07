@@ -222,7 +222,7 @@ export function AppSidebar() {
       name: "Reports",
       icon: MailWarning,
       href: navigatePage("reports"),
-      roles: ["CashierWeb"],
+      roles: ["CashierWeb", "Admin"],
     },
     {
       name: "Issue Report",

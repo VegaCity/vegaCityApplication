@@ -87,14 +87,12 @@ const LostPackageItemDialog = ({
       } else {
         throw new Error("Unexpected response status");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error reporting lost VCard:", error);
       toast({
         title: "Report Failed",
         description:
-          error instanceof Error
-            ? error.message
-            : "Failed to report lost VCard. Please try again later.",
+          error.response?.data?.message || "Failed to report lost VCard",
         variant: "destructive",
       });
     }

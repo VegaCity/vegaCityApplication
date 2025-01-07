@@ -158,7 +158,7 @@ const EditReportDialog = ({
     resolver: zodResolver(EditReportSchema),
     defaultValues: {
       solution: report.solution || "",
-      solveBy: "Cashier Web",
+      solveBy: localStorage.getItem("roleName") || "",
       status: report.status?.toString() || "0",
     },
   });
@@ -343,7 +343,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
     try {
       await ReportServices.editReport(selectedReport.id, {
         status: 1, // Set to Processing
-        solveBy: "Cashier Web",
+        solveBy: localStorage.getItem("roleName") || "",
         solution: selectedReport.solution || "",
       });
 
@@ -421,7 +421,7 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
                 <TableHead>Creator</TableHead>
                 <TableHead className="w-24">Status</TableHead>
                 <TableHead className="w-1/4">Solution</TableHead>
-                {/* <TableHead className="w-16 text-right">Actions</TableHead> */}
+                <TableHead className="w-16 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -454,16 +454,18 @@ const ReportTable = ({ limit, title }: ReportTableProps) => {
                       </div>
                     </Tooltip>
                   </TableCell>
-                  {/* <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditClick(report)}
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                      <span className="sr-only">Edit</span>
-                    </Button>
-                  </TableCell> */}
+                  <TableCell className="text-right">
+                    {report.status !== 2 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditClick(report)}
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                      </Button>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

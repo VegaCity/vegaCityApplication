@@ -233,6 +233,7 @@ const LoginForm: any = () => {
                 localStorage.setItem("accessToken", accessToken);
                 localStorage.setItem("userId", userId);
                 localStorage.setItem("userEmail", data.email);
+
                 localStorage.setItem(
                   "refreshTokenExp",
                   calculateExpirationTime().toString()
