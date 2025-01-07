@@ -258,7 +258,7 @@ const StoreDetail = ({ params }: StoreDetailProps) => {
                 <TableHead>Name</TableHead>
                 <TableHead>Wallet Type</TableHead>
                 <TableHead>Balance</TableHead>
-                <TableHead>Balance History</TableHead>
+                <TableHead>Virtual Currency</TableHead>
                 <TableHead>Transactions</TableHead>
               </TableHeader>
               <TableBody>

@@ -49,7 +49,7 @@ const WalletCard: FC<WalletCardProps> = ({
 
           <div className="mb-4">
             <p className="text-sm font-normal">
-              Balance History: &nbsp;
+              Virtual Currency: &nbsp;
               <strong>{formatVNDCurrencyValue(balanceHistory)}</strong>
             </p>
           </div>

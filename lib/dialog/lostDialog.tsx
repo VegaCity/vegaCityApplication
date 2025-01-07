@@ -92,7 +92,9 @@ const LostPackageItemDialog = ({
       toast({
         title: "Report Failed",
         description:
-          error.response?.data?.message || "Failed to report lost VCard",
+          error.response.data.messageResponse ||
+          error.response.data.Error ||
+          "Failed to report lost VCard",
         variant: "destructive",
       });
     }
@@ -112,10 +114,19 @@ const LostPackageItemDialog = ({
 
         <div className="grid gap-3 py-3">
           <div className="grid grid-cols-3 gap-2">
-            <div className="space-y-1.5">
+            {/* <div className="space-y-1.5">
               <Label className="text-xs text-gray-500">ID</Label>
               <Input
                 value={formData.packageItemId}
+                className="h-8 text-sm bg-gray-50"
+                disabled
+              />
+            </div> */}
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-gray-500">Name</Label>
+              <Input
+                value={formData.name}
                 className="h-8 text-sm bg-gray-50"
                 disabled
               />
@@ -138,14 +149,6 @@ const LostPackageItemDialog = ({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs text-gray-500">Name</Label>
-            <Input
-              value={formData.name}
-              className="h-8 text-sm bg-gray-50"
-              disabled
-            />
-          </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-gray-500">Email</Label>
             <Input

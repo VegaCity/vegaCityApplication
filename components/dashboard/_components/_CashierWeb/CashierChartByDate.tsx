@@ -52,7 +52,7 @@ const chartConfig = {
     color: "hsl(var(--chart-2))",
   },
   endDayCheckWalletCashierBalanceHistory: {
-    label: "End Day Cashier Balance History",
+    label: "End Day Cashier Virtual Currency",
     color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig;

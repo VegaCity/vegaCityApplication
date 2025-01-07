@@ -712,7 +712,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                   <div className="flex items-center space-x-3">
                     <QRCodeDialog qrCode={qrCode ?? undefined} />
                     {packageItem?.status === "Active" &&
-                      packageItem.isAdult === true && (
+                      packageItem.isAdult === true &&
+                      packageItem.phoneNumber !== "0000000000" && (
                         <Button
                           type="button"
                           onClick={handleGenerateChildrenVCard}
@@ -837,7 +838,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                           </FormControl>
                         </FormItem>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormItem className="flex flex-col gap-1 md:w-10/12">
                           <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
                             Buyer
@@ -854,7 +855,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
                             />
                           </FormControl>
                         </FormItem>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
 

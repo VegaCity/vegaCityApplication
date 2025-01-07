@@ -382,7 +382,7 @@ const OrderDetailPage = () => {
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center text-gray-500">
                   <CreditCard className="h-5 w-5 mr-2" />
-                  <span>Balance History At Present</span>
+                  <span>Virtual Currency At Present</span>
                 </div>
                 <p className="text-xl font-medium">
                   {formatAmount(
@@ -394,7 +394,7 @@ const OrderDetailPage = () => {
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center text-gray-500">
                     <CreditCard className="h-5 w-5 mr-2" />
-                    <span>Balance History After</span>
+                    <span>Virtual Currency After</span>
                   </div>
                   <p className="text-xl font-medium">
                     {formatAmount(orderDetail?.data?.balanceHistoryAfter || 0)}

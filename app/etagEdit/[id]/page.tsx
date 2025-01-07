@@ -42,7 +42,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       cusName: "",
       cusEmail: "",
       cusCccdpassport: "",
-      phoneNumber: "",
+      cusPhone: "",
     },
   });
 
@@ -341,7 +341,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
 
                     <FormItem className="space-y-2">
                       <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                        Balance History
+                        Virtual Currency
                       </FormLabel>
                       <FormControl>
                         <Input

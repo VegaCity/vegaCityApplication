@@ -67,7 +67,7 @@ const BalanceCheckPage = () => {
 
                 <TableHead>Date Check</TableHead>
                 <TableHead className="text-right">Balance</TableHead>
-                <TableHead className="text-right">Balance History</TableHead>
+                <TableHead className="text-right">Virtual Currency</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

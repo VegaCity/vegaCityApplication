@@ -45,12 +45,14 @@ const MenuCreationForm = () => {
         router.push("/store/menu");
       });
     } catch (error) {
-      console.error("Error creating menu:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to create menu",
-      });
+      if (error instanceof Error) {
+        const errorMessage = (error as any).response?.data?.messageResponse;
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   };
 
