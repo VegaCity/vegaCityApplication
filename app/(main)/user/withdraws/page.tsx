@@ -91,7 +91,7 @@ const WithdrawMoney = () => {
     useState<PackageItemDetail | null>(null);
   const [storeDetails, setStoreDetails] =
     useState<StoreDetail_FixToDeploy | null>(null);
-  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
@@ -125,9 +125,6 @@ const WithdrawMoney = () => {
     setStoreName(e.target.value);
   };
 
-  const handleStorePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setStorePhone(e.target.value);
-  };
   const handleFindStoreWallet = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -325,6 +322,12 @@ const WithdrawMoney = () => {
         if (storeDetails?.amountCanWithdraw === 0) {
           return "You cannot withdraw at this time. Available withdrawal amount is 0";
         }
+        //amount
+        if (amount < 50000) {
+          return "Withdrawal amount must be at least 50.000 VND";
+        } else if (amount > 50000 && amount > 100000000) {
+          return "Withdrawal amount must be less than 100.000.000 VND";
+        }
 
         // Điều kiện riêng cho store
         if (storeDetails?.status === 3) {
@@ -354,6 +357,8 @@ const WithdrawMoney = () => {
     setWithdrawAmount(value);
     setError("");
   };
+
+  //Fetch Vcard data
   const fetchPackageItemInfo = useCallback(
     async (searchValue: string) => {
       try {
@@ -465,6 +470,140 @@ const WithdrawMoney = () => {
     [activeTab]
   );
 
+  // fetch Store Info By Phone Number
+  const fetchStoreInfoByPhoneNumber = useCallback(
+    async (phoneNumber: string) => {
+      try {
+        setIsLoading(true);
+        setError("");
+
+        // Validate input format (adjust regex based on expected phone number format)
+        const isValidPhoneNumber = /^(0|\+84)(\s|-)?[1-9]\d{8}$/.test(
+          phoneNumber
+        );
+
+        if (!isValidPhoneNumber) {
+          throw new Error(
+            "Invalid phone number. Please enter a valid phone number."
+          );
+        }
+
+        const response = await StoreServices.getWalletForStore(
+          storeName,
+          phoneNumber
+        );
+
+        console.log("Full API Response:", response);
+
+        const storeData = response.data.data.storeTrack;
+        const amountData = response.data.data; // Lấy trực tiếp từ data
+
+        if (!storeData) {
+          throw new Error("Can not find store.");
+        }
+
+        // Check if store has wallets
+        if (!storeData.wallets || storeData.wallets.length === 0) {
+          throw new Error("Store has no wallets.");
+        }
+
+        const wallet = storeData.wallets[0];
+
+        setWithdrawAmount(String(amountData.amountCanWithdraw));
+        console.log(
+          "Amount Can Withdraw neee:",
+          String(amountData.amountCanWithdraw)
+        );
+
+        // Set wallet information
+        setWalletInfo({
+          id: wallet.id,
+          balance: wallet.balance,
+          balanceHistory: wallet.balanceHistory,
+          balanceStart: wallet.balanceStart,
+          walletTypeId: wallet.walletTypeId,
+        });
+
+        // Set store details with amount fields from amountData
+        setStoreDetails({
+          id: storeData.id,
+          name: storeData.name,
+          address: storeData.address,
+          shortName: storeData.shortName,
+          email: storeData.email,
+          phoneNumber: storeData.phoneNumber,
+          status: storeData.status,
+          storeType: storeData.storeType,
+          amountCanWithdraw: amountData.amountCanWithdraw || 0,
+          amountTransferred: amountData.amountTransfered || 0, // Note the spelling 'Transfered' from API
+          amoutWithdrawed: amountData.amoutWithdrawed || 0,
+          wallets: storeData.wallets,
+        });
+
+        // If store status is 3, automatically trigger final settlement
+        if (storeData.status === 3) {
+          try {
+            setIsSettling(true);
+            const settlementResponse = await StoreServices.finalSettlement(
+              storeData.id
+            );
+
+            if (settlementResponse.data?.statusCode === 200) {
+              const settlementAmount =
+                settlementResponse.data.data?.amountCanWithdraw || 0;
+
+              // Update store details with new settlement amount
+              setStoreDetails((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      amountCanWithdraw: settlementAmount,
+                    }
+                  : null
+              );
+            }
+          } catch (settlementErr) {
+            console.error(
+              "Error in automatic final settlement:",
+              settlementErr
+            );
+            toast({
+              variant: "destructive",
+              title: "Warning",
+              description:
+                "Store is blocked but final settlement calculation failed. Please try calculating manually.",
+            });
+          } finally {
+            setIsSettling(false);
+          }
+        }
+      } catch (err) {
+        if (err instanceof AxiosError) {
+          console.error("Error finding store wallet:", err.message);
+
+          // Check if the error response has a structured format
+          if (err.response && err.response.data) {
+            const errorData = err.response.data;
+            const errorMessage = errorData.Error || "Not found!"; // Fallback to generic message
+
+            // Set error with only the error message
+            setError(errorMessage);
+          } else {
+            // Fallback to previous error handling
+            setError(err ? err.response?.data.Error : "Not found!");
+          }
+        }
+
+        setWalletInfo(null);
+        setStoreDetails(null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [activeTab]
+  );
+
+  // Handle Vcard searchValue
   const handlePackageItemChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const searchValue = e.target.value;
@@ -493,6 +632,17 @@ const WithdrawMoney = () => {
     [fetchPackageItemInfo]
   );
 
+  // Handle Store phoneNumber searchValue
+  const handleStorePhoneChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const searchValue = e.target.value;
+
+      setStorePhone(searchValue);
+      if (searchValue) fetchStoreInfoByPhoneNumber(searchValue);
+    },
+    [fetchStoreInfoByPhoneNumber]
+  );
+
   const handleRequestWithdraw = useCallback(async () => {
     console.log("Handle withdraw called");
     console.log("Active tab:", activeTab);
@@ -507,6 +657,7 @@ const WithdrawMoney = () => {
     const amount = parseInt(withdrawAmount.replace(/,/g, ""));
     console.log("Amount to withdraw:", amount);
 
+    //Vcard validation
     const validationError = validateWithdrawAmount(
       amount,
       activeTab === "customer"
@@ -721,7 +872,7 @@ const WithdrawMoney = () => {
           type="text"
           value={packageItemCode}
           onChange={handlePackageItemChange}
-          placeholder="Nhập ID (GUID) hoặc RFID (10 numbers)"
+          placeholder="Input ID (GUID) or RFID (10 numbers)"
           className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
           disabled={isLoading}
         />
@@ -996,7 +1147,7 @@ const WithdrawMoney = () => {
             htmlFor="store-phone"
             className="text-sm font-semibold text-gray-700 flex items-center space-x-2"
           >
-            <span>Store Phone</span>
+            <span>Store phone</span>
             {error && <AlertCircle className="w-4 h-4 text-red-500" />}
           </label>
           <Input
@@ -1004,13 +1155,16 @@ const WithdrawMoney = () => {
             type="text"
             value={storePhone}
             onChange={handleStorePhoneChange}
-            placeholder="Store Phone"
+            placeholder="Phone number (10 digits)"
             className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             disabled={isLoading}
           />
+          <p className="text-sm text-gray-500">
+            Enter phone number of 10 digits
+          </p>
         </div>
 
-        <Button
+        {/* <Button
           className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors duration-200 rounded-xl flex items-center justify-center space-x-2"
           onClick={handleFindStoreWallet}
           disabled={isLoading}
@@ -1023,7 +1177,7 @@ const WithdrawMoney = () => {
               <span>Find Store</span>
             </>
           )}
-        </Button>
+        </Button> */}
 
         {error && (
           <Alert
@@ -1241,11 +1395,18 @@ const WithdrawMoney = () => {
                         <Input
                           id="amount-input"
                           type="text"
-                          value={formatAmount(withdrawAmount)}
+                          value={
+                            storeDetails.status === 3
+                              ? formatAmount(
+                                  String(storeDetails.amountCanWithdraw)
+                                )
+                              : formatAmount(withdrawAmount)
+                          }
                           onChange={handleAmountChange}
                           placeholder="0"
                           className="w-full h-14 px-5 text-lg rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-right"
                           disabled={isSettling}
+                          readOnly={storeDetails.status === 3}
                         />
                       </div>
 

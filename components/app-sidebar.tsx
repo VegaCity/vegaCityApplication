@@ -95,7 +95,6 @@ export function AppSidebar() {
   const authuser = useAuthUser();
   const { roleName } = authuser;
   const isSession = localStorage.getItem("isSession") === "true";
-  console.log(isSession, "isSession");
 
   const navigatePage = (routeName: string) => {
     return userRole?.name === "Admin"
