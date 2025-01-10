@@ -351,6 +351,7 @@ const Home = () => {
                           PackageItem Charge
                         </SelectItem>
                         <SelectItem value="Product">Product</SelectItem>
+                        <SelectItem value="Service">Service</SelectItem>
                       </>
                     )}
                     {userRole === "CashierWeb" && (

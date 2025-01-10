@@ -31,6 +31,7 @@ export interface StoreAnalytics {
 
 export interface GroupedStaticsAdminByMonth {
   name: string;
+  formattedDate: string;
   endDayCheckWalletCashierBalance: number;
   endDayCheckWalletCashierBalanceHistory: number;
   totalAmountCashOrder: number;

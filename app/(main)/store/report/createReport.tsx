@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AxiosResponse } from "axios";
+import { StoreServices } from "@/components/services/Store/storeServices";
 interface IssueType {
   id: string;
   name: string;
@@ -35,6 +36,11 @@ interface IssueTypeResponse {
   qrCode: null;
 }
 
+interface StoreDataProps {
+  name: string;
+  email: string;
+}
+
 export const ReportPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [issueTypes, setIssueTypes] = useState<IssueType[]>([]);
@@ -43,6 +49,11 @@ export const ReportPage = () => {
     description: "",
     creatorStoreId: "",
   });
+  const [storeData, setStoreData] = useState<StoreDataProps>({
+    name: "",
+    email: "",
+  });
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -185,13 +196,27 @@ export const ReportPage = () => {
   };
 
   useEffect(() => {
-    const storeId = localStorage.getItem("storeId");
-    if (storeId) {
-      setFormData((prev) => ({
-        ...prev,
-        creatorStoreId: storeId,
-      }));
-    }
+    const fetchStoreData = async () => {
+      try {
+        const storeId = localStorage.getItem("storeId");
+        if (storeId) {
+          setFormData((prev) => ({
+            ...prev,
+            creatorStoreId: storeId,
+          }));
+          const storeRes = await StoreServices.getStoreById(storeId);
+          const storeData = storeRes.data.data;
+          setStoreData({
+            name: storeData.store.name,
+            email: storeData.store.email,
+          });
+          console.log(storeData, "storeData");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchStoreData();
   }, []);
 
   return (
