@@ -162,7 +162,7 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
               <TableHead className="text-white">User Name</TableHead>
               <TableHead className="text-white">User Email</TableHead>
               <TableHead className="text-white">Current Balance</TableHead>
-              <TableHead className="text-white">Deposit Amount</TableHead>
+              {/* <TableHead className="text-white">Deposit Amount</TableHead> */}
               <TableHead className="text-white">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -192,11 +192,11 @@ const UserDepositApprovalTable = ({ limit, title }: UserDepositTableProps) => {
                     {formatVNDCurrencyValue(deposit.balance)}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <Badge variant="outline">
                     {formatVNDCurrencyValue(deposit.balanceHistory)}
                   </Badge>
-                </TableCell>
+                </TableCell> */}
                 {/* <TableCell>
                   <div className="flex space-x-2">
                     <Badge

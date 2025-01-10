@@ -549,7 +549,7 @@ const UserProfileComponent: React.FC = () => {
                 </strong>
               </p>
               <p className="text-gray-700">
-                <span className="font-medium">History:</span>{" "}
+                <span className="font-medium">Vitual Currency:</span>{" "}
                 <strong className="text-blue-600">
                   {formatVNDCurrencyValue(
                     Number(user?.wallets[0].balanceHistory)
