@@ -104,8 +104,12 @@ function OrderStatusContent() {
   useEffect(() => {
     if (isMobileApp()) {
       const data: PaymentStatusData = {
-        orderId: localStorage.getItem("orderId"),
-        invoiceId: localStorage.getItem("invoiceId"),
+        orderId: window.ReactNativeWebView
+          ? "orderIdFromApp"
+          : localStorage.getItem("orderId"),
+        invoiceId: window.ReactNativeWebView
+          ? "invoiceIdFromApp"
+          : localStorage.getItem("invoiceId"),
         orderDetails,
       };
 
@@ -116,10 +120,16 @@ function OrderStatusContent() {
   const handleContinue = (): void => {
     if (isMobileApp()) {
       const data: PaymentStatusData = {
-        orderId: localStorage.getItem("orderId"),
-        invoiceId: localStorage.getItem("invoiceId"),
+        orderId: window.ReactNativeWebView
+          ? "orderIdFromApp"
+          : localStorage.getItem("orderId"),
+        invoiceId: window.ReactNativeWebView
+          ? "invoiceIdFromApp"
+          : localStorage.getItem("invoiceId"),
       };
-      sendToMobileApp("COMPLETED", data);
+      if (isSuccess) {
+        sendToMobileApp("COMPLETED", data);
+      }
     } else {
       const etagId = localStorage.getItem("packageOrderId");
       router.push("/");
@@ -129,8 +139,12 @@ function OrderStatusContent() {
   const handleFailure = (): void => {
     if (isMobileApp()) {
       const data: PaymentStatusData = {
-        orderId: localStorage.getItem("orderId"),
-        invoiceId: localStorage.getItem("invoiceId"),
+        orderId: window.ReactNativeWebView
+          ? "orderIdFromApp"
+          : localStorage.getItem("orderId"),
+        invoiceId: window.ReactNativeWebView
+          ? "invoiceIdFromApp"
+          : localStorage.getItem("invoiceId"),
       };
       sendToMobileApp("CLOSE", data);
     } else {
@@ -151,8 +165,11 @@ function OrderStatusContent() {
             <>
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
               <p className="text-gray-600 mb-4">
-                Order {localStorage.getItem("invoiceId")} payment was
-                successful.
+                Order{" "}
+                {window.ReactNativeWebView
+                  ? "invoiceIdFromApp"
+                  : localStorage.getItem("invoiceId")}{" "}
+                payment was successful.
               </p>
             </>
           ) : (
