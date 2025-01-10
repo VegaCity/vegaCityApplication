@@ -44,9 +44,9 @@ const getDateFilterText = (dateFilter: number) => {
 
 const getDateFilterColor = (dateFilter: number) => {
   const colors = {
-    1: "bg-amber-100 text-amber-800",
-    2: "bg-orange-100 text-orange-800",
-    3: "bg-sky-100 text-sky-800",
+    1: "border-amber-400 bg-amber-100 hover:bg-amber-400 text-amber-500 hover:text-white",
+    2: "border-orange-400 bg-orange-100 hover:bg-orange-400 text-orange-500 hover:text-white",
+    3: "border-sky-400 bg-sky-100 hover:bg-sky-400 text-sky-500 hover:text-white",
   };
   return (
     colors[dateFilter as keyof typeof colors] || "bg-gray-100 text-gray-800"

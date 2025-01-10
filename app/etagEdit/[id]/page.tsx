@@ -28,6 +28,7 @@ import { FileText, CircleHelp } from "lucide-react";
 import ReportDialog from "@/lib/dialog/ReportDialog";
 import { PromotionAlert } from "@/components/Promotion/PromotionAlert";
 import TransactionWithdrawList from "@/components/transactions/TransactionWithdrawList";
+import { Loader } from "@/components/loader/Loader";
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -43,6 +44,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       cusEmail: "",
       cusCccdpassport: "",
       cusPhone: "",
+      vcardId: "",
     },
   });
 
@@ -172,7 +174,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) {
     return (
       <div>
@@ -185,9 +187,9 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   if (!packageItem) {
     return <SearchPackageItem />;
   }
-
+  console.log(isEditing);
   return (
-    <>
+    <div>
       <Form {...form}>
         <form className={`space-y-4`}>
           <Card className="w-full max-w-5xl mx-auto p-4 md:p-6">
@@ -202,6 +204,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                   type="button"
                   onClick={() => {
                     setIsEditing(!isEditing);
+                    form.reset(null);
                   }}
                   className="w-full sm:w-auto"
                 >
@@ -228,7 +231,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <FormControl>
                           <Input
                             className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
+              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("cusName")}
                             readOnly={!isEditing}
                           />
@@ -242,7 +245,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <FormControl>
                           <Input
                             className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
+              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("cusEmail")}
                             readOnly={!isEditing}
                           />
@@ -258,7 +261,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <FormControl>
                           <Input
                             className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
+              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("phoneNumber")}
                             readOnly={!isEditing}
                           />
@@ -272,9 +275,36 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                         <FormControl>
                           <Input
                             className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
+              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
                             {...form.register("cusCccdpassport")}
                             readOnly={!isEditing}
+                          />
+                        </FormControl>
+                      </FormItem>
+
+                      {/* <FormItem className="space-y-2">
+                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          CUSTOMER TYPE
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+              ${packageItem?.isChangedInfo ? "bg-slate-100" : "bg-white"}`}
+                            {...form.register("isAdult")}
+                            readOnly={!isEditing}
+                          />
+                        </FormControl>
+                      </FormItem> */}
+
+                      <FormItem className="space-y-2">
+                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                          V-CARD ID
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white bg-slate-100`}
+                            {...form.register("vcardId")}
+                            readOnly
                           />
                         </FormControl>
                       </FormItem>
@@ -389,7 +419,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       </Form>
 
       <TransactionWithdrawList packageItemId={params.id} />
-    </>
+    </div>
   );
 };
 

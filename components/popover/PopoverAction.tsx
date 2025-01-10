@@ -95,13 +95,13 @@ export const PopoverActionTable = <T extends BaseType>({
                     {item.name ?? item.zoneName ?? item.fullName}-?
                   </AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will deflag in list!
+                    This action cannot be undoned. This will be deflag in list!
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-red-600 hover:bg-blue-700"
+                    className="bg-red-600 hover:bg-red-700"
                     onClick={() => handleDelete(item)}
                   >
                     Confirm

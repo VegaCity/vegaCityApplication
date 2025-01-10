@@ -314,6 +314,8 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
     if (!itemToUpdate) return;
 
     try {
+      console.log("updatedData", updatedData);
+      console.log("itemToUpdate", itemToUpdate);
       // Upload new image if needed
       let finalImageUrl = updatedData.imageUrl;
       if (selectedImage) {
@@ -541,8 +543,8 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                       <Badge
                         className={
                           item.status === "InActive"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-green-100 text-green-800"
+                            ? "border-red-400 bg-red-100 hover:bg-red-400 text-red-500 hover:text-white"
+                            : "border-green-400 bg-green-100 hover:bg-green-400 text-green-500 hover:text-white"
                         }
                       >
                         {item.status}
@@ -613,25 +615,27 @@ const MenuUI = ({ params }: { params: { id: string } }) => {
                         )}
                       </>
                     ) : (
-                      <>
-                        <button
-                          onClick={() => handleUpdateClick(item)}
-                          className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white bg-green-600 
+                      item.status === "Active" && (
+                        <>
+                          <button
+                            onClick={() => handleUpdateClick(item)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white bg-green-600 
                           rounded-lg hover:bg-green-700 transition-colors font-semibold"
-                        >
-                          <Pencil size={16} />
-                          Update
-                        </button>
-                        <button
-                          onClick={() => setItemToDelete(item.id)}
-                          className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white bg-red-600 
+                          >
+                            <Pencil size={16} />
+                            Update
+                          </button>
+                          <button
+                            onClick={() => setItemToDelete(item.id)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-white bg-red-600 
     rounded-lg hover:bg-red-700 transition-colors font-semibold"
-                          disabled={isDeleting}
-                        >
-                          <Trash2 size={16} />
-                          Delete
-                        </button>
-                      </>
+                            disabled={isDeleting}
+                          >
+                            <Trash2 size={16} />
+                            Delete
+                          </button>
+                        </>
+                      )
                     )}
                   </div>
                 </div>

@@ -599,6 +599,56 @@ export const requestWithdrawMoneyFormSchema = z.object({
     .max(5000000, { message: "Amount does not exceed 5 millions VND" }),
 });
 
+const MAX_HOURS = 24;
+const MAX_MINUTES = 1440;
+
+export const editProductStoreServiceFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, { message: "Product name must be at least 2 characters" })
+      .max(50, { message: "Product name does not exceed 50 characters" }),
+    price: z
+      .number()
+      .min(0, { message: "Price must be greater than 0 VND" })
+      .max(10000000, { message: "Price does not exceed 10 millions VND" }),
+    quantity: z.coerce
+      .number()
+      .min(1, { message: "Quantity must be at least 1" })
+      .max(1000, { message: "Quantity does not exceed 1000" }),
+    duration: z.coerce
+      .number()
+      .min(1, { message: "Duration must be at least 1" }),
+    unit: z.string().min(1, { message: "Unit is required" }),
+    imageUrl: z.nullable(z.string()),
+  })
+  .refine(
+    (data) => {
+      if (data.unit === "Hour") {
+        const overHours = data.duration <= MAX_HOURS;
+        return overHours;
+      }
+      return true;
+    },
+    {
+      message: "Duration can not over 24 hours!",
+      path: ["duration"],
+    }
+  )
+  .refine(
+    (data) => {
+      if (data.unit === "Minute") {
+        const overMinute = data.duration <= MAX_MINUTES;
+        return overMinute;
+      }
+      return true;
+    },
+    {
+      message: "Duration can not over 1440 minutes!",
+      path: ["duration"],
+    }
+  );
+
 export type UserSessionFormValues = z.infer<typeof userSessionFormSchema>;
 export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
 export type CreatePromotionFormValues = z.infer<
@@ -627,6 +677,9 @@ export type UserReAssignEmailValues = z.infer<
 >;
 export type RequestWithdrawMoneyValues = z.infer<
   typeof requestWithdrawMoneyFormSchema
+>;
+export type EditProductStoreServiceValues = z.infer<
+  typeof editProductStoreServiceFormSchema
 >;
 
 export interface PackageItemDetailPageProps {
