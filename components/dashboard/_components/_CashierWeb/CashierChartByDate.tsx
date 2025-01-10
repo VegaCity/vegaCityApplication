@@ -150,10 +150,9 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
         dateMap.endDayCheckWalletCashierBalanceHistory,
     }));
   };
-  console.log(
-    chartAmountOrderData(chartCashierAmountOrder),
-    "chartAmountOrderData"
-  );
+
+  const dashboardCashierWebData = chartAmountOrderData(chartCashierAmountOrder);
+  console.log(dashboardCashierWebData, "dashboardCashierWebData");
 
   // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
@@ -198,10 +197,7 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
       <CardContent>
         <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
           {chartCashierAmountOrder && chartCashierAmountOrder.length > 0 ? (
-            <BarChart
-              accessibilityLayer
-              data={chartAmountOrderData(chartCashierAmountOrder)}
-            >
+            <BarChart accessibilityLayer data={dashboardCashierWebData}>
               <CartesianGrid vertical={false} />
               <XAxis
                 dataKey="date"
@@ -233,6 +229,7 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
                   />
                 }
               />
+
               <ChartLegend content={<ChartLegendContent />} />
               <Bar
                 dataKey={activeChart}

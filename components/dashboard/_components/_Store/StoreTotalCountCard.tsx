@@ -66,11 +66,13 @@ export default function StoreTotalCountCard({ params }: TotalCountCardProps) {
     if (!startDate || !endDate) return;
     // setIsLoading(true);
     // fetch data from API
+    const storeType = localStorage.getItem("storeType");
+    if (!storeType) return;
 
     const chartBodyDataByDateByMonth: AnalyticsPostProps = {
       startDate: format(startDate, "yyyy-MM-dd"),
       endDate: format(endDate, "yyyy-MM-dd"),
-      saleType: "Product",
+      saleType: parseInt(storeType) === 1 ? "Product" : "Service",
       groupBy: "Month",
     };
 
