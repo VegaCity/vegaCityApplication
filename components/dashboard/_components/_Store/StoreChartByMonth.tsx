@@ -116,11 +116,13 @@ export function StoreChartByMonth({ params }: ChartByMonthProps) {
     //get api
     const fetchDashboardData = async () => {
       if (!startDate || !endDate) return;
+      const storeType = localStorage.getItem("storeType");
+      if (!storeType) return;
 
       const chartBodyData: AnalyticsPostProps = {
         startDate: format(startDate, "yyyy-MM-dd"),
         endDate: format(endDate, "yyyy-MM-dd"),
-        saleType: "Product",
+        saleType: parseInt(storeType) === 1 ? "Product" : "Service",
         groupBy: "Month",
       };
 

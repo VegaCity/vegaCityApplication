@@ -42,10 +42,10 @@ const chartConfig = {
     label: "Total Customer Money Withdraw",
     color: "hsl(var(--chart-2))",
   },
-  vegaDepositsAmountFromStore:{
+  vegaDepositsAmountFromStore: {
     label: "Vega Deposits Amount From Store",
     color: "hsl(var(--chart-3))",
-  }
+  },
 } satisfies ChartConfig;
 
 interface ChartByMonthProps {
@@ -76,6 +76,7 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
       );
       return {
         name: fullMonthName, // "November", "December"
+        formattedDate: dateMap.formattedDate, // "Nov", "Dec"
         totalAmountCustomerMoneyTransfer:
           dateMap.totalAmountCustomerMoneyTransfer,
         totalAmountCustomerMoneyWithdraw:

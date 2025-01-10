@@ -31,6 +31,7 @@ export interface StoreAnalytics {
 
 export interface GroupedStaticsAdminByMonth {
   name: string;
+  formattedDate: string;
   endDayCheckWalletCashierBalance: number;
   endDayCheckWalletCashierBalanceHistory: number;
   totalAmountCashOrder: number;
@@ -75,6 +76,8 @@ export interface GroupedStaticsAdminByDate {
   totalAmountOrderOnlineMethod: number;
   totalOrderFeeCharge: number;
   totalAmountOrderFeeCharge: number;
+  totalAmountOrderFeeChargeCash: number;
+  totalAmountOrderFeeChargeVirtualMoney: number;
   endDayCheckWalletCashierBalance: number;
   endDayCheckWalletCashierBalanceHistory: number;
   vegaDepositsAmountFromStore: number;

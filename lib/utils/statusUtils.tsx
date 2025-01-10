@@ -72,9 +72,9 @@ export const handleBadgeStatusColorString = (status: string): string => {
 export const handleBadgePackageTypeColorString = (status: string): string => {
   switch (status) {
     case "ServicePackage": // Service Package
-      return "bg-blue-400 hover:bg-blue-500";
+      return "bg-blue-400 hover:bg-blue-500 text-white";
     case "SpecificPackage": //Specific Package
-      return "bg-badgePurple hover:bg-badgePurple-hover";
+      return "bg-badgePurple hover:bg-badgePurple-hover text-white";
     default:
       return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Optional: default color
   }
@@ -84,14 +84,14 @@ export const handleBadgePackageTypeColorString = (status: string): string => {
 export const handleBadgeRoleColorString = (role: string): string => {
   switch (role) {
     case "Store":
-      return "bg-green-400 hover:bg-green-500"; // Green for Store
+      return "bg-green-400 hover:bg-green-500 text-white"; // Green for Store
     case "CashierWeb":
-      return "bg-sky-500 hover:bg-sky-600"; // Yellow for CashierWeb
+      return "bg-sky-500 hover:bg-sky-600 text-white"; // Yellow for CashierWeb
     case "CashierApp":
-      return "bg-blue-400 hover:bg-blue-500"; // Orange for CashierApp
+      return "bg-blue-400 hover:bg-blue-500 text-white"; // Orange for CashierApp
     case "Admin":
-      return "bg-red-400 hover:bg-red-500"; // Red for Admin (highest authorization)
+      return "bg-red-400 hover:bg-red-500 text-white"; // Red for Admin (highest authorization)
     default:
-      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 hover:text-white"; // Default color for undefined roles
+      return "border-gray-400 bg-gray-100 hover:bg-gray-400 text-gray-500 text-white"; // Default color for undefined roles
   }
 };
