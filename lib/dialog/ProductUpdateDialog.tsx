@@ -206,13 +206,13 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                     Product Image
                   </Label>
                   <div className="flex justify-center">
-                    <div className="relative w-64 h-64 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-gray-400 transition-colors">
+                    <div className="relative w-auto h-auto max-w-sm max-h-svh border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-gray-400 transition-colors">
                       {imagePreview ? (
                         <div className="relative group">
                           <img
                             src={imagePreview}
                             alt="Preview"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover rounded-lg"
                           />
                           <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <Button
