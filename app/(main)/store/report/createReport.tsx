@@ -13,13 +13,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AxiosResponse } from "axios";
+import { AxiosError, AxiosResponse } from "axios";
 import { StoreServices } from "@/components/services/Store/storeServices";
+import { useRouter } from "next/navigation";
 interface IssueType {
   id: string;
   name: string;
   crDate: string;
   deflag: boolean;
+}
+
+interface ReportPageProps {
+  onCompleteChange: () => void;
 }
 
 interface IssueTypeResponse {
@@ -41,7 +46,8 @@ interface StoreDataProps {
   email: string;
 }
 
-export const ReportPage = () => {
+export const ReportPage = ({ onCompleteChange }: ReportPageProps) => {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [issueTypes, setIssueTypes] = useState<IssueType[]>([]);
   const [formData, setFormData] = useState<ReportPostStore>({
@@ -175,9 +181,10 @@ export const ReportPage = () => {
         title: "Success",
         description: "Report created successfully",
       });
+      // Navigate to tab list report
       setTimeout(() => {
-        window.location.href = "/store/report";
-      }, 2000);
+        onCompleteChange();
+      }, 1000);
       setFormData({
         issueTypeId: "",
         description: "",
@@ -210,10 +217,17 @@ export const ReportPage = () => {
             name: storeData.store.name,
             email: storeData.store.email,
           });
-          console.log(storeData, "storeData");
         }
       } catch (error) {
-        console.log(error);
+        if (error instanceof AxiosError) {
+          toast({
+            title: "Error",
+            description:
+              error.response?.data.Error ||
+              error.response?.data.messageResponse,
+          });
+          console.log(error);
+        }
       }
     };
     fetchStoreData();
@@ -269,7 +283,7 @@ export const ReportPage = () => {
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="min-w-5"
+            className="p-4 bg-blue-500 hover:bg-blue-600 text-white"
           >
             {isLoading ? "Submitting..." : "Submit Report"}
           </Button>

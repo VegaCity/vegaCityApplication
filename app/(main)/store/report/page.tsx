@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Plus, List, DollarSign } from "lucide-react";
@@ -8,6 +8,15 @@ import ReportList from "./listReport";
 import RequestWithdrawPage from "@/app/(main)/store/report/withdrawRequest";
 
 const Reports = () => {
+  const [activeTab, setActiveTab] = useState("list");
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const handleCompleteChange = () => {
+    setActiveTab("list");
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="mb-6">
@@ -15,7 +24,12 @@ const Reports = () => {
         <p className="text-gray-500">Create and manage your reports</p>
       </div>
 
-      <Tabs defaultValue="list" className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        defaultValue="list"
+        className="space-y-6"
+      >
         <div className="flex justify-between items-center">
           <TabsList>
             <TabsTrigger value="list" className="space-x-2">
@@ -50,11 +64,11 @@ const Reports = () => {
         </TabsContent>
 
         <TabsContent value="create" className="m-0">
-          <ReportPage />
+          <ReportPage onCompleteChange={handleCompleteChange} />
         </TabsContent>
 
         <TabsContent value="withdraw" className="m-0">
-          <RequestWithdrawPage />
+          <RequestWithdrawPage onCompleteChange={handleCompleteChange} />
         </TabsContent>
       </Tabs>
     </div>
