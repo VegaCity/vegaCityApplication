@@ -34,16 +34,16 @@ import { format, parse } from "date-fns";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 
 const chartConfig = {
-  totalAmountCustomerMoneyTransfer: {
-    label: "Total Customer Money Transfer",
+  totalAmountWithdrawFromVega: {
+    label: "Total Amount Withdraw From Vega",
     color: "hsl(var(--chart-1))",
   },
-  totalAmountCustomerMoneyWithdraw: {
-    label: "Total Customer Money Withdraw",
+  totalWithdrawAmountFromCustomer: {
+    label: "Total Withdraw Amount From Customer",
     color: "hsl(var(--chart-2))",
   },
-  vegaDepositsAmountFromStore: {
-    label: "Vega Deposits Amount From Store",
+  totalWithdrawAmountFomStoreOwner: {
+    label: "Total Withdraw Amount From Store Owner",
     color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig;
@@ -63,7 +63,7 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
     GroupedStaticsAdminByMonth[]
   >([]);
   const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
-    "totalAmountCustomerMoneyTransfer"
+    "totalAmountWithdrawFromVega"
   );
   const { endDate, startDate, saleType } = params;
 
@@ -77,11 +77,11 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
       return {
         name: fullMonthName, // "November", "December"
         formattedDate: dateMap.formattedDate, // "Nov", "Dec"
-        totalAmountCustomerMoneyTransfer:
-          dateMap.totalAmountCustomerMoneyTransfer,
-        totalAmountCustomerMoneyWithdraw:
-          dateMap.totalAmountCustomerMoneyWithdraw,
-        vegaDepositsAmountFromStore: dateMap.vegaDepositsAmountFromStore,
+        totalAmountWithdrawFromVega: dateMap.totalAmountWithdrawFromVega,
+        totalWithdrawAmountFromCustomer:
+          dateMap.totalWithdrawAmountFromCustomer,
+        totalWithdrawAmountFomStoreOwner:
+          dateMap.totalWithdrawAmountFomStoreOwner,
       };
     });
   };
@@ -96,22 +96,31 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
     const trends = data.map((current, index) => {
       if (index === 0) return null; // Skip the first month
       const previous = data[index - 1];
-      const percentChange = previous.totalAmountCustomerMoneyTransfer
-        ? ((current.totalAmountCustomerMoneyTransfer -
-            previous.totalAmountCustomerMoneyTransfer) /
-            previous.totalAmountCustomerMoneyTransfer) *
+      const percentChange = previous.totalAmountWithdrawFromVega
+        ? ((current.totalAmountWithdrawFromVega -
+            previous.totalAmountWithdrawFromVega) /
+            previous.totalAmountWithdrawFromVega) *
           100
         : 0; // Handle division by zero
-      const percentChangeWithdraw = previous.totalAmountCustomerMoneyWithdraw
-        ? ((current.totalAmountCustomerMoneyWithdraw -
-            previous.totalAmountCustomerMoneyWithdraw) /
-            previous.totalAmountCustomerMoneyWithdraw) *
-          100
-        : 0; // Handle division by zero
+      const percentChangeWithdrawCustomer =
+        previous.totalWithdrawAmountFromCustomer
+          ? ((current.totalWithdrawAmountFromCustomer -
+              previous.totalWithdrawAmountFromCustomer) /
+              previous.totalWithdrawAmountFromCustomer) *
+            100
+          : 0; // Handle division by zero
+      const percentChangeWithdrawStore =
+        previous.totalWithdrawAmountFomStoreOwner
+          ? ((current.totalWithdrawAmountFomStoreOwner -
+              previous.totalWithdrawAmountFomStoreOwner) /
+              previous.totalWithdrawAmountFomStoreOwner) *
+            100
+          : 0; // Handle division by zero
       return {
         month: current.name,
         percentChange: percentChange.toFixed(2), // Limit to 2 decimal places
-        percentChangeWithdraw: percentChangeWithdraw.toFixed(2),
+        percentChangeWithdrawCustomer: percentChangeWithdrawCustomer.toFixed(2),
+        percentChangeWithdrawStore: percentChangeWithdrawStore.toFixed(2),
       };
     });
 
@@ -202,27 +211,27 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
               />
               <ChartLegend content={<ChartLegendContent />} />
               <Area
-                dataKey="vegaDepositsAmountFromStore"
+                dataKey="totalAmountWithdrawFromVega"
                 type="natural"
-                fill="var(--color-vegaDepositsAmountFromStore)"
+                fill="var(--color-totalAmountWithdrawFromVega)"
                 fillOpacity={0.4}
-                stroke="var(--color-vegaDepositsAmountFromStore)"
+                stroke="var(--color-totalAmountWithdrawFromVega)"
                 stackId="a"
               />
               <Area
-                dataKey="totalAmountCustomerMoneyTransfer"
+                dataKey="totalWithdrawAmountFromCustomer"
                 type="natural"
-                fill="var(--color-totalAmountCustomerMoneyTransfer)"
+                fill="var(--color-totalWithdrawAmountFromCustomer)"
                 fillOpacity={0.4}
-                stroke="var(--color-totalAmountCustomerMoneyTransfer)"
+                stroke="var(--color-totalWithdrawAmountFromCustomer)"
                 stackId="a"
               />
               <Area
-                dataKey="totalAmountCustomerMoneyWithdraw"
+                dataKey="totalWithdrawAmountFomStoreOwner"
                 type="natural"
-                fill="var(--color-totalAmountCustomerMoneyWithdraw)"
+                fill="var(--color-totalWithdrawAmountFomStoreOwner)"
                 fillOpacity={0.4}
-                stroke="var(--color-totalAmountCustomerMoneyWithdraw)"
+                stroke="var(--color-totalWithdrawAmountFomStoreOwner)"
                 stackId="a"
               />
             </AreaChart>
@@ -254,10 +263,23 @@ export function AdminChartByMonth({ params }: ChartByMonthProps) {
                   |
                   <span className="flex flex-row gap-2">
                     Trending Customer Withdraw this &nbsp;
-                    {trend?.month}: {trend?.percentChangeWithdraw}%{" "}
+                    {trend?.month}: {trend?.percentChangeWithdrawCustomer}%{" "}
                     <span>
-                      {trend?.percentChangeWithdraw &&
-                      Number(trend?.percentChangeWithdraw) > 0 ? (
+                      {trend?.percentChangeWithdrawCustomer &&
+                      Number(trend?.percentChangeWithdrawCustomer) > 0 ? (
+                        <TrendingUp className="h-4 w-4" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4" />
+                      )}
+                    </span>
+                  </span>
+                  |
+                  <span className="flex flex-row gap-2">
+                    Trending Store Withdraw this &nbsp;
+                    {trend?.month}: {trend?.percentChangeWithdrawStore}%{" "}
+                    <span>
+                      {trend?.percentChangeWithdrawStore &&
+                      Number(trend?.percentChangeWithdrawStore) > 0 ? (
                         <TrendingUp className="h-4 w-4" />
                       ) : (
                         <TrendingDown className="h-4 w-4" />

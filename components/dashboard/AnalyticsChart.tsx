@@ -44,6 +44,7 @@ import { StoreChartByMonth } from "@/components/dashboard/_components/_Store/Sto
 import { AdminChartByMonth } from "@/components/dashboard/_components/_Admin/AdminChartByMonth";
 import { CashierChartByMonth } from "@/components/dashboard/_components/_CashierWeb/CashierChartByMonth";
 import { AdminPieGraph } from "@/components/dashboard/_components/_Admin/AdminPieGraph";
+import { AdminChartByDateAll } from "@/components/dashboard/_components/_Admin/AdminChartByDateAll";
 
 interface ChartLine {
   dataKey: string;
@@ -176,7 +177,11 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
       return (
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-4 md:col-span-8">
-            <AdminChartByDate params={{ saleType, startDate, endDate }} />
+            {userRole && userRole === "Admin" && saleType === "All" ? (
+              <AdminChartByDateAll params={{ saleType, startDate, endDate }} />
+            ) : (
+              <AdminChartByDate params={{ saleType, startDate, endDate }} />
+            )}
           </div>
           <div className="col-span-4 xl:col-span-4 hidden lg:table-cell">
             <ChartCard

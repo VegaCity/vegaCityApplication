@@ -47,6 +47,10 @@ export interface GroupedStaticsAdminByMonth {
   vegaDepositsAmountFromStore: number;
   totalWithdrawRequest: number;
   totalAmountWithdrawFromVega: number;
+  totalWithdrawFromCustomer: number;
+  totalWithdrawAmountFromCustomer: number;
+  totalWithdrawFomStoreOwner: number;
+  totalWithdrawAmountFomStoreOwner: number;
 }
 
 export interface AdminAnalyticsByMonth {

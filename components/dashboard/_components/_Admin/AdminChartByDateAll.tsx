@@ -41,21 +41,6 @@ import { FolderArchive } from "lucide-react";
 //   { month: "June", desktop: 214, mobile: 140 },
 // ];
 
-const chartConfig = {
-  totalAmountOrder: {
-    label: "Total Amount Order",
-    color: "hsl(var(--chart-1))",
-  },
-  totalAmountCashOrder: {
-    label: "Total Amount Cash Order",
-    color: "hsl(var(--chart-2))",
-  },
-  totalAmountOrderOnlineMethod: {
-    label: "Total Amount Order Online Payment",
-    color: "hsl(var(--chart-3))",
-  },
-} satisfies ChartConfig;
-
 interface ChartByDateProps {
   params: {
     startDate: Date | null;
@@ -64,7 +49,7 @@ interface ChartByDateProps {
   };
 }
 
-export function AdminChartByDate({ params }: ChartByDateProps) {
+export function AdminChartByDateAll({ params }: ChartByDateProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const [dashboardData, setDashboardData] =
@@ -72,22 +57,39 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
   const [chartAdminAmountOrder, setChartAdminAmountOrder] = useState<
     GroupedStaticsAdminByDate[]
   >([]);
-  const [activeChart, setActiveChart] =
-    useState<keyof typeof chartConfig>("totalAmountOrder");
+  const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
+    "totalAmountOrderFeeCharge"
+  );
   const { endDate, saleType, startDate } = params;
+
+  //Type All
+  const chartConfig = {
+    totalAmountOrderFeeCharge: {
+      label: "Total Amount Order Fee Charge",
+      color: "hsl(var(--chart-1))",
+    },
+    totalAmountOrderFeeChargeCash: {
+      label: "Total Amount Order Fee Charge Cash",
+      color: "hsl(var(--chart-2))",
+    },
+    totalAmountOrderFeeChargeVirtualMoney: {
+      label: "Total Amount Order Fee Charge Virtual Money",
+      color: "hsl(var(--chart-3))",
+    },
+  } satisfies ChartConfig;
 
   const total = useMemo(
     () => ({
-      totalAmountOrder: chartAdminAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountOrder,
+      totalAmountOrderFeeCharge: chartAdminAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrderFeeCharge,
         0
       ),
-      totalAmountCashOrder: chartAdminAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountCashOrder,
+      totalAmountOrderFeeChargeCash: chartAdminAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrderFeeChargeCash,
         0
       ),
-      totalAmountOrderOnlineMethod: chartAdminAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountOrderOnlineMethod,
+      totalAmountOrderFeeChargeVirtualMoney: chartAdminAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrderFeeChargeVirtualMoney,
         0
       ),
     }),
@@ -139,9 +141,10 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
   const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
     return data.map((dateMap) => ({
       date: dateMap.date?.split("T", 1)[0], // Extract the date portion only
-      totalAmountOrder: dateMap.totalAmountOrder,
-      totalAmountCashOrder: dateMap.totalAmountCashOrder,
-      totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
+      totalAmountOrderFeeCharge: dateMap.totalAmountOrderFeeCharge,
+      totalAmountOrderFeeChargeCash: dateMap.totalAmountOrderFeeChargeCash,
+      totalAmountOrderFeeChargeVirtualMoney:
+        dateMap.totalAmountOrderFeeChargeVirtualMoney,
     }));
   };
   console.log(
@@ -163,9 +166,9 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
         </div>
         <div className="flex flex-col xl:flex-row">
           {[
-            "totalAmountOrder",
-            "totalAmountCashOrder",
-            "totalAmountOrderOnlineMethod",
+            "totalAmountOrderFeeCharge",
+            "totalAmountOrderFeeChargeCash",
+            "totalAmountOrderFeeChargeVirtualMoney",
           ].map((key) => {
             const chart = key as keyof typeof chartConfig;
             return (

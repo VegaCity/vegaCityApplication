@@ -111,16 +111,12 @@ const Home = () => {
     // Update parent state or perform actions
   };
 
+  //First render sale type
   const [userRole, setUserRole] = useState<string>("");
-
-  const typeFirstRender = () => {
-    return userRole === "Admin" ? "All" : "Package";
-  };
-
-  const defaultSaleType = typeFirstRender();
-
-  const [selectedType, setSelectedType] = useState<string>(defaultSaleType);
-  // if (!startDate || !endDate) return;
+  let getDefaultSaleType: any = () => {}; //call in useEffect
+  const defaultSaleType = getDefaultSaleType();
+  const [selectedType, setSelectedType] = useState<string>("");
+  console.log(selectedType, "saleType"); // "All"
 
   //--------------------- Admin Section ------------------------
   const [adminAnalyticsDataByMonth, setAdminAnalyticsDataByMonth] =
@@ -187,12 +183,17 @@ const Home = () => {
       try {
         // Get user role first
         const userId = localStorage.getItem("userId");
+        // If store role get storeType
+        const type = localStorage.getItem("storeType");
+        if (!type) return;
+        const storeType = parseInt(type);
+
         const userResponse = await AnalyticsServices.getUserById(
           userId as string
         );
         const role = userResponse.data.data.role.name;
         setUserRole(role);
-        console.log(role, "role");
+        // console.log(role, "role");
         const roleName = localStorage.setItem("roleName", role);
         if (role === "Admin") {
           if (!startDate || !endDate) return;
@@ -208,16 +209,31 @@ const Home = () => {
           setAdminAnalyticsDataByDate(adminAnalyticsRes.data.data);
         } else if (role === "Store") {
           if (!startDate || !endDate) return;
-
-          const chartBodyDataByDate: AnalyticsPostProps = {
-            startDate: format(startDate, "yyyy-MM-dd"),
-            endDate: format(endDate, "yyyy-MM-dd"),
-            saleType: "Product",
-            groupBy: "Date",
-          };
-          const storeAnalyticsRes =
-            await AnalyticsServices.getDashboardAnalytics(chartBodyDataByDate);
-          setStoreAnalyticsDataByDate(storeAnalyticsRes.data.data);
+          if (storeType === 1) {
+            const chartBodyDataByDateProduct: AnalyticsPostProps = {
+              startDate: format(startDate, "yyyy-MM-dd"),
+              endDate: format(endDate, "yyyy-MM-dd"),
+              saleType: "Product",
+              groupBy: "Date",
+            };
+            const storeAnalyticsRes =
+              await AnalyticsServices.getDashboardAnalytics(
+                chartBodyDataByDateProduct
+              );
+            setStoreAnalyticsDataByDate(storeAnalyticsRes.data.data);
+          } else if (storeType === 2) {
+            const chartBodyDataByDateService: AnalyticsPostProps = {
+              startDate: format(startDate, "yyyy-MM-dd"),
+              endDate: format(endDate, "yyyy-MM-dd"),
+              saleType: "Service",
+              groupBy: "Date",
+            };
+            const storeAnalyticsRes =
+              await AnalyticsServices.getDashboardAnalytics(
+                chartBodyDataByDateService
+              );
+            setStoreAnalyticsDataByDate(storeAnalyticsRes.data.data);
+          }
         } else if (role === "CashierWeb") {
           if (!startDate || !endDate) return;
           const chartBodyDataByDate: AnalyticsPostProps = {
@@ -239,6 +255,15 @@ const Home = () => {
 
     fetchUserAndAnalytics();
   }, []);
+
+  //First render sale Type
+  useEffect(() => {
+    getDefaultSaleType = () => {
+      return userRole === "Admin" ? "All" : "Package";
+    };
+
+    setSelectedType(getDefaultSaleType());
+  }, [userRole]); // Runs whenever userRole changes
 
   if (isLoading) {
     return (
@@ -334,7 +359,7 @@ const Home = () => {
           {userRole !== "Store" && (
             <div className="flex flex-row w-full items-center justify-end">
               <Select
-                defaultValue={defaultSaleType}
+                defaultValue={selectedType}
                 onValueChange={handleChangeType}
               >
                 <SelectTrigger className="w-[180px]">
