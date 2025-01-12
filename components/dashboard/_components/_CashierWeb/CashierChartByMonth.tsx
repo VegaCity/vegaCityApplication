@@ -35,18 +35,18 @@ import { format, parse } from "date-fns";
 import { useAuthUser } from "@/components/hooks/useAuthUser";
 
 const chartConfig = {
-  totalAmountCashOrder: {
-    label: "Total Cash Order",
+  totalAmountWithdrawFromVega: {
+    label: "Total Amount Withdraw From Vega",
     color: "hsl(var(--chart-1))",
   },
-  totalAmountOrderOnlineMethod: {
-    label: "Total Online Order",
+  totalWithdrawAmountFromCustomer: {
+    label: "Total Withdraw Amount From Customer",
     color: "hsl(var(--chart-2))",
   },
-  totalAmountWithdrawFromVega: {
-    label: "Total Withdraw From Vega",
+  totalWithdrawAmountFomStoreOwner: {
+    label: "Total Withdraw Amount From Store Owner",
     color: "hsl(var(--chart-3))",
-  }
+  },
 } satisfies ChartConfig;
 
 interface ChartByMonthProps {
@@ -65,7 +65,7 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
   >([]);
   const { endDate, startDate, saleType } = params;
   const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
-    "totalAmountCashOrder"
+    "totalAmountWithdrawFromVega"
   );
 
   const chartAmountOrderData = (data: GroupedStaticsAdminByMonth[]) => {
@@ -81,9 +81,12 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
       );
       return {
         name: fullMonthName, // "November", "December"
-        totalAmountCashOrder: dateMap.totalAmountCashOrder,
-        totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
+        formattedDate: dateMap.formattedDate, // "Nov", "Dec"
         totalAmountWithdrawFromVega: dateMap.totalAmountWithdrawFromVega,
+        totalWithdrawAmountFromCustomer:
+          dateMap.totalWithdrawAmountFromCustomer,
+        totalWithdrawAmountFomStoreOwner:
+          dateMap.totalWithdrawAmountFomStoreOwner,
       };
     });
   };
@@ -98,21 +101,31 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
     const trends = data.map((current, index) => {
       if (index === 0) return null; // Skip the first month
       const previous = data[index - 1];
-      const percentChange = previous.totalAmountCashOrder
-        ? ((current.totalAmountCashOrder - previous.totalAmountCashOrder) /
-            previous.totalAmountCashOrder) *
+      const percentChange = previous.totalAmountWithdrawFromVega
+        ? ((current.totalAmountWithdrawFromVega -
+            previous.totalAmountWithdrawFromVega) /
+            previous.totalAmountWithdrawFromVega) *
           100
         : 0; // Handle division by zero
-      const percentChangeOnline = previous.totalAmountOrderOnlineMethod
-        ? ((current.totalAmountOrderOnlineMethod -
-            previous.totalAmountOrderOnlineMethod) /
-            previous.totalAmountOrderOnlineMethod) *
-          100
-        : 0; // Handle division by zero
+      const percentChangeWithdrawCustomer =
+        previous.totalWithdrawAmountFromCustomer
+          ? ((current.totalWithdrawAmountFromCustomer -
+              previous.totalWithdrawAmountFromCustomer) /
+              previous.totalWithdrawAmountFromCustomer) *
+            100
+          : 0; // Handle division by zero
+      const percentChangeWithdrawStore =
+        previous.totalWithdrawAmountFomStoreOwner
+          ? ((current.totalWithdrawAmountFomStoreOwner -
+              previous.totalWithdrawAmountFomStoreOwner) /
+              previous.totalWithdrawAmountFomStoreOwner) *
+            100
+          : 0; // Handle division by zero
       return {
         month: current.name,
         percentChange: percentChange.toFixed(2), // Limit to 2 decimal places
-        percentChangeOnline: percentChangeOnline.toFixed(2),
+        percentChangeWithdrawCustomer: percentChangeWithdrawCustomer.toFixed(2),
+        percentChangeWithdrawStore: percentChangeWithdrawStore.toFixed(2),
       };
     });
 
@@ -202,29 +215,29 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
             />
             <ChartLegend content={<ChartLegendContent />} />
             <Area
-              dataKey="totalAmountCashOrder"
-              type="natural"
-              fill="var(--color-totalAmountCashOrder)"
-              fillOpacity={0.4}
-              stroke="var(--color-totalAmountCashOrder)"
-              stackId="a"
-            />
-            <Area
-              dataKey="totalAmountOrderOnlineMethod"
-              type="natural"
-              fill="var(--color-totalAmountOrderOnlineMethod)"
-              fillOpacity={0.4}
-              stroke="var(--color-totalAmountOrderOnlineMethod)"
-              stackId="a"
-            />
-            <Area
               dataKey="totalAmountWithdrawFromVega"
               type="natural"
               fill="var(--color-totalAmountWithdrawFromVega)"
               fillOpacity={0.4}
               stroke="var(--color-totalAmountWithdrawFromVega)"
               stackId="a"
-              />
+            />
+            <Area
+              dataKey="totalWithdrawAmountFromCustomer"
+              type="natural"
+              fill="var(--color-totalWithdrawAmountFromCustomer)"
+              fillOpacity={0.4}
+              stroke="var(--color-totalWithdrawAmountFromCustomer)"
+              stackId="a"
+            />
+            <Area
+              dataKey="totalWithdrawAmountFomStoreOwner"
+              type="natural"
+              fill="var(--color-totalWithdrawAmountFomStoreOwner)"
+              fillOpacity={0.4}
+              stroke="var(--color-totalWithdrawAmountFomStoreOwner)"
+              stackId="a"
+            />
           </AreaChart>
         </ChartContainer>
       </CardContent>
@@ -234,7 +247,7 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
             <div className="flex items-center gap-2 font-medium leading-none">
               {monthlyTrends.map((trend) => (
                 <div key={trend?.month} className="text-sm flex flex-row gap-2">
-                  Trending Customer Cash Payments this &nbsp;
+                  Trending Customer Transfer this &nbsp;
                   {trend?.month}: {trend?.percentChange}%{" "}
                   <span>
                     {trend?.percentChange &&
@@ -246,11 +259,24 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
                   </span>
                   |
                   <span className="flex flex-row gap-2">
-                    Trending Customer Online Payments &nbsp;
-                    {trend?.month}: {trend?.percentChangeOnline}%{" "}
+                    Trending Customer Withdraw this &nbsp;
+                    {trend?.month}: {trend?.percentChangeWithdrawCustomer}%{" "}
                     <span>
-                      {trend?.percentChangeOnline &&
-                      Number(trend?.percentChangeOnline) > 0 ? (
+                      {trend?.percentChangeWithdrawCustomer &&
+                      Number(trend?.percentChangeWithdrawCustomer) > 0 ? (
+                        <TrendingUp className="h-4 w-4" />
+                      ) : (
+                        <TrendingDown className="h-4 w-4" />
+                      )}
+                    </span>
+                  </span>
+                  |
+                  <span className="flex flex-row gap-2">
+                    Trending Store Withdraw this &nbsp;
+                    {trend?.month}: {trend?.percentChangeWithdrawStore}%{" "}
+                    <span>
+                      {trend?.percentChangeWithdrawStore &&
+                      Number(trend?.percentChangeWithdrawStore) > 0 ? (
                         <TrendingUp className="h-4 w-4" />
                       ) : (
                         <TrendingDown className="h-4 w-4" />
