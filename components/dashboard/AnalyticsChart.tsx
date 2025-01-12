@@ -28,7 +28,7 @@ import { AnalyticsServices } from "../services/Dashboard/analyticsServices";
 import { AdminChartByDate } from "@/components/dashboard/_components/_Admin/AdminChartByDate";
 import { CashierChartByDate } from "@/components/dashboard/_components/_CashierWeb/CashierChartByDate";
 import { StoreChartByDate } from "@/components/dashboard/_components/_Store/StoreChartByDate";
-import { TopSale } from "@/components/dashboard/_components/_Admin/TopSale";
+import { TopSale } from "@/components/dashboard/_components/_Admin/topStore/TopSale";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import {

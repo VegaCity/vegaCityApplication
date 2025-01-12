@@ -42,6 +42,6 @@ export interface Vcard {
 export interface PackageItemHandleUpdate {
   cusName: string;
   cusEmail: string;
-  cusCccdpassport: string;
+  cusCccdPassport: string;
   phoneNumber: string;
 }

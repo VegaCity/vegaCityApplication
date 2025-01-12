@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/chart";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import SaleStore from "@/components/dashboard/_components/_Admin/SaleStore";
+import SaleStore from "@/components/dashboard/_components/_Admin/topStore/SaleStore";
 import { Badge } from "@/components/ui/badge";
 import React, { useState, useEffect } from "react";
 import { Loader } from "@/components/loader/Loader";
@@ -23,6 +23,8 @@ import { AnalyticsServices } from "@/components/services/Dashboard/analyticsServ
 import { TopSaleStores, TopSaleStoresPost } from "@/types/analytics";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { toast } from "@/components/ui/use-toast";
+import StoreDialog from "@/components/dashboard/_components/_Admin/topStore/StoreDialog";
 
 interface TopSaleListProps {
   params: {
@@ -46,6 +48,7 @@ export const TopSaleList = React.memo(function TopSaleList({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const [topSaleList, setTopSaleList] = useState<TopSaleStores[]>([]);
+  const [selectedStore, setSelectedStore] = useState<TopStore | null>(null);
   const { endDate, tabsValue, startDate } = params;
 
   //Body Params
@@ -110,21 +113,37 @@ export const TopSaleList = React.memo(function TopSaleList({
     )
     .slice(0, 5);
 
+  const handleClickStoreDetail = (data: TopStore) => {
+    setSelectedStore(data);
+  };
+
   return (
     <div className="mt-6 space-y-10">
       {sortedAndLimitedTopStores.length > 0 ? (
         sortedAndLimitedTopStores.map((topStore, index) => (
-          <SaleStore
-            key={topStore.storeId || `${index}-${topStore.storeName}`} // Use a fallback key if `storeId` is missing
-            maxValueSale={topStore.totalAmount}
-            storeEmail={topStore.storeEmail}
-            storeName={topStore.storeName}
-          />
+          <>
+            <SaleStore
+              key={topStore.storeId || `${index}-${topStore.storeName}`} // Use a fallback key if `storeId` is missing
+              maxValueSale={topStore.totalAmount}
+              storeEmail={topStore.storeEmail}
+              storeName={topStore.storeName}
+              onClick={() => handleClickStoreDetail(topStore)}
+            />
+          </>
         ))
       ) : (
         <div>
           <EmptyDataPage />
         </div>
+      )}
+
+      {/* Top Store Detail */}
+      {selectedStore && (
+        <StoreDialog
+          isOpen={!!selectedStore} //True value if store exist
+          onClose={() => setSelectedStore(null)}
+          storeDetails={selectedStore}
+        />
       )}
     </div>
   );

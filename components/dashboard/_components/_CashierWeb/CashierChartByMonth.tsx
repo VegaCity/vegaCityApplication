@@ -39,11 +39,11 @@ const chartConfig = {
     label: "Total Amount Withdraw From Vega",
     color: "hsl(var(--chart-1))",
   },
-  totalAmountWithdrawFromCustomer: {
+  totalWithdrawAmountFromCustomer: {
     label: "Total Withdraw Amount From Customer",
     color: "hsl(var(--chart-2))",
   },
-  totalWithdrawAmountFomStoreOwner: {
+  totalWithdrawAmountFromStoreOwner: {
     label: "Total Withdraw Amount From Store Owner",
     color: "hsl(var(--chart-3))",
   },
@@ -85,8 +85,8 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
         totalAmountWithdrawFromVega: dateMap.totalAmountWithdrawFromVega,
         totalWithdrawAmountFromCustomer:
           dateMap.totalWithdrawAmountFromCustomer,
-        totalWithdrawAmountFomStoreOwner:
-          dateMap.totalWithdrawAmountFomStoreOwner,
+        totalWithdrawAmountFromStoreOwner:
+          dateMap.totalWithdrawAmountFromStoreOwner,
       };
     });
   };
@@ -115,10 +115,10 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
             100
           : 0; // Handle division by zero
       const percentChangeWithdrawStore =
-        previous.totalWithdrawAmountFomStoreOwner
-          ? ((current.totalWithdrawAmountFomStoreOwner -
-              previous.totalWithdrawAmountFomStoreOwner) /
-              previous.totalWithdrawAmountFomStoreOwner) *
+        previous.totalWithdrawAmountFromStoreOwner
+          ? ((current.totalWithdrawAmountFromStoreOwner -
+              previous.totalWithdrawAmountFromStoreOwner) /
+              previous.totalWithdrawAmountFromStoreOwner) *
             100
           : 0; // Handle division by zero
       return {
@@ -223,7 +223,7 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
               stackId="a"
             />
             <Area
-              dataKey="totalAmountWithdrawFromCustomer"
+              dataKey="totalWithdrawAmountFromCustomer"
               type="natural"
               fill="var(--color-totalWithdrawAmountFromCustomer)"
               fillOpacity={0.4}
@@ -231,11 +231,11 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
               stackId="a"
             />
             <Area
-              dataKey="totalWithdrawAmountFomStoreOwner"
+              dataKey="totalWithdrawAmountFromStoreOwner"
               type="natural"
-              fill="var(--color-totalWithdrawAmountFomStoreOwner)"
+              fill="var(--color-totalWithdrawAmountFromStoreOwner)"
               fillOpacity={0.4}
-              stroke="var(--color-totalWithdrawAmountFomStoreOwner)"
+              stroke="var(--color-totalWithdrawAmountFromStoreOwner)"
               stackId="a"
             />
           </AreaChart>

@@ -165,8 +165,8 @@ export function StoreChartByDate({ params }: ChartByDateProps) {
         </div>
         <div className="flex flex-col xl:flex-row">
           {[
-            "storeDepositsFromVcardPayment",
             "totalAmountOrder",
+            "storeDepositsFromVcardPayment",
             "vegaDepositsAmountFromStore",
           ].map((key) => {
             const chart = key as keyof typeof chartConfig;

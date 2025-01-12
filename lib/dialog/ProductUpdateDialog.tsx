@@ -352,7 +352,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                     </div>
 
                     <div>
-                      <Label
+                      {/* <Label
                         htmlFor="quantity"
                         className="text-base font-semibold"
                       >
@@ -361,7 +361,6 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                       <Input
                         id="quantity"
                         type="number"
-                        min="0"
                         value={formData.quantity}
                         onChange={(e) =>
                           setFormData({
@@ -371,6 +370,27 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                         }
                         className="mt-1"
                         placeholder="Enter quantity"
+                      /> */}
+
+                      <FormField
+                        control={form.control}
+                        name="quantity"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                              Quantity
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                                placeholder="Enter Quantity"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
 

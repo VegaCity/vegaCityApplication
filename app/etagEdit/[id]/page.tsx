@@ -138,10 +138,20 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const handleUpdate = async () => {
     if (!packageItem) return;
 
+    const cusCccdpassport = form.getValues("cusCccdpassport");
+    const cusEmail = form.getValues("cusEmail");
+    const cusName = form.getValues("cusName");
+    const phoneNumber = form.getValues("phoneNumber");
+
     try {
       setIsLoading(true);
-      let updatedData = form.getValues();
-
+      let updatedData = {
+        cusCccdPassport: cusCccdpassport || "",
+        cusEmail: cusEmail || "",
+        cusName: cusName || "",
+        phoneNumber: phoneNumber || "",
+      };
+      console.log(updatedData, "updatedData");
       const response = await PackageItemServices.editInfoPackageItem(
         packageItem.id,
         updatedData
@@ -152,9 +162,9 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
         title: "Success",
         description: messageResponse,
       });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
       setIsEditing(false);
       setIsUpdated(true);
       setPackageItem((prev) => (prev ? { ...prev, ...updatedData } : null));
@@ -162,7 +172,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       if (err instanceof Error) {
         const errorMessage = (err as any).response?.data?.Error;
         toast({
-          title: "Error",
+          title: "Info changed only one time!",
           description: errorMessage,
           variant: "destructive",
         });
@@ -191,7 +201,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   return (
     <div>
       <Form {...form}>
-        <form className={`space-y-4`}>
+        <form
+          // onSubmit={form.handleSubmit(handleUpdate)}
+          className={`space-y-4`}
+        >
           <Card className="w-full max-w-5xl mx-auto p-4 md:p-6">
             <PromotionAlert />
             <CardHeader className="pb-2">
@@ -224,63 +237,95 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                   </h4>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <FormItem className="space-y-2">
-                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          FullName
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
-                            {...form.register("cusName")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
+                      <FormField
+                        control={form.control}
+                        name="cusName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                              FullName
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter full name"
+                                {...field}
+                                readOnly={!isEditing}
+                                className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+                ${!isEditing ? "bg-slate-100" : "bg-white"}`}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                      <FormItem className="space-y-2">
-                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          Email
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
-                            {...form.register("cusEmail")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
+                      <FormField
+                        control={form.control}
+                        name="cusEmail"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                              Email
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter email"
+                                {...field}
+                                readOnly={!isEditing}
+                                className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+                ${!isEditing ? "bg-slate-100" : "bg-white"}`}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <FormItem className="space-y-2">
-                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          Phone Number
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
-                            {...form.register("phoneNumber")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
+                      <FormField
+                        control={form.control}
+                        name="phoneNumber"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                              Phone Number
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter phone number"
+                                {...field}
+                                readOnly={!isEditing}
+                                className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+                ${!isEditing ? "bg-slate-100" : "bg-white"}`}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                      <FormItem className="space-y-2">
-                        <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          CCCD/Passport
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
-              ${!isEditing ? "bg-slate-100" : "bg-white"}`}
-                            {...form.register("cusCccdpassport")}
-                            readOnly={!isEditing}
-                          />
-                        </FormControl>
-                      </FormItem>
+                      <FormField
+                        control={form.control}
+                        name="cusCccdpassport"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                              CCCD/Passport
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter CCCD/Passport"
+                                {...field}
+                                readOnly={!isEditing}
+                                className={`w-full border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white 
+                ${!isEditing ? "bg-slate-100" : "bg-white"}`}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
                       {/* <FormItem className="space-y-2">
                         <FormLabel className="block uppercase text-xs font-bold text-zinc-500 dark:text-white">
@@ -390,6 +435,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       onClick={() => {
                         handleUpdate();
                       }}
+                      type="submit"
                       className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
                     >
                       Save Changes
@@ -399,24 +445,24 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
               </div>
             </CardContent>
           </Card>
-          <ReportDialog
-            isOpen={isReportDialogOpen}
-            onClose={() => setIsReportDialogOpen(false)}
-            packageId={params?.id}
-          />
-          <div className="fixed bottom-6 sm:bottom-8 md:bottom-16 right-6 sm:right-8 md:right-16">
-            <Button
-              onClick={() => setIsReportDialogOpen(true)}
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg flex items-center justify-center group transition-all duration-300 hover:scale-110"
-            >
-              <CircleHelp className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-              <span className="absolute right-20 sm:right-24 bg-gray-800 text-white px-2 py-1 rounded text-sm sm:text-base opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                Report
-              </span>
-            </Button>
-          </div>
         </form>
       </Form>
+      <ReportDialog
+        isOpen={isReportDialogOpen}
+        onClose={() => setIsReportDialogOpen(false)}
+        packageId={params?.id}
+      />
+      <div className="fixed bottom-6 sm:bottom-8 md:bottom-16 right-6 sm:right-8 md:right-16">
+        <Button
+          onClick={() => setIsReportDialogOpen(true)}
+          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg flex items-center justify-center group transition-all duration-300 hover:scale-110"
+        >
+          <CircleHelp className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <span className="absolute right-20 sm:right-24 bg-gray-800 text-white px-2 py-1 rounded text-sm sm:text-base opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+            Report
+          </span>
+        </Button>
+      </div>
 
       <TransactionWithdrawList packageItemId={params.id} />
     </div>
