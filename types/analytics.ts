@@ -167,15 +167,20 @@ export interface AnalyticsPostProps {
   groupBy: "Month" | "Date" | string;
 }
 
+export interface TopStore {
+  storeId: string;
+  storeName: string;
+  storeEmail: string;
+  totalTransactions: number;
+  totalAmount: number;
+  totalQRAmount: number;
+  totalOthersAmount: number;
+  amountTransferdToVega: number;
+}
+
 export interface TopSaleStores {
   name: "Nov";
-  topStores: {
-    storeId: string;
-    storeName: string;
-    storeEmail: string;
-    totalTransactions: number;
-    totalAmount: number;
-  }[];
+  topStores: TopStore[];
 }
 
 export interface TopSaleStoresPost {

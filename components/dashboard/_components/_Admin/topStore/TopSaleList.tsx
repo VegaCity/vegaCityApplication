@@ -20,7 +20,7 @@ import { Loader } from "@/components/loader/Loader";
 import { AxiosError } from "axios";
 import EmptyDataPage from "@/components/emptyData/emptyData";
 import { AnalyticsServices } from "@/components/services/Dashboard/analyticsServices";
-import { TopSaleStores, TopSaleStoresPost } from "@/types/analytics";
+import { TopSaleStores, TopSaleStoresPost, TopStore } from "@/types/analytics";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
@@ -32,14 +32,6 @@ interface TopSaleListProps {
     startDate: Date | null;
     endDate: Date | null;
   };
-}
-
-interface TopStore {
-  storeId: string;
-  storeName: string;
-  storeEmail: string;
-  totalTransactions: number;
-  totalAmount: number;
 }
 
 export const TopSaleList = React.memo(function TopSaleList({

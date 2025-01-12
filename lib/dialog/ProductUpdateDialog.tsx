@@ -34,6 +34,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { AxiosError } from "axios";
 
 interface ProductErrors {
   name?: string;
@@ -82,11 +83,10 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     imageUrl: "",
     quantity: 1,
   });
-
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [storeType, setStoreType] = useState<string>("");
+  const [storeType, setStoreType] = useState<number>(0);
   const [productErrors, setProductErrors] = useState<ProductErrors[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -104,7 +104,8 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
 
   useEffect(() => {
     const type = localStorage.getItem("storeType");
-    setStoreType(type || "");
+    const numType = parseInt(type || "0");
+    setStoreType(numType);
   }, []);
 
   useEffect(() => {
@@ -147,25 +148,43 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     }
   };
 
+  const handleNone = async () => {
+    // Trigger validation from react-hook-form
+
+    const data = form.getValues();
+    // if (data.price > 100000) {
+    //   alert("Please select an image file");
+    //   console.log("eee");
+    //   return;
+    // }
+
+    try {
+      setIsSubmitting(true);
+      // Call your API with the validated data and imagePreview
+      await onUpdate({
+        ...data,
+        imageUrl: imagePreview,
+      });
+      onClose();
+      toast.success("Product updated successfully");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.status === 413) {
+          toast.error("Image URL too large");
+        } else {
+          toast.error(
+            error.response?.data.messageResponse ||
+              error.response?.data.Error ||
+              "Failed to update product! Some fields happened errors!"
+          );
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (data: ProductPatch) => {
-    // const { duration, imageUrl, name, price, quantity, unit } = formData;
-    // if (!product) return;
-    // // console.log(formData[0], "formData");
-    // // Iterate over keys of formData
-    // (Object.keys(formData) as Array<keyof typeof formData>).forEach(
-    //   async (key) => {
-    //     // Validate each field using validateProduct
-    //     console.log(key);
-    //     // if (!validateProduct(key, key[0])) {
-    //     //   toast({
-    //     //     variant: "destructive",
-    //     //     title: "Validation Error",
-    //     //     description: "Please fill in all required fields correctly",
-    //     //   });
-    //     //   return;
-    //     // }
-    //   }
-    // );
     console.log(data, "dataProduct");
     try {
       setIsSubmitting(true);
@@ -176,7 +195,14 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
       onClose();
       toast.success("Product updated successfully");
     } catch (error) {
-      toast.error("Failed to update product");
+      if (error instanceof AxiosError) {
+        error.status === 413 && toast.error("Image URL too large");
+        toast.error(
+          error.response?.data.messageResponse ||
+            error.response?.data.Error ||
+            "Failed to update product! Some fields happened errors!"
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -198,73 +224,70 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)}>
-            <div>
-              <div className="grid gap-2 py-4">
-                {/* Image Upload Section */}
-                <div className="space-y-4">
-                  <Label className="text-base font-semibold">
-                    Product Image
-                  </Label>
-                  <div className="flex justify-center">
-                    <div className="relative w-auto h-auto max-w-sm max-h-svh border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-gray-400 transition-colors">
-                      {imagePreview ? (
-                        <div className="relative group">
-                          <img
-                            src={imagePreview}
-                            alt="Preview"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                          <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="mr-2"
-                            >
-                              <Upload className="w-4 h-4 mr-2" />
-                              Change
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedImage(null);
-                                setImagePreview("");
-                              }}
-                            >
-                              <X className="w-4 h-4 mr-2" />
-                              Remove
-                            </Button>
-                          </div>
+            <div className="grid gap-2 py-4">
+              {/* Image Upload Section */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Product Image</Label>
+                <div className="flex justify-center">
+                  <div className="relative w-auto h-auto max-w-sm max-h-svh border-2 border-dashed border-gray-300 rounded-lg overflow-hidden hover:border-gray-400 transition-colors">
+                    {imagePreview ? (
+                      <div className="relative group">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                        <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="mr-2"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Change
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedImage(null);
+                              setImagePreview("");
+                            }}
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            Remove
+                          </Button>
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full h-full flex flex-col items-center justify-center text-gray-500 hover:text-gray-700"
-                        >
-                          <ImageIcon className="w-12 h-12 mb-2" />
-                          <p className="text-sm font-medium">
-                            Click to upload image
-                          </p>
-                          <p className="text-xs text-gray-500">Max size: 5MB</p>
-                        </button>
-                      )}
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                        accept="image/*"
-                        className="hidden"
-                      />
-                    </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full h-full flex flex-col items-center justify-center text-gray-500 hover:text-gray-700"
+                      >
+                        <ImageIcon className="w-12 h-12 mb-2" />
+                        <p className="text-sm font-medium">
+                          Click to upload image
+                        </p>
+                        <p className="text-xs text-gray-500">Max size: 5MB</p>
+                      </button>
+                    )}
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
                   </div>
                 </div>
+              </div>
 
-                {/* Product Details Section */}
-                <div className="space-y-4">
-                  <div className="grid gap-4 px-4 py-8">
-                    <div>
-                      {/* <Label htmlFor="name" className="text-base font-semibold">
+              {/* Product Details Section */}
+              <div className="space-y-4">
+                <div className="grid gap-4 px-4 py-8">
+                  <div>
+                    {/* <Label htmlFor="name" className="text-base font-semibold">
                       Product Name
                     </Label>
                     <Input
@@ -276,29 +299,29 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                       className="mt-1"
                       placeholder="Enter product name"
                     /> */}
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                              Product Name
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                                placeholder="Enter Product Name"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            Product Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                              placeholder="Enter Product Name"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                    <div>
-                      {/* <Label htmlFor="price" className="text-base font-semibold">
+                  <div>
+                    {/* <Label htmlFor="price" className="text-base font-semibold">
                       Price (VND)
                     </Label>
                     <Input
@@ -317,42 +340,42 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                       className="mt-1"
                       placeholder="Enter price"
                     /> */}
-                      <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Price(VND)</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input
-                                  type="text"
-                                  placeholder="Enter Price"
-                                  value={
-                                    field.value?.toLocaleString("vi-VN") ?? 0
-                                  }
-                                  onChange={(e) => {
-                                    //convert string to number
-                                    const input = e.target.value;
-                                    const numericValue = parseFloat(
-                                      input.replace(/[.]/g, "")
-                                    );
-                                    field.onChange(numericValue || 0);
-                                  }}
-                                />
-                                <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
-                                  VND
-                                </span>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price(VND)</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type="text"
+                                placeholder="Enter Price"
+                                value={
+                                  field.value?.toLocaleString("vi-VN") ?? 0
+                                }
+                                onChange={(e) => {
+                                  //convert string to number
+                                  const input = e.target.value;
+                                  const numericValue = parseFloat(
+                                    input.replace(/[.]/g, "")
+                                  );
+                                  field.onChange(numericValue || 0);
+                                }}
+                              />
+                              <span className="absolute inset-y-0 right-2 flex items-center text-gray-400 pointer-events-none">
+                                VND
+                              </span>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                    <div>
-                      {/* <Label
+                  <div>
+                    {/* <Label
                         htmlFor="quantity"
                         className="text-base font-semibold"
                       >
@@ -372,32 +395,32 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                         placeholder="Enter quantity"
                       /> */}
 
-                      <FormField
-                        control={form.control}
-                        name="quantity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                              Quantity
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                                placeholder="Enter Quantity"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="quantity"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                            Quantity
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                              placeholder="Enter Quantity"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                    {storeType === "2" && (
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          {/* <Label
+                  {storeType === 2 && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        {/* <Label
                           htmlFor="duration"
                           className="text-base font-semibold"
                         >
@@ -417,30 +440,30 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                           className="mt-1"
                           placeholder="Enter duration"
                         /> */}
-                          <FormField
-                            control={form.control}
-                            name="duration"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                                  Duration
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
-                                    placeholder="Enter Duration"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                        <FormField
+                          control={form.control}
+                          name="duration"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                                Duration
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  className="bg-slate-100 dark:bg-slate-500 border-0 focus-visible:ring-0 text-black dark:text-white focus-visible:ring-offset-0"
+                                  placeholder="Enter Duration"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                        <div>
-                          {/* <Label
+                      <div>
+                        {/* <Label
                           htmlFor="unit"
                           className="text-base font-semibold"
                         >
@@ -461,47 +484,67 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                           </SelectContent>
                         </Select> */}
 
-                          <FormField
-                            control={form.control}
-                            name="unit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                                  Unit
-                                </FormLabel>
-                                <FormControl>
-                                  <Select
-                                    value={field.value || ""}
-                                    onValueChange={(value) =>
-                                      // setFormData({ ...formData, unit: value })
-                                      field.onChange(value)
-                                    }
-                                  >
-                                    <SelectTrigger className="mt-1">
-                                      <SelectValue placeholder="Select unit" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Hour">Hour</SelectItem>
-                                      <SelectItem value="Minute">
-                                        Minute
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                        <FormField
+                          control={form.control}
+                          name="unit"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
+                                Unit
+                              </FormLabel>
+                              <FormControl>
+                                <Select
+                                  value={field.value || ""}
+                                  onValueChange={(value) =>
+                                    // setFormData({ ...formData, unit: value })
+                                    field.onChange(value)
+                                  }
+                                >
+                                  <SelectTrigger className="mt-1">
+                                    <SelectValue placeholder="Select unit" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Hour">Hour</SelectItem>
+                                    <SelectItem value="Minute">
+                                      Minute
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
-              {/* <div className="flex justify-end items-end w-full mt-4">
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              {storeType === 1 ? (
+                // Validate được không update được
+                // <Button
+                //   type="submit"
+                //   className="px-5 bg-blue-500 hover:bg-blue-700"
+                //   disabled={isSubmitting}
+                // >
+                //   {isSubmitting ? (
+                //     "Updating..."
+                //   ) : (
+                //     <>
+                //       <Edit /> <p>Update</p>
+                //     </>
+                //   )}
+                // </Button>
+
+                // Update được nhưng không validate được
                 <Button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-700"
+                  onClick={() => handleNone()}
+                  className="px-5 bg-blue-500 hover:bg-blue-700"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -512,25 +555,21 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
                     </>
                   )}
                 </Button>
-              </div> */}
-            </div>
-            <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="px-5 bg-blue-500 hover:bg-blue-700"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  "Updating..."
-                ) : (
-                  <>
-                    <Edit /> <p>Update</p>
-                  </>
-                )}
-              </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  className="px-5 bg-blue-500 hover:bg-blue-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    "Updating..."
+                  ) : (
+                    <>
+                      <Edit /> <p>Update</p>
+                    </>
+                  )}
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </Form>

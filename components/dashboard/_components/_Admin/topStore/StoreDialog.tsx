@@ -8,14 +8,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
-
-interface TopStore {
-  storeId: string;
-  storeName: string;
-  storeEmail: string;
-  totalTransactions: number;
-  totalAmount: number;
-}
+import { TopStore } from "@/types/analytics";
 
 interface StoreDialogProps {
   isOpen: boolean;
@@ -39,8 +32,33 @@ const StoreDialog: React.FC<StoreDialogProps> = ({
         </DialogHeader>
         <div>
           <p>
+            Number of Transactions:{" "}
+            <strong> {storeDetails.totalTransactions}</strong>
+          </p>
+          <p>
             Total Sales:{" "}
             <strong> {formatVNDCurrencyValue(storeDetails.totalAmount)}</strong>
+          </p>
+          <p>
+            QR Transactions Amount:{" "}
+            <strong>
+              {" "}
+              {formatVNDCurrencyValue(storeDetails.totalQRAmount)}
+            </strong>
+          </p>
+          <p>
+            Others Transactions:{" "}
+            <strong>
+              {" "}
+              {formatVNDCurrencyValue(storeDetails.totalOthersAmount)}
+            </strong>
+          </p>
+          <p>
+            Transactions Amount to Vega:{" "}
+            <strong>
+              {" "}
+              {formatVNDCurrencyValue(storeDetails.amountTransferdToVega)}
+            </strong>
           </p>
         </div>
         <DialogFooter>
