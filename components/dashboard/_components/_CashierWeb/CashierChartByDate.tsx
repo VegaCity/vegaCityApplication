@@ -43,16 +43,16 @@ import { useAuthUser } from "@/components/hooks/useAuthUser";
 // ];
 
 const chartConfig = {
-  totalAmountOrderFeeCharge: {
-    label: "Total Fee Charge Order",
+  totalAmountOrder: {
+    label: "Total Amount Order",
     color: "hsl(var(--chart-1))",
   },
-  endDayCheckWalletCashierBalance: {
-    label: "End Day Cashier Balance",
+  totalAmountCashOrder: {
+    label: "Total Amount Cash Order",
     color: "hsl(var(--chart-2))",
   },
-  endDayCheckWalletCashierBalanceHistory: {
-    label: "End Day Cashier Virtual Currency",
+  totalAmountOrderOnlineMethod: {
+    label: "Total Amount Order Online Payment",
     color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig;
@@ -77,22 +77,21 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
   const [chartCashierAmountOrder, setChartCashierAmountOrder] = useState<
     GroupedStaticsAdminByDate[]
   >([]);
-  const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
-    "totalAmountOrderFeeCharge"
-  );
+  const [activeChart, setActiveChart] =
+    useState<keyof typeof chartConfig>("totalAmountOrder");
 
   const total = useMemo(
     () => ({
-      totalAmountOrderFeeCharge: chartCashierAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountOrderFeeCharge,
+      totalAmountOrder: chartCashierAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrder,
         0
       ),
-      endDayCheckWalletCashierBalance: chartCashierAmountOrder.reduce(
-        (acc, curr) => acc + curr.endDayCheckWalletCashierBalance,
+      totalAmountCashOrder: chartCashierAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountCashOrder,
         0
       ),
-      endDayCheckWalletCashierBalanceHistory: chartCashierAmountOrder.reduce(
-        (acc, curr) => acc + curr.endDayCheckWalletCashierBalanceHistory,
+      totalAmountOrderOnlineMethod: chartCashierAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrderOnlineMethod,
         0
       ),
     }),
@@ -144,10 +143,9 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
   const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
     return data.map((dateMap) => ({
       date: dateMap.date?.split("T", 1)[0], // Extract the date portion only
-      totalAmountOrderFeeCharge: dateMap.totalAmountOrderFeeCharge,
-      endDayCheckWalletCashierBalance: dateMap.endDayCheckWalletCashierBalance,
-      endDayCheckWalletCashierBalanceHistory:
-        dateMap.endDayCheckWalletCashierBalanceHistory,
+      totalAmountOrder: dateMap.totalAmountOrder,
+      totalAmountCashOrder: dateMap.totalAmountCashOrder,
+      totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
     }));
   };
 
@@ -168,9 +166,9 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
         </div>
         <div className="flex flex-col xl:flex-row">
           {[
-            "totalAmountOrderFeeCharge",
-            "endDayCheckWalletCashierBalance",
-            "endDayCheckWalletCashierBalanceHistory",
+            "totalAmountOrder",
+            "totalAmountCashOrder",
+            "totalAmountOrderOnlineMethod",
           ].map((key) => {
             const chart = key as keyof typeof chartConfig;
             return (
@@ -218,7 +216,7 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
                 content={
                   <ChartTooltipContent
                     className="w-full space-x-2"
-                    nameKey="totalAmountOrderFeeCharge"
+                    // nameKey="totalAmountOrderFeeCharge"
                     labelFormatter={(value: number) => {
                       return new Date(value).toLocaleDateString("en-US", {
                         month: "short",
