@@ -38,7 +38,7 @@ const PackageCard: React.FC<PackageCardProps> = ({ package: pkg }) => {
         <div className="absolute top-4 right-4 flex items-center space-x-2">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 shadow-sm">
             <Sparkles className="w-4 h-4 mr-1 text-blue-500" />
-            New
+            {pkg.duration} Day(s)
           </span>
         </div>
       </div>

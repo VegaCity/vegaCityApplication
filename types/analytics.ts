@@ -79,8 +79,10 @@ export interface GroupedStaticsAdminByDate {
   totalOrderOnlineMethods: number;
   totalAmountOrderOnlineMethod: number;
   totalOrderFeeCharge: number;
+  totalOrderFeeChargeCash: number;
   totalAmountOrderFeeCharge: number;
   totalAmountOrderFeeChargeCash: number;
+  totalOrderFeeChargeVirtualMoney: number;
   totalAmountOrderFeeChargeVirtualMoney: number;
   endDayCheckWalletCashierBalance: number;
   endDayCheckWalletCashierBalanceHistory: number;

@@ -43,28 +43,28 @@ import { useAuthUser } from "@/components/hooks/useAuthUser";
 // ];
 
 const chartConfig = {
-  totalAmountOrder: {
-    label: "Total Amount Order",
+  totalAmountOrderFeeCharge: {
+    label: "Total Amount Order Fee Charge",
     color: "hsl(var(--chart-1))",
   },
-  totalAmountCashOrder: {
-    label: "Total Amount Cash Order",
+  totalAmountOrderFeeChargeCash: {
+    label: "Total Amount Order Fee Charge Cash",
     color: "hsl(var(--chart-2))",
   },
-  totalAmountOrderOnlineMethod: {
-    label: "Total Amount Order Online Payment",
+  totalAmountOrderFeeChargeVirtualMoney: {
+    label: "Total Amount Order Fee Charge Virtual Money",
     color: "hsl(var(--chart-3))",
   },
-  totalOrder: {
-    label: "Total Order",
+  totalOrderFeeCharge: {
+    label: "Total Order Fee Charge",
     color: "hsl(var(--chart-4))",
   },
-  totalOrderCash: {
-    label: "Total Order Cash",
+  totalOrderFeeChargeCash: {
+    label: "Total Order Fee Charge Cash",
     color: "hsl(var(--chart-5))",
   },
-  totalOrderOnlineMethods: {
-    label: "Total Order Online Methods",
+  totalOrderFeeChargeVirtualMoney: {
+    label: "Total Order Fee Charge Virtual Money",
     color: "hsl(var(--chart-6))",
   },
 } satisfies ChartConfig;
@@ -77,7 +77,7 @@ interface ChartByDateProps {
   };
 }
 
-export function CashierChartByDate({ params }: ChartByDateProps) {
+export function CashierChartByDateOther({ params }: ChartByDateProps) {
   const user = useAuthUser();
   const roleName = user.roleName;
   const [isLoading, setIsLoading] = useState(false);
@@ -89,23 +89,25 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
   const [chartCashierAmountOrder, setChartCashierAmountOrder] = useState<
     GroupedStaticsAdminByDate[]
   >([]);
-  const [activeChart, setActiveChart] =
-    useState<keyof typeof chartConfig>("totalAmountOrder");
-  const [secondBar, setSecondBar] =
-    useState<keyof typeof chartConfig>("totalOrder");
+  const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
+    "totalAmountOrderFeeCharge"
+  );
+  const [secondBar, setSecondBar] = useState<keyof typeof chartConfig>(
+    "totalOrderFeeCharge"
+  );
 
   const total = useMemo(
     () => ({
-      totalAmountOrder: chartCashierAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountOrder,
+      totalAmountOrderFeeCharge: chartCashierAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrderFeeCharge,
         0
       ),
-      totalAmountCashOrder: chartCashierAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountCashOrder,
+      totalAmountOrderFeeChargeCash: chartCashierAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrderFeeChargeCash,
         0
       ),
-      totalAmountOrderOnlineMethod: chartCashierAmountOrder.reduce(
-        (acc, curr) => acc + curr.totalAmountOrderOnlineMethod,
+      totalAmountOrderFeeChargeVirtualMoney: chartCashierAmountOrder.reduce(
+        (acc, curr) => acc + curr.totalAmountOrderFeeChargeVirtualMoney,
         0
       ),
     }),
@@ -115,12 +117,13 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
   const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
     return data.map((dateMap) => ({
       date: dateMap.date?.split("T", 1)[0], // Extract the date portion only
-      totalOrder: dateMap.totalOrder,
-      totalAmountOrder: dateMap.totalAmountOrder,
-      totalOrderCash: dateMap.totalOrderCash,
-      totalAmountCashOrder: dateMap.totalAmountCashOrder,
-      totalOrderOnlineMethods: dateMap.totalOrderOnlineMethods,
-      totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
+      totalAmountOrderFeeCharge: dateMap.totalAmountOrderFeeCharge,
+      totalAmountOrderFeeChargeCash: dateMap.totalAmountOrderFeeChargeCash,
+      totalAmountOrderFeeChargeVirtualMoney:
+        dateMap.totalAmountOrderFeeChargeVirtualMoney,
+      totalOrderFeeCharge: dateMap.totalOrderFeeCharge,
+      totalOrderFeeChargeCash: dateMap.totalOrderFeeChargeCash,
+      totalOrderFeeChargeVirtualMoney: dateMap.totalOrderFeeChargeVirtualMoney,
     }));
   };
 
@@ -171,10 +174,12 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
 
   // Call second bar
   useEffect(() => {
-    if (activeChart === "totalAmountOrder") setSecondBar("totalOrder");
-    if (activeChart === "totalAmountCashOrder") setSecondBar("totalOrderCash");
-    if (activeChart === "totalAmountOrderOnlineMethod")
-      setSecondBar("totalOrderOnlineMethods");
+    if (activeChart === "totalAmountOrderFeeCharge")
+      setSecondBar("totalOrderFeeCharge");
+    if (activeChart === "totalAmountOrderFeeChargeCash")
+      setSecondBar("totalOrderFeeChargeCash");
+    if (activeChart === "totalAmountOrderFeeChargeVirtualMoney")
+      setSecondBar("totalOrderFeeChargeVirtualMoney");
   }, [activeChart]);
 
   // //Mapping the second bar
@@ -214,9 +219,9 @@ export function CashierChartByDate({ params }: ChartByDateProps) {
         </div>
         <div className="flex flex-col xl:flex-row">
           {[
-            "totalAmountOrder",
-            "totalAmountCashOrder",
-            "totalAmountOrderOnlineMethod",
+            "totalAmountOrderFeeCharge",
+            "totalAmountOrderFeeChargeCash",
+            "totalAmountOrderFeeChargeVirtualMoney",
           ].map((key) => {
             const chart = key as keyof typeof chartConfig;
             return (

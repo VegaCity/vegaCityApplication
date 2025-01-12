@@ -39,7 +39,7 @@ const chartConfig = {
     label: "Total Amount Withdraw From Vega",
     color: "hsl(var(--chart-1))",
   },
-  totalWithdrawAmountFromCustomer: {
+  totalAmountWithdrawFromCustomer: {
     label: "Total Withdraw Amount From Customer",
     color: "hsl(var(--chart-2))",
   },
@@ -223,7 +223,7 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
               stackId="a"
             />
             <Area
-              dataKey="totalWithdrawAmountFromCustomer"
+              dataKey="totalAmountWithdrawFromCustomer"
               type="natural"
               fill="var(--color-totalWithdrawAmountFromCustomer)"
               fillOpacity={0.4}

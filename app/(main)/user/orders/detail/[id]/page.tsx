@@ -365,7 +365,7 @@ const OrderDetailPage = () => {
                   <CreditCard className="h-5 w-5 mr-2" />
                   <span>Balance Before</span>
                 </div>
-                <p className="text-xl font-medium">
+                <p className="text-xl font-bold text-blue-500">
                   {formatAmount(orderDetail?.data?.balanceBefore || 0)}
                 </p>
               </div>
@@ -375,7 +375,7 @@ const OrderDetailPage = () => {
                   <CreditCard className="h-5 w-5 mr-2" />
                   <span>Balance After</span>
                 </div>
-                <p className="text-xl font-medium">
+                <p className="text-xl font-bold text-green-500">
                   {formatAmount(orderDetail?.data?.balanceAfter || 0)}
                 </p>
               </div>

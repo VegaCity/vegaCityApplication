@@ -45,6 +45,7 @@ import { AdminChartByMonth } from "@/components/dashboard/_components/_Admin/Adm
 import { CashierChartByMonth } from "@/components/dashboard/_components/_CashierWeb/CashierChartByMonth";
 import { AdminPieGraph } from "@/components/dashboard/_components/_Admin/AdminPieGraph";
 import { AdminChartByDateAll } from "@/components/dashboard/_components/_Admin/AdminChartByDateAll";
+import { CashierChartByDateOther } from "@/components/dashboard/_components/_CashierWeb/CashierChartByDateOther";
 
 interface ChartLine {
   dataKey: string;
@@ -215,7 +216,15 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ params }) => {
       return (
         <div className="grid grid-cols-12 gap-3">
           <div className="col-span-4 md:col-span-6">
-            <CashierChartByDate params={{ saleType, startDate, endDate }} />
+            {userRole &&
+            userRole === "CashierWeb" &&
+            saleType === "FeeChargeCreate" ? (
+              <CashierChartByDateOther
+                params={{ saleType, startDate, endDate }}
+              />
+            ) : (
+              <CashierChartByDate params={{ saleType, startDate, endDate }} />
+            )}
           </div>
 
           <div className="col-span-4 md:col-span-6">

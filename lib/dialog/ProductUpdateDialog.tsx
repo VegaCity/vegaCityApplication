@@ -97,8 +97,8 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
       price: 0,
       duration: 0,
       unit: "",
-      imageUrl: null,
-      quantity: 0,
+      imageUrl: "",
+      quantity: 1,
     },
   });
 
@@ -123,7 +123,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
         duration: product.duration || 0,
         unit: product.unit || "",
         imageUrl: product.imageUrl || "",
-        quantity: product.quantity || 0,
+        quantity: product.quantity || 1,
       });
       setImagePreview(product.imageUrl || "");
     }

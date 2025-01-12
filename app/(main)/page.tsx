@@ -386,6 +386,7 @@ const Home = () => {
                         <SelectItem value="PackageItem Charge">
                           PackageItem Charge
                         </SelectItem>
+                        <SelectItem value="FeeChargeCreate">Other</SelectItem>
                       </>
                     )}
                   </SelectGroup>

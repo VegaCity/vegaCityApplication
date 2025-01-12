@@ -38,6 +38,18 @@ export const customerFormSchema = z.object({
   email: z.string().email("Your email is invalid! Please try again!"),
   isAdult: z.boolean().default(true),
 });
+// .refine(
+//   (data) => {
+//     if (data.quantity <= 1) {
+//       return false; //invalid
+//     }
+//   },
+//   {
+//     message:
+//       "If quantity is little than 1, then the information is required!",
+//     path: ["quantity"],
+//   }
+// );
 
 export const etagFormSchema = z
   .object({
@@ -80,7 +92,7 @@ export interface GenerateEtag {
     endDate: Date;
   };
 }
-export const formSchema = z
+export const etagEditFormSchema = z
   .object({
     cusName: z
       .string()
@@ -654,7 +666,6 @@ export type EditPromotionFormValues = z.infer<typeof editPromotionFormSchema>;
 export type CreatePromotionFormValues = z.infer<
   typeof createPromotionFormSchema
 >;
-export type FormValues = z.infer<typeof formSchema>;
 export type CreatePackageFormValues = z.infer<typeof createPackageFormSchema>;
 export type EditPackageFormValues = z.infer<typeof editPackageFormSchema>;
 export type ChargeFormValues = z.infer<typeof chargeFormSchema>;
@@ -671,6 +682,7 @@ export type EditServiceStoreFormValues = z.infer<
 >;
 export type StoreFormValues = z.infer<typeof storeFormSchema>;
 export type EtagTypeFormValues = z.infer<typeof etagTypeFormSchema>;
+export type EtagEditFormValues = z.infer<typeof etagEditFormSchema>;
 export type UserApproveFormValues = z.infer<typeof userApproveFormSchema>;
 export type UserReAssignEmailValues = z.infer<
   typeof userReAssignEmailFormSchema

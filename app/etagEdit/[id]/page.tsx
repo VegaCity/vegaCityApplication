@@ -19,8 +19,8 @@ import { PackageItem } from "@/types/packageitem";
 import Image from "next/image";
 import {
   PackageItemEditPageProps,
-  formSchema,
-  FormValues,
+  etagEditFormSchema,
+  EtagEditFormValues,
 } from "@/lib/validation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SearchPackageItem from "@/components/search/searchPackageItem";
@@ -38,12 +38,12 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [isUpdated, setIsUpdated] = useState(false);
   const form = useForm<any>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(etagEditFormSchema),
     defaultValues: {
       cusName: "",
       cusEmail: "",
       cusCccdpassport: "",
-      cusPhone: "",
+      phoneNumber: "",
       vcardId: "",
     },
   });
