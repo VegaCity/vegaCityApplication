@@ -35,11 +35,11 @@ import {
 } from "@/components/ui/dialog";
 import paymentService from "@/components/services/paymentService";
 import {
-  formSchema,
-  FormValues,
   customerFormSchema,
   PackageItemDetailPageProps,
   CustomerFormValues,
+  etagEditFormSchema,
+  EtagEditFormValues,
 } from "@/lib/validation";
 import {
   AlertDialog,
@@ -431,8 +431,8 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
       setIsConfirming(false);
     }
   };
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<EtagEditFormValues>({
+    resolver: zodResolver(etagEditFormSchema),
     defaultValues: {
       cusName: "",
       phoneNumber: "",
