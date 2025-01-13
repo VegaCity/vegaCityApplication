@@ -35,6 +35,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { AxiosError } from "axios";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProductErrors {
   name?: string;
@@ -83,6 +84,7 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     imageUrl: "",
     quantity: 1,
   });
+  const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -134,11 +136,11 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        toast.error("Please select an image file");
+        // toast.error("Please select an image file");
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast.error("Image size must be less than 5MB");
+        // toast.error("Image size must be less than 5MB");
         return;
       }
       setSelectedImage(file);
@@ -148,15 +150,76 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     }
   };
 
+  const validateFormFields = (data: ProductPatch): boolean => {
+    const errors: string[] = [];
+
+    // Iterate over each field and validate
+    Object.entries(data).forEach(([key, value]) => {
+      switch (key) {
+        case "name":
+          if (typeof value !== "string" || value.trim() === "") {
+            errors.push("Name is required and must be a string.");
+          }
+          break;
+        case "price":
+          if (typeof value !== "number" || value <= 0 || value > 10000000) {
+            errors.push(
+              "Price must be a positive number and smaller than 10 millions VND."
+            );
+          }
+          break;
+        case "imageUrl":
+          if (value !== null && typeof value !== "string") {
+            errors.push("Image URL must be a string or null.");
+          }
+          break;
+        case "quantity":
+          if (typeof value !== "number" || value < 0 || value > 1000) {
+            errors.push(
+              "Quantity must be a non-negative number and smaller than 1000 items."
+            );
+          }
+          break;
+        case "unit":
+          if (typeof value !== "string") {
+            errors.push("Unit must be a string.");
+          }
+          break;
+        case "duration":
+          if (typeof value !== "number" || value < 0) {
+            errors.push("Quantity must be a non-negative number.");
+          }
+          break;
+        default:
+          errors.push(`Unexpected field: ${key}`);
+      }
+    });
+
+    // Log or display errors
+    if (errors.length > 0) {
+      console.error("Validation Errors:", errors);
+      errors.forEach((error) =>
+        toast({
+          title: `Field Error!`,
+          description: error,
+          variant: "destructive",
+        })
+      ); // Optional: Use toast to display errors
+      return false;
+    }
+
+    return true; // Return true if no errors
+  };
+
   const handleNone = async () => {
     // Trigger validation from react-hook-form
+    const data: ProductPatch = form.getValues();
 
-    const data = form.getValues();
-    // if (data.price > 100000) {
-    //   alert("Please select an image file");
-    //   console.log("eee");
-    //   return;
-    // }
+    // Validate form fields
+    const isValid = validateFormFields(data);
+    if (!isValid) {
+      return; // Stop execution if validation fails
+    }
 
     try {
       setIsSubmitting(true);
@@ -166,17 +229,17 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
         imageUrl: imagePreview,
       });
       onClose();
-      toast.success("Product updated successfully");
+      // toast.success("Product updated successfully");
     } catch (error) {
       if (error instanceof AxiosError) {
         if (error.status === 413) {
-          toast.error("Image URL too large");
+          // toast.error("Image URL too large");
         } else {
-          toast.error(
-            error.response?.data.messageResponse ||
-              error.response?.data.Error ||
-              "Failed to update product! Some fields happened errors!"
-          );
+          // toast.error(
+          //   error.response?.data.messageResponse ||
+          //     error.response?.data.Error ||
+          //     "Failed to update product! Some fields happened errors!"
+          // );
         }
       }
     } finally {
@@ -193,15 +256,15 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
         imageUrl: imagePreview,
       });
       onClose();
-      toast.success("Product updated successfully");
+      // toast.success("Product updated successfully");
     } catch (error) {
       if (error instanceof AxiosError) {
-        error.status === 413 && toast.error("Image URL too large");
-        toast.error(
-          error.response?.data.messageResponse ||
-            error.response?.data.Error ||
-            "Failed to update product! Some fields happened errors!"
-        );
+        // error.status === 413 && toast.error("Image URL too large");
+        // toast.error(
+        //   error.response?.data.messageResponse ||
+        //     error.response?.data.Error ||
+        //     "Failed to update product! Some fields happened errors!"
+        // );
       }
     } finally {
       setIsSubmitting(false);
