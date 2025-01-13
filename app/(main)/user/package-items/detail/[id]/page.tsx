@@ -935,7 +935,7 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
 
                       <FormItem className="flex flex-col gap-1 md:w-10/12">
                         <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-white">
-                          History
+                          Virtual Currency
                         </FormLabel>
                         <FormControl>
                           <Input
