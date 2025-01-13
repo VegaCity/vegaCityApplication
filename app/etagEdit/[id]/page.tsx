@@ -29,6 +29,7 @@ import ReportDialog from "@/lib/dialog/ReportDialog";
 import { PromotionAlert } from "@/components/Promotion/PromotionAlert";
 import TransactionWithdrawList from "@/components/transactions/TransactionWithdrawList";
 import { Loader } from "@/components/loader/Loader";
+import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const { toast } = useToast();
   const [packageItem, setPackageItem] = useState<PackageItem | null>(null);
@@ -419,7 +420,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       <FormControl>
                         <Input
                           className="w-full bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          {...form.register("wallets.0.balance")}
+                          // {...form.register("wallets.0.balance")}
+                          value={formatVNDCurrencyValue(
+                            form.getValues("wallets.0.balance")
+                          )}
                           readOnly
                         />
                       </FormControl>
@@ -432,7 +436,10 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
                       <FormControl>
                         <Input
                           className="w-full bg-slate-100 border border-gray-300 text-black rounded-md focus:border-black focus:ring focus:ring-black/50 dark:bg-slate-500 dark:text-white"
-                          {...form.register("wallets.0.balanceHistory")}
+                          // {...form.register("wallets.0.balanceHistory")}
+                          value={formatVNDCurrencyValue(
+                            form.getValues("wallets.0.balanceHistory")
+                          )}
                           readOnly
                         />
                       </FormControl>

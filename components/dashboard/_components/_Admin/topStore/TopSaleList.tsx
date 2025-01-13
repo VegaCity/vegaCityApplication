@@ -41,15 +41,10 @@ export const TopSaleList = React.memo(function TopSaleList({
   const [error, setError] = useState<string | null>("");
   const [topSaleList, setTopSaleList] = useState<TopSaleStores[]>([]);
   const [selectedStore, setSelectedStore] = useState<TopStore | null>(null);
-  const { endDate, tabsValue, startDate } = params;
-
-  //Body Params
-  // let topSaleBodyData: TopSaleStoresPost = {
-  //   startDate: "2024-07-01",
-  //   endDate: "2025-03-03",
-  //   storeType: tabsValue || "All",
-  //   groupBy: "Month",
-  // };
+  // const { endDate, tabsValue, startDate } = params; //fixed to demo
+  const { tabsValue } = params;
+  const startDate = "2024-07-01";
+  const endDate = "2025-03-03";
 
   // format(dateRange.from, "yyyy-MM-dd"),
   // format(dateRange.from, "yyyy-MM-dd")
@@ -58,9 +53,16 @@ export const TopSaleList = React.memo(function TopSaleList({
     // setIsLoading(true);
     // fetch data from API
 
+    // const topSaleBodyData: TopSaleStoresPost = {
+    //   startDate: format(startDate, "yyyy-MM-dd"),
+    //   endDate: format(endDate, "yyyy-MM-dd"),
+    //   storeType: tabsValue || "All",
+    //   groupBy: "Month",
+    // };
+
     const topSaleBodyData: TopSaleStoresPost = {
-      startDate: format(startDate, "yyyy-MM-dd"),
-      endDate: format(endDate, "yyyy-MM-dd"),
+      startDate: startDate,
+      endDate: endDate,
       storeType: tabsValue || "All",
       groupBy: "Month",
     };
