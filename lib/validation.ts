@@ -112,9 +112,7 @@ export const etagEditFormSchema = z
     // cccdPassport: z
     //   .string()
     //   .regex(/^[0-9]{12}$/, "CCCD phải có đúng 12 chữ số"),
-    cusEmail: z
-      .string()
-      .email("Email của không hợp lệ. Vui lý sử dụng email hợp lệ"),
+    cusEmail: z.string().email("Your email is invalid! Please try again!"),
     cusCccdpassport: z
       .string()
       .regex(

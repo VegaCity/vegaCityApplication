@@ -39,6 +39,7 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
   const [isUpdated, setIsUpdated] = useState(false);
   const form = useForm<any>({
     resolver: zodResolver(etagEditFormSchema),
+    mode: "onChange",
     defaultValues: {
       cusName: "",
       cusEmail: "",
@@ -47,7 +48,17 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
       vcardId: "",
     },
   });
-
+  const handleEdit = () => {
+    setIsEditing(!isEditing);
+    if (!isEditing) {
+      // When entering edit mode, trigger validation for all fields
+      Object.keys(form.getValues()).forEach((fieldName) => {
+        form.trigger(fieldName);
+      });
+    } else {
+      form.reset(null);
+    }
+  };
   const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return "";
     return new Date(dateString).toISOString().split("T")[0];
