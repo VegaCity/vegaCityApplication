@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -7,8 +8,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { validImageUrl } from "@/lib/utils/checkValidImageUrl";
 import { formatVNDCurrencyValue } from "@/lib/utils/formatVNDCurrency";
 import { TopStore } from "@/types/analytics";
+import { Trophy } from "lucide-react";
 
 interface StoreDialogProps {
   isOpen: boolean;
@@ -26,9 +30,30 @@ const StoreDialog: React.FC<StoreDialogProps> = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {storeDetails.storeName} - {storeDetails.storeEmail}
+            Top Store Details
+            <div className="flex justity-between items-center gap-2 mt-3">
+              <Avatar className="h-4 w-4 my-2">
+                <AvatarImage
+                  src={validImageUrl(
+                    "https://firebasestorage.googleapis.com/v0/b/vegacity-utility-card.appspot.com/o/images%2FtopSaleStoreAvatar.jpg?alt=media&token=08b61a71-de19-4fc4-9075-dc230222726a"
+                  )}
+                  alt="Avatar"
+                />
+                <AvatarFallback>
+                  <Skeleton className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <p>
+                {storeDetails.storeName} - {storeDetails.storeEmail}{" "}
+              </p>
+            </div>
           </DialogTitle>
-          <DialogDescription>Top Store In Month</DialogDescription>
+          <DialogDescription>
+            <div className="flex justify-start items-center gap-2 mt-2">
+              <Trophy className="w-4 h-4" />
+              <p>Top Store In Month</p>
+            </div>
+          </DialogDescription>
         </DialogHeader>
         <div>
           <p>
