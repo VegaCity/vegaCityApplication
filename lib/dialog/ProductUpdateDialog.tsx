@@ -157,8 +157,15 @@ const ProductUpdateDialog: React.FC<ProductUpdateDialogProps> = ({
     Object.entries(data).forEach(([key, value]) => {
       switch (key) {
         case "name":
-          if (typeof value !== "string" || value.trim() === "") {
-            errors.push("Name is required and must be a string.");
+          if (
+            typeof value !== "string" ||
+            value.trim() === "" ||
+            value.length < 2 ||
+            value.length > 50
+          ) {
+            errors.push(
+              "Name is required and must be a string and at least 2 character, maximum 50 characters."
+            );
           }
           break;
         case "price":
