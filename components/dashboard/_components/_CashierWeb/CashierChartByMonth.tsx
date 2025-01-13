@@ -39,7 +39,7 @@ const chartConfig = {
     label: "Total Amount Withdraw From Vega",
     color: "hsl(var(--chart-1))",
   },
-  totalWithdrawAmountFromCustomer: {
+  totalWithdrawAmoutFromCustomer: {
     label: "Total Withdraw Amount From Customer",
     color: "hsl(var(--chart-2))",
   },
@@ -83,8 +83,8 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
         name: fullMonthName, // "November", "December"
         formattedDate: dateMap.formattedDate, // "Nov", "Dec"
         totalAmountWithdrawFromVega: dateMap.totalAmountWithdrawFromVega,
-        totalWithdrawAmountFromCustomer:
-          dateMap.totalWithdrawAmountFromCustomer,
+        totalWithdrawAmoutFromCustomer:
+          dateMap.totalWithdrawAmoutFromCustomer,
         totalWithdrawAmountFromStoreOwner:
           dateMap.totalWithdrawAmountFromStoreOwner,
       };
@@ -108,10 +108,10 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
           100
         : 0; // Handle division by zero
       const percentChangeWithdrawCustomer =
-        previous.totalWithdrawAmountFromCustomer
-          ? ((current.totalWithdrawAmountFromCustomer -
-              previous.totalWithdrawAmountFromCustomer) /
-              previous.totalWithdrawAmountFromCustomer) *
+        previous.totalWithdrawAmoutFromCustomer
+          ? ((current.totalWithdrawAmoutFromCustomer -
+              previous.totalWithdrawAmoutFromCustomer) /
+              previous.totalWithdrawAmoutFromCustomer) *
             100
           : 0; // Handle division by zero
       const percentChangeWithdrawStore =
@@ -223,11 +223,11 @@ export function CashierChartByMonth({ params }: ChartByMonthProps) {
               stackId="a"
             />
             <Area
-              dataKey="totalWithdrawAmountFromCustomer"
+              dataKey="totalWithdrawAmoutFromCustomer"
               type="natural"
-              fill="var(--color-totalWithdrawAmountFromCustomer)"
+              fill="var(--color-totalWithdrawAmoutFromCustomer)"
               fillOpacity={0.4}
-              stroke="var(--color-totalWithdrawAmountFromCustomer)"
+              stroke="var(--color-totalWithdrawAmoutFromCustomer)"
               stackId="a"
             />
             <Area

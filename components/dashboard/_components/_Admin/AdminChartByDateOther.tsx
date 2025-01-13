@@ -41,6 +41,33 @@ import { FolderArchive } from "lucide-react";
 //   { month: "June", desktop: 214, mobile: 140 },
 // ];
 
+const chartConfig = {
+  totalAmountOrderFeeCharge: {
+    label: "Total Amount Order Fee Charge",
+    color: "hsl(var(--chart-1))",
+  },
+  totalAmountOrderFeeChargeCash: {
+    label: "Total Amount Order Fee Charge Cash",
+    color: "hsl(var(--chart-2))",
+  },
+  totalAmountOrderFeeChargeVirtualMoney: {
+    label: "Total Amount Order Fee Charge Virtual Money",
+    color: "hsl(var(--chart-3))",
+  },
+  totalOrderFeeCharge: {
+    label: "Total Order Fee Charge",
+    color: "hsl(var(--chart-4))",
+  },
+  totalOrderFeeChargeCash: {
+    label: "Total Order Fee Charge Cash",
+    color: "hsl(var(--chart-5))",
+  },
+  totalOrderFeeChargeVirtualMoney: {
+    label: "Total Order Fee Charge Virtual Money",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
+
 interface ChartByDateProps {
   params: {
     startDate: Date | null;
@@ -49,7 +76,7 @@ interface ChartByDateProps {
   };
 }
 
-export function AdminChartByDateAll({ params }: ChartByDateProps) {
+export function AdminChartByDateOther({ params }: ChartByDateProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>("");
   const [dashboardData, setDashboardData] =
@@ -58,25 +85,12 @@ export function AdminChartByDateAll({ params }: ChartByDateProps) {
     GroupedStaticsAdminByDate[]
   >([]);
   const [activeChart, setActiveChart] = useState<keyof typeof chartConfig>(
-    "totalAmountOrderFeeCharge"
-  );
+      "totalAmountOrderFeeCharge"
+    );
+    const [secondBar, setSecondBar] = useState<keyof typeof chartConfig>(
+      "totalAmountOrderFeeCharge"
+    );
   const { endDate, saleType, startDate } = params;
-
-  //Type All
-  const chartConfig = {
-    totalAmountOrderFeeCharge: {
-      label: "Total Amount Order Fee Charge",
-      color: "hsl(var(--chart-1))",
-    },
-    totalAmountOrderFeeChargeCash: {
-      label: "Total Amount Order Fee Charge Cash",
-      color: "hsl(var(--chart-2))",
-    },
-    totalAmountOrderFeeChargeVirtualMoney: {
-      label: "Total Amount Order Fee Charge Virtual Money",
-      color: "hsl(var(--chart-3))",
-    },
-  } satisfies ChartConfig;
 
   const total = useMemo(
     () => ({
@@ -138,6 +152,16 @@ export function AdminChartByDateAll({ params }: ChartByDateProps) {
     fetchDashboardData();
   }, [endDate, saleType]);
 
+  // Call second bar
+  useEffect(() => {
+    if (activeChart === "totalAmountOrderFeeCharge")
+      setSecondBar("totalOrderFeeCharge");
+    if (activeChart === "totalAmountOrderFeeChargeCash")
+      setSecondBar("totalOrderFeeChargeCash");
+    if (activeChart === "totalAmountOrderFeeChargeVirtualMoney")
+      setSecondBar("totalOrderFeeChargeVirtualMoney");
+  }, [activeChart]);
+  
   const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
     return data.map((dateMap) => ({
       date: dateMap.date?.split("T", 1)[0], // Extract the date portion only
@@ -145,12 +169,13 @@ export function AdminChartByDateAll({ params }: ChartByDateProps) {
       totalAmountOrderFeeChargeCash: dateMap.totalAmountOrderFeeChargeCash,
       totalAmountOrderFeeChargeVirtualMoney:
         dateMap.totalAmountOrderFeeChargeVirtualMoney,
+      totalOrderFeeCharge: dateMap.totalOrderFeeCharge,
+      totalOrderFeeChargeCash: dateMap.totalOrderFeeChargeCash,
+      totalOrderFeeChargeVirtualMoney: dateMap.totalOrderFeeChargeVirtualMoney,
     }));
   };
-  console.log(
-    chartAmountOrderData(chartAdminAmountOrder),
-    "chartAmountOrderData"
-  );
+  const dashboardAdminData = chartAmountOrderData(chartAdminAmountOrder);
+  console.log(dashboardAdminData, "dashboardAdminData");
 
   // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
@@ -197,7 +222,7 @@ export function AdminChartByDateAll({ params }: ChartByDateProps) {
           {chartAdminAmountOrder && chartAdminAmountOrder.length > 0 ? (
             <BarChart
               accessibilityLayer
-              data={chartAmountOrderData(chartAdminAmountOrder)}
+              data={dashboardAdminData}
             >
               <CartesianGrid vertical={false} />
               <XAxis
@@ -234,6 +259,11 @@ export function AdminChartByDateAll({ params }: ChartByDateProps) {
               <Bar
                 dataKey={activeChart}
                 fill={`var(--color-${activeChart})`}
+                radius={4}
+              />
+              <Bar
+                dataKey={secondBar}
+                fill={`var(--color-${secondBar})`}
                 radius={4}
               />
             </BarChart>

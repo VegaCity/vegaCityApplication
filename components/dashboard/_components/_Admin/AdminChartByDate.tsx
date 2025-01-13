@@ -54,6 +54,18 @@ const chartConfig = {
     label: "Total Amount Order Online Payment",
     color: "hsl(var(--chart-3))",
   },
+  totalOrder: {
+    label: "Total Order",
+    color: "hsl(var(--chart-4))",
+  },
+  totalOrderCash: {
+    label: "Total Order Cash",
+    color: "hsl(var(--chart-5))",
+  },
+  totalOrderOnlineMethods: {
+    label: "Total Order Online Methods",
+    color: "hsl(var(--chart-6))",
+  },
 } satisfies ChartConfig;
 
 interface ChartByDateProps {
@@ -73,7 +85,9 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
     GroupedStaticsAdminByDate[]
   >([]);
   const [activeChart, setActiveChart] =
-    useState<keyof typeof chartConfig>("totalAmountOrder");
+      useState<keyof typeof chartConfig>("totalAmountOrder");
+    const [secondBar, setSecondBar] =
+      useState<keyof typeof chartConfig>("totalOrder");
   const { endDate, saleType, startDate } = params;
 
   const total = useMemo(
@@ -92,6 +106,23 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
       ),
     }),
     [chartAdminAmountOrder]
+  );
+
+  const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
+    return data.map((dateMap) => ({
+      date: dateMap.date?.split("T", 1)[0], // Extract the date portion only
+      totalOrder: dateMap.totalOrder,
+      totalAmountOrder: dateMap.totalAmountOrder,
+      totalOrderCash: dateMap.totalOrderCash,
+      totalAmountCashOrder: dateMap.totalAmountCashOrder,
+      totalOrderOnlineMethods: dateMap.totalOrderOnlineMethods,
+      totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
+    }));
+  };
+
+  console.log(
+    chartAmountOrderData(chartAdminAmountOrder),
+    "chartAmountOrderData"
   );
 
   useEffect(() => {
@@ -136,18 +167,13 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
     fetchDashboardData();
   }, [endDate, saleType]);
 
-  const chartAmountOrderData = (data: GroupedStaticsAdminByDate[]) => {
-    return data.map((dateMap) => ({
-      date: dateMap.date?.split("T", 1)[0], // Extract the date portion only
-      totalAmountOrder: dateMap.totalAmountOrder,
-      totalAmountCashOrder: dateMap.totalAmountCashOrder,
-      totalAmountOrderOnlineMethod: dateMap.totalAmountOrderOnlineMethod,
-    }));
-  };
-  console.log(
-    chartAmountOrderData(chartAdminAmountOrder),
-    "chartAmountOrderData"
-  );
+  // Call second bar
+  useEffect(() => {
+    if (activeChart === "totalAmountOrder") setSecondBar("totalOrder");
+    if (activeChart === "totalAmountCashOrder") setSecondBar("totalOrderCash");
+    if (activeChart === "totalAmountOrderOnlineMethod")
+      setSecondBar("totalOrderOnlineMethods");
+  }, [activeChart]);
 
   // if (isLoading) return <Loader isLoading={isLoading} />;
   if (error) return <EmptyDataPage title={error} />;
@@ -231,6 +257,11 @@ export function AdminChartByDate({ params }: ChartByDateProps) {
               <Bar
                 dataKey={activeChart}
                 fill={`var(--color-${activeChart})`}
+                radius={4}
+              />
+              <Bar
+                dataKey={secondBar}
+                fill={`var(--color-${secondBar})`}
                 radius={4}
               />
             </BarChart>

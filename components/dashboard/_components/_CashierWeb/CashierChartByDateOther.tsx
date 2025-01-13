@@ -65,7 +65,7 @@ const chartConfig = {
   },
   totalOrderFeeChargeVirtualMoney: {
     label: "Total Order Fee Charge Virtual Money",
-    color: "hsl(var(--chart-6))",
+    color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
 
