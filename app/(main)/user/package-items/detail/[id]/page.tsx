@@ -961,7 +961,59 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
               isLoading={isLoading}
               packageItem={packageItem}
             />
+            {/* Activate button */}
+            <div className="flex justify-end">
+              {packageItem && packageItem.status === "InActive" && (
+                <>
+                  {!isConfirming ? (
+                    <Button
+                      className={cn(
+                        "mt-12 px-6 py-2",
+                        isEditing
+                          ? "bg-blue-500 hover:bg-blue-600 text-white"
+                          : "bg-green-500 hover:bg-green-600 text-white"
+                      )}
+                      onClick={handleActivateEtag}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader isLoading={isLoading} />
+                      ) : isEditing ? (
+                        "Confirm"
+                      ) : (
+                        "Activate"
+                      )}
+                    </Button>
+                  ) : (
+                    !isDone && (
+                      <div className="space-x-2">
+                        <Button
+                          className="mt-12 px-6 py-2"
+                          onClick={handleCancelActivation}
+                          disabled={isLoading}
+                          variant="outline"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          className="mt-12 px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white"
+                          onClick={handleConfirmActivation}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <Loader isLoading={isLoading} />
+                          ) : (
+                            "Confirm Activation"
+                          )}
+                        </Button>
+                      </div>
+                    )
+                  )}
+                </>
+              )}
+            </div>
 
+            {/* Charge Money button */}
             <div className="flex justify-end mt-4">
               {packageItem &&
                 packageItem.status === "Active" &&
@@ -1003,57 +1055,6 @@ const PackageItemDetailPage = ({ params }: PackageItemDetailPageProps) => {
           />
         </form>
       </Form>
-
-      <div className="flex justify-end mt-6 pr-4 pb-4 space-x-4">
-        {packageItem && packageItem.status === "InActive" && (
-          <>
-            {!isConfirming ? (
-              <Button
-                className={cn(
-                  "mt-12 px-6 py-2",
-                  isEditing
-                    ? "bg-blue-500 hover:bg-blue-600 text-white"
-                    : "bg-green-500 hover:bg-green-600 text-white"
-                )}
-                onClick={handleActivateEtag}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader isLoading={isLoading} />
-                ) : isEditing ? (
-                  "Confirm"
-                ) : (
-                  "Activate"
-                )}
-              </Button>
-            ) : (
-              !isDone && (
-                <>
-                  <Button
-                    className="mt-12 px-6 py-2"
-                    onClick={handleConfirmActivation}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <Loader isLoading={isLoading} />
-                    ) : (
-                      "Confirm Activation"
-                    )}
-                  </Button>
-                  <Button
-                    className="mt-12 px-6 py-2"
-                    onClick={handleCancelActivation}
-                    disabled={isLoading}
-                    variant="outline"
-                  >
-                    Cancel
-                  </Button>
-                </>
-              )
-            )}
-          </>
-        )}
-      </div>
     </>
   );
 };

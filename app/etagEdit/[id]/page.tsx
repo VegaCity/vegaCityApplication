@@ -173,9 +173,9 @@ const PackageItemEditPage = ({ params }: PackageItemEditPageProps) => {
         title: "Success",
         description: messageResponse,
       });
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1000);
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
       setIsEditing(false);
       setIsUpdated(true);
       setPackageItem((prev) => (prev ? { ...prev, ...updatedData } : null));
